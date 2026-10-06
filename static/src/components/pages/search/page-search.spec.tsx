@@ -70,10 +70,11 @@ describe('page-search', () => {
     } as unknown as HTMLIonModalElement;
   }
 
-  function mockAlert(): HTMLIonAlertElement {
+  function mockAlert(data?: unknown, role = 'confirm'): HTMLIonAlertElement {
     return {
       present: vi.fn().mockResolvedValue(undefined),
-      onDidDismiss: vi.fn().mockResolvedValue({ role: 'confirm' }),
+      dismiss: vi.fn().mockResolvedValue(true),
+      onDidDismiss: vi.fn().mockResolvedValue({ data, role }),
     } as unknown as HTMLIonAlertElement;
   }
 
@@ -515,9 +516,10 @@ describe('page-search', () => {
 
     it('opens states filter alert and updates state on OK confirmation', async () => {
       state.searchFilter = { ...state.searchFilter, states: [RecipeState.Active] };
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert());
+      const alert = mockAlert({ values: [RecipeState.Archived] }, 'confirm');
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
-      const { root } = await render(<page-search />);
+      const { root, waitForChanges } = await render(<page-search />);
       const statesBtn = root.querySelectorAll('ion-header ion-button')[0] as HTMLIonButtonElement;
       statesBtn.click();
 
@@ -529,21 +531,18 @@ describe('page-search', () => {
       expect(alertOptions.inputs?.[1].value).toBe(RecipeState.Archived);
       expect(alertOptions.inputs?.[1].checked).toBe(false);
 
-      const okButton = alertOptions.buttons?.find(b => typeof b === 'object' && b.text === 'OK') as AlertButton;
-      expect(okButton).toBeDefined();
-
-      // Trigger the OK handler
-      const handler = okButton.handler as (val: RecipeState[]) => void;
-      handler([RecipeState.Archived]);
+      await alert.dismiss();
+      await waitForChanges();
 
       expect(state.searchFilter.states).toEqual([RecipeState.Archived]);
     });
 
     it('opens sort by alert and updates state on OK confirmation', async () => {
       state.searchFilter = { ...state.searchFilter, sortBy: SortBy.Name };
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert());
+      const alert = mockAlert({ values: SortBy.Rating }, 'confirm');
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
-      const { root } = await render(<page-search />);
+      const { root, waitForChanges } = await render(<page-search />);
       const sortByBtn = root.querySelectorAll('ion-header ion-button')[1] as HTMLIonButtonElement;
       expect(sortByBtn).toHaveTextContent('Name');
 
@@ -555,11 +554,8 @@ describe('page-search', () => {
       expect(alertOptions.inputs?.[0].value).toBe(SortBy.Name);
       expect(alertOptions.inputs?.[0].checked).toBe(true);
 
-      const okButton = alertOptions.buttons?.find(b => typeof b === 'object' && b.text === 'OK') as AlertButton;
-      expect(okButton).toBeDefined();
-
-      const handler = okButton.handler as (val: SortBy) => void;
-      handler(SortBy.Rating);
+      await alert.dismiss();
+      await waitForChanges();
 
       expect(state.searchFilter.sortBy).toBe(SortBy.Rating);
     });

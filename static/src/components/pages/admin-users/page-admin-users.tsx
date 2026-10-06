@@ -1,8 +1,7 @@
-import { alertController, modalController } from '@ionic/core';
 import { Component, Host, h, State, Method, Element } from '@stencil/core';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { enableBackForOverlay, showToast } from '../../../helpers/modals';
+import { showAlert, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, enumKeyFromValue, isNull } from '../../../helpers/utils';
 
 @Component({
@@ -151,65 +150,46 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
   }
 
   private async onAddUserClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        presentingElement: this.el,
-        component: 'user-editor',
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ user: User, password: string }>();
-      if (!isNull(data)) {
-        await this.saveNewUser(data.user, data.password);
-        await this.loadUsers();
-      }
+    const { data } = await showModal<{ user: User, password: string }>({
+      presentingElement: this.el,
+      component: 'user-editor',
     });
+    if (!isNull(data)) {
+      await this.saveNewUser(data.user, data.password);
+      await this.loadUsers();
+    }
   }
 
   private async onEditUserClicked(user: User) {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        presentingElement: this.el,
-        component: 'user-editor',
-        componentProps: {
-          user: user
-        },
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ user: User }>();
-      if (!isNull(data)) {
-        await this.saveExistingUser({
-          ...user,
-          ...data.user
-        });
-        await this.loadUsers();
-      }
+    const { data } = await showModal<{ user: User }>({
+      presentingElement: this.el,
+      component: 'user-editor',
+      componentProps: {
+        user: user
+      },
     });
+    if (!isNull(data)) {
+      await this.saveExistingUser({
+        ...user,
+        ...data.user
+      });
+      await this.loadUsers();
+    }
   }
 
   private async onDeleteUserClicked(user: User) {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Delete User?',
-        message: `Are you sure you want to delete ${user.username}?`,
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.deleteUser(user);
-        await this.loadUsers();
-      }
+    const { role } = await showAlert({
+      header: 'Delete User?',
+      message: `Are you sure you want to delete ${user.username}?`,
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
-  }
 
+    if (role === 'confirm') {
+      await this.deleteUser(user);
+      await this.loadUsers();
+    }
+  }
 }

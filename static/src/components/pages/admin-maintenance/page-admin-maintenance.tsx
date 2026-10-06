@@ -1,8 +1,7 @@
-import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, Host, Method, State, h } from '@stencil/core';
 import { Backup } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { enableBackForOverlay, showLoading, showToast } from '../../../helpers/modals';
+import { showActionSheet, showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, isNull, scaleValue } from '../../../helpers/utils';
 
 @Component({
@@ -117,25 +116,19 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   }
 
   private async createBackupClicked() {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Create Backup?',
-        message: 'Are you sure you want to create a backup? This operation may take a while depending on the amount of data.',
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.createBackup();
-        await this.loadBackups();
-      }
+    const { role } = await showAlert({
+      header: 'Create Backup?',
+      message: 'Are you sure you want to create a backup? This operation may take a while depending on the amount of data.',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.createBackup();
+      await this.loadBackups();
+    }
   }
 
   private async deleteBackup(backup: Backup) {
@@ -157,25 +150,19 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   }
 
   private async onDeleteBackupClicked(backup: Backup) {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Delete Backup?',
-        message: 'Are you sure you want to delete this backup? This operation cannot be undone.',
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.deleteBackup(backup);
-        await this.loadBackups();
-      }
+    const { role } = await showAlert({
+      header: 'Delete Backup?',
+      message: 'Are you sure you want to delete this backup? This operation cannot be undone.',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.deleteBackup(backup);
+      await this.loadBackups();
+    }
   }
 
   private async restoreBackup(backupFileName: string) {
@@ -197,25 +184,19 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   }
 
   private async onRestoreBackupClicked(backup: Backup) {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Restore Backup?',
-        message: 'Are you sure you want to restore this backup? This operation cannot be undone.',
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.restoreBackup(backup.fileName);
-        await this.loadBackups();
-      }
+    const { role } = await showAlert({
+      header: 'Restore Backup?',
+      message: 'Are you sure you want to restore this backup? This operation cannot be undone.',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.restoreBackup(backup.fileName);
+      await this.loadBackups();
+    }
   }
 
   private async uploadBackup(file: File) {
@@ -237,25 +218,19 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   }
 
   private async onUploadClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        presentingElement: this.el,
-        component: 'file-upload-browser',
-        componentProps: {
-          heading: 'Upload Backup',
-          label: 'Backup File',
-          accept: 'application/zip,application/x-zip,application/x-zip-compressed,.zip',
-        },
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ file: File }>();
-      if (!isNull(data)) {
-        await this.uploadBackup(data.file);
-        await this.loadBackups();
-      }
+    const { data } = await showModal<{ file: File }>({
+      presentingElement: this.el,
+      component: 'file-upload-browser',
+      componentProps: {
+        heading: 'Upload Backup',
+        label: 'Backup File',
+        accept: 'application/zip,application/x-zip,application/x-zip-compressed,.zip',
+      },
     });
+    if (!isNull(data)) {
+      await this.uploadBackup(data.file);
+      await this.loadBackups();
+    }
   }
 
   private onDownloadBackupClicked(backup: Backup) {
@@ -269,7 +244,7 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
   }
 
   private async onBackupMenuClicked(backup: Backup) {
-    const menu = await actionSheetController.create({
+    const { role } = await showActionSheet({
       header: backup.metadata.name,
       buttons: [
         { text: 'Delete', icon: 'trash', role: 'destructive' },
@@ -278,9 +253,6 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
         { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
     });
-    await menu.present();
-
-    const { role } = await menu.onDidDismiss();
 
     switch (role) {
       case 'destructive':

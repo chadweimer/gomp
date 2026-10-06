@@ -2,7 +2,7 @@ import { actionSheetController, alertController, modalController, popoverControl
 import { Component, Element, Fragment, h, Listen, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../helpers/schema.gen';
 import { api, refreshSearchResults } from '../../helpers/api';
-import { enableBackForOverlay } from '../../helpers/modals';
+import { showModal } from '../../helpers/modals';
 import { redirect, sendActivatedCallback, isNull, isNullOrEmpty, isAuthorized } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
@@ -382,27 +382,21 @@ export class AppRoot {
   }
 
   private async onSearchFilterClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        presentingElement: this.el,
-        component: 'search-filter-editor',
-        componentProps: {
-          saveLabel: 'Search',
-          prompt: 'Search',
-          hideName: true,
-          showSavedLoader: true,
-          searchFilter: state.searchFilter
-        },
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
-      if (!isNull(data)) {
-        state.searchFilter = data.searchFilter;
-        await redirect('/recipes');
-      }
+    const { data } = await showModal<{ searchFilter: SearchFilter }>({
+      presentingElement: this.el,
+      component: 'search-filter-editor',
+      componentProps: {
+        saveLabel: 'Search',
+        prompt: 'Search',
+        hideName: true,
+        showSavedLoader: true,
+        searchFilter: state.searchFilter
+      },
     });
+    if (!isNull(data)) {
+      state.searchFilter = data.searchFilter;
+      await redirect('/recipes');
+    }
   }
 
   private isDefaultSearch() {

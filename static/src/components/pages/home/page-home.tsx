@@ -1,8 +1,7 @@
 import { Component, Element, h, Host, Method, State } from '@stencil/core';
 import { getDefaultSearchFilter } from '../../../models';
-import { modalController } from '@ionic/core';
 import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
-import { showToast, enableBackForOverlay, showLoading } from '../../../helpers/modals';
+import { showToast, showLoading, showModal } from '../../../helpers/modals';
 import { redirect, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized, trap } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../helpers/schema.gen';
@@ -183,20 +182,13 @@ export class PageHome implements ComponentWithActivatedCallback {
   }
 
   private async onNewRecipeClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        presentingElement: this.el,
-        component: 'recipe-editor',
-        backdropDismiss: false,
-      });
-
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File | null }>();
-      if (!isNull(data)) {
-        await this.saveNewRecipe(data.recipe, data.file);
-      }
+    const { data } = await showModal<{ recipe: Recipe, file: File | null }>({
+      presentingElement: this.el,
+      component: 'recipe-editor',
     });
+    if (!isNull(data)) {
+      await this.saveNewRecipe(data.recipe, data.file);
+    }
   }
 
   private async onFilterClicked(filter: SearchFilter) {

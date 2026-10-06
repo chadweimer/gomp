@@ -295,7 +295,7 @@ describe('recipe-editor', () => {
       cancelBtn?.click();
       await waitForChanges();
 
-      expect(modalEl.dismiss).toHaveBeenCalledWith(undefined);
+      expect(modalEl.dismiss).toHaveBeenCalledWith(undefined, 'cancel');
     });
 
     it('dismisses modal with recipe and null file when no file selected', async () => {
@@ -309,7 +309,7 @@ describe('recipe-editor', () => {
       expect(modalEl.dismiss).toHaveBeenCalledWith({
         recipe: mockRecipe,
         file: null,
-      });
+      }, 'save');
     });
 
     it('dismisses modal with recipe and file when image file is selected', async () => {
@@ -332,7 +332,7 @@ describe('recipe-editor', () => {
       expect(modalEl.dismiss).toHaveBeenCalledWith({
         recipe: root.recipe,
         file: mockFile,
-      });
+      }, 'save');
     });
 
     it('does not dismiss modal when form validation fails', async () => {

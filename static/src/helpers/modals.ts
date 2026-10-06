@@ -1,19 +1,71 @@
-import { alertController, loadingController, toastController } from "@ionic/core";
+import { actionSheetController, ActionSheetOptions, alertController, AlertOptions, ComponentRef, loadingController, modalController, ModalOptions, toastController } from "@ionic/core";
 
-export async function enableBackForOverlay(presenter: () => Promise<void>) {
+async function enableBackForOverlay<T = unknown>(presenter: () => Promise<T>) {
+  const onPopState = (e: PopStateEvent) => {
+    if (!(e.state as { modal?: boolean })?.modal) {
+      globalThis.history.pushState({ modal: true }, '');
+    }
+  };
+
+  globalThis.addEventListener('popstate', onPopState);
   if (!(globalThis.history.state as { modal?: boolean })?.modal) {
     globalThis.history.pushState({ modal: true }, '');
   }
   try {
-    await presenter();
+    return await presenter();
   } finally {
+    globalThis.removeEventListener('popstate', onPopState);
     if ((globalThis.history.state as { modal?: boolean })?.modal) {
       globalThis.history.back();
     }
   }
 }
 
-export function getContainingModal(el: HTMLElement) {
+export async function showModal<T = unknown>(options: ModalOptions<ComponentRef>) {
+  return await enableBackForOverlay(async () => {
+    // Default to not allowing backdrop dismiss if not specified.
+    options.backdropDismiss ??= false;
+
+    const modal = await modalController.create(options);
+    await modal.present();
+    return await modal.onDidDismiss<T>();
+  });
+}
+
+export async function showAlert<T = unknown>(options: AlertOptions) {
+  return await enableBackForOverlay(async () => {
+    const alert = await alertController.create(options);
+    await alert.present();
+    return await alert.onDidDismiss<T>();
+  });
+}
+
+export async function showActionSheet<T = unknown>(options: ActionSheetOptions) {
+  return await enableBackForOverlay(async () => {
+    const actionSheet = await actionSheetController.create(options);
+    await actionSheet.present();
+    return await actionSheet.onDidDismiss<T>();
+  });
+}
+
+export async function showToast(message: string, duration = 2000) {
+  const toast = await toastController.create({ message, duration });
+  await toast.present();
+}
+
+export async function showLoading(action: () => Promise<void>, message = 'Please wait...') {
+  const loading = await loadingController.create({
+    message: message,
+  });
+  await loading.present();
+  try {
+    await action();
+  } finally {
+    await loading.dismiss();
+  }
+}
+
+function getContainingModal(el: HTMLElement) {
   return el.closest('ion-modal');
 }
 
@@ -88,38 +140,13 @@ export function configureModalCanDismiss(el: HTMLElement, isDirty: (data?: unkno
           await alert.present();
 
           const { role: alertRole } = await alert.onDidDismiss();
-          // If alertRole is undefined, it means the alert was dismissed automatically (e.g., browser back button)
-          const dismissed = alertRole === 'destructive' || !alertRole;
-
-          // If the modal was being dismissed due to the user attempting to navigate back,
-          // push a new state to prevent accidental dismissal.
-          if (!dismissed && !(globalThis.history.state as { modal?: boolean })?.modal) {
-            globalThis.history.pushState({ modal: true }, '');
-          }
-          return dismissed;
+          return alertRole === 'destructive';
         }
       } catch (ex) {
         console.error(ex);
       }
       return true;
     };
-  }
-}
-
-export async function showToast(message: string, duration = 2000) {
-  const toast = await toastController.create({ message, duration });
-  await toast.present();
-}
-
-export async function showLoading(action: () => Promise<void>, message = 'Please wait...') {
-  const loading = await loadingController.create({
-    message: message,
-  });
-  await loading.present();
-  try {
-    await action();
-  } finally {
-    await loading.dismiss();
   }
 }
 

@@ -466,7 +466,7 @@ describe('page-recipe', () => {
       await waitForChanges();
 
       expect(createAlertSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ header: 'Arhive Recipe?' })
+        expect.objectContaining({ header: 'Archive Recipe?' })
       );
 
       const patchReq = requests.find(r => r.url.match(/\/recipes\/1$/) && r.method === 'PATCH');
@@ -1252,7 +1252,7 @@ describe('page-recipe', () => {
             expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Delete Recipe?' }));
             break;
           case 'archive':
-            expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Arhive Recipe?' }));
+            expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Archive Recipe?' }));
             break;
           case 'add-link':
             expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: 'recipe-link-editor' }));
