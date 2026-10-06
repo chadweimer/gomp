@@ -1,4 +1,4 @@
-import { Component, h, Prop, State, Event, Watch, EventEmitter, Element } from '@stencil/core';
+import { Component, h, Prop, State, Event, Watch, EventEmitter, Element, Method } from '@stencil/core';
 import { createImageElement, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
@@ -131,6 +131,11 @@ export class HTMLEditor {
         </div>
       </div>
     );
+  }
+
+  @Method()
+  getValue(): Promise<string> {
+    return Promise.resolve(this.editorContentRef.innerHTML);
   }
 
   // It's important for this to be a property so that it can be used in the event listeners

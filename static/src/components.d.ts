@@ -45,6 +45,7 @@ export namespace Components {
         "value": number;
     }
     interface HtmlEditor {
+        "getValue": () => Promise<string>;
         "images"?: { name: string; url: string; }[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';

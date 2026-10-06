@@ -46,21 +46,30 @@ function performAutofocus(this: HTMLIonModalElement) {
   this.removeEventListener('focus', performAutofocus);
 }
 
-export async function dismissContainingModal(el: HTMLElement, data?: unknown) {
-  return getContainingModal(el)?.dismiss(data);
+export function dismissContainingModal(el: HTMLElement, data?: unknown, role?: string) {
+  return getContainingModal(el)?.dismiss(data, role);
 }
 
-export function configureModalCanDismiss(el: HTMLElement, isDirty: () => boolean) {
+export function configureModalCanDismiss(el: HTMLElement, isDirty: (data?: unknown, role?: string) => boolean | Promise<boolean>, destructiveRoles: string[] = ['cancel']) {
   const modal = getContainingModal(el);
   if (modal) {
-    modal.canDismiss = async () => {
+    modal.canDismiss = async (data?: unknown, role?: string) => {
       // Dismiss immediately if the modal is no longer attached to the DOM.
-      if (modal.presentingElement && modal.presentingElement.parentElement === null) {
+      if (modal.presentingElement && modal.presentingElement?.parentElement === null) {
+        return true;
+      }
+
+      // Only check if the component is dirty for a destructive operation
+      if (role && !destructiveRoles.includes(role)) {
         return true;
       }
 
       try {
-        if (isDirty()) {
+        let isDirtyResult = isDirty(data, role);
+        if (typeof isDirtyResult !== 'boolean') {
+          isDirtyResult = await isDirtyResult;
+        }
+        if (isDirtyResult) {
           const alert = await alertController.create({
             header: 'Discard Changes?',
             message: 'You have unsaved changes. Are you sure you want to discard them?',

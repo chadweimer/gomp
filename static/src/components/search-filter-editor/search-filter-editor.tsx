@@ -24,12 +24,24 @@ export class SearchFilterEditor {
 
   @Element() el!: HTMLSearchFilterEditorElement;
   private form!: HTMLFormElement;
+  private nameInput!: HTMLIonInputElement;
+  private queryInput!: HTMLIonInputElement;
 
   async connectedCallback() {
+    const initialName = this.name;
     const initialFilter = { ...this.searchFilter };
 
     configureModalAutofocus(this.el);
-    configureModalCanDismiss(this.el, () => !this.areEqual(initialFilter, this.searchFilter));
+    configureModalCanDismiss(this.el, () => {
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+      this.name = this.nameInput.value as string;
+      this.searchFilter = {
+        ...this.searchFilter,
+        query: this.queryInput.value as string
+      };
+
+      return !this.areEqual(initialFilter, this.searchFilter) || this.name !== initialName;
+    });
 
     this.currentUserSettings = await trap(api.loadUserSettings, null);
     if (this.showSavedLoader) {
@@ -75,14 +87,16 @@ export class SearchFilterEditor {
                   spellcheck
                   required
                   autofocus
-                  onIonInput={e => this.name = e.detail.value as string} />
+                  onIonChange={e => this.name = e.detail.value as string}
+                  ref={el => this.nameInput = el!} />
               </ion-item>
             }
             <ion-item lines="full">
               <ion-input label="Search Terms" label-placement="stacked" value={this.searchFilter?.query}
                 autocorrect="on"
                 spellcheck
-                onIonInput={e => this.searchFilter = { ...this.searchFilter, query: e.detail.value as string }} />
+                onIonChange={e => this.searchFilter = { ...this.searchFilter, query: e.detail.value as string }}
+                ref={el => this.queryInput = el!} />
             </ion-item>
             <ion-item lines="full">
               <tags-input label="Tags" label-placement="stacked" value={this.searchFilter?.tags}
@@ -145,11 +159,11 @@ export class SearchFilterEditor {
     await dismissContainingModal(this.el, {
       name: this.name,
       searchFilter: this.searchFilter
-    });
+    }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el);
+    await dismissContainingModal(this.el, undefined, 'cancel');
   }
 
   private onResetClicked() {

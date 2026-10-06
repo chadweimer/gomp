@@ -31,12 +31,35 @@ export class RecipeEditor {
   @Element() el!: HTMLRecipeEditorElement;
   private form!: HTMLFormElement;
   private imageInput?: HTMLInputElement;
+  private nameInput!: HTMLIonInputElement;
+  private servingSizeInput!: HTMLIonInputElement;
+  private timeInput!: HTMLIonInputElement;
+  private sourceUrlInput!: HTMLIonInputElement;
+  private ingredientsInput!: HTMLHtmlEditorElement;
+  private directionsInput!: HTMLHtmlEditorElement;
+  private storageInput!: HTMLHtmlEditorElement;
+  private nutritionInput!: HTMLHtmlEditorElement;
 
   async connectedCallback() {
     const initialRecipe = { ...this.recipe };
 
     configureModalAutofocus(this.el);
-    configureModalCanDismiss(this.el, () => !this.areEqual(initialRecipe, this.recipe) || (this.imageInput?.files?.length ?? 0) > 0);
+    configureModalCanDismiss(this.el, async () => {
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+      this.recipe = {
+        ...this.recipe,
+        name: this.nameInput.value as string,
+        servingSize: this.servingSizeInput.value as string,
+        time: this.timeInput.value as string,
+        sourceUrl: this.sourceUrlInput.value as string,
+        ingredients: toStorageHtml(this.el, await this.ingredientsInput.getValue()),
+        directions: toStorageHtml(this.el, await this.directionsInput.getValue()),
+        storageInstructions: toStorageHtml(this.el, await this.storageInput.getValue()),
+        nutritionInfo: toStorageHtml(this.el, await this.nutritionInput.getValue()),
+      }
+
+      return !this.areEqual(initialRecipe, this.recipe) || (this.imageInput?.files?.length ?? 0) > 0;
+    });
 
     this.currentUserSettings = await trap(api.loadUserSettings, null);
   }
@@ -68,7 +91,8 @@ export class RecipeEditor {
                 spellcheck
                 required
                 autofocus
-                onIonInput={e => this.recipe = { ...this.recipe, name: e.detail.value as string }} />
+                onIonChange={e => this.recipe = { ...this.recipe, name: e.detail.value as string }}
+                ref={el => this.nameInput = el!} />
             </ion-item>
             {isNull(this.recipe?.id) &&
               <ion-item lines="full">
@@ -82,39 +106,46 @@ export class RecipeEditor {
               <ion-input label="Serving Size" label-placement="stacked" value={this.recipe?.servingSize}
                 autocorrect="on"
                 spellcheck
-                onIonInput={e => this.recipe = { ...this.recipe, servingSize: e.detail.value as string }} />
+                onIonChange={e => this.recipe = { ...this.recipe, servingSize: e.detail.value as string }}
+                ref={el => this.servingSizeInput = el!} />
             </ion-item>
             <ion-item lines="full">
               <ion-input label="Time" label-placement="stacked" value={this.recipe?.time}
                 autocorrect="on"
                 spellcheck
-                onIonInput={e => this.recipe = { ...this.recipe, time: e.detail.value as string }} />
+                onIonChange={e => this.recipe = { ...this.recipe, time: e.detail.value as string }}
+                ref={el => this.timeInput = el!} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Ingredients" label-placement="stacked"
                 value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id, false)}
-                onValueChanged={e => this.recipe = { ...this.recipe, ingredients: toStorageHtml(this.el, e.detail) }} />
+                onValueChanged={e => this.recipe = { ...this.recipe, ingredients: toStorageHtml(this.el, e.detail) }}
+                ref={el => this.ingredientsInput = el!} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Directions" label-placement="stacked"
                 value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id, false)}
                 images={this.recipeImages.map(name => ({ name, url: getRecipeThumbnailUrl(this.recipe?.id, name) }))}
-                onValueChanged={e => this.recipe = { ...this.recipe, directions: toStorageHtml(this.el, e.detail) }} />
+                onValueChanged={e => this.recipe = { ...this.recipe, directions: toStorageHtml(this.el, e.detail) }}
+                ref={el => this.directionsInput = el!} />
             </ion-item>
             <ion-item lines="full">
               <html-editor label="Storage Instructions" label-placement="stacked"
                 value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id, false)}
-                onValueChanged={e => this.recipe = { ...this.recipe, storageInstructions: toStorageHtml(this.el, e.detail) }} />
+                onValueChanged={e => this.recipe = { ...this.recipe, storageInstructions: toStorageHtml(this.el, e.detail) }}
+                ref={el => this.storageInput = el!} />
             </ion-item>
             <ion-item lines="full">
               <html-editor label="Nutrition" label-placement="stacked"
                 value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id, false)}
-                onValueChanged={e => this.recipe = { ...this.recipe, nutritionInfo: toStorageHtml(this.el, e.detail) }} />
+                onValueChanged={e => this.recipe = { ...this.recipe, nutritionInfo: toStorageHtml(this.el, e.detail) }}
+                ref={el => this.nutritionInput = el!} />
             </ion-item>
             <ion-item lines="full">
               <ion-input label="Source" label-placement="stacked" value={this.recipe?.sourceUrl}
                 inputmode="url"
-                onIonInput={e => this.recipe = { ...this.recipe, sourceUrl: e.detail.value as string }} />
+                onIonChange={e => this.recipe = { ...this.recipe, sourceUrl: e.detail.value as string }}
+                ref={el => this.sourceUrlInput = el!} />
             </ion-item>
             <ion-item lines="full">
               <tags-input label="Tags" label-placement="stacked" value={this.recipe?.tags}
@@ -137,11 +168,11 @@ export class RecipeEditor {
     await dismissContainingModal(this.el, {
       recipe: this.recipe,
       file: (this.imageInput?.files?.length ?? 0) > 0 ? this.imageInput?.files?.[0] : null
-    });
+    }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el);
+    await dismissContainingModal(this.el, undefined, 'cancel');
   }
 
   private areEqual(a: Recipe, b: Recipe) {

@@ -54,11 +54,11 @@ export class FileUploadBrowser {
 
     await dismissContainingModal(this.el, {
       file: (this.fileInput?.files?.length ?? 0) > 0 ? this.fileInput.files?.[0] : null
-    });
+    }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el);
+    await dismissContainingModal(this.el, undefined, 'cancel');
   }
 
 }

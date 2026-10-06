@@ -19,14 +19,24 @@ export class UserEditor {
 
   @Element() el!: HTMLUserEditorElement;
   private form!: HTMLFormElement;
+  private usernameInput!: HTMLIonInputElement;
+  private passwordInput!: HTMLIonInputElement;
   private repeatPasswordInput!: HTMLIonInputElement;
 
   connectedCallback() {
     const initialUser = { ...this.user };
 
     configureModalAutofocus(this.el);
-    configureModalCanDismiss(this.el, () =>
-      this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel);
+    configureModalCanDismiss(this.el, () => {
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+      this.user = {
+        ...this.user,
+        username: this.usernameInput.value as string
+      };
+
+      return this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel ||
+        this.passwordInput.value !== '' || this.repeatPasswordInput.value !== '';
+    });
   }
 
   render() {
@@ -48,7 +58,8 @@ export class UserEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item lines="full">
               <ion-input label="Email" label-placement="stacked" type="email" value={this.user?.username ?? ''} disabled={!isNull(this.user?.id)}
-                onIonInput={e => this.user = { ...this.user, username: e.detail.value as string }}
+                onIonChange={e => this.user = { ...this.user, username: e.detail.value as string }}
+                ref={el => this.usernameInput = el!}
                 required
                 autofocus />
             </ion-item>
@@ -64,7 +75,8 @@ export class UserEditor {
               <ion-item lines="full">
                 <ion-input label="Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
-                  onIonInput={e => this.password = e.detail.value as string}
+                  onIonChange={e => this.password = e.detail.value as string}
+                  ref={el => this.passwordInput = el!}
                   required />
               </ion-item>
             }
@@ -72,7 +84,7 @@ export class UserEditor {
               <ion-item lines="full">
                 <ion-input label="Confirm Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
-                  onIonInput={e => this.repeatPassword = e.detail.value as string}
+                  onIonChange={e => this.repeatPassword = e.detail.value as string}
                   ref={el => this.repeatPasswordInput = el!}
                   required />
               </ion-item>
@@ -95,13 +107,13 @@ export class UserEditor {
       await dismissContainingModal(this.el, {
         user: this.user,
         password: this.password
-      });
+      }, 'save');
     } else {
-      await dismissContainingModal(this.el, { user: this.user });
+      await dismissContainingModal(this.el, { user: this.user }, 'save');
     }
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el);
+    await dismissContainingModal(this.el, undefined, 'cancel');
   }
 }

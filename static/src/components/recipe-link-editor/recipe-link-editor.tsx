@@ -48,7 +48,7 @@ export class RecipeLinkEditor {
                 autofocus
                 debounce={500}
                 onIonInput={(e: Event) => this.query = (e.currentTarget as HTMLIonInputElement).value as string}
-                ref={(el: HTMLIonInputElement) => this.searchInput = el} />
+                ref={el => this.searchInput = el!} />
             </ion-item>
             <ion-content>
               <ion-list lines="none">
@@ -121,10 +121,10 @@ export class RecipeLinkEditor {
       return;
     }
 
-    await dismissContainingModal(this.el, { recipeId: this.selectedRecipeId });
+    await dismissContainingModal(this.el, { recipeId: this.selectedRecipeId }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el);
+    await dismissContainingModal(this.el, undefined, 'cancel');
   }
 }
