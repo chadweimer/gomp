@@ -34,7 +34,11 @@ export class SearchFilterEditor {
 
     this.parentModal = getContainingModal(this.el);
     if (this.parentModal) {
-      configureModalCanDismiss(this.parentModal, () => {
+      configureModalCanDismiss(this.parentModal, (_data?: unknown, role?: string) => {
+        if (role === 'save') {
+          return false;
+        }
+
         // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
         if (this.nameInput) {
           this.name = this.nameInput.value as string;

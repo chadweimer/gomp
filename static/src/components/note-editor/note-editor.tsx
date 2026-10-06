@@ -23,7 +23,11 @@ export class NoteEditor {
 
     this.parentModal = getContainingModal(this.el);
     if (this.parentModal) {
-      configureModalCanDismiss(this.parentModal, async () => {
+      configureModalCanDismiss(this.parentModal, async (_data?: unknown, role?: string) => {
+        if (role === 'save') {
+          return false;
+        }
+
         // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
         this.note = {
           ...this.note,

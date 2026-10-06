@@ -1,7 +1,8 @@
 import { actionSheetController, ActionSheetOptions, alertController, AlertOptions, ComponentRef, loadingController, modalController, ModalOptions, OverlayEventDetail, toastController } from "@ionic/core";
 
+const dismissingModals = new WeakMap<HTMLElement, boolean>();
 async function present<T = unknown>(
-  presenter: {
+  presenter: HTMLElement & {
     present: () => Promise<void>,
     dismiss: (data?: unknown, role?: string) => Promise<boolean>,
     onDidDismiss: () => Promise<OverlayEventDetail<T>>
@@ -10,7 +11,9 @@ async function present<T = unknown>(
 ) {
   const onPopState = async () => {
     globalThis.history.pushState({ modal: true }, '');
-    await presenter.dismiss(undefined, cancelRole);
+    if (!dismissingModals.get(presenter)) {
+      await presenter.dismiss(undefined, cancelRole);
+    }
   };
 
   let pushedState = false;
@@ -43,6 +46,71 @@ export async function showModal<T = unknown>(options: ModalOptions<ComponentRef>
   }
 }
 
+export function configureModalCanDismiss(
+  modal: HTMLIonModalElement,
+  isDirty: (data?: unknown, role?: string) => boolean | Promise<boolean>
+) {
+  modal.canDismiss = async (data?: unknown, role?: string) => {
+    dismissingModals.set(modal, true);
+    try {
+      // Dismiss immediately if the modal is no longer attached to the DOM.
+      if (modal.parentNode == null || (modal.presentingElement && modal.presentingElement?.parentElement === null)) {
+        return true;
+      }
+
+      let isDirtyResult = isDirty(data, role);
+      if (typeof isDirtyResult !== 'boolean') {
+        isDirtyResult = await isDirtyResult;
+      }
+      if (isDirtyResult) {
+        const { role: alertRole } = await showAlert({
+          header: 'Discard Changes?',
+          message: 'You have unsaved changes. Are you sure you want to discard them?',
+          buttons: [
+            { text: 'Continue Editing', role: 'cancel' },
+            { text: 'Discard Changes', role: 'destructive' },
+          ],
+        });
+        return alertRole === 'destructive';
+      }
+    } catch (ex) {
+      console.error(ex);
+    } finally {
+      dismissingModals.delete(modal);
+    }
+    return true;
+  };
+}
+
+export function getContainingModal(el: HTMLElement) {
+  return el.closest('ion-modal');
+}
+
+export function performAutofocus(this: HTMLIonModalElement) {
+  // Get the component displayed on the modal.
+  let component: Element | null = null;
+  if (typeof this.component === 'string') {
+    component = this.querySelector(this.component);
+  } else if (this.component instanceof HTMLElement) {
+    component = this.component;
+  }
+
+  // Check the shadow DOM first, then the light DOM, and finally the component itself.
+  let focusEl = component?.shadowRoot?.querySelector('[autofocus]') || component?.querySelector('[autofocus]') || component;
+
+  // WORKAROUND: If the component is an HTML-EDITOR,
+  // focus on the editor content instead of the editor itself.
+  if (focusEl?.tagName === 'HTML-EDITOR') {
+    focusEl = focusEl.querySelector('.editor-content');
+  }
+
+  if (focusEl instanceof HTMLElement) {
+    focusEl.focus();
+  }
+
+  this.removeEventListener('focus', performAutofocus);
+}
+
 export async function showAlert<T = unknown>(options: AlertOptions, cancelRole = 'cancel') {
   const alert = await alertController.create(options);
   return await present<T>(alert, cancelRole);
@@ -68,78 +136,6 @@ export async function showLoading(action: () => Promise<void>, message = 'Please
   } finally {
     await loading.dismiss();
   }
-}
-
-export function getContainingModal(el: HTMLElement) {
-  return el.closest('ion-modal');
-}
-
-function performAutofocus(this: HTMLIonModalElement) {
-  // Get the component displayed on the modal.
-  let component: Element | null = null;
-  if (typeof this.component === 'string') {
-    component = this.querySelector(this.component);
-  } else if (this.component instanceof HTMLElement) {
-    component = this.component;
-  }
-
-  // Check the shadow DOM first, then the light DOM, and finally the component itself.
-  let focusEl = component?.shadowRoot?.querySelector('[autofocus]') || component?.querySelector('[autofocus]') || component;
-
-  // WORKAROUND: If the component is an HTML-EDITOR,
-  // focus on the editor content instead of the editor itself.
-  if (focusEl?.tagName === 'HTML-EDITOR') {
-    focusEl = focusEl.querySelector('.editor-content');
-  }
-
-  if (focusEl instanceof HTMLElement) {
-    focusEl.focus();
-  }
-
-  this.removeEventListener('focus', performAutofocus);
-}
-
-export function dismissContainingModal(el: HTMLElement, data?: unknown, role?: string) {
-  return getContainingModal(el)?.dismiss(data, role);
-}
-
-export function configureModalCanDismiss(
-  modal: HTMLIonModalElement,
-  isDirty: (data?: unknown, role?: string) => boolean | Promise<boolean>,
-  destructiveRoles: string[] = ['cancel']
-) {
-  modal.canDismiss = async (data?: unknown, role?: string) => {
-    // Dismiss immediately if the modal is no longer attached to the DOM.
-    if (modal.parentNode == null || (modal.presentingElement && modal.presentingElement?.parentElement === null)) {
-      return true;
-    }
-
-    // Only check if the component is dirty for a destructive operation
-    if (role && !destructiveRoles.includes(role)) {
-      return true;
-    }
-
-    try {
-      let isDirtyResult = isDirty(data, role);
-      if (typeof isDirtyResult !== 'boolean') {
-        isDirtyResult = await isDirtyResult;
-      }
-      if (isDirtyResult) {
-        const { role: alertRole } = await showAlert({
-          header: 'Discard Changes?',
-          message: 'You have unsaved changes. Are you sure you want to discard them?',
-          buttons: [
-            { text: 'Continue Editing', role: 'cancel' },
-            { text: 'Discard Changes', role: 'destructive' },
-          ],
-        });
-        return alertRole === 'destructive';
-      }
-    } catch (ex) {
-      console.error(ex);
-    }
-    return true;
-  };
 }
 
 export type ResultsPerPage = 24 | 36 | 60 | 96 | 120;
