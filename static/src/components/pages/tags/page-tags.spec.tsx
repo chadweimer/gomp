@@ -174,7 +174,7 @@ describe('page-tags', () => {
 
     const alert = {
       present: vi.fn().mockResolvedValue(undefined),
-      dismiss: vi.fn().mockRejectedValue(true),
+      dismiss: vi.fn().mockResolvedValue(true),
       onDidDismiss: vi.fn().mockResolvedValue({ data: { values: 24 }, role: 'confirm' }),
     } as unknown as HTMLIonAlertElement;
     const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
