@@ -186,6 +186,6 @@ export class SearchFilterEditor {
       a.sortDir === b.sortDir &&
       JSON.stringify(a.fields) === JSON.stringify(b.fields) &&
       JSON.stringify(a.states) === JSON.stringify(b.states) &&
-      JSON.stringify(a.tags?.toSorted()) === JSON.stringify(b.tags?.toSorted());
+      JSON.stringify(a.tags?.sort()) === JSON.stringify(b.tags?.sort());
   }
 }
