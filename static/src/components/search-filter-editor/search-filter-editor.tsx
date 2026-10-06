@@ -24,7 +24,7 @@ export class SearchFilterEditor {
 
   @Element() el!: HTMLSearchFilterEditorElement;
   private form!: HTMLFormElement;
-  private nameInput!: HTMLIonInputElement;
+  private nameInput?: HTMLIonInputElement;
   private queryInput!: HTMLIonInputElement;
 
   async connectedCallback() {
@@ -34,7 +34,9 @@ export class SearchFilterEditor {
     configureModalAutofocus(this.el);
     configureModalCanDismiss(this.el, () => {
       // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-      this.name = this.nameInput.value as string;
+      if (this.nameInput) {
+        this.name = this.nameInput.value as string;
+      }
       this.searchFilter = {
         ...this.searchFilter,
         query: this.queryInput.value as string
@@ -200,6 +202,6 @@ export class SearchFilterEditor {
       a.sortDir === b.sortDir &&
       JSON.stringify(a.fields) === JSON.stringify(b.fields) &&
       JSON.stringify(a.states) === JSON.stringify(b.states) &&
-      JSON.stringify(a.tags?.sort()) === JSON.stringify(b.tags?.sort());
+      JSON.stringify(a.tags?.toSorted((a, b) => a.localeCompare(b))) === JSON.stringify(b.tags?.toSorted((a, b) => a.localeCompare(b)));
   }
 }
