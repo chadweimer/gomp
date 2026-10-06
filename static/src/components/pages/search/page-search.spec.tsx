@@ -1,6 +1,6 @@
 import { render, h, describe, it, expect, beforeEach, afterEach } from '@stencil/vitest';
 import { vi } from 'vitest';
-import { AlertButton, alertController, loadingController, modalController, toastController } from '@ionic/core';
+import { alertController, loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { AccessLevel, Recipe, RecipeCompact, RecipeState, SearchResult, SortBy, SortDir } from '../../../helpers/schema.gen';
 import { SearchViewMode, SwipeDirection } from '../../../models';
@@ -578,9 +578,10 @@ describe('page-search', () => {
 
     it('opens results per page alert and updates state on OK confirmation', async () => {
       state.searchResultsPerPage = 36;
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert());
+      const alert = mockAlert({ values: 60 }, 'confirm');
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
-      const { root } = await render(<page-search />);
+      const { root, waitForChanges } = await render(<page-search />);
       const resultsPerPageBtn = root.querySelectorAll('ion-header ion-button')[4] as HTMLIonButtonElement;
       expect(resultsPerPageBtn).toHaveTextContent('36');
 
@@ -595,11 +596,8 @@ describe('page-search', () => {
       expect(alertOptions.inputs?.[2].value).toBe(60);
       expect(alertOptions.inputs?.[2].checked).toBe(false);
 
-      const okButton = alertOptions.buttons?.find(b => typeof b === 'object' && b.text === 'OK') as AlertButton;
-      expect(okButton).toBeDefined();
-
-      const handler = okButton.handler as (val: number) => void;
-      handler(60);
+      await alert.dismiss();
+      await waitForChanges();
 
       expect(state.searchResultsPerPage).toBe(60);
     });

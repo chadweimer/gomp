@@ -1,6 +1,6 @@
 import { render, h, describe, it, expect, beforeEach, afterEach } from '@stencil/vitest';
 import { vi } from 'vitest';
-import { AlertButton, alertController } from '@ionic/core';
+import { alertController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { TagSearchResult, TagSortBy, SortDir } from '../../../helpers/schema.gen';
 import { SwipeDirection } from '../../../models';
@@ -172,9 +172,12 @@ describe('page-tags', () => {
       return { status: 404 };
     });
 
-    const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue({
+    const alert = {
       present: vi.fn().mockResolvedValue(undefined),
-    } as unknown as HTMLIonAlertElement);
+      dismiss: vi.fn().mockRejectedValue(true),
+      onDidDismiss: vi.fn().mockResolvedValue({ data: { values: 24 }, role: 'confirm' }),
+    } as unknown as HTMLIonAlertElement;
+    const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
     const { root, waitForChanges } = await render(<page-tags />);
     const buttons = root.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
@@ -186,12 +189,7 @@ describe('page-tags', () => {
 
     expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Results Per Page' }));
 
-    const alertOptions = createAlertSpy.mock.calls[0][0];
-    const okButton = alertOptions.buttons?.find(b => typeof b === 'object' && b.text === 'OK') as AlertButton;
-    expect(okButton).toBeDefined();
-
-    const handler = okButton.handler as (val: number) => void;
-    handler(24);
+    await alert.dismiss();
     await waitForChanges();
 
     expect(requestedCount).toBe('24');

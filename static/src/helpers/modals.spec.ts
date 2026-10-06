@@ -11,9 +11,12 @@ describe('modals', () => {
 
     it('creates alert with default options and marks currentValue as checked', async () => {
       const presentMock = vi.fn().mockResolvedValue(undefined);
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue({
+      const alert = {
         present: presentMock,
-      } as unknown as HTMLIonAlertElement);
+        dismiss: vi.fn().mockResolvedValue(true),
+        onDidDismiss: vi.fn().mockResolvedValue({ data: { values: 96 }, role: 'confirm' })
+      } as unknown as HTMLIonAlertElement;
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
       const onSelect = vi.fn();
       await showResultsPerPageAlert(60, onSelect);
@@ -37,8 +40,8 @@ describe('modals', () => {
       const okButton = alertOptions.buttons?.find(b => typeof b === 'object' && b.text === 'OK') as AlertButton;
       expect(okButton).toBeDefined();
 
-      const handler = okButton.handler as (val: number) => void;
-      handler(96);
+      await alert.dismiss();
+
       expect(onSelect).toHaveBeenCalledWith(96);
     });
 
@@ -46,6 +49,7 @@ describe('modals', () => {
       const presentMock = vi.fn().mockResolvedValue(undefined);
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue({
         present: presentMock,
+        onDidDismiss: vi.fn().mockResolvedValue(true)
       } as unknown as HTMLIonAlertElement);
 
       const onSelect = vi.fn();
@@ -57,6 +61,8 @@ describe('modals', () => {
       expect(alertOptions.inputs?.[0].checked).toBe(true);
       expect(alertOptions.inputs?.[1].value).toBe(20);
       expect(alertOptions.inputs?.[1].checked).toBe(false);
+      expect(alertOptions.inputs?.[2].value).toBe(50);
+      expect(alertOptions.inputs?.[2].checked).toBe(false);
     });
   });
 });

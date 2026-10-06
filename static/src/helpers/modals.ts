@@ -122,24 +122,14 @@ export function configureModalCanDismiss(el: HTMLElement, isDirty: (data?: unkno
           isDirtyResult = await isDirtyResult;
         }
         if (isDirtyResult) {
-          const alert = await alertController.create({
+          const { role: alertRole } = await showAlert({
             header: 'Discard Changes?',
             message: 'You have unsaved changes. Are you sure you want to discard them?',
             buttons: [
-              {
-                text: 'Continue Editing',
-                role: 'cancel',
-              },
-              {
-                text: 'Discard Changes',
-                role: 'destructive',
-              },
+              { text: 'Continue Editing', role: 'cancel' },
+              { text: 'Discard Changes', role: 'destructive' },
             ],
           });
-
-          await alert.present();
-
-          const { role: alertRole } = await alert.onDidDismiss();
           return alertRole === 'destructive';
         }
       } catch (ex) {
@@ -157,7 +147,7 @@ export async function showResultsPerPageAlert<T extends number = ResultsPerPage>
   onSelect: (count: T) => void,
   options: readonly T[] = DEFAULT_RESULTS_PER_PAGE_OPTIONS as readonly T[],
 ): Promise<void> {
-  const menu = await alertController.create({
+  const { data, role } = await showAlert<{ values: T }>({
     header: 'Results Per Page',
     inputs: options.map(item => ({
       type: 'radio',
@@ -166,15 +156,12 @@ export async function showResultsPerPageAlert<T extends number = ResultsPerPage>
       checked: currentValue === item,
     })),
     buttons: [
-      {
-        text: 'Cancel',
-        role: 'cancel',
-      },
-      {
-        text: 'OK',
-        handler: (count: T) => onSelect(count),
-      },
+      { text: 'Cancel', role: 'cancel' },
+      { text: 'OK', role: 'confirm' },
     ],
   });
-  await menu.present();
+
+  if (role === 'confirm') {
+    onSelect(data?.values ?? currentValue)
+  }
 }
