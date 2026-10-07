@@ -22,7 +22,6 @@ export class HTMLEditor {
   @State() isOrderedListActive: boolean = false;
   @State() isUnorderedListActive: boolean = false;
   @State() isImagePickerOpen: boolean = false;
-  @State() activeHeading: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | null = null;
 
   private editorContentRef!: HTMLElement;
   private savedRange: Range | null = null;
@@ -175,7 +174,6 @@ export class HTMLEditor {
     this.isUnderlineActive = false;
     this.isOrderedListActive = false;
     this.isUnorderedListActive = false;
-    this.activeHeading = null;
 
     // Handle being inside a parent's shadow DOM
     let activeElement = this.el.ownerDocument.activeElement;
@@ -194,15 +192,6 @@ export class HTMLEditor {
       this.isUnderlineActive = this.el.ownerDocument.queryCommandState('underline');
       this.isOrderedListActive = this.el.ownerDocument.queryCommandState('insertOrderedList');
       this.isUnorderedListActive = this.el.ownerDocument.queryCommandState('insertUnorderedList');
-
-      // Check if a heading is active
-      const headingValue = this.el.ownerDocument.queryCommandValue('formatBlock');
-      if (!isNull(headingValue) && headingValue.startsWith('h')) {
-        const headingLevel = headingValue.slice(1);
-        if (['1', '2', '3', '4', '5', '6'].includes(headingLevel)) {
-          this.activeHeading = `h${headingLevel}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-        }
-      }
     }
   }
 
