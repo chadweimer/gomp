@@ -45,28 +45,26 @@ export class RecipeEditor {
     const initialRecipe = { ...this.recipe };
 
     this.parentModal = getContainingModal(this.el);
-    if (this.parentModal) {
-      configureModalCanDismiss(this.parentModal, async (_data?: unknown, role?: string) => {
-        if (role === 'save') {
-          return false;
-        }
+    configureModalCanDismiss(this.parentModal, async (_data?: unknown, role?: string) => {
+      if (role === 'save') {
+        return false;
+      }
 
-        // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-        this.recipe = {
-          ...this.recipe,
-          name: this.nameInput.value as string,
-          servingSize: this.servingSizeInput.value as string,
-          time: this.timeInput.value as string,
-          sourceUrl: this.sourceUrlInput.value as string,
-          ingredients: toStorageHtml(this.el, await this.ingredientsInput.getValue()),
-          directions: toStorageHtml(this.el, await this.directionsInput.getValue()),
-          storageInstructions: toStorageHtml(this.el, await this.storageInput.getValue()),
-          nutritionInfo: toStorageHtml(this.el, await this.nutritionInput.getValue()),
-        }
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+      this.recipe = {
+        ...this.recipe,
+        name: this.nameInput.value as string,
+        servingSize: this.servingSizeInput.value as string,
+        time: this.timeInput.value as string,
+        sourceUrl: this.sourceUrlInput.value as string,
+        ingredients: toStorageHtml(this.el, await this.ingredientsInput.getValue()),
+        directions: toStorageHtml(this.el, await this.directionsInput.getValue()),
+        storageInstructions: toStorageHtml(this.el, await this.storageInput.getValue()),
+        nutritionInfo: toStorageHtml(this.el, await this.nutritionInput.getValue()),
+      }
 
-        return !this.areEqual(initialRecipe, this.recipe) || (this.imageInput?.files?.length ?? 0) > 0;
-      });
-    }
+      return !this.areEqual(initialRecipe, this.recipe) || (this.imageInput?.files?.length ?? 0) > 0;
+    });
 
     this.currentUserSettings = await trap(api.loadUserSettings, null);
   }

@@ -28,22 +28,20 @@ export class UserEditor {
     const initialUser = { ...this.user };
 
     this.parentModal = getContainingModal(this.el);
-    if (this.parentModal) {
-      configureModalCanDismiss(this.parentModal, (_data?: unknown, role?: string) => {
-        if (role === 'save') {
-          return false;
-        }
+    configureModalCanDismiss(this.parentModal, (_data?: unknown, role?: string) => {
+      if (role === 'save') {
+        return false;
+      }
 
-        // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-        this.user = {
-          ...this.user,
-          username: this.usernameInput.value as string
-        };
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+      this.user = {
+        ...this.user,
+        username: this.usernameInput.value as string
+      };
 
-        return this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel ||
-          this.passwordInput.value !== '' || this.repeatPasswordInput.value !== '';
-      });
-    }
+      return this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel ||
+        this.passwordInput.value !== '' || this.repeatPasswordInput.value !== '';
+    });
   }
 
   render() {

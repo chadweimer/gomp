@@ -307,5 +307,23 @@ describe('modals', () => {
       expect(consoleErrorSpy).toHaveBeenCalled();
       expect(canDismiss).toBe(true);
     });
+
+    it('gracefully handles a null modal', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+
+      const isDirty = vi.fn();
+      expect(() => configureModalCanDismiss(undefined, isDirty)).not.toThrow();
+
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it('gracefully handles an undefined modal', () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+
+      const isDirty = vi.fn();
+      expect(() => configureModalCanDismiss(undefined, isDirty)).not.toThrow();
+
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
   });
 });

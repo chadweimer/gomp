@@ -22,21 +22,19 @@ export class NoteEditor {
     const initialNote = { ...this.note };
 
     this.parentModal = getContainingModal(this.el);
-    if (this.parentModal) {
-      configureModalCanDismiss(this.parentModal, async (_data?: unknown, role?: string) => {
-        if (role === 'save') {
-          return false;
-        }
+    configureModalCanDismiss(this.parentModal, async (_data?: unknown, role?: string) => {
+      if (role === 'save') {
+        return false;
+      }
 
-        // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-        this.note = {
-          ...this.note,
-          text: toStorageHtml(this.el, await this.textInput?.getValue())
-        };
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+      this.note = {
+        ...this.note,
+        text: toStorageHtml(this.el, await this.textInput?.getValue())
+      };
 
-        return this.note.text !== initialNote.text;
-      });
-    }
+      return this.note.text !== initialNote.text;
+    });
   }
 
   render() {

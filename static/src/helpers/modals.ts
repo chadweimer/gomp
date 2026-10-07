@@ -47,9 +47,13 @@ export async function showModal<T = unknown>(options: ModalOptions<ComponentRef>
 }
 
 export function configureModalCanDismiss(
-  modal: HTMLIonModalElement,
+  modal: HTMLIonModalElement | null | undefined,
   isDirty: (data?: unknown, role?: string) => boolean | Promise<boolean>
 ) {
+  if (!modal) {
+    return
+  }
+
   modal.canDismiss = async (data?: unknown, role?: string) => {
     dismissingModals.set(modal, true);
     try {
