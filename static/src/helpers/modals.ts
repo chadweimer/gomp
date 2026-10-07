@@ -91,13 +91,9 @@ export function performAutofocus(this: HTMLIonModalElement) {
   }
 
   // Check the shadow DOM first, then the light DOM, and finally the component itself.
-  let focusEl = component?.shadowRoot?.querySelector('[autofocus]') || component?.querySelector('[autofocus]') || component;
-
-  // WORKAROUND: If the component is an HTML-EDITOR,
-  // focus on the editor content instead of the editor itself.
-  if (focusEl?.tagName === 'HTML-EDITOR') {
-    focusEl = focusEl.querySelector('.editor-content');
-  }
+  const focusEl = component?.shadowRoot?.querySelector('[autofocus]')
+    || component?.querySelector('[autofocus]')
+    || component;
 
   if (focusEl instanceof HTMLElement) {
     focusEl.focus();

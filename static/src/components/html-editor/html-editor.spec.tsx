@@ -155,4 +155,41 @@ describe('html-editor', () => {
     expect(root.querySelector('.image-picker-panel')).toBeNull();
     outsideEl.remove();
   });
+
+  it('delegates focus to .editor-content when html-editor receives focus', async () => {
+    const { root } = await render(<html-editor />);
+    const editorContent = root.querySelector('.editor-content') as HTMLElement;
+    expect(editorContent).not.toBeNull();
+
+    const focusSpy = vi.spyOn(editorContent, 'focus');
+
+    root.focus();
+
+    expect(focusSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('delegates focus to .editor-content on focus event', async () => {
+    const { root } = await render(<html-editor />);
+    const editorContent = root.querySelector('.editor-content') as HTMLElement;
+    expect(editorContent).not.toBeNull();
+
+    const focusSpy = vi.spyOn(editorContent, 'focus');
+
+    root.dispatchEvent(new FocusEvent('focus'));
+
+    expect(focusSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not re-delegate focus when a child element receives focus', async () => {
+    const { root } = await render(<html-editor />);
+    const editorContent = root.querySelector('.editor-content') as HTMLElement;
+    expect(editorContent).not.toBeNull();
+
+    const focusSpy = vi.spyOn(editorContent, 'focus');
+
+    editorContent.dispatchEvent(new FocusEvent('focus'));
+
+    expect(focusSpy).not.toHaveBeenCalled();
+  });
 });
+

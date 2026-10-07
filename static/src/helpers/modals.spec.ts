@@ -132,54 +132,6 @@ describe('modals', () => {
       expect(removeEventListenerSpy).toHaveBeenCalledWith('focus', performAutofocus);
     });
 
-    it('focuses .editor-content when the autofocus target is an HTML-EDITOR element', () => {
-      const modal = document.createElement('ion-modal') as unknown as HTMLIonModalElement;
-      const removeEventListenerSpy = vi.spyOn(modal, 'removeEventListener');
-
-      const htmlEditor = document.createElement('html-editor');
-      const editorContent = document.createElement('div');
-      editorContent.className = 'editor-content';
-      htmlEditor.appendChild(editorContent);
-      const focusSpy = vi.spyOn(editorContent, 'focus');
-
-      modal.component = htmlEditor;
-      performAutofocus.call(modal);
-
-      expect(focusSpy).toHaveBeenCalledTimes(1);
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('focus', performAutofocus);
-    });
-
-    it('focuses .editor-content when a child HTML-EDITOR has the autofocus attribute', () => {
-      const modal = document.createElement('ion-modal') as unknown as HTMLIonModalElement;
-      const removeEventListenerSpy = vi.spyOn(modal, 'removeEventListener');
-
-      const component = document.createElement('div');
-      const htmlEditor = document.createElement('html-editor');
-      htmlEditor.setAttribute('autofocus', '');
-      const editorContent = document.createElement('div');
-      editorContent.className = 'editor-content';
-      htmlEditor.appendChild(editorContent);
-      component.appendChild(htmlEditor);
-      const focusSpy = vi.spyOn(editorContent, 'focus');
-
-      modal.component = component;
-      performAutofocus.call(modal);
-
-      expect(focusSpy).toHaveBeenCalledTimes(1);
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('focus', performAutofocus);
-    });
-
-    it('does not call focus when HTML-EDITOR has no .editor-content element', () => {
-      const modal = document.createElement('ion-modal') as unknown as HTMLIonModalElement;
-      const removeEventListenerSpy = vi.spyOn(modal, 'removeEventListener');
-
-      const htmlEditor = document.createElement('html-editor');
-      modal.component = htmlEditor;
-      performAutofocus.call(modal);
-
-      expect(removeEventListenerSpy).toHaveBeenCalledWith('focus', performAutofocus);
-    });
-
     it('handles missing component when string selector does not match', () => {
       const modal = document.createElement('ion-modal') as unknown as HTMLIonModalElement;
       const removeEventListenerSpy = vi.spyOn(modal, 'removeEventListener');
