@@ -53,11 +53,6 @@ export function configureModalCanDismiss(
   modal.canDismiss = async (data?: unknown, role?: string) => {
     dismissingModals.set(modal, true);
     try {
-      // Dismiss immediately if the modal is no longer attached to the DOM.
-      if (modal.parentNode == null || (modal.presentingElement && modal.presentingElement?.parentElement === null)) {
-        return true;
-      }
-
       let isDirtyResult = isDirty(data, role);
       if (typeof isDirtyResult !== 'boolean') {
         isDirtyResult = await isDirtyResult;

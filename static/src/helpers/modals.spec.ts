@@ -232,29 +232,6 @@ describe('modals', () => {
       vi.restoreAllMocks();
     });
 
-    it('returns true immediately without checking isDirty if modal has no parentNode', async () => {
-      const isDirty = vi.fn().mockReturnValue(true);
-      configureModalCanDismiss(modal, isDirty);
-
-      const canDismiss = await callCanDismiss(modal, undefined, 'cancel');
-
-      expect(canDismiss).toBe(true);
-      expect(isDirty).not.toHaveBeenCalled();
-    });
-
-    it('returns true immediately without checking isDirty if presentingElement is detached from DOM', async () => {
-      document.body.appendChild(modal);
-      modal.presentingElement = document.createElement('div');
-
-      const isDirty = vi.fn().mockReturnValue(true);
-      configureModalCanDismiss(modal, isDirty);
-
-      const canDismiss = await callCanDismiss(modal, undefined, 'cancel');
-
-      expect(canDismiss).toBe(true);
-      expect(isDirty).not.toHaveBeenCalled();
-    });
-
     it('checks isDirty when presentingElement is attached to DOM', async () => {
       document.body.appendChild(modal);
       const presentingEl = document.createElement('div');
