@@ -282,3 +282,20 @@ export async function trap<T>(op: () => Promise<T>, failVal: T): Promise<T> {
     return failVal;
   }
 }
+
+export function getAllShadowParents(el: Element): ShadowRoot[] {
+  const shadows: ShadowRoot[] = [];
+
+  while (true) {
+    const rootNode = el.getRootNode();
+
+    // If we hit the document, we're done
+    if (!(rootNode instanceof ShadowRoot)) {
+      break;
+    }
+
+    shadows.push(rootNode);
+    el = rootNode.host;
+  }
+  return shadows;
+}
