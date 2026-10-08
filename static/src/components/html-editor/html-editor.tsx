@@ -218,7 +218,7 @@ export class HTMLEditor {
     // by the time we restore the saved range.
     this.editorContentRef.focus();
 
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       const img = createImageElement(this.el, image.name, image.url);
       if (this.savedRange && this.editorContentRef.contains(this.savedRange.commonAncestorContainer)) {
         const selection = this.el.ownerDocument.getSelection();
@@ -242,6 +242,6 @@ export class HTMLEditor {
       this.saveSelection();
       this.updateButtonStates();
       this.valueChanged.emit(this.editorContentRef.innerHTML);
-    });
+    }, 0);
   }
 }
