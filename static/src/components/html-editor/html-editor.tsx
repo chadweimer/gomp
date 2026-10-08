@@ -212,30 +212,36 @@ export class HTMLEditor {
 
   private insertImage(image: { name: string; url: string; }) {
     this.isImagePickerOpen = false;
+
+    // Focus first; the animation frame callback runs AFTER focus has been
+    // committed by Chrome, so the editor owns the document selection
+    // by the time we restore the saved range.
     this.editorContentRef.focus();
 
-    const img = createImageElement(this.el, image.name, image.url);
-    if (this.savedRange && this.editorContentRef.contains(this.savedRange.commonAncestorContainer)) {
-      const selection = this.el.ownerDocument.getSelection();
-      if (selection) {
-        selection.removeAllRanges();
-        selection.addRange(this.savedRange);
-      }
-      this.savedRange.deleteContents();
-      this.savedRange.insertNode(img);
+    requestAnimationFrame(() => {
+      const img = createImageElement(this.el, image.name, image.url);
+      if (this.savedRange && this.editorContentRef.contains(this.savedRange.commonAncestorContainer)) {
+        const selection = this.el.ownerDocument.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(this.savedRange);
+        }
+        this.savedRange.deleteContents();
+        this.savedRange.insertNode(img);
 
-      this.savedRange.setStartAfter(img);
-      this.savedRange.setEndAfter(img);
-      if (selection) {
-        selection.removeAllRanges();
-        selection.addRange(this.savedRange);
+        this.savedRange.setStartAfter(img);
+        this.savedRange.setEndAfter(img);
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(this.savedRange);
+        }
+      } else {
+        this.editorContentRef.appendChild(img);
       }
-    } else {
-      this.editorContentRef.appendChild(img);
-    }
 
-    this.saveSelection();
-    this.updateButtonStates();
-    this.valueChanged.emit(this.editorContentRef.innerHTML);
+      this.saveSelection();
+      this.updateButtonStates();
+      this.valueChanged.emit(this.editorContentRef.innerHTML);
+    });
   }
 }
