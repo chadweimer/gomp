@@ -1,5 +1,5 @@
 import { Component, Element, Event, EventEmitter, h, Host, Listen, Method, Prop, State, Watch } from '@stencil/core';
-import { createImageElement, isNull, isNullOrEmpty } from '../../helpers/utils';
+import { createImageElement, getAllShadowParents, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'html-editor',
@@ -159,11 +159,28 @@ export class HTMLEditor {
 
   private saveSelection() {
     const selection = this.el.ownerDocument.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      if (this.editorContentRef?.contains(range.commonAncestorContainer)) {
-        this.savedRange = range.cloneRange();
+    if (!selection || selection.rangeCount === 0) return;
+
+    let clone = false;
+    let range: Range | null = null;
+    if ("getComposedRanges" in Selection.prototype) {
+      const modernSelection = selection as unknown as {
+        getComposedRanges: (options: { shadowRoots: ShadowRoot[] }) => StaticRange[];
+      };
+      const shadows = getAllShadowParents(this.editorContentRef);
+      const composedRanges = modernSelection.getComposedRanges({ shadowRoots: shadows });
+      if (composedRanges.length > 0) {
+        const staticRange = composedRanges[0];
+        range = this.el.ownerDocument.createRange();
+        range.setStart(staticRange.startContainer, staticRange.startOffset);
+        range.setEnd(staticRange.endContainer, staticRange.endOffset);
       }
+    } else {
+      range = selection.getRangeAt(0);
+      clone = true;
+    }
+    if (range && this.editorContentRef.contains(range.commonAncestorContainer)) {
+      this.savedRange = clone ? range.cloneRange() : range;
     }
   }
 
@@ -229,6 +246,12 @@ export class HTMLEditor {
       if (selection) {
         selection.removeAllRanges();
         selection.addRange(this.savedRange);
+        selection.setBaseAndExtent(
+          this.savedRange.startContainer,
+          this.savedRange.startOffset,
+          this.savedRange.endContainer,
+          this.savedRange.endOffset,
+        );
       }
     } else {
       this.editorContentRef.appendChild(img);
