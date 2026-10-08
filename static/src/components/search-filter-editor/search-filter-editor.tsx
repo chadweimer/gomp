@@ -207,6 +207,6 @@ export class SearchFilterEditor {
       a.sortDir === b.sortDir &&
       JSON.stringify(a.fields) === JSON.stringify(b.fields) &&
       JSON.stringify(a.states) === JSON.stringify(b.states) &&
-      JSON.stringify(a.tags?.toSorted((a, b) => a.localeCompare(b))) === JSON.stringify(b.tags?.toSorted((a, b) => a.localeCompare(b)));
+      JSON.stringify(a.tags.toSorted((a, b) => a.localeCompare(b))) === JSON.stringify(b.tags.toSorted((a, b) => a.localeCompare(b)));
   }
 }
