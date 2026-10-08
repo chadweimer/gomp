@@ -1,4 +1,4 @@
-import { Component, h, Prop, State, Event, Watch, EventEmitter, Element } from '@stencil/core';
+import { Component, Element, Event, EventEmitter, h, Host, Listen, Method, Prop, State, Watch } from '@stencil/core';
 import { createImageElement, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
@@ -22,7 +22,6 @@ export class HTMLEditor {
   @State() isOrderedListActive: boolean = false;
   @State() isUnorderedListActive: boolean = false;
   @State() isImagePickerOpen: boolean = false;
-  @State() activeHeading: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | null = null;
 
   private editorContentRef!: HTMLElement;
   private savedRange: Range | null = null;
@@ -32,21 +31,23 @@ export class HTMLEditor {
     this.updateButtonStates();
   }
 
+  @Listen('selectionchange', { target: 'document' })
+  onSelectionChange() {
+    this.updateButtonStates();
+    this.saveSelection();
+  }
+
   componentWillLoad() {
     this.updateButtonStates();
   }
 
-  componentDidLoad() {
-    this.el.ownerDocument.addEventListener('selectionchange', this.onSelectionChange);
-  }
-
-  disconnectedCallback() {
-    this.el.ownerDocument.removeEventListener('selectionchange', this.onSelectionChange);
-  }
-
   render() {
     return (
-      <div onFocusout={(e: FocusEvent) => this.handleBlur(e)}>
+      <Host
+        tabindex={this.el.getAttribute('tabindex') ?? '-1'}
+        onFocus={(e: FocusEvent) => this.handleFocus(e)}
+        onFocusout={(e: FocusEvent) => this.handleBlur(e)}
+      >
         {!isNullOrEmpty(this.label) && <ion-label position={this.labelPlacement}>{this.label}</ion-label>}
         <ion-toolbar class="editor-toolbar">
           <ion-buttons class="prevent-selection">
@@ -129,14 +130,19 @@ export class HTMLEditor {
           innerHTML={this.value}
         >
         </div>
-      </div>
+      </Host>
     );
   }
 
-  // It's important for this to be a property so that it can be used in the event listeners
-  private readonly onSelectionChange = () => {
-    this.updateButtonStates();
-    this.saveSelection();
+  @Method()
+  getValue(): Promise<string> {
+    return Promise.resolve(this.editorContentRef.innerHTML);
+  }
+
+  private handleFocus(e: FocusEvent) {
+    if (e.target === this.el) {
+      this.editorContentRef?.focus();
+    }
   }
 
   private handleBlur(e: FocusEvent) {
@@ -168,7 +174,6 @@ export class HTMLEditor {
     this.isUnderlineActive = false;
     this.isOrderedListActive = false;
     this.isUnorderedListActive = false;
-    this.activeHeading = null;
 
     // Handle being inside a parent's shadow DOM
     let activeElement = this.el.ownerDocument.activeElement;
@@ -187,15 +192,6 @@ export class HTMLEditor {
       this.isUnderlineActive = this.el.ownerDocument.queryCommandState('underline');
       this.isOrderedListActive = this.el.ownerDocument.queryCommandState('insertOrderedList');
       this.isUnorderedListActive = this.el.ownerDocument.queryCommandState('insertUnorderedList');
-
-      // Check if a heading is active
-      const headingValue = this.el.ownerDocument.queryCommandValue('formatBlock');
-      if (!isNull(headingValue) && headingValue.startsWith('h')) {
-        const headingLevel = headingValue.slice(1);
-        if (['1', '2', '3', '4', '5', '6'].includes(headingLevel)) {
-          this.activeHeading = `h${headingLevel}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-        }
-      }
     }
   }
 

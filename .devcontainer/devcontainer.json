@@ -24,7 +24,8 @@
         "ms-azuretools.vscode-containers",
         "redhat.vscode-yaml",
         "SonarSource.sonarlint-vscode",
-        "tamasfe.even-better-toml"
+        "tamasfe.even-better-toml",
+        "vitest.explorer"
       ]
     }
   },

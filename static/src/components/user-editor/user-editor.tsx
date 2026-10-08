@@ -1,6 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { AccessLevel, User } from '../../helpers/schema.gen';
-import { configureModalAutofocus, dismissContainingModal, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
+import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
+import { insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 
 @Component({
   tag: 'user-editor',
@@ -18,10 +19,29 @@ export class UserEditor {
 
   @Element() el!: HTMLUserEditorElement;
   private form!: HTMLFormElement;
+  private usernameInput!: HTMLIonInputElement;
+  private passwordInput!: HTMLIonInputElement;
   private repeatPasswordInput!: HTMLIonInputElement;
+  private parentModal?: HTMLIonModalElement | null;
 
   connectedCallback() {
-    configureModalAutofocus(this.el);
+    const initialUser = { ...this.user };
+
+    this.parentModal = getContainingModal(this.el);
+    configureModalCanDismiss(this.parentModal, (_data?: unknown, role?: string) => {
+      if (role === 'save') {
+        return false;
+      }
+
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+      this.user = {
+        ...this.user,
+        username: this.usernameInput.value as string
+      };
+
+      return this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel ||
+        this.passwordInput.value !== '' || this.repeatPasswordInput.value !== '';
+    });
   }
 
   render() {
@@ -43,7 +63,8 @@ export class UserEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item lines="full">
               <ion-input label="Email" label-placement="stacked" type="email" value={this.user?.username ?? ''} disabled={!isNull(this.user?.id)}
-                onIonBlur={(e: Event) => this.user = { ...this.user, username: (e.currentTarget as HTMLIonInputElement).value as string }}
+                onIonChange={e => this.user = { ...this.user, username: e.detail.value as string }}
+                ref={el => this.usernameInput = el!}
                 required
                 autofocus />
             </ion-item>
@@ -59,7 +80,8 @@ export class UserEditor {
               <ion-item lines="full">
                 <ion-input label="Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
-                  onIonBlur={(e: Event) => this.password = (e.currentTarget as HTMLIonInputElement).value as string}
+                  onIonChange={e => this.password = e.detail.value as string}
+                  ref={el => this.passwordInput = el!}
                   required />
               </ion-item>
             }
@@ -67,8 +89,8 @@ export class UserEditor {
               <ion-item lines="full">
                 <ion-input label="Confirm Password" label-placement="stacked" type="password"
                   autocomplete="new-password"
-                  onIonBlur={(e: Event) => this.repeatPassword = (e.currentTarget as HTMLIonInputElement).value as string}
-                  ref={(el: HTMLIonInputElement) => this.repeatPasswordInput = el}
+                  onIonChange={e => this.repeatPassword = e.detail.value as string}
+                  ref={el => this.repeatPasswordInput = el!}
                   required />
               </ion-item>
             }
@@ -87,16 +109,16 @@ export class UserEditor {
         return;
       }
 
-      await dismissContainingModal(this.el, {
+      await this.parentModal?.dismiss({
         user: this.user,
         password: this.password
-      });
+      }, 'save');
     } else {
-      await dismissContainingModal(this.el, { user: this.user });
+      await this.parentModal?.dismiss({ user: this.user }, 'save');
     }
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el);
+    await this.parentModal?.dismiss(undefined, 'cancel');
   }
 }

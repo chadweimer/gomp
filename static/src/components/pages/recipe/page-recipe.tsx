@@ -1,8 +1,8 @@
-import { actionSheetController, alertController, modalController } from '@ionic/core';
 import { Component, Element, Fragment, h, Host, Method, Prop, State } from '@stencil/core';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, getRecipeImageUrl, getRecipeThumbnailUrl, isAuthorized, isNull, redirect, showLoading, showToast } from '../../../helpers/utils';
+import { showActionSheet, showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
+import { ComponentWithActivatedCallback, getRecipeImageUrl, getRecipeThumbnailUrl, isAuthorized, isNull, redirect } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
 
@@ -460,7 +460,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   }
 
   private async onRecipeMenuClicked() {
-    const menu = await actionSheetController.create({
+    const { role } = await showActionSheet({
       header: 'Menu',
       buttons: [
         { text: 'Print', icon: 'print', role: 'print' },
@@ -480,9 +480,6 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         { text: 'Cancel', icon: 'close', role: 'cancel' }
       ],
     });
-    await menu.present();
-
-    const { role } = await menu.onDidDismiss();
 
     switch (role) {
       case 'print':
@@ -512,230 +509,175 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   }
 
   private async onEditClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        component: 'recipe-editor',
-        componentProps: {
-          recipe: this.recipe,
-          recipeImages: this.images
-        },
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ recipe: Recipe }>();
-      if (!isNull(data)) {
-        await this.saveRecipe({
-          ...this.recipe,
-          ...data.recipe
-        });
-        await this.loadRecipe();
-
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-      }
+    const { data } = await showModal<{ recipe: Recipe }>({
+      presentingElement: this.el,
+      component: 'recipe-editor',
+      componentProps: {
+        recipe: this.recipe,
+        recipeImages: this.images
+      },
     });
+    if (!isNull(data)) {
+      await this.saveRecipe({
+        ...this.recipe,
+        ...data.recipe
+      });
+      await this.loadRecipe();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
   }
 
   private async onDeleteClicked() {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Delete Recipe?',
-        message: 'Are you sure you want to delete this recipe?',
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.deleteRecipe();
-
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-        await redirect('/recipes');
-      }
+    const { role } = await showAlert({
+      header: 'Delete Recipe?',
+      message: 'Are you sure you want to delete this recipe?',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.deleteRecipe();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+      await redirect('/recipes');
+    }
   }
 
   private async onArchiveClicked() {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Arhive Recipe?',
-        message: 'Are you sure you want to archive this recipe?',
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.setRecipeState(RecipeState.Archived);
-        await this.loadRecipe();
-
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-      }
+    const { role } = await showAlert({
+      header: 'Archive Recipe?',
+      message: 'Are you sure you want to archive this recipe?',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.setRecipeState(RecipeState.Archived);
+      await this.loadRecipe();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
   }
 
   private async onUnarchiveClicked() {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Unarchive Recipe?',
-        message: 'Are you sure you want to unarchive this recipe?',
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.setRecipeState(RecipeState.Active);
-        await this.loadRecipe();
-
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-      }
+    const { role } = await showAlert({
+      header: 'Unarchive Recipe?',
+      message: 'Are you sure you want to unarchive this recipe?',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.setRecipeState(RecipeState.Active);
+      await this.loadRecipe();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
   }
 
   private async onAddLinkClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        component: 'recipe-link-editor',
-        componentProps: {
-          parentRecipeId: this.recipeId
-        },
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ recipeId: number }>();
-      if (!isNull(data)) {
-        await this.addLink(data.recipeId);
-        await this.loadLinks();
-      }
+    const { data } = await showModal<{ recipeId: number }>({
+      presentingElement: this.el,
+      component: 'recipe-link-editor',
+      componentProps: {
+        parentRecipeId: this.recipeId
+      },
     });
+    if (!isNull(data)) {
+      await this.addLink(data.recipeId);
+      await this.loadLinks();
+    }
   }
 
   private async onDeleteLinkClicked(link: RecipeCompact) {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Remove Link?',
-        message: `Are you sure you want to remove the linked recipe '${link.name}'?`,
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.deleteLink(link);
-        await this.loadLinks();
-      }
+    const { role } = await showAlert({
+      header: 'Remove Link?',
+      message: `Are you sure you want to remove the linked recipe '${link.name}'?`,
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.deleteLink(link);
+      await this.loadLinks();
+    }
   }
 
   private async onAddNoteClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        component: 'note-editor',
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ note: Note }>();
-      if (!isNull(data)) {
-        await this.saveNewNote(data.note);
-        await this.loadNotes();
-      }
+    const { data } = await showModal<{ note: Note }>({
+      presentingElement: this.el,
+      component: 'note-editor',
     });
+    if (!isNull(data)) {
+      await this.saveNewNote(data.note);
+      await this.loadNotes();
+    }
   }
 
   private async onEditNoteClicked(note: Note) {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        component: 'note-editor',
-        componentProps: {
-          note: note
-        },
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ note: Note }>();
-      if (!isNull(data)) {
-        await this.saveExistingNote({
-          ...note,
-          ...data.note
-        });
-        await this.loadNotes();
-      }
+    const { data } = await showModal<{ note: Note }>({
+      presentingElement: this.el,
+      component: 'note-editor',
+      componentProps: {
+        note: note
+      },
     });
+    if (!isNull(data)) {
+      await this.saveExistingNote({
+        ...note,
+        ...data.note
+      });
+      await this.loadNotes();
+    }
   }
 
   private async onDeleteNoteClicked(note: Note) {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Delete Note?',
-        message: 'Are you sure you want to delete this note?',
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.deleteNote(note);
-        await this.loadNotes();
-      }
+    const { role } = await showAlert({
+      header: 'Delete Note?',
+      message: 'Are you sure you want to delete this note?',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.deleteNote(note);
+      await this.loadNotes();
+    }
   }
 
   private async onUploadImageClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        component: 'file-upload-browser',
-        componentProps: {
-          heading: 'Upload Picture',
-          label: 'Picture',
-          accept: 'image/*',
-        },
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ file: File }>();
-      if (!isNull(data)) {
-        await this.uploadImage(data.file);
-        await this.loadRecipe();
-        await this.loadImages();
-
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-      }
+    const { data } = await showModal<{ file: File }>({
+      presentingElement: this.el,
+      component: 'file-upload-browser',
+      componentProps: {
+        heading: 'Upload Picture',
+        label: 'Picture',
+        accept: 'image/*',
+      },
     });
+    if (!isNull(data)) {
+      await this.uploadImage(data.file);
+      await this.loadRecipe();
+      await this.loadImages();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
   }
 
   private onPrintClicked() {
@@ -751,54 +693,42 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   }
 
   private async onSetMainImageClicked(image: string) {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Set Main Picture?',
-        message: 'Are you sure you want to this as the main picture for the recipe?',
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.setMainImage(image);
-        await this.loadRecipe();
-
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-      }
+    const { role } = await showAlert({
+      header: 'Set Main Picture?',
+      message: 'Are you sure you want to this as the main picture for the recipe?',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.setMainImage(image);
+      await this.loadRecipe();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
   }
 
   private async onDeleteImageClicked(image: string) {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Delete Image?',
-        message: 'Are you sure you want to delete this picture?',
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.deleteImage(image);
-        await this.loadRecipe();
-        await this.loadImages();
-
-        // Update the search results since the modified recipe may be in them
-        await refreshSearchResults();
-      }
+    const { role } = await showAlert({
+      header: 'Delete Image?',
+      message: 'Are you sure you want to delete this picture?',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.deleteImage(image);
+      await this.loadRecipe();
+      await this.loadImages();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
   }
 
   private async onTagClicked(tag: string) {

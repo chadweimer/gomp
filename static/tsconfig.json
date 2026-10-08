@@ -6,7 +6,7 @@
     "experimentalDecorators": true,
     "lib": [
       "dom",
-      "es2022"
+      "es2023"
     ],
     "moduleResolution": "bundler",
     "module": "esnext",

@@ -1,8 +1,8 @@
-import { alertController, modalController } from '@ionic/core';
-import { Component, Host, h, State, Method } from '@stencil/core';
+import { Component, Host, h, State, Method, Element } from '@stencil/core';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, enableBackForOverlay, isNull, redirect, showToast } from '../../../helpers/utils';
+import { showAlert, showModal, showToast } from '../../../helpers/modals';
+import { ComponentWithActivatedCallback, isNull, redirect } from '../../../helpers/utils';
 import state from '../../../stores/state';
 
 @Component({
@@ -10,6 +10,8 @@ import state from '../../../stores/state';
   styleUrl: 'page-settings-searches.css',
 })
 export class PageSettingsSearches implements ComponentWithActivatedCallback {
+  @Element() el!: HTMLPageSettingsSearchesElement;
+
   private readonly resultsPerPage = 24;
 
   @State() filters: SavedSearchFilterCompact[] = [];
@@ -151,25 +153,20 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
   }
 
   private async onAddFilterClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        component: 'search-filter-editor',
-        componentProps: {
-          prompt: 'New Search'
-        },
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
-      if (!isNull(data)) {
-        await this.saveNewSearchFilter({
-          ...data.searchFilter,
-          name: data.name
-        });
-        await this.loadFilters();
-      }
+    const { data } = await showModal<{ name: string, searchFilter: SearchFilter }>({
+      presentingElement: this.el,
+      component: 'search-filter-editor',
+      componentProps: {
+        prompt: 'New Search'
+      },
     });
+    if (!isNull(data)) {
+      await this.saveNewSearchFilter({
+        ...data.searchFilter,
+        name: data.name
+      });
+      await this.loadFilters();
+    }
   }
 
   private async onEditFilterClicked(id: number | null | undefined) {
@@ -177,58 +174,47 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
       return;
     }
 
-    await enableBackForOverlay(async () => {
-      const { data: searchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {
-        params: { path: { filterId: id } }
-      });
-
-      if (error || !searchFilter) {
-        return;
-      }
-
-      const modal = await modalController.create({
-        component: 'search-filter-editor',
-        componentProps: {
-          prompt: 'Edit Search',
-          name: searchFilter.name,
-          searchFilter: searchFilter
-        },
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ name: string, searchFilter: SearchFilter }>();
-      if (!isNull(data)) {
-        await this.saveExistingSearchFilter({
-          ...searchFilter,
-          ...data.searchFilter,
-          name: data.name
-        });
-        await this.loadFilters();
-      }
+    const { data: searchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {
+      params: { path: { filterId: id } }
     });
+
+    if (error || !searchFilter) {
+      return;
+    }
+
+    const { data } = await showModal<{ name: string, searchFilter: SearchFilter }>({
+      presentingElement: this.el,
+      component: 'search-filter-editor',
+      componentProps: {
+        prompt: 'Edit Search',
+        name: searchFilter.name,
+        searchFilter: searchFilter
+      },
+    });
+    if (!isNull(data)) {
+      await this.saveExistingSearchFilter({
+        ...searchFilter,
+        ...data.searchFilter,
+        name: data.name
+      });
+      await this.loadFilters();
+    }
   }
 
   private async onDeleteFilterClicked(searchFilter: SavedSearchFilterCompact) {
-    await enableBackForOverlay(async () => {
-      const confirmation = await alertController.create({
-        header: 'Delete Search Filter?',
-        message: `Are you sure you want to delete ${searchFilter.name}?`,
-        buttons: [
-          { text: 'No', role: 'cancel' },
-          { text: 'Yes', role: 'confirm' }
-        ],
-      });
-
-      await confirmation.present();
-
-      const { role } = await confirmation.onDidDismiss();
-
-      if (role === 'confirm') {
-        await this.deleteSearchFilter(searchFilter.id);
-        await this.loadFilters();
-      }
+    const { role } = await showAlert({
+      header: 'Delete Search Filter?',
+      message: `Are you sure you want to delete ${searchFilter.name}?`,
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' }
+      ],
     });
+
+    if (role === 'confirm') {
+      await this.deleteSearchFilter(searchFilter.id);
+      await this.loadFilters();
+    }
   }
 
   private async onLoadSearchClicked(id: number | null | undefined) {

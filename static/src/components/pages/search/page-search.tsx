@@ -1,8 +1,9 @@
-import { alertController, Gesture, modalController, ScrollBaseDetail } from '@ionic/core';
+import { Gesture, ScrollBaseDetail } from '@ionic/core';
 import { Component, Element, h, Host } from '@stencil/core';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
-import { redirect, showToast, enableBackForOverlay, showLoading, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, isAuthorized, getRecipeThumbnailUrl, showResultsPerPageAlert } from '../../../helpers/utils';
+import { showToast, showLoading, showResultsPerPageAlert, showModal, showAlert } from '../../../helpers/modals';
+import { redirect, createSwipeGesture, enumKeyFromValue, insertSpacesBetweenWords, isNull, isNullOrEmpty, isAuthorized, getRecipeThumbnailUrl } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state from '../../../stores/state';
 
@@ -75,7 +76,7 @@ export class PageSearch {
           </ion-toolbar>
         </ion-header>
 
-        <ion-content ref={(el: HTMLIonContentElement) => this.content = el} scroll-events
+        <ion-content ref={el => this.content = el!} scroll-events
           onIonScrollEnd={(e: CustomEvent<ScrollBaseDetail>) => this.onContentScrolled(e)}>
           <ion-grid class="no-pad">
             <ion-row>
@@ -208,22 +209,17 @@ export class PageSearch {
   }
 
   private async onNewRecipeClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        component: 'recipe-editor',
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ recipe: Recipe, file: File }>();
-      if (!isNull(data)) {
-        await this.saveNewRecipe(data.recipe, data.file);
-      }
+    const { data } = await showModal<{ recipe: Recipe, file: File }>({
+      presentingElement: this.el,
+      component: 'recipe-editor',
     });
+    if (!isNull(data)) {
+      await this.saveNewRecipe(data.recipe, data.file);
+    }
   }
 
   private async onSearchStatesClicked() {
-    const menu = await alertController.create({
+    const { data, role } = await showAlert<{ values: RecipeState[] }>({
       header: 'States',
       inputs: Object.keys(RecipeState).map(item => ({
         type: 'checkbox',
@@ -232,21 +228,17 @@ export class PageSearch {
         checked: state.searchFilter.states.includes(RecipeState[item as keyof typeof RecipeState])
       })),
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'OK',
-          handler: (selectedStates: RecipeState[]) => this.setRecipeStates(selectedStates)
-        }
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'OK', role: 'confirm', }
       ]
     });
-    await menu.present();
+    if (role === 'confirm') {
+      this.setRecipeStates(data?.values ?? state.searchFilter.states);
+    }
   }
 
   private async onSortByClicked() {
-    const menu = await alertController.create({
+    const { data, role } = await showAlert<{ values: SortBy }>({
       header: 'Sort By',
       inputs: Object.keys(SortBy).map(item => ({
         type: 'radio',
@@ -255,22 +247,18 @@ export class PageSearch {
         checked: state.searchFilter.sortBy === SortBy[item as keyof typeof SortBy]
       })),
       buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'OK',
-          handler: (sortBy: SortBy) => this.setSortBy(sortBy)
-        }
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'OK', role: 'confirm' }
       ]
     });
-    await menu.present();
+    if (role === 'confirm') {
+      this.setSortBy(data?.values ?? state.searchFilter.sortBy);
+    }
   }
 
   private async onResultsPerPage() {
     await showResultsPerPageAlert(state.searchResultsPerPage, count => {
-        state.searchResultsPerPage = count;
-      });
-    }
+      state.searchResultsPerPage = count;
+    });
+  }
 }

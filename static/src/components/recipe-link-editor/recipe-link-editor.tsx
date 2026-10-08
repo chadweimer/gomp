@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, State, Prop, Watch } from '@stencil/core';
 import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
+import { getContainingModal } from '../../helpers/modals';
+import { getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-link-editor',
@@ -18,9 +19,10 @@ export class RecipeLinkEditor {
   @Element() el!: HTMLRecipeLinkEditorElement;
   private form!: HTMLFormElement;
   private searchInput!: HTMLIonInputElement;
+  private parentModal?: HTMLIonModalElement | null;
 
   connectedCallback() {
-    configureModalAutofocus(this.el);
+    this.parentModal = getContainingModal(this.el);
   }
 
   render() {
@@ -47,7 +49,7 @@ export class RecipeLinkEditor {
                 autofocus
                 debounce={500}
                 onIonInput={(e: Event) => this.query = (e.currentTarget as HTMLIonInputElement).value as string}
-                ref={(el: HTMLIonInputElement) => this.searchInput = el} />
+                ref={el => this.searchInput = el!} />
             </ion-item>
             <ion-content>
               <ion-list lines="none">
@@ -120,10 +122,10 @@ export class RecipeLinkEditor {
       return;
     }
 
-    await dismissContainingModal(this.el, { recipeId: this.selectedRecipeId });
+    await this.parentModal?.dismiss({ recipeId: this.selectedRecipeId }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el);
+    await this.parentModal?.dismiss(undefined, 'cancel');
   }
 }

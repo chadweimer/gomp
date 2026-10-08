@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalAutofocus, dismissContainingModal, fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull, trap } from '../../helpers/utils';
+import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
+import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull, trap } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
 @Component({
@@ -23,9 +24,32 @@ export class SearchFilterEditor {
 
   @Element() el!: HTMLSearchFilterEditorElement;
   private form!: HTMLFormElement;
+  private nameInput?: HTMLIonInputElement;
+  private queryInput!: HTMLIonInputElement;
+  private parentModal?: HTMLIonModalElement | null;
 
   async connectedCallback() {
-    configureModalAutofocus(this.el);
+    const initialName = this.name;
+    const initialFilter = { ...this.searchFilter };
+
+    this.parentModal = getContainingModal(this.el);
+    configureModalCanDismiss(this.parentModal, (_data?: unknown, role?: string) => {
+      if (role === 'save') {
+        return false;
+      }
+
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+      if (this.nameInput) {
+        this.name = this.nameInput.value as string;
+      }
+      this.searchFilter = {
+        ...this.searchFilter,
+        query: this.queryInput.value as string
+      };
+
+      return !this.areEqual(initialFilter, this.searchFilter) || this.name !== initialName;
+    });
+
     this.currentUserSettings = await trap(api.loadUserSettings, null);
     if (this.showSavedLoader) {
       this.filters = await trap(api.loadSearchFilters, []);
@@ -70,14 +94,16 @@ export class SearchFilterEditor {
                   spellcheck
                   required
                   autofocus
-                  onIonBlur={(e: Event) => this.name = (e.currentTarget as HTMLIonInputElement).value as string} />
+                  onIonChange={e => this.name = e.detail.value as string}
+                  ref={el => this.nameInput = el!} />
               </ion-item>
             }
             <ion-item lines="full">
               <ion-input label="Search Terms" label-placement="stacked" value={this.searchFilter?.query}
                 autocorrect="on"
                 spellcheck
-                onIonBlur={(e: Event) => this.searchFilter = { ...this.searchFilter, query: (e.currentTarget as HTMLIonInputElement).value as string }} />
+                onIonChange={e => this.searchFilter = { ...this.searchFilter, query: e.detail.value as string }}
+                ref={el => this.queryInput = el!} />
             </ion-item>
             <ion-item lines="full">
               <tags-input label="Tags" label-placement="stacked" value={this.searchFilter?.tags}
@@ -137,14 +163,14 @@ export class SearchFilterEditor {
       return;
     }
 
-    await dismissContainingModal(this.el, {
+    await this.parentModal?.dismiss({
       name: this.name,
       searchFilter: this.searchFilter
-    });
+    }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el);
+    await this.parentModal?.dismiss(undefined, 'cancel');
   }
 
   private onResetClicked() {
@@ -172,5 +198,15 @@ export class SearchFilterEditor {
     } catch (ex) {
       console.error(ex);
     }
+  }
+
+  private areEqual(a: SearchFilter, b: SearchFilter) {
+    return a.query === b.query &&
+      a.withPictures === b.withPictures &&
+      a.sortBy === b.sortBy &&
+      a.sortDir === b.sortDir &&
+      JSON.stringify(a.fields) === JSON.stringify(b.fields) &&
+      JSON.stringify(a.states) === JSON.stringify(b.states) &&
+      JSON.stringify(a.tags.toSorted((a, b) => a.localeCompare(b))) === JSON.stringify(b.tags.toSorted((a, b) => a.localeCompare(b)));
   }
 }

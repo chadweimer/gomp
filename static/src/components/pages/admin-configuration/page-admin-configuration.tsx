@@ -1,7 +1,8 @@
 import { Component, Element, Host, h, State, Method } from '@stencil/core';
 import { AppConfiguration } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ComponentWithActivatedCallback, showToast } from '../../../helpers/utils';
+import { showToast } from '../../../helpers/modals';
+import { ComponentWithActivatedCallback } from '../../../helpers/utils';
 import appConfig from '../../../stores/config';
 
 @Component({

@@ -1,0 +1,47 @@
+import { render, h, describe, it, expect } from '@stencil/vitest';
+import { Note } from '../../helpers/schema.gen';
+import './note-card';
+
+describe('note-card', () => {
+  it('renders', async () => {
+    const { root } = await render(<note-card />);
+    expect(root).toHaveClass('hydrated');
+  });
+
+  it('bind to note', async () => {
+    const note: Note = { text: 'Some text', createdAt: new Date().toISOString() };
+    const { root } = await render(<note-card note={note}></note-card>);
+    const node = root.shadowRoot?.querySelector('html-viewer');
+    expect(node).not.toBeNull();
+    expect(node).toEqualAttribute('value', note.text);
+  });
+
+  it('readonly works', async () => {
+    const values = [true, false];
+    for (const readonly of values) {
+      const { root } = await render(<note-card readonly={readonly}></note-card>);
+      const buttons = root.shadowRoot?.querySelectorAll('ion-button');
+      expect(buttons).not.toBeNull();
+      expect(buttons).toHaveLength(readonly ? 0 : 2);
+    }
+  });
+
+  it('modified date used', async () => {
+    const values = [true, false];
+    for (const modified of values) {
+      const createdAt = new Date();
+      let modifiedAt = new Date();
+      modifiedAt.setDate(modifiedAt.getDate() + 1);
+      modifiedAt = modified ? modifiedAt : createdAt;
+      const note: Note = { text: 'Some text', createdAt: createdAt.toISOString(), modifiedAt: modifiedAt.toISOString() };
+      const { root } = await render(<note-card note={note}></note-card>);
+      const label = root.shadowRoot?.querySelector('ion-card-header ion-card-subtitle');
+      if (modified) {
+        expect(label).not.toBeNull();
+        expect(label).toHaveTextContent('Last Modified');
+      } else {
+        expect(label).toBeNull();
+      }
+    }
+  });
+});

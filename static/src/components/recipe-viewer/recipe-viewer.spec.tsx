@@ -1,0 +1,246 @@
+import { render, h, describe, it, expect } from '@stencil/vitest';
+import { Recipe, RecipeCompact, RecipeState } from '../../helpers/schema.gen';
+import './recipe-viewer';
+
+describe('recipe-viewer', () => {
+  it('builds', async () => {
+    const { root } = await render(<recipe-viewer />);
+    expect(root).toHaveClass('hydrated');
+  });
+
+  it('bind to recipe', async () => {
+    const recipe: Recipe = {
+      name: 'Some Recipe',
+      state: RecipeState.Active,
+      rating: 0,
+      servingSize: '',
+      time: '',
+      ingredients: '',
+      directions: '',
+      nutritionInfo: '',
+      storageInstructions: '',
+      sourceUrl: '',
+      mainImageName: '',
+      tags: []
+    };
+    const { root } = await render(<recipe-viewer recipe={recipe}></recipe-viewer>);
+    expect(root).toHaveProperty('recipe', recipe);
+    const para = root.shadowRoot?.querySelector('ion-card-title');
+    expect(para).not.toBeNull();
+    expect(para).toEqualText(recipe.name);
+  });
+
+  it('hide and show fields', async () => {
+    const recipe: Recipe = {
+      name: 'Some Recipe',
+      state: RecipeState.Active,
+      rating: 0,
+      servingSize: '',
+      time: '',
+      ingredients: '',
+      directions: '',
+      nutritionInfo: '',
+      storageInstructions: '',
+      sourceUrl: '',
+      mainImageName: '',
+      tags: []
+    };
+    const { root, waitForChanges, setProps } = await render<HTMLRecipeViewerElement>(<recipe-viewer recipe={recipe}></recipe-viewer>);
+    let items = root.shadowRoot?.querySelectorAll('ion-item');
+
+    // By default, there should be no items since the fields except name are null
+    expect(items).toHaveLength(0);
+    const heading = root.shadowRoot?.querySelector('ion-card-title');
+    expect(heading).not.toBeNull();
+    expect(heading).toEqualText(recipe.name);
+    let subtitle = root.shadowRoot?.querySelector('ion-card-subtitle');
+    expect(subtitle).not.toHaveTextContent('Servings:');
+    expect(subtitle).not.toHaveTextContent('Time:');
+
+    // Serving Size
+    await setProps({ recipe: { ...recipe, servingSize: 'serving size' } });
+    await waitForChanges();
+    subtitle = root.shadowRoot?.querySelector('ion-card-subtitle');
+    expect(subtitle).toHaveTextContent('Servings: serving size');
+
+    // Time
+    await setProps({ recipe: { ...recipe, time: 'time' } });
+    await waitForChanges();
+    subtitle = root.shadowRoot?.querySelector('ion-card-subtitle');
+    expect(subtitle).toHaveTextContent('Time: time');
+
+    // Ingredients
+    await setProps({ recipe: { ...recipe, ingredients: 'ingredients' } });
+    await waitForChanges();
+    expect(root.recipe).not.toBeNull();
+    items = root.shadowRoot?.querySelectorAll('ion-item');
+    expect(items).toHaveLength(1);
+    let node = items?.[0].lastElementChild;
+    expect(node).not.toBeNull();
+    expect(node).toEqualAttribute('value', root.recipe!.ingredients);
+
+    // Directions
+    await setProps({ recipe: { ...recipe, directions: 'directions' } });
+    await waitForChanges();
+    expect(root.recipe).not.toBeNull();
+    items = root.shadowRoot?.querySelectorAll('ion-item');
+    expect(items).toHaveLength(1);
+    node = items?.[0].lastElementChild;
+    expect(node).not.toBeNull();
+    expect(node).toEqualAttribute('value', root.recipe!.directions);
+
+    // Nutrition Info
+    await setProps({ recipe: { ...recipe, nutritionInfo: 'nutrition' } });
+    await waitForChanges();
+    expect(root.recipe).not.toBeNull();
+    items = root.shadowRoot?.querySelectorAll('ion-item');
+    expect(items).toHaveLength(1);
+    node = items?.[0].lastElementChild;
+    expect(node).not.toBeNull();
+    expect(node).toEqualAttribute('value', root.recipe!.nutritionInfo);
+
+    // Storage Instructions
+    await setProps({ recipe: { ...recipe, storageInstructions: 'storage' } });
+    await waitForChanges();
+    expect(root.recipe).not.toBeNull();
+    items = root.shadowRoot?.querySelectorAll('ion-item');
+    expect(items).toHaveLength(1);
+    node = items?.[0].lastElementChild;
+    expect(node).not.toBeNull();
+    expect(node).toEqualAttribute('value', root.recipe!.storageInstructions);
+
+    // Source URL
+    await setProps({ recipe: { ...recipe, sourceUrl: 'http://some.recipe/' } });
+    await waitForChanges();
+    expect(root.recipe).not.toBeNull();
+    items = root.shadowRoot?.querySelectorAll('ion-item');
+    expect(items).toHaveLength(1);
+    node = items?.[0].lastElementChild;
+    expect(node).not.toBeNull();
+    const link = node?.querySelector('a');
+    expect(link).not.toBeNull();
+    expect(link).toEqualAttribute('href', root.recipe!.sourceUrl);
+    expect(link).toEqualText(root.recipe!.sourceUrl);
+
+    // Tags
+    let chips = root.shadowRoot?.querySelectorAll('ion-chip');
+    expect(chips).toHaveLength(0);
+    await setProps({ recipe: { ...recipe, tags: ['a', 'b'] } });
+    await waitForChanges();
+    expect(root.recipe).not.toBeNull();
+    chips = root.shadowRoot?.querySelectorAll('ion-chip');
+    expect(chips).toHaveLength(root.recipe!.tags.length);
+  });
+
+  it('modified date used', async () => {
+    const values = [true, false];
+    for (const modified of values) {
+      const createdAt = new Date();
+      let modifiedAt = new Date();
+      modifiedAt.setDate(modifiedAt.getDate() + 1);
+      modifiedAt = modified ? modifiedAt : createdAt;
+      const recipe: Recipe = {
+        name: 'Some Recipe',
+        state: RecipeState.Active,
+        rating: 0,
+        servingSize: '',
+        time: '',
+        ingredients: '',
+        directions: '',
+        nutritionInfo: '',
+        storageInstructions: '',
+        sourceUrl: '',
+        mainImageName: '',
+        tags: [],
+        createdAt: createdAt.toISOString(),
+        modifiedAt: modifiedAt.toISOString()
+      };
+      const { root } = await render(<recipe-viewer recipe={recipe}></recipe-viewer>);
+      const label = root.shadowRoot?.querySelector('ion-card-subtitle');
+      expect(label).not.toBeNull();
+      if (modified) {
+        expect(label).toHaveTextContent('Last Modified');
+      } else {
+        expect(label).not.toHaveTextContent('Last Modified');
+      }
+    }
+  });
+
+  it('bind to main image', async () => {
+    const recipe: Recipe = {
+      id: 1,
+      name: 'image',
+      state: RecipeState.Active,
+      rating: 0,
+      servingSize: '',
+      time: '',
+      nutritionInfo: '',
+      ingredients: '',
+      directions: '',
+      storageInstructions: '',
+      sourceUrl: '',
+      mainImageName: 'image.jpg',
+      tags: []
+    };
+    const { root } = await render(<recipe-viewer recipe={recipe}></recipe-viewer>);
+    const img = root.shadowRoot?.querySelector(`img[src='/uploads/recipes/${recipe.id}/thumbs/${recipe.mainImageName}']`);
+    expect(img).not.toBeNull();
+  });
+
+  it('bind to links', async () => {
+    // Generate 1-10 links
+    const numLinks = Math.floor(Math.random() * 10 + 1);
+    const links: RecipeCompact[] = [];
+    for (let i = 0; i < numLinks; i++) {
+      links.push({
+        id: i,
+        name: `recipe ${i}`,
+        state: RecipeState.Active,
+        mainImageName: `${i}.jpg`,
+        rating: 0
+      });
+    }
+    const { root } = await render(<recipe-viewer links={links}></recipe-viewer>);
+
+    // Having links should result in an ion-item
+    const items = root.shadowRoot?.querySelectorAll('ion-card-content > ion-item');
+    expect(items).toHaveLength(1);
+
+    // There should be elements for each link
+    const linkItems = items?.[0].querySelectorAll('ion-item');
+    expect(linkItems).toHaveLength(links.length);
+
+    // Each link should be present
+    const linkElements = items?.[0].querySelectorAll('ion-router-link');
+    expect(linkElements).toHaveLength(links.length);
+    for (const link of links) {
+      const router = items?.[0].querySelector(`ion-router-link[href='/recipes/${link.id}']`);
+      expect(router).toEqualText(link.name);
+    }
+  });
+
+  it('renders directions with clickable inline image thumbnails when sentinels are present', async () => {
+    const recipe: Recipe = {
+      id: 7,
+      name: 'Pancakes',
+      state: RecipeState.Active,
+      rating: 5,
+      servingSize: '4',
+      time: '30m',
+      ingredients: '',
+      directions: '<p>Step 1: Mix {{image:batter.jpg}}</p>',
+      nutritionInfo: '',
+      storageInstructions: '',
+      sourceUrl: '',
+      mainImageName: '',
+      tags: [],
+    };
+    const { root } = await render(<recipe-viewer recipe={recipe} />);
+    const htmlViewer = root.shadowRoot?.querySelector('html-viewer');
+    expect(htmlViewer).not.toBeNull();
+    expect(htmlViewer).toEqualAttribute(
+      'value',
+      '<p>Step 1: Mix <a href="/uploads/recipes/7/images/batter.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/7/thumbs/batter.jpg" alt="batter.jpg" data-image="batter.jpg"></a></p>',
+    );
+  });
+});

@@ -1,8 +1,9 @@
 import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
-import { Component, Element, Fragment, h, Listen, State } from '@stencil/core';
+import { Component, Element, Fragment, h, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../helpers/schema.gen';
 import { api, refreshSearchResults } from '../../helpers/api';
-import { redirect, enableBackForOverlay, sendActivatedCallback, isNull, isNullOrEmpty, isAuthorized } from '../../helpers/utils';
+import { showModal } from '../../helpers/modals';
+import { redirect, sendActivatedCallback, isNull, isNullOrEmpty, isAuthorized } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState } from '../../stores/state';
@@ -104,7 +105,7 @@ export class AppRoot {
           </ion-route>
         </ion-router>
 
-        <ion-menu side="start" type="reveal" content-id="main-content" ref={(el: HTMLIonMenuElement) => this.menu = el}>
+        <ion-menu side="start" type="reveal" content-id="main-content" ref={el => this.menu = el!}>
           <ion-content>
             <ion-list class="ion-no-padding">
               {this.appLinks
@@ -233,16 +234,11 @@ export class AppRoot {
           </ion-header>
 
           <ion-content>
-            <ion-router-outlet ref={(el: HTMLIonRouterOutletElement) => this.routerOutlet = el} />
+            <ion-router-outlet ref={el => this.routerOutlet = el!} />
           </ion-content>
         </div>
       </ion-app>
     );
-  }
-
-  @Listen('popstate', { target: 'window' })
-  async onWindowPopState() {
-    await this.closeAllOverlays();
   }
 
   private async loadAppConfiguration() {
@@ -381,26 +377,21 @@ export class AppRoot {
   }
 
   private async onSearchFilterClicked() {
-    await enableBackForOverlay(async () => {
-      const modal = await modalController.create({
-        component: 'search-filter-editor',
-        componentProps: {
-          saveLabel: 'Search',
-          prompt: 'Search',
-          hideName: true,
-          showSavedLoader: true,
-          searchFilter: state.searchFilter
-        },
-        backdropDismiss: false,
-      });
-      await modal.present();
-
-      const { data } = await modal.onDidDismiss<{ searchFilter: SearchFilter }>();
-      if (!isNull(data)) {
-        state.searchFilter = data.searchFilter;
-        await redirect('/recipes');
-      }
+    const { data } = await showModal<{ searchFilter: SearchFilter }>({
+      presentingElement: this.el,
+      component: 'search-filter-editor',
+      componentProps: {
+        saveLabel: 'Search',
+        prompt: 'Search',
+        hideName: true,
+        showSavedLoader: true,
+        searchFilter: state.searchFilter
+      },
     });
+    if (!isNull(data)) {
+      state.searchFilter = data.searchFilter;
+      await redirect('/recipes');
+    }
   }
 
   private isDefaultSearch() {

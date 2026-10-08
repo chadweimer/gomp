@@ -1,6 +1,7 @@
 import { Component, Element, Host, h, Prop } from '@stencil/core';
 import { Note } from '../../helpers/schema.gen';
-import { configureModalAutofocus, dismissContainingModal, isNull } from '../../helpers/utils';
+import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
+import { isNull, toStorageHtml } from '../../helpers/utils';
 
 @Component({
   tag: 'note-editor',
@@ -14,9 +15,26 @@ export class NoteEditor {
 
   @Element() el!: HTMLNoteEditorElement;
   private form!: HTMLFormElement;
+  private textInput!: HTMLHtmlEditorElement;
+  private parentModal?: HTMLIonModalElement | null;
 
   connectedCallback() {
-    configureModalAutofocus(this.el);
+    const initialNote = { ...this.note };
+
+    this.parentModal = getContainingModal(this.el);
+    configureModalCanDismiss(this.parentModal, async (_data?: unknown, role?: string) => {
+      if (role === 'save') {
+        return false;
+      }
+
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
+      this.note = {
+        ...this.note,
+        text: toStorageHtml(this.el, await this.textInput?.getValue())
+      };
+
+      return this.note.text !== initialNote.text;
+    });
   }
 
   render() {
@@ -39,7 +57,8 @@ export class NoteEditor {
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Text" label-placement="stacked" value={this.note?.text ?? ''}
                 autofocus
-                onValueChanged={e => this.note = { ...this.note, text: e.detail }} />
+                onValueChanged={e => this.note = { ...this.note, text: e.detail }}
+                ref={el => this.textInput = el!} />
             </ion-item>
           </form>
         </ion-content>
@@ -52,11 +71,10 @@ export class NoteEditor {
       return;
     }
 
-    await dismissContainingModal(this.el, { note: this.note });
+    await this.parentModal?.dismiss({ note: this.note }, 'save');
   }
 
   private async onCancelClicked() {
-    await dismissContainingModal(this.el);
+    await this.parentModal?.dismiss(undefined, 'cancel');
   }
-
 }
