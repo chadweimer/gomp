@@ -1,4 +1,5 @@
-:host {
+:host,
+html-editor {
   display: block;
   width: 100%;
 }
@@ -14,37 +15,6 @@
   min-height: 2rem;
 }
 
-.editor-content .tiptap p {
-  margin: 0.5em 0;
-}
-
-.editor-content .tiptap h1,
-.editor-content .tiptap h2,
-.editor-content .tiptap h3 {
-  margin: 0.8em 0 0.3em;
-  font-weight: 600;
-  color: var(--ion-text-color, inherit);
-}
-
-.editor-content .tiptap h2 {
-  font-size: 1.35em;
-}
-
-.editor-content .tiptap h3 {
-  font-size: 1.15em;
-}
-
-.editor-content .tiptap ul,
-.editor-content .tiptap ol {
-  padding-left: 1.5em;
-  margin: 0.5em 0;
-}
-
-.editor-content .tiptap a {
-  color: var(--ion-color-primary, #3880ff);
-  text-decoration: underline;
-}
-
 .editor-toolbar {
   --min-height: 0;
   position: sticky;
@@ -54,7 +24,8 @@
   background: var(--ion-toolbar-background, var(--ion-background-color, #fff));
 }
 
-:host:focus-within ion-label {
+:host:focus-within ion-label,
+html-editor:focus-within ion-label {
   color: var(--ion-color-primary);
 }
 
@@ -115,84 +86,135 @@
   border-radius: 4px;
 }
 
-/* Image Node View Styling */
-.editor-image-container {
-  display: flex;
-  margin: 12px 0;
-  width: 100%;
+.editor-content .tiptap img {
+  max-width: 100%;
+  height: auto;
 }
 
-.editor-image-wrapper {
+/* Image Node & Resizer Styling */
+.editor-content .tiptap [data-resize-container] {
+  display: inline-flex;
   position: relative;
-  display: inline-block;
+  margin: 0.5em 0;
   max-width: 100%;
 }
 
-.editor-image-wrapper img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+.editor-content .tiptap [data-resize-wrapper] {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  max-width: 100%;
 }
 
-.image-controls-bar {
+/* Selected state outline on wrapper */
+.editor-content .tiptap [data-resize-container].ProseMirror-selectednode [data-resize-wrapper],
+.editor-content .tiptap [data-resize-container][data-resize-state="true"] [data-resize-wrapper],
+.editor-content .tiptap img.ProseMirror-selectednode {
+  outline: 2px solid var(--ion-color-primary, #3880ff);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Resize Handles - base styling */
+.editor-content .tiptap [data-resize-handle] {
   position: absolute;
-  top: 6px;
+  z-index: 20;
+  box-sizing: border-box;
+  background-color: var(--ion-color-primary, #3880ff);
+  border: 1.5px solid #ffffff;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  touch-action: none;
+  user-select: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out, background-color 0.15s ease-in-out;
+}
+
+/* Invisible extended hit target for effortless grabbing */
+.editor-content .tiptap [data-resize-handle]::after {
+  content: '';
+  position: absolute;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
-  display: none;
-  background: rgba(30, 30, 30, 0.85);
-  backdrop-filter: blur(4px);
-  padding: 3px 6px;
-  border-radius: 6px;
-  gap: 4px;
-  z-index: 5;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
 }
 
-.editor-image-wrapper:hover .image-controls-bar,
-.editor-image-wrapper:focus-within .image-controls-bar {
-  display: flex;
+/* Reveal handles on hover, when selected, or during active resize */
+.editor-content .tiptap [data-resize-container]:hover [data-resize-handle],
+.editor-content .tiptap [data-resize-container].ProseMirror-selectednode [data-resize-handle],
+.editor-content .tiptap [data-resize-container][data-resize-state="true"] [data-resize-handle] {
+  opacity: 1;
 }
 
-.image-control-btn {
-  background: transparent;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 11px;
-  cursor: pointer;
-  line-height: 1.2;
+.editor-content .tiptap [data-resize-handle]:hover {
+  background-color: var(--ion-color-primary-shade, #3171e0);
 }
 
-.image-control-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+/* Corner Handles: 10px x 10px, centered on corners via */
+.editor-content .tiptap [data-resize-handle][data-resize-handle="top-left"],
+.editor-content .tiptap [data-resize-handle][data-resize-handle="top-right"],
+.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom-left"],
+.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom-right"] {
+  width: 10px;
+  height: 10px;
 }
 
-.image-control-btn.active {
-  background: var(--ion-color-primary, #3880ff);
-  border-color: var(--ion-color-primary, #3880ff);
+.editor-content .tiptap [data-resize-handle][data-resize-handle="top-left"] {
+  cursor: nwse-resize;
+  top: -5px;
+  left: -5px;
 }
 
-.image-control-btn.delete {
-  color: #ff6b6b;
-}
-
-.image-resize-handle {
-  position: absolute;
+.editor-content .tiptap [data-resize-handle][data-resize-handle="top-right"] {
+  cursor: nesw-resize;
+  top: -5px;
   right: -5px;
-  bottom: -5px;
-  width: 14px;
-  height: 14px;
-  background: var(--ion-color-primary, #3880ff);
-  border: 2px solid #fff;
-  border-radius: 50%;
-  cursor: se-resize;
-  display: none;
-  z-index: 6;
 }
 
-.editor-image-wrapper:hover .image-resize-handle {
-  display: block;
+.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom-left"] {
+  cursor: nesw-resize;
+  bottom: -5px;
+  left: -5px;
+}
+
+.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom-right"] {
+  cursor: nwse-resize;
+  bottom: -5px;
+  right: -5px;
+}
+
+/* Edge Handles */
+.editor-content .tiptap [data-resize-handle][data-resize-handle="top"],
+.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom"] {
+  cursor: ns-resize;
+  height: 6px;
+  left: 8px;
+  right: 8px;
+}
+
+.editor-content .tiptap [data-resize-handle][data-resize-handle="top"] {
+  top: -3px;
+}
+
+.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom"] {
+  bottom: -3px;
+}
+
+.editor-content .tiptap [data-resize-handle][data-resize-handle="left"],
+.editor-content .tiptap [data-resize-handle][data-resize-handle="right"] {
+  cursor: ew-resize;
+  width: 6px;
+  top: 8px;
+  bottom: 8px;
+}
+
+.editor-content .tiptap [data-resize-handle][data-resize-handle="left"] {
+  left: -3px;
+}
+
+.editor-content .tiptap [data-resize-handle][data-resize-handle="right"] {
+  right: -3px;
 }

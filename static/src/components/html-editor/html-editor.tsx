@@ -2,12 +2,12 @@ import { Component, Element, Event, EventEmitter, Fragment, h, Host, Method, Pro
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { isNullOrEmpty } from '../../helpers/utils';
-import { ImageNode } from './extensions';
+import { GompImage } from './extensions';
 
 @Component({
   tag: 'html-editor',
   styleUrl: 'html-editor.css',
-  scoped: true,
+  shadow: false,
 })
 export class HTMLEditor {
   @Element() el!: HTMLHtmlEditorElement;
@@ -252,7 +252,15 @@ export class HTMLEditor {
         underline: {},
         trailingNode: false,
       }),
-      ImageNode,
+      GompImage.configure({
+        inline: true,
+        resize: {
+          enabled: true,
+          minWidth: 50,
+          minHeight: 50,
+          alwaysPreserveAspectRatio: true
+        }
+      }),
     ];
 
     this.editor = new Editor({
@@ -387,7 +395,7 @@ export class HTMLEditor {
         .chain()
         .focus()
         .insertContent({
-          type: 'imageNode',
+          type: GompImage.name,
           attrs: {
             src: image.url,
             alt: image.name,

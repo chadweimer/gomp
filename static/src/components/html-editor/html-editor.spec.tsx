@@ -98,7 +98,7 @@ describe('html-editor', () => {
 
     // Editor content should contain the image tag
     const editorContent = root.querySelector('.editor-content');
-    const img = editorContent?.querySelector('img');
+    const img = editorContent?.querySelector('img[data-image]');
     expect(img).not.toBeNull();
     expect(img).toEqualAttribute('src', mockImages[0].url);
     expect(img).toEqualAttribute('alt', mockImages[0].name);
@@ -224,7 +224,7 @@ describe('html-editor', () => {
     expect(root.querySelector('.link-panel')).toBeNull();
   });
 
-  it('renders image with width attribute in custom node view', async () => {
+  it('renders image with data-image and data-width attributes using GompImage', async () => {
     const { root } = await render(
       <html-editor
         images={mockImages}
@@ -232,11 +232,10 @@ describe('html-editor', () => {
       />
     );
 
-    const container = root.querySelector('.editor-image-container');
-    expect(container).not.toBeNull();
-
-    const wrapper = root.querySelector('.editor-image-wrapper') as HTMLElement;
-    expect(wrapper).not.toBeNull();
-    expect(wrapper.style.width).toBe('250px');
+    const img = root.querySelector('.editor-content img') as HTMLImageElement;
+    expect(img).not.toBeNull();
+    expect(img.getAttribute('data-image')).toBe(mockImages[0].name);
+    expect(img.getAttribute('data-width')).toBe('250px');
+    expect(img.style.width).toBe('250px');
   });
 });
