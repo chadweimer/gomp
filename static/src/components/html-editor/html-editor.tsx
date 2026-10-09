@@ -15,7 +15,7 @@ export class HTMLEditor {
   @Prop() value: string = '';
   @Prop() label?: string;
   @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
-  @Prop() images?: { name: string; url: string; }[];
+  @Prop() images?: { name: string; url: string; thumbUrl: string }[];
 
   @Prop() enableHeadings: boolean = true;
   @Prop() enableLinks: boolean = true;
@@ -209,18 +209,15 @@ export class HTMLEditor {
                     class="image-picker-item"
                     onClick={() => this.insertImage(image)}
                   >
-                    <img slot="icon-only" src={image.url} alt={image.name} />
+                    <img slot="icon-only" src={image.thumbUrl} alt={image.name} />
                   </ion-button>
                 ))}
               </div>
             </div>
           )}
         </ion-toolbar>
-        <div
-          ref={el => (this.editorContentRef = el!)}
-          class="editor-content"
-          tabindex="0"
-        />
+
+        <div ref={el => (this.editorContentRef = el!)} class="editor-content" />
       </Host>
     );
   }
@@ -269,6 +266,7 @@ export class HTMLEditor {
       content: this.value || '',
       onTransaction: () => {
         this.updateButtonStates();
+        this.valueChanged.emit(this.getCleanHTML());
       },
       onSelectionUpdate: () => {
         this.updateButtonStates();
@@ -387,7 +385,7 @@ export class HTMLEditor {
     this.isLinkPanelOpen = false;
   }
 
-  private insertImage(image: { name: string; url: string; }) {
+  private insertImage(image: { name: string; url: string; thumbUrl: string }) {
     this.isImagePickerOpen = false;
 
     if (this.editor && !this.editor.isDestroyed) {

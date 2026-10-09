@@ -58,7 +58,7 @@ export namespace Components {
          */
         "enableLists": boolean;
         "getValue": () => Promise<string>;
-        "images"?: { name: string; url: string; }[];
+        "images"?: { name: string; url: string; thumbUrl: string }[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         /**
@@ -580,7 +580,7 @@ declare namespace LocalJSX {
           * @default true
          */
         "enableLists"?: boolean;
-        "images"?: { name: string; url: string; }[];
+        "images"?: { name: string; url: string; thumbUrl: string }[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         "onValueChanged"?: (event: HtmlEditorCustomEvent<string>) => void;

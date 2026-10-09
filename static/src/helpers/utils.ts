@@ -183,7 +183,7 @@ export function preProcessMultilineText(text: string | null | undefined) {
   return text;
 }
 
-const ALLOWED_STYLE_PROPERTIES = ['width', 'height', 'margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'display'];
+const ALLOWED_STYLE_PROPERTIES = new Set(['width', 'height', 'margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'display']);
 
 DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
   if (data.attrName === 'style') {
@@ -194,7 +194,7 @@ DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
       .filter(s => {
         const [prop, val] = s.split(':').map(p => p.trim().toLowerCase());
         if (!prop || !val) return false;
-        if (!ALLOWED_STYLE_PROPERTIES.includes(prop)) return false;
+        if (!ALLOWED_STYLE_PROPERTIES.has(prop)) return false;
         if (val.includes('url(') || val.includes('javascript:') || val.includes('expression')) return false;
         return true;
       });
@@ -212,7 +212,7 @@ export function sanitizeHTML(html: string) {
       'b', 'i', 'u', 's', 'strong', 'em', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
       'ul', 'ol', 'li', 'br', 'span', 'a', 'img', 'div'
     ],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'data-image', 'data-width', 'class', 'style', 'loading'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'data-image', 'data-width', 'data-height', 'class', 'style', 'loading'],
     ALLOW_DATA_ATTR: true,
   });
 }
@@ -229,13 +229,17 @@ export function toStorageHtml(host: Element, value: string | null | undefined): 
     const imageName = img.dataset.image;
     if (imageName) {
       const parts = [`image:${imageName}`];
-      const width = img.dataset.width || (img.style.width ? img.style.width : null);
+      const width = img.dataset.width || img.style.width;
       if (width) {
         parts.push(`width=${width}`);
       }
+      const height = img.dataset.height || img.style.height;
+      if (height) {
+        parts.push(`height=${height}`);
+      }
       const token = `{{${parts.join('|')}}}`;
       const parent = img.parentElement;
-      if (parent && parent.tagName.toLowerCase() === 'a' && parent.children.length === 1) {
+      if (parent?.tagName.toLowerCase() === 'a' && parent?.children.length === 1) {
         parent.replaceWith(token);
       } else {
         img.replaceWith(token);
@@ -257,20 +261,24 @@ export function toPresentationHtml(
 
   value = preProcessMultilineText(value);
   value = value.replace(/\{\{image:([^}|]+)(?:\|([^}]+))?\}\}/g, (_match, imageName: string, attrString?: string) => {
-    const thumbUrl = getRecipeThumbnailUrl(recipeId, imageName);
+    const url = getRecipeImageUrl(recipeId, imageName);
     const template = host.ownerDocument.createElement('template');
 
-    let width: string | undefined;
+    let width: string | null = null;
+    let height = '400px';
     if (attrString) {
       for (const part of attrString.split('|')) {
         const [k, v] = part.split('=');
         if (k === 'width' && v) {
           width = v;
         }
+        if (k === 'height' && v) {
+          height = v;
+        }
       }
     }
 
-    const img = createImageElement(host, imageName, thumbUrl, width);
+    const img = createImageElement(host, imageName, url, width, height);
 
     if (!clickable) {
       template.content.appendChild(img);
@@ -292,7 +300,8 @@ export function createImageElement(
   host: Element,
   imageName: string,
   src: string,
-  width?: string
+  width: string | null | undefined,
+  height: string | null | undefined
 ): HTMLImageElement {
   const img = host.ownerDocument.createElement('img');
   img.loading = 'lazy';
@@ -302,6 +311,10 @@ export function createImageElement(
   if (width) {
     img.dataset.width = width;
     img.style.width = width.endsWith('%') || width.endsWith('px') ? width : `${width}px`;
+  }
+  if (height) {
+    img.dataset.height = height;
+    img.style.height = height.endsWith('%') || height.endsWith('px') ? height : `${height}px`;
   }
   return img;
 }

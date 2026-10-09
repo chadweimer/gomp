@@ -2,14 +2,16 @@ import { render, h, describe, it, expect, vi } from '@stencil/vitest';
 import './html-editor';
 
 describe('html-editor', () => {
-  const mockImages: { name: string; url: string; }[] = [
+  const mockImages: { name: string; url: string; thumbUrl: string }[] = [
     {
       name: 'step1.jpg',
-      url: '/uploads/recipes/1/thumbs/step1.jpg',
+      url: '/uploads/recipes/1/images/step1.jpg',
+      thumbUrl: '/uploads/recipes/1/thumbs/step1.jpg',
     },
     {
       name: 'step2.png',
-      url: '/uploads/recipes/1/thumbs/step2.png',
+      url: '/uploads/recipes/1/images/step2.png',
+      thumbUrl: '/uploads/recipes/1/thumbs/step2.png',
     },
   ];
 

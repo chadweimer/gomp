@@ -23,29 +23,27 @@ export const GompImage = Image.extend({
       ...this.parent?.(),
       'data-image': {
         default: null,
-        parseHTML: element => element.dataset.image || null,
+        parseHTML: element => element.dataset.image,
         renderHTML: (attributes: Record<string, string | null>) => {
           const dataImage = attributes['data-image'];
-          if (!dataImage) return {};
-          return { 'data-image': dataImage };
+          return dataImage ? { 'data-image': dataImage } : {};
         },
       },
-      width: {
-        default: null,
+      height: {
+        default: '400px',
         parseHTML: element => {
-          const w = element.dataset?.width || element.style.width;
-          if (!w) return null;
-          const parsed = parseInt(w, 10);
-          return isNaN(parsed) ? null : parsed;
+          return element.dataset.height || element.style.height;
         },
         renderHTML: (attributes: Record<string, string | null>) => {
-          const raw = attributes.width || attributes['data-width'];
-          if (!raw) return {};
-          const widthStr = String(raw);
-          const styleWidth = widthStr.endsWith('%') || widthStr.endsWith('px') ? widthStr : `${widthStr}px`;
+          let heightStr = attributes.height || attributes['data-height'];
+          if (!heightStr) {
+            return {};
+          }
+          heightStr = String(heightStr);
+          const styleHeight = heightStr.endsWith('%') || heightStr.endsWith('px') ? heightStr : `${heightStr}px`;
           return {
-            'data-width': styleWidth,
-            style: `width: ${styleWidth}`,
+            'data-height': styleHeight,
+            style: `height: ${styleHeight}`,
           };
         },
       },
