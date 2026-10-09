@@ -182,50 +182,24 @@ describe('html-editor', () => {
     expect(focusSpy).not.toHaveBeenCalled();
   });
 
-  it('respects feature flags to toggle headings, links, font size, and alignment', async () => {
+  it('respects feature flags to toggle headings, links, and alignment', async () => {
     const { root: defaultRoot } = await render(<html-editor />);
     expect(defaultRoot.querySelector('ion-button[title="Heading 2"]')).not.toBeNull();
     expect(defaultRoot.querySelector('ion-button[title="Heading 3"]')).not.toBeNull();
     expect(defaultRoot.querySelector('ion-button[title="Hyperlink"]')).not.toBeNull();
-    expect(defaultRoot.querySelector('ion-button[title="Font size"]')).toBeNull();
     expect(defaultRoot.querySelector('ion-button[title="Text alignment"]')).toBeNull();
 
     const { root: customRoot } = await render(
       <html-editor
         enableHeadings={false}
         enableLinks={false}
-        enableFontSize={true}
         enableAlignment={true}
       />
     );
     expect(customRoot.querySelector('ion-button[title="Heading 2"]')).toBeNull();
     expect(customRoot.querySelector('ion-button[title="Heading 3"]')).toBeNull();
     expect(customRoot.querySelector('ion-button[title="Hyperlink"]')).toBeNull();
-    expect(customRoot.querySelector('ion-button[title="Font size"]')).not.toBeNull();
     expect(customRoot.querySelector('ion-button[title="Text alignment"]')).not.toBeNull();
-  });
-
-  it('toggles font size panel and applies font size', async () => {
-    const { root, waitForChanges } = await render(
-      <html-editor enableFontSize={true} value="<p>Some text</p>" />
-    );
-
-    const fontBtn = root.querySelector('ion-button[title="Font size"]') as HTMLIonButtonElement;
-    expect(fontBtn).not.toBeNull();
-
-    fontBtn.click();
-    await waitForChanges();
-
-    const panel = root.querySelector('.font-size-panel');
-    expect(panel).not.toBeNull();
-
-    const largeBtn = panel?.querySelectorAll('ion-button')[2];
-    expect(largeBtn?.textContent).toBe('Large');
-
-    largeBtn?.click();
-    await waitForChanges();
-
-    expect(root.querySelector('.font-size-panel')).toBeNull();
   });
 
   it('toggles alignment panel and applies alignment', async () => {

@@ -1,4 +1,4 @@
-import { Mark, Node, mergeAttributes } from '@tiptap/core';
+import { Node, mergeAttributes } from '@tiptap/core';
 
 // Ensure Range getClientRects exists in test/JSDOM environments
 if (typeof Range !== 'undefined' && !Range.prototype.getClientRects) {
@@ -17,15 +17,6 @@ if (typeof Range !== 'undefined' && !Range.prototype.getClientRects) {
     }) as DOMRect;
 }
 
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    fontSize: {
-      setFontSize: (size: string) => ReturnType;
-      unsetFontSize: () => ReturnType;
-    };
-  }
-}
-
 interface ImageNodeAttributes {
   src?: string;
   alt?: string;
@@ -33,54 +24,6 @@ interface ImageNodeAttributes {
   'data-width'?: string;
   'data-align'?: 'left' | 'center' | 'right';
 }
-
-export const FontSize = Mark.create({
-  name: 'fontSize',
-
-  addAttributes() {
-    return {
-      size: {
-        default: null,
-        parseHTML: element => element.style.fontSize || null,
-        renderHTML: (attributes: Record<string, string | null>) => {
-          if (!attributes.size) return {};
-          return { style: `font-size: ${attributes.size}` };
-        },
-      },
-    };
-  },
-
-  parseHTML() {
-    return [
-      {
-        tag: 'span[style]',
-        getAttrs: element => {
-          const el = element as HTMLElement;
-          return el.style?.fontSize ? {} : false;
-        },
-      },
-    ];
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return ['span', mergeAttributes(HTMLAttributes), 0];
-  },
-
-  addCommands() {
-    return {
-      setFontSize:
-        (size: string) =>
-        ({ commands }) => {
-          return commands.setMark(this.name, { size });
-        },
-      unsetFontSize:
-        () =>
-        ({ commands }) => {
-          return commands.unsetMark(this.name);
-        },
-    };
-  },
-});
 
 export const ImageNode = Node.create({
   name: 'imageNode',

@@ -3,7 +3,7 @@ import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
 import { isNullOrEmpty } from '../../helpers/utils';
-import { FontSize, ImageNode } from './extensions';
+import { ImageNode } from './extensions';
 
 @Component({
   tag: 'html-editor',
@@ -20,7 +20,6 @@ export class HTMLEditor {
 
   @Prop() enableHeadings: boolean = true;
   @Prop() enableLinks: boolean = true;
-  @Prop() enableFontSize: boolean = false;
   @Prop() enableLists: boolean = true;
   @Prop() enableAlignment: boolean = false;
 
@@ -37,7 +36,6 @@ export class HTMLEditor {
 
   @State() isImagePickerOpen: boolean = false;
   @State() isLinkPanelOpen: boolean = false;
-  @State() isFontSizePanelOpen: boolean = false;
   @State() isAlignPanelOpen: boolean = false;
   @State() linkUrl: string = '';
 
@@ -148,18 +146,6 @@ export class HTMLEditor {
               </Fragment>
             )}
 
-            {this.enableFontSize && (
-              <ion-button
-                onClick={() => this.toggleFontSizePanel()}
-                size="default"
-                fill={this.isFontSizePanelOpen ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Font size"
-              >
-                <ion-icon icon="text" />
-              </ion-button>
-            )}
-
             {this.enableAlignment && (
               <ion-button
                 onClick={() => this.toggleAlignPanel()}
@@ -196,23 +182,6 @@ export class HTMLEditor {
               </ion-button>
             )}
           </ion-buttons>
-
-          {this.isFontSizePanelOpen && (
-            <div class="editor-panel font-size-panel">
-              <ion-button size="small" fill="clear" onClick={() => this.applyFontSize('0.85em')}>
-                Small
-              </ion-button>
-              <ion-button size="small" fill="clear" onClick={() => this.applyFontSize(null)}>
-                Normal
-              </ion-button>
-              <ion-button size="small" fill="clear" onClick={() => this.applyFontSize('1.25em')}>
-                Large
-              </ion-button>
-              <ion-button size="small" fill="clear" onClick={() => this.applyFontSize('1.5em')}>
-                X-Large
-              </ion-button>
-            </div>
-          )}
 
           {this.isAlignPanelOpen && (
             <div class="editor-panel align-panel">
@@ -314,10 +283,6 @@ export class HTMLEditor {
       ImageNode,
     ];
 
-    if (this.enableFontSize) {
-      extensions.push(FontSize);
-    }
-
     if (this.enableAlignment) {
       extensions.push(
         TextAlign.configure({
@@ -355,7 +320,6 @@ export class HTMLEditor {
 
     this.isImagePickerOpen = false;
     this.isLinkPanelOpen = false;
-    this.isFontSizePanelOpen = false;
     this.isAlignPanelOpen = false;
 
     this.valueChanged.emit(this.getCleanHTML());
@@ -413,25 +377,8 @@ export class HTMLEditor {
     this.editor?.chain().focus().toggleBulletList().run();
   }
 
-  private toggleFontSizePanel() {
-    this.isFontSizePanelOpen = !this.isFontSizePanelOpen;
-    this.isLinkPanelOpen = false;
-    this.isAlignPanelOpen = false;
-    this.isImagePickerOpen = false;
-  }
-
-  private applyFontSize(size: string | null) {
-    if (size) {
-      this.editor?.chain().focus().setFontSize(size).run();
-    } else {
-      this.editor?.chain().focus().unsetFontSize().run();
-    }
-    this.isFontSizePanelOpen = false;
-  }
-
   private toggleAlignPanel() {
     this.isAlignPanelOpen = !this.isAlignPanelOpen;
-    this.isFontSizePanelOpen = false;
     this.isLinkPanelOpen = false;
     this.isImagePickerOpen = false;
   }
@@ -443,7 +390,6 @@ export class HTMLEditor {
 
   private toggleLinkPanel() {
     this.isLinkPanelOpen = !this.isLinkPanelOpen;
-    this.isFontSizePanelOpen = false;
     this.isAlignPanelOpen = false;
     this.isImagePickerOpen = false;
 
@@ -480,7 +426,6 @@ export class HTMLEditor {
   private toggleImagePicker() {
     this.isImagePickerOpen = !this.isImagePickerOpen;
     this.isLinkPanelOpen = false;
-    this.isFontSizePanelOpen = false;
     this.isAlignPanelOpen = false;
   }
 

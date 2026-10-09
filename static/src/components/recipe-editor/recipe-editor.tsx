@@ -121,7 +121,6 @@ export class RecipeEditor {
               <html-editor label="Ingredients" label-placement="stacked"
                 enableHeadings={false}
                 enableLinks={false}
-                enableFontSize={false}
                 enableAlignment={false}
                 enableLists={true}
                 value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id, false)}
@@ -132,7 +131,6 @@ export class RecipeEditor {
               <html-editor label="Directions" label-placement="stacked"
                 enableHeadings={true}
                 enableLinks={true}
-                enableFontSize={true}
                 enableAlignment={true}
                 enableLists={true}
                 value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id, false)}
@@ -144,7 +142,6 @@ export class RecipeEditor {
               <html-editor label="Storage Instructions" label-placement="stacked"
                 enableHeadings={false}
                 enableLinks={false}
-                enableFontSize={false}
                 enableAlignment={false}
                 enableLists={false}
                 value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id, false)}
@@ -155,7 +152,6 @@ export class RecipeEditor {
               <html-editor label="Nutrition" label-placement="stacked"
                 enableHeadings={false}
                 enableLinks={false}
-                enableFontSize={false}
                 enableAlignment={false}
                 enableLists={false}
                 value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id, false)}

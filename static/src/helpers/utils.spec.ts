@@ -11,9 +11,9 @@ describe('utils', () => {
     });
 
     it('preserves safe style properties and span tags while stripping dangerous ones', () => {
-      const input = '<div style="font-size: 1.25em; position: fixed; background: url(javascript:alert(1));"><span style="text-align: center;">text</span></div>';
+      const input = '<div style="margin: 10px; position: fixed; background: url(javascript:alert(1));"><span style="text-align: center;">text</span></div>';
       const output = sanitizeHTML(input);
-      expect(output).toContain('font-size: 1.25em');
+      expect(output).toContain('margin: 10px');
       expect(output).toContain('text-align: center');
       expect(output).toContain('<span');
       expect(output).not.toContain('position');

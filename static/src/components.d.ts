@@ -50,10 +50,6 @@ export namespace Components {
          */
         "enableAlignment": boolean;
         /**
-          * @default false
-         */
-        "enableFontSize": boolean;
-        /**
           * @default true
          */
         "enableHeadings": boolean;
@@ -581,10 +577,6 @@ declare namespace LocalJSX {
          */
         "enableAlignment"?: boolean;
         /**
-          * @default false
-         */
-        "enableFontSize"?: boolean;
-        /**
           * @default true
          */
         "enableHeadings"?: boolean;
@@ -784,7 +776,6 @@ declare namespace LocalJSX {
         "labelPlacement": 'fixed' | 'floating' | 'stacked';
         "enableHeadings": boolean;
         "enableLinks": boolean;
-        "enableFontSize": boolean;
         "enableLists": boolean;
         "enableAlignment": boolean;
     }

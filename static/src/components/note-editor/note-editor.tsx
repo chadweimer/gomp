@@ -59,7 +59,6 @@ export class NoteEditor {
                 autofocus
                 enableHeadings={true}
                 enableLinks={true}
-                enableFontSize={true}
                 enableLists={true}
                 onValueChanged={e => this.note = { ...this.note, text: e.detail }}
                 ref={el => this.textInput = el!} />
