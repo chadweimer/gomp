@@ -242,14 +242,15 @@ export class HTMLEditor {
         orderedList: this.enableLists ? {} : false,
         link: this.enableLinks
           ? {
-              openOnClick: false,
-              HTMLAttributes: {
-                target: '_blank',
-                rel: 'noopener noreferrer',
-              },
-            }
+            openOnClick: false,
+            HTMLAttributes: {
+              target: '_blank',
+              rel: 'noopener noreferrer',
+            },
+          }
           : false,
         underline: {},
+        trailingNode: false,
       }),
       ImageNode,
     ];
@@ -391,7 +392,6 @@ export class HTMLEditor {
             src: image.url,
             alt: image.name,
             'data-image': image.name,
-            'data-align': 'center',
           },
         })
         .run();

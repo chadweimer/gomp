@@ -39,10 +39,10 @@ describe('utils', () => {
       expect(output).toEqualHtml('Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.');
     });
 
-    it('replaces image elements with width and align attributes with extended sentinels', () => {
-      const input = '<img src="/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg" data-width="300" data-align="center">';
+    it('replaces image elements with width attribute with extended sentinels', () => {
+      const input = '<img src="/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg" data-width="300">';
       const output = toStorageHtml(globalThis.document.body, input);
-      expect(output).toEqualHtml('{{image:pancakes.jpg|width=300|align=center}}');
+      expect(output).toEqualHtml('{{image:pancakes.jpg|width=300}}');
     });
 
     it('replaces multiple image elements with their corresponding sentinels', () => {
@@ -70,8 +70,8 @@ describe('utils', () => {
       expect(storage).toEqualHtml(original);
     });
 
-    it('round-trips with toPresentationHtml with width and alignment attributes', () => {
-      const original = 'Step 1: Mix. {{image:pancakes.jpg|width=300px|align=center}} Step 2: Cook.';
+    it('round-trips with toPresentationHtml with width attribute', () => {
+      const original = 'Step 1: Mix. {{image:pancakes.jpg|width=300px}} Step 2: Cook.';
       const presentation = toPresentationHtml(globalThis.document.body, original, 42, false);
       const storage = toStorageHtml(globalThis.document.body, presentation);
       expect(storage).toEqualHtml(original);

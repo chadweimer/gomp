@@ -212,7 +212,7 @@ export function sanitizeHTML(html: string) {
       'b', 'i', 'u', 's', 'strong', 'em', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
       'ul', 'ol', 'li', 'br', 'span', 'a', 'img', 'div'
     ],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'data-image', 'data-width', 'data-align', 'class', 'style', 'loading'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'data-image', 'data-width', 'class', 'style', 'loading'],
     ALLOW_DATA_ATTR: true,
   });
 }
@@ -230,16 +230,8 @@ export function toStorageHtml(host: Element, value: string | null | undefined): 
     if (imageName) {
       const parts = [`image:${imageName}`];
       const width = img.dataset.width || (img.style.width ? img.style.width : null);
-      const align = img.dataset.align || (
-        img.classList.contains('image-align-center') ? 'center' :
-        img.classList.contains('image-align-right') ? 'right' :
-        img.classList.contains('image-align-left') ? 'left' : null
-      );
       if (width) {
         parts.push(`width=${width}`);
-      }
-      if (align) {
-        parts.push(`align=${align}`);
       }
       const token = `{{${parts.join('|')}}}`;
       const parent = img.parentElement;
@@ -269,19 +261,16 @@ export function toPresentationHtml(
     const template = host.ownerDocument.createElement('template');
 
     let width: string | undefined;
-    let align: string | undefined;
     if (attrString) {
       for (const part of attrString.split('|')) {
         const [k, v] = part.split('=');
         if (k === 'width' && v) {
           width = v;
-        } else if (k === 'align' && v) {
-          align = v;
         }
       }
     }
 
-    const img = createImageElement(host, imageName, thumbUrl, width, align);
+    const img = createImageElement(host, imageName, thumbUrl, width);
 
     if (!clickable) {
       template.content.appendChild(img);
@@ -303,8 +292,7 @@ export function createImageElement(
   host: Element,
   imageName: string,
   src: string,
-  width?: string,
-  align?: string
+  width?: string
 ): HTMLImageElement {
   const img = host.ownerDocument.createElement('img');
   img.loading = 'lazy';
@@ -314,10 +302,6 @@ export function createImageElement(
   if (width) {
     img.dataset.width = width;
     img.style.width = width.endsWith('%') || width.endsWith('px') ? width : `${width}px`;
-  }
-  if (align) {
-    img.dataset.align = align;
-    img.classList.add(`image-align-${align}`);
   }
   return img;
 }

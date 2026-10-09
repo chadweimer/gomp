@@ -224,17 +224,16 @@ describe('html-editor', () => {
     expect(root.querySelector('.link-panel')).toBeNull();
   });
 
-  it('renders image with width and alignment attributes in custom node view', async () => {
+  it('renders image with width attribute in custom node view', async () => {
     const { root } = await render(
       <html-editor
         images={mockImages}
-        value={`<p>Step 1: <img src="${mockImages[0].url}" data-image="${mockImages[0].name}" data-width="250px" data-align="center" /></p>`}
+        value={`<p>Step 1: <img src="${mockImages[0].url}" data-image="${mockImages[0].name}" data-width="250px" /></p>`}
       />
     );
 
     const container = root.querySelector('.editor-image-container');
     expect(container).not.toBeNull();
-    expect(container).toHaveClass('image-align-center');
 
     const wrapper = root.querySelector('.editor-image-wrapper') as HTMLElement;
     expect(wrapper).not.toBeNull();

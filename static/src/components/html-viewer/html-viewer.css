@@ -38,22 +38,3 @@ img {
   height: auto;
   border-radius: 4px;
 }
-
-img.image-align-left,
-a.image-align-left {
-  display: block;
-  margin-right: auto;
-}
-
-img.image-align-center,
-a.image-align-center {
-  display: block;
-  margin: 0 auto;
-  text-align: center;
-}
-
-img.image-align-right,
-a.image-align-right {
-  display: block;
-  margin-left: auto;
-}

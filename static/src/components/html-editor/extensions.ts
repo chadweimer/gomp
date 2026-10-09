@@ -22,7 +22,6 @@ interface ImageNodeAttributes {
   alt?: string;
   'data-image'?: string;
   'data-width'?: string;
-  'data-align'?: 'left' | 'center' | 'right';
 }
 
 export const ImageNode = Node.create({
@@ -61,27 +60,6 @@ export const ImageNode = Node.create({
           };
         },
       },
-      'data-align': {
-        default: 'center',
-        parseHTML: element => {
-          return (
-            element.getAttribute('data-align') ||
-            element.dataset.align ||
-            (element.classList.contains('image-align-left')
-              ? 'left'
-              : element.classList.contains('image-align-right')
-                ? 'right'
-                : 'center')
-          );
-        },
-        renderHTML: (attributes: Record<string, string | null>) => {
-          const align = attributes['data-align'] || 'center';
-          return {
-            'data-align': align,
-            class: `image-align-${align}`,
-          };
-        },
-      },
     };
   },
 
@@ -104,8 +82,7 @@ export const ImageNode = Node.create({
     return ({ node, getPos, editor }) => {
       const attrs = node.attrs as ImageNodeAttributes;
       const container = document.createElement('div');
-      const align = attrs['data-align'] || 'center';
-      container.className = `editor-image-container image-align-${align}`;
+      container.className = 'editor-image-container';
 
       const wrapper = document.createElement('div');
       wrapper.className = 'editor-image-wrapper';
@@ -119,7 +96,6 @@ export const ImageNode = Node.create({
       img.alt = attrs.alt || '';
       img.dataset.image = attrs['data-image'] || '';
       if (w) img.dataset.width = w;
-      if (align) img.dataset.align = align;
 
       wrapper.appendChild(img);
 
@@ -138,17 +114,6 @@ export const ImageNode = Node.create({
           return btn;
         };
 
-        const setAlign = (newAlign: 'left' | 'center' | 'right', e: MouseEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (typeof getPos === 'function') {
-            editor.commands.command(({ tr }) => {
-              tr.setNodeAttribute(getPos(), 'data-align', newAlign);
-              return true;
-            });
-          }
-        };
-
         const setWidth = (newWidth: string, e: MouseEvent) => {
           e.preventDefault();
           e.stopPropagation();
@@ -160,9 +125,6 @@ export const ImageNode = Node.create({
           }
         };
 
-        controls.appendChild(createBtn('◀', 'Align left', e => setAlign('left', e), align === 'left'));
-        controls.appendChild(createBtn('●', 'Align center', e => setAlign('center', e), align === 'center'));
-        controls.appendChild(createBtn('▶', 'Align right', e => setAlign('right', e), align === 'right'));
         controls.appendChild(createBtn('50%', 'Half width', e => setWidth('50%', e)));
         controls.appendChild(createBtn('100%', 'Full width', e => setWidth('100%', e)));
 
@@ -227,8 +189,6 @@ export const ImageNode = Node.create({
         update: updatedNode => {
           if (updatedNode.type.name !== 'imageNode') return false;
           const updatedAttrs = updatedNode.attrs as ImageNodeAttributes;
-          const newAlign = updatedAttrs['data-align'] || 'center';
-          container.className = `editor-image-container image-align-${newAlign}`;
           const newW = updatedAttrs['data-width'];
           if (newW) {
             wrapper.style.width = newW.endsWith('%') || newW.endsWith('px') ? newW : `${newW}px`;
@@ -237,7 +197,6 @@ export const ImageNode = Node.create({
             wrapper.style.width = '';
             delete img.dataset.width;
           }
-          img.dataset.align = newAlign;
           return true;
         },
       };

@@ -122,18 +122,6 @@
   width: 100%;
 }
 
-.editor-image-container.image-align-left {
-  justify-content: flex-start;
-}
-
-.editor-image-container.image-align-center {
-  justify-content: center;
-}
-
-.editor-image-container.image-align-right {
-  justify-content: flex-end;
-}
-
 .editor-image-wrapper {
   position: relative;
   display: inline-block;
