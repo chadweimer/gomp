@@ -181,4 +181,115 @@ describe('html-editor', () => {
 
     expect(focusSpy).not.toHaveBeenCalled();
   });
+
+  it('respects feature flags to toggle headings, links, font size, and alignment', async () => {
+    const { root: defaultRoot } = await render(<html-editor />);
+    expect(defaultRoot.querySelector('ion-button[title="Heading 2"]')).not.toBeNull();
+    expect(defaultRoot.querySelector('ion-button[title="Heading 3"]')).not.toBeNull();
+    expect(defaultRoot.querySelector('ion-button[title="Hyperlink"]')).not.toBeNull();
+    expect(defaultRoot.querySelector('ion-button[title="Font size"]')).toBeNull();
+    expect(defaultRoot.querySelector('ion-button[title="Text alignment"]')).toBeNull();
+
+    const { root: customRoot } = await render(
+      <html-editor
+        enableHeadings={false}
+        enableLinks={false}
+        enableFontSize={true}
+        enableAlignment={true}
+      />
+    );
+    expect(customRoot.querySelector('ion-button[title="Heading 2"]')).toBeNull();
+    expect(customRoot.querySelector('ion-button[title="Heading 3"]')).toBeNull();
+    expect(customRoot.querySelector('ion-button[title="Hyperlink"]')).toBeNull();
+    expect(customRoot.querySelector('ion-button[title="Font size"]')).not.toBeNull();
+    expect(customRoot.querySelector('ion-button[title="Text alignment"]')).not.toBeNull();
+  });
+
+  it('toggles font size panel and applies font size', async () => {
+    const { root, waitForChanges } = await render(
+      <html-editor enableFontSize={true} value="<p>Some text</p>" />
+    );
+
+    const fontBtn = root.querySelector('ion-button[title="Font size"]') as HTMLIonButtonElement;
+    expect(fontBtn).not.toBeNull();
+
+    fontBtn.click();
+    await waitForChanges();
+
+    const panel = root.querySelector('.font-size-panel');
+    expect(panel).not.toBeNull();
+
+    const largeBtn = panel?.querySelectorAll('ion-button')[2];
+    expect(largeBtn?.textContent).toBe('Large');
+
+    largeBtn?.click();
+    await waitForChanges();
+
+    expect(root.querySelector('.font-size-panel')).toBeNull();
+  });
+
+  it('toggles alignment panel and applies alignment', async () => {
+    const { root, waitForChanges } = await render(
+      <html-editor enableAlignment={true} value="<p>Centered</p>" />
+    );
+
+    const alignBtn = root.querySelector('ion-button[title="Text alignment"]') as HTMLIonButtonElement;
+    expect(alignBtn).not.toBeNull();
+
+    alignBtn.click();
+    await waitForChanges();
+
+    const panel = root.querySelector('.align-panel');
+    expect(panel).not.toBeNull();
+
+    const centerBtn = panel?.querySelectorAll('ion-button')[1];
+    expect(centerBtn?.textContent).toBe('Center');
+
+    centerBtn?.click();
+    await waitForChanges();
+
+    expect(root.querySelector('.align-panel')).toBeNull();
+  });
+
+  it('toggles link panel and creates a link', async () => {
+    const { root, waitForChanges } = await render(
+      <html-editor enableLinks={true} value="<p>Click here</p>" />
+    );
+
+    const linkBtn = root.querySelector('ion-button[title="Hyperlink"]') as HTMLIonButtonElement;
+    expect(linkBtn).not.toBeNull();
+
+    linkBtn.click();
+    await waitForChanges();
+
+    const panel = root.querySelector('.link-panel');
+    expect(panel).not.toBeNull();
+
+    const input = panel?.querySelector('.link-input') as HTMLInputElement;
+    input.value = 'https://example.com';
+    input.dispatchEvent(new CustomEvent('input'));
+
+    const applyBtn = panel?.querySelector('ion-button') as HTMLIonButtonElement;
+    applyBtn.click();
+    await waitForChanges();
+
+    expect(root.querySelector('.link-panel')).toBeNull();
+  });
+
+  it('renders image with width and alignment attributes in custom node view', async () => {
+    const { root } = await render(
+      <html-editor
+        images={mockImages}
+        value={`<p>Step 1: <img src="${mockImages[0].url}" data-image="${mockImages[0].name}" data-width="250px" data-align="center" /></p>`}
+      />
+    );
+
+    const container = root.querySelector('.editor-image-container');
+    expect(container).not.toBeNull();
+    expect(container).toHaveClass('image-align-center');
+
+    const wrapper = root.querySelector('.editor-image-wrapper') as HTMLElement;
+    expect(wrapper).not.toBeNull();
+    expect(wrapper.style.width).toBe('250px');
+  });
 });

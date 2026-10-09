@@ -39,3 +39,14 @@
 section {
   break-inside: avoid;
 }
+
+@media print {
+  :host {
+    padding: 0;
+  }
+
+  img {
+    max-width: 100% !important;
+    break-inside: avoid;
+  }
+}

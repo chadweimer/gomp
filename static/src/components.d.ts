@@ -45,6 +45,26 @@ export namespace Components {
         "value": number;
     }
     interface HtmlEditor {
+        /**
+          * @default false
+         */
+        "enableAlignment": boolean;
+        /**
+          * @default false
+         */
+        "enableFontSize": boolean;
+        /**
+          * @default true
+         */
+        "enableHeadings": boolean;
+        /**
+          * @default true
+         */
+        "enableLinks": boolean;
+        /**
+          * @default true
+         */
+        "enableLists": boolean;
         "getValue": () => Promise<string>;
         "images"?: { name: string; url: string; }[];
         "label"?: string;
@@ -556,6 +576,26 @@ declare namespace LocalJSX {
         "value"?: number;
     }
     interface HtmlEditor {
+        /**
+          * @default false
+         */
+        "enableAlignment"?: boolean;
+        /**
+          * @default false
+         */
+        "enableFontSize"?: boolean;
+        /**
+          * @default true
+         */
+        "enableHeadings"?: boolean;
+        /**
+          * @default true
+         */
+        "enableLinks"?: boolean;
+        /**
+          * @default true
+         */
+        "enableLists"?: boolean;
         "images"?: { name: string; url: string; }[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
@@ -742,6 +782,11 @@ declare namespace LocalJSX {
         "value": string;
         "label": string;
         "labelPlacement": 'fixed' | 'floating' | 'stacked';
+        "enableHeadings": boolean;
+        "enableLinks": boolean;
+        "enableFontSize": boolean;
+        "enableLists": boolean;
+        "enableAlignment": boolean;
     }
     interface HtmlViewerAttributes {
         "value": string;

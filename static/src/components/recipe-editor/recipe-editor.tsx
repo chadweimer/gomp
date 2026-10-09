@@ -119,12 +119,22 @@ export class RecipeEditor {
             </ion-item>
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Ingredients" label-placement="stacked"
+                enableHeadings={false}
+                enableLinks={false}
+                enableFontSize={false}
+                enableAlignment={false}
+                enableLists={true}
                 value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id, false)}
                 onValueChanged={e => this.recipe = { ...this.recipe, ingredients: toStorageHtml(this.el, e.detail) }}
                 ref={el => this.ingredientsInput = el!} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Directions" label-placement="stacked"
+                enableHeadings={true}
+                enableLinks={true}
+                enableFontSize={true}
+                enableAlignment={true}
+                enableLists={true}
                 value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id, false)}
                 images={this.recipeImages.map(name => ({ name, url: getRecipeThumbnailUrl(this.recipe?.id, name) }))}
                 onValueChanged={e => this.recipe = { ...this.recipe, directions: toStorageHtml(this.el, e.detail) }}
@@ -132,12 +142,22 @@ export class RecipeEditor {
             </ion-item>
             <ion-item lines="full">
               <html-editor label="Storage Instructions" label-placement="stacked"
+                enableHeadings={false}
+                enableLinks={false}
+                enableFontSize={false}
+                enableAlignment={false}
+                enableLists={false}
                 value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id, false)}
                 onValueChanged={e => this.recipe = { ...this.recipe, storageInstructions: toStorageHtml(this.el, e.detail) }}
                 ref={el => this.storageInput = el!} />
             </ion-item>
             <ion-item lines="full">
               <html-editor label="Nutrition" label-placement="stacked"
+                enableHeadings={false}
+                enableLinks={false}
+                enableFontSize={false}
+                enableAlignment={false}
+                enableLists={false}
                 value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id, false)}
                 onValueChanged={e => this.recipe = { ...this.recipe, nutritionInfo: toStorageHtml(this.el, e.detail) }}
                 ref={el => this.nutritionInput = el!} />

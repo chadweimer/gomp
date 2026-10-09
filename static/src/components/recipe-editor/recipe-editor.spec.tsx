@@ -184,6 +184,24 @@ describe('recipe-editor', () => {
       const ingredientsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Ingredients"]');
       expect(ingredientsEditor?.images).toBeUndefined();
     });
+
+    it('configures feature flags for Directions and Ingredients editors', async () => {
+      const { root } = await render<HTMLRecipeEditorElement>(<recipe-editor />);
+
+      const directionsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Directions"]');
+      expect(directionsEditor?.hasAttribute('enableheadings')).toBe(true);
+      expect(directionsEditor?.hasAttribute('enablelinks')).toBe(true);
+      expect(directionsEditor?.hasAttribute('enablefontsize')).toBe(true);
+      expect(directionsEditor?.hasAttribute('enablealignment')).toBe(true);
+      expect(directionsEditor?.hasAttribute('enablelists')).toBe(true);
+
+      const ingredientsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Ingredients"]');
+      expect(ingredientsEditor?.hasAttribute('enableheadings')).toBe(false);
+      expect(ingredientsEditor?.hasAttribute('enablelinks')).toBe(false);
+      expect(ingredientsEditor?.hasAttribute('enablefontsize')).toBe(false);
+      expect(ingredientsEditor?.hasAttribute('enablealignment')).toBe(false);
+      expect(ingredientsEditor?.hasAttribute('enablelists')).toBe(true);
+    });
   });
 
   describe('Suite 3: User Settings & Suggestions', () => {

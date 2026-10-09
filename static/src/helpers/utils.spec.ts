@@ -10,11 +10,14 @@ describe('utils', () => {
       expect(output).toContain('data-image="foo.jpg"');
     });
 
-    it('strips forbidden style tags and attributes', () => {
-      const input = '<div style="color: red;"><span style="font-weight: bold;">text</span></div>';
+    it('preserves safe style properties and span tags while stripping dangerous ones', () => {
+      const input = '<div style="font-size: 1.25em; position: fixed; background: url(javascript:alert(1));"><span style="text-align: center;">text</span></div>';
       const output = sanitizeHTML(input);
-      expect(output).not.toContain('style');
-      expect(output).not.toContain('<span');
+      expect(output).toContain('font-size: 1.25em');
+      expect(output).toContain('text-align: center');
+      expect(output).toContain('<span');
+      expect(output).not.toContain('position');
+      expect(output).not.toContain('javascript');
     });
   });
 
@@ -34,6 +37,12 @@ describe('utils', () => {
       const input = 'Step 1: Mix. <img src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"> Step 2: Cook.';
       const output = toStorageHtml(globalThis.document.body, input);
       expect(output).toEqualHtml('Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.');
+    });
+
+    it('replaces image elements with width and align attributes with extended sentinels', () => {
+      const input = '<img src="/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg" data-width="300" data-align="center">';
+      const output = toStorageHtml(globalThis.document.body, input);
+      expect(output).toEqualHtml('{{image:pancakes.jpg|width=300|align=center}}');
     });
 
     it('replaces multiple image elements with their corresponding sentinels', () => {
@@ -56,6 +65,13 @@ describe('utils', () => {
 
     it('round-trips with toPresentationHtml when clickable is false', () => {
       const original = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
+      const presentation = toPresentationHtml(globalThis.document.body, original, 42, false);
+      const storage = toStorageHtml(globalThis.document.body, presentation);
+      expect(storage).toEqualHtml(original);
+    });
+
+    it('round-trips with toPresentationHtml with width and alignment attributes', () => {
+      const original = 'Step 1: Mix. {{image:pancakes.jpg|width=300px|align=center}} Step 2: Cook.';
       const presentation = toPresentationHtml(globalThis.document.body, original, 42, false);
       const storage = toStorageHtml(globalThis.document.body, presentation);
       expect(storage).toEqualHtml(original);

@@ -1,5 +1,9 @@
-import { Component, Element, Event, EventEmitter, h, Host, Listen, Method, Prop, State, Watch } from '@stencil/core';
-import { createImageElement, getAllShadowParents, isNull, isNullOrEmpty } from '../../helpers/utils';
+import { Component, Element, Event, EventEmitter, Fragment, h, Host, Method, Prop, State, Watch } from '@stencil/core';
+import { Editor } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
+import TextAlign from '@tiptap/extension-text-align';
+import { isNullOrEmpty } from '../../helpers/utils';
+import { FontSize, ImageNode } from './extensions';
 
 @Component({
   tag: 'html-editor',
@@ -14,31 +18,50 @@ export class HTMLEditor {
   @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
   @Prop() images?: { name: string; url: string; }[];
 
+  @Prop() enableHeadings: boolean = true;
+  @Prop() enableLinks: boolean = true;
+  @Prop() enableFontSize: boolean = false;
+  @Prop() enableLists: boolean = true;
+  @Prop() enableAlignment: boolean = false;
+
   @Event() valueChanged!: EventEmitter<string>;
 
   @State() isBoldActive: boolean = false;
   @State() isItalicActive: boolean = false;
   @State() isUnderlineActive: boolean = false;
+  @State() isHeading2Active: boolean = false;
+  @State() isHeading3Active: boolean = false;
   @State() isOrderedListActive: boolean = false;
   @State() isUnorderedListActive: boolean = false;
+  @State() isLinkActive: boolean = false;
+
   @State() isImagePickerOpen: boolean = false;
+  @State() isLinkPanelOpen: boolean = false;
+  @State() isFontSizePanelOpen: boolean = false;
+  @State() isAlignPanelOpen: boolean = false;
+  @State() linkUrl: string = '';
 
   private editorContentRef!: HTMLElement;
-  private savedRange: Range | null = null;
+  private editor: Editor | null = null;
 
   @Watch('value')
-  onValueChange() {
-    this.updateButtonStates();
+  onValueChange(newValue: string) {
+    if (this.editor && !this.editor.isDestroyed) {
+      const currentHTML = this.getCleanHTML();
+      if ((newValue ?? '') !== currentHTML) {
+        this.editor.commands.setContent(newValue || '', { emitUpdate: false });
+        this.updateButtonStates();
+      }
+    }
   }
 
-  @Listen('selectionchange', { target: 'document' })
-  onSelectionChange() {
-    this.updateButtonStates();
-    this.saveSelection();
+  componentDidLoad() {
+    this.initEditor();
   }
 
-  componentWillLoad() {
-    this.updateButtonStates();
+  disconnectedCallback() {
+    this.editor?.destroy();
+    this.editor = null;
   }
 
   render() {
@@ -52,56 +75,190 @@ export class HTMLEditor {
         <ion-toolbar class="editor-toolbar">
           <ion-buttons class="prevent-selection">
             <ion-button
-              onClick={() => this.executeCommand('bold')}
+              onClick={() => this.toggleBold()}
               size="default"
               fill={this.isBoldActive ? 'solid' : 'clear'}
               tabindex="-1"
+              title="Bold"
             >
               <strong>B</strong>
             </ion-button>
             <ion-button
-              onClick={() => this.executeCommand('italic')}
+              onClick={() => this.toggleItalic()}
               size="default"
               fill={this.isItalicActive ? 'solid' : 'clear'}
               tabindex="-1"
+              title="Italic"
             >
               <em>I</em>
             </ion-button>
             <ion-button
-              onClick={() => this.executeCommand('underline')}
+              onClick={() => this.toggleUnderline()}
               size="default"
               fill={this.isUnderlineActive ? 'solid' : 'clear'}
               tabindex="-1"
+              title="Underline"
             >
               <u>U</u>
             </ion-button>
-            <ion-button
-              onClick={() => this.executeCommand('insertOrderedList')}
-              size="default"
-              fill={this.isOrderedListActive ? 'solid' : 'clear'}
-              tabindex="-1"
-            >
-              #
-            </ion-button>
-            <ion-button
-              onClick={() => this.executeCommand('insertUnorderedList')}
-              size="default"
-              fill={this.isUnorderedListActive ? 'solid' : 'clear'}
-              tabindex="-1"
-            >
-              <ion-icon icon="list" />
-            </ion-button>
+
+            {this.enableHeadings && (
+              <Fragment>
+                <ion-button
+                  onClick={() => this.toggleHeading(2)}
+                  size="default"
+                  fill={this.isHeading2Active ? 'solid' : 'clear'}
+                  tabindex="-1"
+                  title="Heading 2"
+                >
+                  H2
+                </ion-button>
+                <ion-button
+                  onClick={() => this.toggleHeading(3)}
+                  size="default"
+                  fill={this.isHeading3Active ? 'solid' : 'clear'}
+                  tabindex="-1"
+                  title="Heading 3"
+                >
+                  H3
+                </ion-button>
+              </Fragment>
+            )}
+
+            {this.enableLists && (
+              <Fragment>
+                <ion-button
+                  onClick={() => this.toggleOrderedList()}
+                  size="default"
+                  fill={this.isOrderedListActive ? 'solid' : 'clear'}
+                  tabindex="-1"
+                  title="Numbered list"
+                >
+                  #
+                </ion-button>
+                <ion-button
+                  onClick={() => this.toggleUnorderedList()}
+                  size="default"
+                  fill={this.isUnorderedListActive ? 'solid' : 'clear'}
+                  tabindex="-1"
+                  title="Bullet list"
+                >
+                  <ion-icon icon="list" />
+                </ion-button>
+              </Fragment>
+            )}
+
+            {this.enableFontSize && (
+              <ion-button
+                onClick={() => this.toggleFontSizePanel()}
+                size="default"
+                fill={this.isFontSizePanelOpen ? 'solid' : 'clear'}
+                tabindex="-1"
+                title="Font size"
+              >
+                <ion-icon icon="text" />
+              </ion-button>
+            )}
+
+            {this.enableAlignment && (
+              <ion-button
+                onClick={() => this.toggleAlignPanel()}
+                size="default"
+                fill={this.isAlignPanelOpen ? 'solid' : 'clear'}
+                tabindex="-1"
+                title="Text alignment"
+              >
+                <ion-icon icon="reorder-two" />
+              </ion-button>
+            )}
+
+            {this.enableLinks && (
+              <ion-button
+                onClick={() => this.toggleLinkPanel()}
+                size="default"
+                fill={this.isLinkPanelOpen || this.isLinkActive ? 'solid' : 'clear'}
+                tabindex="-1"
+                title="Hyperlink"
+              >
+                <ion-icon icon="link" />
+              </ion-button>
+            )}
+
             {(this.images?.length ?? 0) > 0 && (
               <ion-button
                 onClick={() => this.toggleImagePicker()}
                 size="default"
                 fill={this.isImagePickerOpen ? 'solid' : 'clear'}
                 tabindex="-1"
+                title="Insert image"
               >
                 <ion-icon icon="image" />
               </ion-button>
             )}
           </ion-buttons>
+
+          {this.isFontSizePanelOpen && (
+            <div class="editor-panel font-size-panel">
+              <ion-button size="small" fill="clear" onClick={() => this.applyFontSize('0.85em')}>
+                Small
+              </ion-button>
+              <ion-button size="small" fill="clear" onClick={() => this.applyFontSize(null)}>
+                Normal
+              </ion-button>
+              <ion-button size="small" fill="clear" onClick={() => this.applyFontSize('1.25em')}>
+                Large
+              </ion-button>
+              <ion-button size="small" fill="clear" onClick={() => this.applyFontSize('1.5em')}>
+                X-Large
+              </ion-button>
+            </div>
+          )}
+
+          {this.isAlignPanelOpen && (
+            <div class="editor-panel align-panel">
+              <ion-button size="small" fill="clear" onClick={() => this.applyTextAlign('left')}>
+                Left
+              </ion-button>
+              <ion-button size="small" fill="clear" onClick={() => this.applyTextAlign('center')}>
+                Center
+              </ion-button>
+              <ion-button size="small" fill="clear" onClick={() => this.applyTextAlign('right')}>
+                Right
+              </ion-button>
+            </div>
+          )}
+
+          {this.isLinkPanelOpen && (
+            <div class="editor-panel link-panel">
+              <input
+                type="url"
+                class="link-input"
+                placeholder="https://example.com"
+                value={this.linkUrl}
+                onInput={e => (this.linkUrl = (e.target as HTMLInputElement).value)}
+                onKeyDown={(e: KeyboardEvent) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.applyLink();
+                  }
+                }}
+              />
+              <ion-button size="small" fill="solid" onClick={() => this.applyLink()}>
+                Apply
+              </ion-button>
+              {this.isLinkActive && (
+                <Fragment>
+                  <ion-button size="small" fill="outline" onClick={() => this.openLinkPreview()}>
+                    Open
+                  </ion-button>
+                  <ion-button size="small" fill="outline" color="danger" onClick={() => this.removeLink()}>
+                    Remove
+                  </ion-button>
+                </Fragment>
+              )}
+            </div>
+          )}
+
           {this.isImagePickerOpen && (
             <div class="image-picker-panel">
               <div class="image-picker-grid">
@@ -122,143 +279,231 @@ export class HTMLEditor {
         <div
           ref={el => (this.editorContentRef = el!)}
           class="editor-content"
-          contentEditable="true"
-          role="textbox"
           tabindex="0"
-          onMouseUp={() => this.updateButtonStates()}
-          onKeyUp={() => this.updateButtonStates()}
-          innerHTML={this.value}
-        >
-        </div>
+        />
       </Host>
     );
   }
 
   @Method()
   getValue(): Promise<string> {
-    return Promise.resolve(this.editorContentRef.innerHTML);
+    return Promise.resolve(this.getCleanHTML());
+  }
+
+  private initEditor() {
+    if (!this.editorContentRef || this.editor) {
+      return;
+    }
+
+    const extensions = [
+      StarterKit.configure({
+        heading: this.enableHeadings ? { levels: [1, 2, 3] } : false,
+        bulletList: this.enableLists ? {} : false,
+        orderedList: this.enableLists ? {} : false,
+        link: this.enableLinks
+          ? {
+              openOnClick: false,
+              HTMLAttributes: {
+                target: '_blank',
+                rel: 'noopener noreferrer',
+              },
+            }
+          : false,
+        underline: {},
+      }),
+      ImageNode,
+    ];
+
+    if (this.enableFontSize) {
+      extensions.push(FontSize);
+    }
+
+    if (this.enableAlignment) {
+      extensions.push(
+        TextAlign.configure({
+          types: ['heading', 'paragraph'],
+        }),
+      );
+    }
+
+    this.editor = new Editor({
+      element: this.editorContentRef,
+      extensions,
+      content: this.value || '',
+      onTransaction: () => {
+        this.updateButtonStates();
+      },
+      onSelectionUpdate: () => {
+        this.updateButtonStates();
+      },
+    });
+
+    this.updateButtonStates();
   }
 
   private handleFocus(e: FocusEvent) {
     if (e.target === this.el) {
       this.editorContentRef?.focus();
+      this.editor?.commands.focus();
     }
   }
 
   private handleBlur(e: FocusEvent) {
-    // If something inside this editor is focused, do not emit the value change.
-    // This is important to prevent emitting changes when the user is still editing.
     if (this.el.contains(e.relatedTarget as Node)) {
       return;
     }
 
     this.isImagePickerOpen = false;
-    this.savedRange = null;
-    this.valueChanged.emit(this.editorContentRef.innerHTML);
+    this.isLinkPanelOpen = false;
+    this.isFontSizePanelOpen = false;
+    this.isAlignPanelOpen = false;
+
+    this.valueChanged.emit(this.getCleanHTML());
   }
 
-  private saveSelection() {
-    const selection = this.el.ownerDocument.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    let clone = false;
-    let range: Range | null = null;
-    if ("getComposedRanges" in Selection.prototype) {
-      const modernSelection = selection as unknown as {
-        getComposedRanges: (options: { shadowRoots: ShadowRoot[] }) => StaticRange[];
-      };
-      const shadows = getAllShadowParents(this.editorContentRef);
-      const composedRanges = modernSelection.getComposedRanges({ shadowRoots: shadows });
-      if (composedRanges.length > 0) {
-        const staticRange = composedRanges[0];
-        range = this.el.ownerDocument.createRange();
-        range.setStart(staticRange.startContainer, staticRange.startOffset);
-        range.setEnd(staticRange.endContainer, staticRange.endOffset);
-      }
-    } else {
-      range = selection.getRangeAt(0);
-      clone = true;
+  private getCleanHTML(): string {
+    if (!this.editor || this.editor.isDestroyed) {
+      return this.value ?? '';
     }
-    if (range && this.editorContentRef.contains(range.commonAncestorContainer)) {
-      this.savedRange = clone ? range.cloneRange() : range;
-    }
+    const html = this.editor.getHTML();
+    return html === '<p></p>' ? '' : html;
   }
 
   private updateButtonStates() {
-    // Reset all states
-    this.isBoldActive = false;
-    this.isItalicActive = false;
-    this.isUnderlineActive = false;
-    this.isOrderedListActive = false;
-    this.isUnorderedListActive = false;
-
-    // Handle being inside a parent's shadow DOM
-    let activeElement = this.el.ownerDocument.activeElement;
-    while (!isNull(activeElement?.shadowRoot)) {
-      activeElement = activeElement.shadowRoot.activeElement;
-    }
-
-    // Check if the editor is focused
-    if (!this.el.contains(activeElement)) {
+    if (!this.editor || this.editor.isDestroyed) {
       return;
     }
 
-    if (typeof this.el.ownerDocument.queryCommandState === 'function') {
-      this.isBoldActive = this.el.ownerDocument.queryCommandState('bold');
-      this.isItalicActive = this.el.ownerDocument.queryCommandState('italic');
-      this.isUnderlineActive = this.el.ownerDocument.queryCommandState('underline');
-      this.isOrderedListActive = this.el.ownerDocument.queryCommandState('insertOrderedList');
-      this.isUnorderedListActive = this.el.ownerDocument.queryCommandState('insertUnorderedList');
+    this.isBoldActive = this.editor.isActive('bold');
+    this.isItalicActive = this.editor.isActive('italic');
+    this.isUnderlineActive = this.editor.isActive('underline');
+    this.isHeading2Active = this.editor.isActive('heading', { level: 2 });
+    this.isHeading3Active = this.editor.isActive('heading', { level: 3 });
+    this.isOrderedListActive = this.editor.isActive('orderedList');
+    this.isUnorderedListActive = this.editor.isActive('bulletList');
+    this.isLinkActive = this.editor.isActive('link');
+
+    if (this.isLinkActive) {
+      const linkAttrs = this.editor.getAttributes('link') as { href?: string };
+      this.linkUrl = linkAttrs.href || '';
     }
   }
 
-  private executeCommand(command: string, value?: string) {
-    // Focus the editor content before executing command
-    this.editorContentRef.focus();
+  private toggleBold() {
+    this.editor?.chain().focus().toggleBold().run();
+  }
 
-    if (typeof this.el.ownerDocument.execCommand === 'function') {
-      this.el.ownerDocument.execCommand(command, false, value);
+  private toggleItalic() {
+    this.editor?.chain().focus().toggleItalic().run();
+  }
+
+  private toggleUnderline() {
+    this.editor?.chain().focus().toggleUnderline().run();
+  }
+
+  private toggleHeading(level: 2 | 3) {
+    this.editor?.chain().focus().toggleHeading({ level }).run();
+  }
+
+  private toggleOrderedList() {
+    this.editor?.chain().focus().toggleOrderedList().run();
+  }
+
+  private toggleUnorderedList() {
+    this.editor?.chain().focus().toggleBulletList().run();
+  }
+
+  private toggleFontSizePanel() {
+    this.isFontSizePanelOpen = !this.isFontSizePanelOpen;
+    this.isLinkPanelOpen = false;
+    this.isAlignPanelOpen = false;
+    this.isImagePickerOpen = false;
+  }
+
+  private applyFontSize(size: string | null) {
+    if (size) {
+      this.editor?.chain().focus().setFontSize(size).run();
+    } else {
+      this.editor?.chain().focus().unsetFontSize().run();
     }
+    this.isFontSizePanelOpen = false;
+  }
+
+  private toggleAlignPanel() {
+    this.isAlignPanelOpen = !this.isAlignPanelOpen;
+    this.isFontSizePanelOpen = false;
+    this.isLinkPanelOpen = false;
+    this.isImagePickerOpen = false;
+  }
+
+  private applyTextAlign(align: string) {
+    this.editor?.chain().focus().setTextAlign(align).run();
+    this.isAlignPanelOpen = false;
+  }
+
+  private toggleLinkPanel() {
+    this.isLinkPanelOpen = !this.isLinkPanelOpen;
+    this.isFontSizePanelOpen = false;
+    this.isAlignPanelOpen = false;
+    this.isImagePickerOpen = false;
+
+    if (this.isLinkPanelOpen && this.isLinkActive) {
+      const linkAttrs = this.editor?.getAttributes('link') as { href?: string } | undefined;
+      this.linkUrl = linkAttrs?.href || '';
+    }
+  }
+
+  private applyLink() {
+    if (isNullOrEmpty(this.linkUrl)) {
+      this.removeLink();
+      return;
+    }
+
+    this.editor?.chain().focus().extendMarkRange('link').setLink({ href: this.linkUrl }).run();
+    this.isLinkPanelOpen = false;
     this.updateButtonStates();
   }
 
+  private removeLink() {
+    this.editor?.chain().focus().extendMarkRange('link').unsetLink().run();
+    this.linkUrl = '';
+    this.isLinkPanelOpen = false;
+    this.updateButtonStates();
+  }
+
+  private openLinkPreview() {
+    if (!isNullOrEmpty(this.linkUrl)) {
+      window.open(this.linkUrl, '_blank', 'noopener,noreferrer');
+    }
+  }
+
   private toggleImagePicker() {
-    this.saveSelection();
     this.isImagePickerOpen = !this.isImagePickerOpen;
+    this.isLinkPanelOpen = false;
+    this.isFontSizePanelOpen = false;
+    this.isAlignPanelOpen = false;
   }
 
   private insertImage(image: { name: string; url: string; }) {
     this.isImagePickerOpen = false;
-    this.editorContentRef.focus();
 
-    const img = createImageElement(this.el, image.name, image.url);
-    if (this.savedRange && this.editorContentRef.contains(this.savedRange.commonAncestorContainer)) {
-      const selection = this.el.ownerDocument.getSelection();
-      if (selection) {
-        selection.removeAllRanges();
-        selection.addRange(this.savedRange);
-      }
-      this.savedRange.deleteContents();
-      this.savedRange.insertNode(img);
+    if (this.editor && !this.editor.isDestroyed) {
+      this.editor
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'imageNode',
+          attrs: {
+            src: image.url,
+            alt: image.name,
+            'data-image': image.name,
+            'data-align': 'center',
+          },
+        })
+        .run();
 
-      this.savedRange.setStartAfter(img);
-      this.savedRange.setEndAfter(img);
-      if (selection) {
-        selection.removeAllRanges();
-        selection.addRange(this.savedRange);
-        selection.setBaseAndExtent(
-          this.savedRange.startContainer,
-          this.savedRange.startOffset,
-          this.savedRange.endContainer,
-          this.savedRange.endOffset,
-        );
-      }
-    } else {
-      this.editorContentRef.appendChild(img);
+      this.updateButtonStates();
+      this.valueChanged.emit(this.getCleanHTML());
     }
-
-    this.saveSelection();
-    this.updateButtonStates();
-    this.valueChanged.emit(this.editorContentRef.innerHTML);
   }
 }

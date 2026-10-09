@@ -4,29 +4,91 @@
 }
 
 .editor-content {
-  min-height: 1.5rem;
+  min-height: 2.5rem;
   padding-bottom: var(--ion-padding, 0);
   outline: none;
+}
+
+.editor-content .tiptap {
+  outline: none;
+  min-height: 2rem;
+}
+
+.editor-content .tiptap p {
+  margin: 0.5em 0;
+}
+
+.editor-content .tiptap h1,
+.editor-content .tiptap h2,
+.editor-content .tiptap h3 {
+  margin: 0.8em 0 0.3em;
+  font-weight: 600;
+  color: var(--ion-text-color, inherit);
+}
+
+.editor-content .tiptap h2 {
+  font-size: 1.35em;
+}
+
+.editor-content .tiptap h3 {
+  font-size: 1.15em;
+}
+
+.editor-content .tiptap ul,
+.editor-content .tiptap ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.editor-content .tiptap a {
+  color: var(--ion-color-primary, #3880ff);
+  text-decoration: underline;
 }
 
 .editor-toolbar {
   --min-height: 0;
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 10;
   margin-top: var(--ion-margin, 0);
+  background: var(--ion-toolbar-background, var(--ion-background-color, #fff));
 }
 
 :host:focus-within ion-label {
   color: var(--ion-color-primary);
 }
 
-.editor-content img {
-  max-width: 100%;
-  height: auto;
+/* Dropdown / Popover Panels */
+.editor-panel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--ion-background-color, #ffffff);
+  border: 1px solid var(--ion-color-step-200, #e0e0e0);
+  border-radius: 8px;
+  margin: 4px 0 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.link-panel {
+  flex-wrap: wrap;
+}
+
+.link-input {
+  flex: 1;
+  min-width: 180px;
+  padding: 6px 10px;
+  border: 1px solid var(--ion-color-step-300, #ccc);
   border-radius: 4px;
-  margin: 4px 0;
-  display: block;
+  background: var(--ion-item-background, var(--ion-background-color, #fff));
+  color: var(--ion-text-color, #000);
+  font-size: 0.9rem;
+}
+
+.link-input:focus {
+  outline: none;
+  border-color: var(--ion-color-primary, #3880ff);
 }
 
 .image-picker-panel {
@@ -37,6 +99,7 @@
   padding: 8px;
   z-index: 10;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .image-picker-grid {
@@ -50,4 +113,98 @@
 .image-picker-item img {
   object-fit: cover;
   border-radius: 4px;
+}
+
+/* Image Node View Styling */
+.editor-image-container {
+  display: flex;
+  margin: 12px 0;
+  width: 100%;
+}
+
+.editor-image-container.image-align-left {
+  justify-content: flex-start;
+}
+
+.editor-image-container.image-align-center {
+  justify-content: center;
+}
+
+.editor-image-container.image-align-right {
+  justify-content: flex-end;
+}
+
+.editor-image-wrapper {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.editor-image-wrapper img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.image-controls-bar {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  background: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(4px);
+  padding: 3px 6px;
+  border-radius: 6px;
+  gap: 4px;
+  z-index: 5;
+}
+
+.editor-image-wrapper:hover .image-controls-bar,
+.editor-image-wrapper:focus-within .image-controls-bar {
+  display: flex;
+}
+
+.image-control-btn {
+  background: transparent;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.image-control-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.image-control-btn.active {
+  background: var(--ion-color-primary, #3880ff);
+  border-color: var(--ion-color-primary, #3880ff);
+}
+
+.image-control-btn.delete {
+  color: #ff6b6b;
+}
+
+.image-resize-handle {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 14px;
+  height: 14px;
+  background: var(--ion-color-primary, #3880ff);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: se-resize;
+  display: none;
+  z-index: 6;
+}
+
+.editor-image-wrapper:hover .image-resize-handle {
+  display: block;
 }
