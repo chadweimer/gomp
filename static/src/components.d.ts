@@ -46,10 +46,6 @@ export namespace Components {
     }
     interface HtmlEditor {
         /**
-          * @default false
-         */
-        "enableAlignment": boolean;
-        /**
           * @default true
          */
         "enableHeadings": boolean;
@@ -573,10 +569,6 @@ declare namespace LocalJSX {
     }
     interface HtmlEditor {
         /**
-          * @default false
-         */
-        "enableAlignment"?: boolean;
-        /**
           * @default true
          */
         "enableHeadings"?: boolean;
@@ -777,7 +769,6 @@ declare namespace LocalJSX {
         "enableHeadings": boolean;
         "enableLinks": boolean;
         "enableLists": boolean;
-        "enableAlignment": boolean;
     }
     interface HtmlViewerAttributes {
         "value": string;

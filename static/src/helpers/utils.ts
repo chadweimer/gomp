@@ -183,7 +183,7 @@ export function preProcessMultilineText(text: string | null | undefined) {
   return text;
 }
 
-const ALLOWED_STYLE_PROPERTIES = ['text-align', 'width', 'height', 'margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'display'];
+const ALLOWED_STYLE_PROPERTIES = ['width', 'height', 'margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'display'];
 
 DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
   if (data.attrName === 'style') {

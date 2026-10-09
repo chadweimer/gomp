@@ -191,13 +191,11 @@ describe('recipe-editor', () => {
       const directionsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Directions"]');
       expect(directionsEditor?.hasAttribute('enableheadings')).toBe(true);
       expect(directionsEditor?.hasAttribute('enablelinks')).toBe(true);
-      expect(directionsEditor?.hasAttribute('enablealignment')).toBe(true);
       expect(directionsEditor?.hasAttribute('enablelists')).toBe(true);
 
       const ingredientsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Ingredients"]');
       expect(ingredientsEditor?.hasAttribute('enableheadings')).toBe(false);
       expect(ingredientsEditor?.hasAttribute('enablelinks')).toBe(false);
-      expect(ingredientsEditor?.hasAttribute('enablealignment')).toBe(false);
       expect(ingredientsEditor?.hasAttribute('enablelists')).toBe(true);
     });
   });

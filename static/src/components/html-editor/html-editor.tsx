@@ -1,7 +1,6 @@
 import { Component, Element, Event, EventEmitter, Fragment, h, Host, Method, Prop, State, Watch } from '@stencil/core';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
-import TextAlign from '@tiptap/extension-text-align';
 import { isNullOrEmpty } from '../../helpers/utils';
 import { ImageNode } from './extensions';
 
@@ -21,7 +20,6 @@ export class HTMLEditor {
   @Prop() enableHeadings: boolean = true;
   @Prop() enableLinks: boolean = true;
   @Prop() enableLists: boolean = true;
-  @Prop() enableAlignment: boolean = false;
 
   @Event() valueChanged!: EventEmitter<string>;
 
@@ -36,7 +34,6 @@ export class HTMLEditor {
 
   @State() isImagePickerOpen: boolean = false;
   @State() isLinkPanelOpen: boolean = false;
-  @State() isAlignPanelOpen: boolean = false;
   @State() linkUrl: string = '';
 
   private editorContentRef!: HTMLElement;
@@ -146,18 +143,6 @@ export class HTMLEditor {
               </Fragment>
             )}
 
-            {this.enableAlignment && (
-              <ion-button
-                onClick={() => this.toggleAlignPanel()}
-                size="default"
-                fill={this.isAlignPanelOpen ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Text alignment"
-              >
-                <ion-icon icon="reorder-two" />
-              </ion-button>
-            )}
-
             {this.enableLinks && (
               <ion-button
                 onClick={() => this.toggleLinkPanel()}
@@ -182,20 +167,6 @@ export class HTMLEditor {
               </ion-button>
             )}
           </ion-buttons>
-
-          {this.isAlignPanelOpen && (
-            <div class="editor-panel align-panel">
-              <ion-button size="small" fill="clear" onClick={() => this.applyTextAlign('left')}>
-                Left
-              </ion-button>
-              <ion-button size="small" fill="clear" onClick={() => this.applyTextAlign('center')}>
-                Center
-              </ion-button>
-              <ion-button size="small" fill="clear" onClick={() => this.applyTextAlign('right')}>
-                Right
-              </ion-button>
-            </div>
-          )}
 
           {this.isLinkPanelOpen && (
             <div class="editor-panel link-panel">
@@ -283,14 +254,6 @@ export class HTMLEditor {
       ImageNode,
     ];
 
-    if (this.enableAlignment) {
-      extensions.push(
-        TextAlign.configure({
-          types: ['heading', 'paragraph'],
-        }),
-      );
-    }
-
     this.editor = new Editor({
       element: this.editorContentRef,
       extensions,
@@ -320,7 +283,6 @@ export class HTMLEditor {
 
     this.isImagePickerOpen = false;
     this.isLinkPanelOpen = false;
-    this.isAlignPanelOpen = false;
 
     this.valueChanged.emit(this.getCleanHTML());
   }
@@ -377,20 +339,8 @@ export class HTMLEditor {
     this.editor?.chain().focus().toggleBulletList().run();
   }
 
-  private toggleAlignPanel() {
-    this.isAlignPanelOpen = !this.isAlignPanelOpen;
-    this.isLinkPanelOpen = false;
-    this.isImagePickerOpen = false;
-  }
-
-  private applyTextAlign(align: string) {
-    this.editor?.chain().focus().setTextAlign(align).run();
-    this.isAlignPanelOpen = false;
-  }
-
   private toggleLinkPanel() {
     this.isLinkPanelOpen = !this.isLinkPanelOpen;
-    this.isAlignPanelOpen = false;
     this.isImagePickerOpen = false;
 
     if (this.isLinkPanelOpen && this.isLinkActive) {
@@ -426,7 +376,6 @@ export class HTMLEditor {
   private toggleImagePicker() {
     this.isImagePickerOpen = !this.isImagePickerOpen;
     this.isLinkPanelOpen = false;
-    this.isAlignPanelOpen = false;
   }
 
   private insertImage(image: { name: string; url: string; }) {

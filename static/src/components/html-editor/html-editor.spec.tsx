@@ -182,47 +182,21 @@ describe('html-editor', () => {
     expect(focusSpy).not.toHaveBeenCalled();
   });
 
-  it('respects feature flags to toggle headings, links, and alignment', async () => {
+  it('respects feature flags to toggle headings and links', async () => {
     const { root: defaultRoot } = await render(<html-editor />);
     expect(defaultRoot.querySelector('ion-button[title="Heading 2"]')).not.toBeNull();
     expect(defaultRoot.querySelector('ion-button[title="Heading 3"]')).not.toBeNull();
     expect(defaultRoot.querySelector('ion-button[title="Hyperlink"]')).not.toBeNull();
-    expect(defaultRoot.querySelector('ion-button[title="Text alignment"]')).toBeNull();
 
     const { root: customRoot } = await render(
       <html-editor
         enableHeadings={false}
         enableLinks={false}
-        enableAlignment={true}
       />
     );
     expect(customRoot.querySelector('ion-button[title="Heading 2"]')).toBeNull();
     expect(customRoot.querySelector('ion-button[title="Heading 3"]')).toBeNull();
     expect(customRoot.querySelector('ion-button[title="Hyperlink"]')).toBeNull();
-    expect(customRoot.querySelector('ion-button[title="Text alignment"]')).not.toBeNull();
-  });
-
-  it('toggles alignment panel and applies alignment', async () => {
-    const { root, waitForChanges } = await render(
-      <html-editor enableAlignment={true} value="<p>Centered</p>" />
-    );
-
-    const alignBtn = root.querySelector('ion-button[title="Text alignment"]') as HTMLIonButtonElement;
-    expect(alignBtn).not.toBeNull();
-
-    alignBtn.click();
-    await waitForChanges();
-
-    const panel = root.querySelector('.align-panel');
-    expect(panel).not.toBeNull();
-
-    const centerBtn = panel?.querySelectorAll('ion-button')[1];
-    expect(centerBtn?.textContent).toBe('Center');
-
-    centerBtn?.click();
-    await waitForChanges();
-
-    expect(root.querySelector('.align-panel')).toBeNull();
   });
 
   it('toggles link panel and creates a link', async () => {
