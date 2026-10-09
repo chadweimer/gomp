@@ -104,6 +104,11 @@ html:not(.hydrated) body {
   --ion-color-light-tint: #f5f6f9;
 }
 
+p {
+  margin-top: 6px;
+  margin-bottom: 6px;
+}
+
 /* This allows text selection by default in mobile browsers, particularly firefox */
 :not(.prevent-selection) * {
   -webkit-user-select: auto !important;
