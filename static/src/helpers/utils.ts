@@ -183,7 +183,7 @@ export function preProcessMultilineText(text: string | null | undefined) {
   return text;
 }
 
-const ALLOWED_STYLE_PROPERTIES = new Set(['width', 'height', 'margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'display']);
+const ALLOWED_STYLE_PROPERTIES = new Set(['width', 'max-width', 'height', 'max-height', 'margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'display']);
 
 DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
   if (data.attrName === 'style') {
@@ -265,7 +265,7 @@ export function toPresentationHtml(
     const template = host.ownerDocument.createElement('template');
 
     let width: string | null = null;
-    let height = '400px';
+    let height: string | null = null;
     if (attrString) {
       for (const part of attrString.split('|')) {
         const [k, v] = part.split('=');
@@ -311,10 +311,14 @@ export function createImageElement(
   if (width) {
     img.dataset.width = width;
     img.style.width = width.endsWith('%') || width.endsWith('px') ? width : `${width}px`;
+  } else {
+    img.style.maxWidth = '400px';
   }
   if (height) {
     img.dataset.height = height;
     img.style.height = height.endsWith('%') || height.endsWith('px') ? height : `${height}px`;
+  } else {
+    img.style.maxHeight = '400px';
   }
   return img;
 }

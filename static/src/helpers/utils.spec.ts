@@ -70,8 +70,8 @@ describe('utils', () => {
       expect(storage).toEqualHtml(original);
     });
 
-    it('round-trips with toPresentationHtml with width attribute', () => {
-      const original = 'Step 1: Mix. {{image:pancakes.jpg|width=300px}} Step 2: Cook.';
+    it('round-trips with toPresentationHtml with height attribute', () => {
+      const original = 'Step 1: Mix. {{image:pancakes.jpg|height=300px}} Step 2: Cook.';
       const presentation = toPresentationHtml(globalThis.document.body, original, 42, false);
       const storage = toStorageHtml(globalThis.document.body, presentation);
       expect(storage).toEqualHtml(original);
@@ -89,7 +89,7 @@ describe('utils', () => {
       const directions = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
       const output = toPresentationHtml(globalThis.document.body, directions, 42);
       expect(output).toEqualHtml(
-        'Step 1: Mix. <a href="/uploads/recipes/42/images/pancakes.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"></a> Step 2: Cook.',
+        'Step 1: Mix. <a href="/uploads/recipes/42/images/pancakes.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/42/images/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg" style="max-width: 400px; max-height: 400px"></a> Step 2: Cook.',
       );
     });
 
@@ -97,7 +97,7 @@ describe('utils', () => {
       const directions = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
       const output = toPresentationHtml(globalThis.document.body, directions, 42, false);
       expect(output).toEqualHtml(
-        'Step 1: Mix. <img src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"> Step 2: Cook.',
+        'Step 1: Mix. <img src="/uploads/recipes/42/images/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg" style="max-width: 400px; max-height: 400px"> Step 2: Cook.',
       );
     });
 
@@ -105,7 +105,7 @@ describe('utils', () => {
       const directions = '{{image:first.png}} then {{image:second.png}}';
       const output = toPresentationHtml(globalThis.document.body, directions, 10, false);
       expect(output).toEqualHtml(
-        '<img src="/uploads/recipes/10/thumbs/first.png" alt="first.png" data-image="first.png"> then <img src="/uploads/recipes/10/thumbs/second.png" alt="second.png" data-image="second.png">',
+        '<img src="/uploads/recipes/10/images/first.png" alt="first.png" data-image="first.png" style="max-width: 400px; max-height: 400px"> then <img src="/uploads/recipes/10/images/second.png" alt="second.png" data-image="second.png" style="max-width: 400px; max-height: 400px">',
       );
     });
   });

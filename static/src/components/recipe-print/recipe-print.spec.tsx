@@ -159,7 +159,7 @@ describe('recipe-print', () => {
     expect(htmlViewer).not.toBeNull();
     expect(htmlViewer).toEqualAttribute(
       'value',
-      '<p>Pour mix <img src="/uploads/recipes/9/thumbs/waffle.jpg" alt="waffle.jpg" data-image="waffle.jpg"></p>',
+      '<p>Pour mix <img src="/uploads/recipes/9/images/waffle.jpg" alt="waffle.jpg" data-image="waffle.jpg" style="max-width: 400px; max-height: 400px"></p>',
     );
   });
 });

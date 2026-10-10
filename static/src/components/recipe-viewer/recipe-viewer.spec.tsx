@@ -240,7 +240,7 @@ describe('recipe-viewer', () => {
     expect(htmlViewer).not.toBeNull();
     expect(htmlViewer).toEqualAttribute(
       'value',
-      '<p>Step 1: Mix <a href="/uploads/recipes/7/images/batter.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/7/thumbs/batter.jpg" alt="batter.jpg" data-image="batter.jpg"></a></p>',
+      '<p>Step 1: Mix <a href="/uploads/recipes/7/images/batter.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/7/images/batter.jpg" alt="batter.jpg" data-image="batter.jpg" style="max-width: 400px; max-height: 400px"></a></p>',
     );
   });
 });
