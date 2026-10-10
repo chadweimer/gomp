@@ -17,7 +17,6 @@ export class HTMLEditor {
   @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
   @Prop() images?: { name: string; url: string; thumbUrl: string }[];
 
-  @Prop() enableHeadings: boolean = true;
   @Prop() enableLinks: boolean = true;
   @Prop() enableLists: boolean = true;
 
@@ -26,8 +25,6 @@ export class HTMLEditor {
   @State() isBoldActive: boolean = false;
   @State() isItalicActive: boolean = false;
   @State() isUnderlineActive: boolean = false;
-  @State() isHeading2Active: boolean = false;
-  @State() isHeading3Active: boolean = false;
   @State() isOrderedListActive: boolean = false;
   @State() isUnorderedListActive: boolean = false;
   @State() isLinkActive: boolean = false;
@@ -96,29 +93,6 @@ export class HTMLEditor {
             >
               <u>U</u>
             </ion-button>
-
-            {this.enableHeadings && (
-              <Fragment>
-                <ion-button
-                  onClick={() => this.toggleHeading(2)}
-                  size="default"
-                  fill={this.isHeading2Active ? 'solid' : 'clear'}
-                  tabindex="-1"
-                  title="Heading 2"
-                >
-                  H2
-                </ion-button>
-                <ion-button
-                  onClick={() => this.toggleHeading(3)}
-                  size="default"
-                  fill={this.isHeading3Active ? 'solid' : 'clear'}
-                  tabindex="-1"
-                  title="Heading 3"
-                >
-                  H3
-                </ion-button>
-              </Fragment>
-            )}
 
             {this.enableLists && (
               <Fragment>
@@ -234,7 +208,6 @@ export class HTMLEditor {
 
     const extensions = [
       StarterKit.configure({
-        heading: this.enableHeadings ? { levels: [1, 2, 3] } : false,
         bulletList: this.enableLists ? {} : false,
         orderedList: this.enableLists ? {} : false,
         link: this.enableLinks
@@ -310,8 +283,6 @@ export class HTMLEditor {
     this.isBoldActive = this.editor.isActive('bold');
     this.isItalicActive = this.editor.isActive('italic');
     this.isUnderlineActive = this.editor.isActive('underline');
-    this.isHeading2Active = this.editor.isActive('heading', { level: 2 });
-    this.isHeading3Active = this.editor.isActive('heading', { level: 3 });
     this.isOrderedListActive = this.editor.isActive('orderedList');
     this.isUnorderedListActive = this.editor.isActive('bulletList');
     this.isLinkActive = this.editor.isActive('link');
@@ -332,10 +303,6 @@ export class HTMLEditor {
 
   private toggleUnderline() {
     this.editor?.chain().focus().toggleUnderline().run();
-  }
-
-  private toggleHeading(level: 2 | 3) {
-    this.editor?.chain().focus().toggleHeading({ level }).run();
   }
 
   private toggleOrderedList() {

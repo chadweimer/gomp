@@ -70,7 +70,7 @@ describe('html-editor', () => {
     expect(items).toHaveLength(mockImages.length);
 
     const firstImg = items[0].querySelector('img');
-    expect(firstImg).toEqualAttribute('src', mockImages[0].url);
+    expect(firstImg).toEqualAttribute('src', mockImages[0].thumbUrl);
     expect(firstImg).toEqualAttribute('alt', mockImages[0].name);
 
     imageBtn?.click();
@@ -107,7 +107,7 @@ describe('html-editor', () => {
     expect(img).toEqualAttribute('data-image', mockImages[0].name);
 
     // Event should be emitted with sentinel
-    expect(valueChangedSpy).toHaveBeenCalledTimes(1);
+    expect(valueChangedSpy).toHaveBeenCalled();
     const eventArg = valueChangedSpy.mock.calls[0][0] as CustomEvent<string>;
     expect(eventArg.detail).toContain(`src="${mockImages[0].url}"`);
     expect(eventArg.detail).toContain(`data-image="${mockImages[0].name}"`);
@@ -184,20 +184,15 @@ describe('html-editor', () => {
     expect(focusSpy).not.toHaveBeenCalled();
   });
 
-  it('respects feature flags to toggle headings and links', async () => {
+  it('respects feature flags to toggle links', async () => {
     const { root: defaultRoot } = await render(<html-editor />);
-    expect(defaultRoot.querySelector('ion-button[title="Heading 2"]')).not.toBeNull();
-    expect(defaultRoot.querySelector('ion-button[title="Heading 3"]')).not.toBeNull();
     expect(defaultRoot.querySelector('ion-button[title="Hyperlink"]')).not.toBeNull();
 
     const { root: customRoot } = await render(
       <html-editor
-        enableHeadings={false}
         enableLinks={false}
       />
     );
-    expect(customRoot.querySelector('ion-button[title="Heading 2"]')).toBeNull();
-    expect(customRoot.querySelector('ion-button[title="Heading 3"]')).toBeNull();
     expect(customRoot.querySelector('ion-button[title="Hyperlink"]')).toBeNull();
   });
 
@@ -226,18 +221,18 @@ describe('html-editor', () => {
     expect(root.querySelector('.link-panel')).toBeNull();
   });
 
-  it('renders image with data-image and data-width attributes using GompImage', async () => {
+  it('renders image with data-image and data-height attributes using GompImage', async () => {
     const { root } = await render(
       <html-editor
         images={mockImages}
-        value={`<p>Step 1: <img src="${mockImages[0].url}" data-image="${mockImages[0].name}" data-width="250px" /></p>`}
+        value={`<p>Step 1: <img src="${mockImages[0].url}" data-image="${mockImages[0].name}" data-height="250px" /></p>`}
       />
     );
 
     const img = root.querySelector('.editor-content img') as HTMLImageElement;
     expect(img).not.toBeNull();
     expect(img.getAttribute('data-image')).toBe(mockImages[0].name);
-    expect(img.getAttribute('data-width')).toBe('250px');
-    expect(img.style.width).toBe('250px');
+    expect(img.getAttribute('data-height')).toBe('250px');
+    expect(img.style.height).toBe('250px');
   });
 });

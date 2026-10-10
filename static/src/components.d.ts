@@ -48,10 +48,6 @@ export namespace Components {
         /**
           * @default true
          */
-        "enableHeadings": boolean;
-        /**
-          * @default true
-         */
         "enableLinks": boolean;
         /**
           * @default true
@@ -571,10 +567,6 @@ declare namespace LocalJSX {
         /**
           * @default true
          */
-        "enableHeadings"?: boolean;
-        /**
-          * @default true
-         */
         "enableLinks"?: boolean;
         /**
           * @default true
@@ -766,7 +758,6 @@ declare namespace LocalJSX {
         "value": string;
         "label": string;
         "labelPlacement": 'fixed' | 'floating' | 'stacked';
-        "enableHeadings": boolean;
         "enableLinks": boolean;
         "enableLists": boolean;
     }

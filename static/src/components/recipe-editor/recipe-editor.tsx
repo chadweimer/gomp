@@ -119,7 +119,6 @@ export class RecipeEditor {
             </ion-item>
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Ingredients" label-placement="stacked"
-                enableHeadings={false}
                 enableLinks={false}
                 enableLists={true}
                 value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id, false)}
@@ -128,7 +127,6 @@ export class RecipeEditor {
             </ion-item>
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Directions" label-placement="stacked"
-                enableHeadings={true}
                 enableLinks={true}
                 enableLists={true}
                 value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id, false)}
@@ -139,7 +137,6 @@ export class RecipeEditor {
             </ion-item>
             <ion-item lines="full">
               <html-editor label="Storage Instructions" label-placement="stacked"
-                enableHeadings={false}
                 enableLinks={false}
                 enableLists={false}
                 value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id, false)}
@@ -148,7 +145,6 @@ export class RecipeEditor {
             </ion-item>
             <ion-item lines="full">
               <html-editor label="Nutrition" label-placement="stacked"
-                enableHeadings={false}
                 enableLinks={false}
                 enableLists={false}
                 value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id, false)}

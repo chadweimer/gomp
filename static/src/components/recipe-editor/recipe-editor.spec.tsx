@@ -173,11 +173,13 @@ describe('recipe-editor', () => {
       expect(directionsEditor?.images).toEqual([
         {
           name: 'pic1.jpg',
-          url: '/uploads/recipes/1/thumbs/pic1.jpg',
+          url: '/uploads/recipes/1/images/pic1.jpg',
+          thumbUrl: '/uploads/recipes/1/thumbs/pic1.jpg',
         },
         {
           name: 'pic2.png',
-          url: '/uploads/recipes/1/thumbs/pic2.png',
+          url: '/uploads/recipes/1/images/pic2.png',
+          thumbUrl: '/uploads/recipes/1/thumbs/pic2.png',
         },
       ]);
 
@@ -189,12 +191,10 @@ describe('recipe-editor', () => {
       const { root } = await render<HTMLRecipeEditorElement>(<recipe-editor />);
 
       const directionsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Directions"]');
-      expect(directionsEditor?.hasAttribute('enableheadings')).toBe(true);
       expect(directionsEditor?.hasAttribute('enablelinks')).toBe(true);
       expect(directionsEditor?.hasAttribute('enablelists')).toBe(true);
 
       const ingredientsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Ingredients"]');
-      expect(ingredientsEditor?.hasAttribute('enableheadings')).toBe(false);
       expect(ingredientsEditor?.hasAttribute('enablelinks')).toBe(false);
       expect(ingredientsEditor?.hasAttribute('enablelists')).toBe(true);
     });
