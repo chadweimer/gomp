@@ -183,7 +183,7 @@ export function preProcessMultilineText(text: string | null | undefined) {
   return text;
 }
 
-const ALLOWED_STYLE_PROPERTIES = new Set(['width', 'max-width', 'height', 'max-height', 'margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom', 'display']);
+const ALLOWED_STYLE_PROPERTIES = new Set(['width', 'height']);
 
 DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
   if (data.attrName === 'style') {
@@ -208,10 +208,7 @@ DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
 export function sanitizeHTML(html: string) {
   // Sanitize the HTML using DOMPurify to prevent XSS attacks while allowing safe formatting.
   return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [
-      'b', 'i', 'u', 's', 'strong', 'em', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'ul', 'ol', 'li', 'br', 'span', 'a', 'img', 'div'
-    ],
+    ALLOWED_TAGS: ['b', 'i', 'u', 's', 'strong', 'em', 'p', 'ul', 'ol', 'li', 'br', 'span', 'a', 'img', 'div'],
     ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'data-image', 'data-width', 'data-height', 'class', 'style', 'loading'],
     ALLOW_DATA_ATTR: true,
   });
