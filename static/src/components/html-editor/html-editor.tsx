@@ -30,6 +30,7 @@ export class HTMLEditor {
 
   @State() isImagePickerOpen = false;
   @State() isLinkPanelOpen = false;
+  @State() isHelpPanelOpen = false;
   @State() linkUrl = '';
 
   private editorContentRef!: HTMLElement;
@@ -61,87 +62,106 @@ export class HTMLEditor {
         tabindex={this.el.getAttribute('tabindex') ?? '-1'}
         onFocus={(e: FocusEvent) => this.handleFocus(e)}
         onFocusout={(e: FocusEvent) => this.handleBlur(e)}
+        onKeyDown={(e: KeyboardEvent) => {
+          if (e.key === 'Escape' && this.isHelpPanelOpen) {
+            e.preventDefault();
+            this.isHelpPanelOpen = false;
+          }
+        }}
       >
         {!isNullOrEmpty(this.label) && <ion-label position={this.labelPlacement}>{this.label}</ion-label>}
-        <ion-toolbar class="editor-toolbar">
-          <ion-buttons class="prevent-selection">
-            <ion-button
-              onClick={() => this.editorCommand((chain) => chain.toggleInvisibleCharacters())}
-              size="default"
-              fill={this.isInvisibleCharactersActive ? 'solid' : 'clear'}
-              tabindex="-1"
-              title="Invisible characters"
-            >
-              <ion-icon icon="document-text-outline" />
-            </ion-button>
-            <ion-button
-              onClick={() => this.editorCommand((chain) => chain.toggleBold())}
-              size="default"
-              fill={this.isBoldActive ? 'solid' : 'clear'}
-              tabindex="-1"
-              title="Bold"
-            >
-              <strong>B</strong>
-            </ion-button>
-            <ion-button
-              onClick={() => this.editorCommand((chain) => chain.toggleItalic())}
-              size="default"
-              fill={this.isItalicActive ? 'solid' : 'clear'}
-              tabindex="-1"
-              title="Italic"
-            >
-              <em>I</em>
-            </ion-button>
-            <ion-button
-              onClick={() => this.editorCommand((chain) => chain.toggleUnderline())}
-              size="default"
-              fill={this.isUnderlineActive ? 'solid' : 'clear'}
-              tabindex="-1"
-              title="Underline"
-            >
-              <u>U</u>
-            </ion-button>
-            <ion-button
-              onClick={() => this.editorCommand((chain) => chain.toggleOrderedList())}
-              size="default"
-              fill={this.isOrderedListActive ? 'solid' : 'clear'}
-              tabindex="-1"
-              title="Numbered list"
-            >
-              #
-            </ion-button>
-            <ion-button
-              onClick={() => this.editorCommand((chain) => chain.toggleBulletList())}
-              size="default"
-              fill={this.isUnorderedListActive ? 'solid' : 'clear'}
-              tabindex="-1"
-              title="Bullet list"
-            >
-              <ion-icon icon="list" />
-            </ion-button>
-            <ion-button
-              onClick={() => this.toggleLinkPanel()}
-              size="default"
-              fill={this.isLinkPanelOpen || this.isLinkActive ? 'solid' : 'clear'}
-              tabindex="-1"
-              title="Hyperlink"
-            >
-              <ion-icon icon="link" />
-            </ion-button>
-
-            {(this.images?.length ?? 0) > 0 && (
+        <div class="toolbar-container">
+          <ion-toolbar class="editor-toolbar">
+            <ion-buttons slot="primary" class="prevent-selection">
               <ion-button
-                onClick={() => this.toggleImagePicker()}
+                onClick={() => this.editorCommand((chain) => chain.toggleBold())}
                 size="default"
-                fill={this.isImagePickerOpen ? 'solid' : 'clear'}
+                fill={this.isBoldActive ? 'solid' : 'clear'}
                 tabindex="-1"
-                title="Insert image"
+                title="Bold"
               >
-                <ion-icon icon="image" />
+                <strong>B</strong>
               </ion-button>
-            )}
-          </ion-buttons>
+              <ion-button
+                onClick={() => this.editorCommand((chain) => chain.toggleItalic())}
+                size="default"
+                fill={this.isItalicActive ? 'solid' : 'clear'}
+                tabindex="-1"
+                title="Italic"
+              >
+                <em>I</em>
+              </ion-button>
+              <ion-button
+                onClick={() => this.editorCommand((chain) => chain.toggleUnderline())}
+                size="default"
+                fill={this.isUnderlineActive ? 'solid' : 'clear'}
+                tabindex="-1"
+                title="Underline"
+              >
+                <u>U</u>
+              </ion-button>
+              <ion-button
+                onClick={() => this.editorCommand((chain) => chain.toggleOrderedList())}
+                size="default"
+                fill={this.isOrderedListActive ? 'solid' : 'clear'}
+                tabindex="-1"
+                title="Numbered list"
+              >
+                #
+              </ion-button>
+              <ion-button
+                onClick={() => this.editorCommand((chain) => chain.toggleBulletList())}
+                size="default"
+                fill={this.isUnorderedListActive ? 'solid' : 'clear'}
+                tabindex="-1"
+                title="Bullet list"
+              >
+                <ion-icon icon="list" />
+              </ion-button>
+              <ion-button
+                onClick={() => this.toggleLinkPanel()}
+                size="default"
+                fill={this.isLinkPanelOpen || this.isLinkActive ? 'solid' : 'clear'}
+                tabindex="-1"
+                title="Hyperlink"
+              >
+                <ion-icon icon="link" />
+              </ion-button>
 
+              {(this.images?.length ?? 0) > 0 && (
+                <ion-button
+                  onClick={() => this.toggleImagePicker()}
+                  size="default"
+                  fill={this.isImagePickerOpen ? 'solid' : 'clear'}
+                  tabindex="-1"
+                  title="Insert image"
+                >
+                  <ion-icon icon="image" />
+                </ion-button>
+              )}
+            </ion-buttons>
+
+            <ion-buttons slot="secondary" class="prevent-selection">
+              <ion-button
+                onClick={() => this.editorCommand((chain) => chain.toggleInvisibleCharacters())}
+                size="default"
+                fill={this.isInvisibleCharactersActive ? 'solid' : 'clear'}
+                tabindex="-1"
+                title="Invisible characters"
+              >
+                <ion-icon icon="document-text-outline" />
+              </ion-button>
+              <ion-button
+                onClick={() => this.toggleHelpPanel()}
+                size="default"
+                fill={this.isHelpPanelOpen ? 'solid' : 'clear'}
+                tabindex="-1"
+                title="Keyboard shortcuts"
+              >
+                <ion-icon icon="help-circle-outline" />
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
           {this.isLinkPanelOpen && (
             <div class="editor-panel link-panel">
               <input
@@ -182,7 +202,46 @@ export class HTMLEditor {
               ))}
             </div>
           )}
-        </ion-toolbar>
+
+          {this.isHelpPanelOpen && (
+            <div class="editor-panel help-panel">
+              <div class="shortcuts-grid">
+                <div class="shortcut-row">
+                  <span class="shortcut-desc">Bold</span>
+                  <span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>B</kbd></span>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-desc">Italic</span>
+                  <span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>I</kbd></span>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-desc">Underline</span>
+                  <span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>U</kbd></span>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-desc">Soft line break</span>
+                  <span class="shortcut-keys"><kbd>Shift</kbd>+<kbd>Enter</kbd></span>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-desc">New paragraph</span>
+                  <span class="shortcut-keys"><kbd>Enter</kbd></span>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-desc">Bullet list</span>
+                  <span class="shortcut-keys"><kbd>*</kbd> <kbd>Space</kbd></span>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-desc">Numbered list</span>
+                  <span class="shortcut-keys"><kbd>1.</kbd> <kbd>Space</kbd></span>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-desc">Undo / Redo</span>
+                  <span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div ref={el => (this.editorContentRef = el!)} class="editor-content" />
       </Host >
@@ -238,6 +297,7 @@ export class HTMLEditor {
       },
       onSelectionUpdate: () => {
         this.updateButtonStates();
+        this.isHelpPanelOpen = false;
       },
     });
 
@@ -258,6 +318,7 @@ export class HTMLEditor {
 
     this.isImagePickerOpen = false;
     this.isLinkPanelOpen = false;
+    this.isHelpPanelOpen = false;
 
     this.valueChanged.emit(this.getCleanHTML());
   }
@@ -299,11 +360,24 @@ export class HTMLEditor {
   private toggleLinkPanel() {
     this.isLinkPanelOpen = !this.isLinkPanelOpen;
     this.isImagePickerOpen = false;
+    this.isHelpPanelOpen = false;
 
     if (this.isLinkPanelOpen && this.isLinkActive) {
       const linkAttrs = this.editor?.getAttributes('link') as { href?: string } | undefined;
       this.linkUrl = linkAttrs?.href || '';
     }
+  }
+
+  private toggleImagePicker() {
+    this.isImagePickerOpen = !this.isImagePickerOpen;
+    this.isLinkPanelOpen = false;
+    this.isHelpPanelOpen = false;
+  }
+
+  private toggleHelpPanel() {
+    this.isHelpPanelOpen = !this.isHelpPanelOpen;
+    this.isLinkPanelOpen = false;
+    this.isImagePickerOpen = false;
   }
 
   private applyLink() {
@@ -322,11 +396,6 @@ export class HTMLEditor {
     this.linkUrl = '';
     this.isLinkPanelOpen = false;
     this.updateButtonStates();
-  }
-
-  private toggleImagePicker() {
-    this.isImagePickerOpen = !this.isImagePickerOpen;
-    this.isLinkPanelOpen = false;
   }
 
   private insertImage(image: { name: string; url: string; thumbUrl: string }) {

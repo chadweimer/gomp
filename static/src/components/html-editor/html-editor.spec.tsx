@@ -225,4 +225,106 @@ describe('html-editor', () => {
     expect(img.getAttribute('data-height')).toBe('250px');
     expect(img.style.height).toBe('250px');
   });
+
+  it('renders invisible characters and help buttons in slot="secondary"', async () => {
+    const { root } = await render(<html-editor />);
+    const utilityButtons = root.shadowRoot?.querySelector('ion-buttons[slot="secondary"]');
+    expect(utilityButtons).not.toBeNull();
+
+    const buttons = utilityButtons?.querySelectorAll('ion-button');
+    expect(buttons).toHaveLength(2);
+
+    const invisIcon = buttons?.[0].querySelector('ion-icon[icon="document-text-outline"]');
+    expect(invisIcon).not.toBeNull();
+    expect(buttons?.[0].getAttribute('title')).toBe('Invisible characters');
+
+    const helpIcon = buttons?.[1].querySelector('ion-icon[icon="help-circle-outline"]');
+    expect(helpIcon).not.toBeNull();
+    expect(buttons?.[1].getAttribute('title')).toBe('Keyboard shortcuts');
+  });
+
+  it('toggles help panel open and closed via help button', async () => {
+    const { root, waitForChanges } = await render(<html-editor />);
+
+    const helpBtn = root.shadowRoot?.querySelector('ion-button[title="Keyboard shortcuts"]') as HTMLIonButtonElement;
+    expect(helpBtn).not.toBeNull();
+
+    expect(root.shadowRoot?.querySelector('.help-panel')).toBeNull();
+
+    helpBtn.click();
+    await waitForChanges();
+
+    let helpPanel = root.shadowRoot?.querySelector('.help-panel');
+    expect(helpPanel).not.toBeNull();
+
+    const grid = helpPanel?.querySelector('.shortcuts-grid');
+    expect(grid).not.toBeNull();
+
+    const shortcuts = helpPanel?.querySelectorAll('.shortcut-row');
+    expect(shortcuts?.length).toBeGreaterThan(0);
+
+    helpBtn.click();
+    await waitForChanges();
+
+    helpPanel = root.shadowRoot?.querySelector('.help-panel');
+    expect(helpPanel).toBeNull();
+  });
+
+  it('closes help panel when pressing Escape key', async () => {
+    const { root, waitForChanges } = await render(<html-editor />);
+
+    const helpBtn = root.shadowRoot?.querySelector('ion-button[title="Keyboard shortcuts"]') as HTMLIonButtonElement;
+    helpBtn.click();
+    await waitForChanges();
+
+    expect(root.shadowRoot?.querySelector('.help-panel')).not.toBeNull();
+
+    root.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await waitForChanges();
+
+    expect(root.shadowRoot?.querySelector('.help-panel')).toBeNull();
+  });
+
+  it('closes other panels when help panel is opened and vice versa', async () => {
+    const { root, waitForChanges } = await render(<html-editor images={mockImages} />);
+
+    const helpBtn = root.shadowRoot?.querySelector('ion-button[title="Keyboard shortcuts"]') as HTMLIonButtonElement;
+    const imageBtn = root.shadowRoot?.querySelector('ion-button[title="Insert image"]') as HTMLIonButtonElement;
+    const linkBtn = root.shadowRoot?.querySelector('ion-button[title="Hyperlink"]') as HTMLIonButtonElement;
+
+    // Open image picker
+    imageBtn.click();
+    await waitForChanges();
+    expect(root.shadowRoot?.querySelector('.image-picker-panel')).not.toBeNull();
+
+    // Open help panel -> image picker should close
+    helpBtn.click();
+    await waitForChanges();
+    expect(root.shadowRoot?.querySelector('.help-panel')).not.toBeNull();
+    expect(root.shadowRoot?.querySelector('.image-picker-panel')).toBeNull();
+
+    // Open link panel -> help panel should close
+    linkBtn.click();
+    await waitForChanges();
+    expect(root.shadowRoot?.querySelector('.link-panel')).not.toBeNull();
+    expect(root.shadowRoot?.querySelector('.help-panel')).toBeNull();
+  });
+
+  it('closes help panel on blur when focus moves outside the component', async () => {
+    const { root, waitForChanges } = await render(<html-editor />);
+
+    const helpBtn = root.shadowRoot?.querySelector('ion-button[title="Keyboard shortcuts"]') as HTMLIonButtonElement;
+    helpBtn.click();
+    await waitForChanges();
+    expect(root.shadowRoot?.querySelector('.help-panel')).not.toBeNull();
+
+    const outsideEl = document.createElement('div');
+    document.body.appendChild(outsideEl);
+
+    root.dispatchEvent(new FocusEvent('focusout', { relatedTarget: outsideEl, bubbles: true }));
+    await waitForChanges();
+
+    expect(root.shadowRoot?.querySelector('.help-panel')).toBeNull();
+    outsideEl.remove();
+  });
 });
