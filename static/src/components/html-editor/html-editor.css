@@ -16,14 +16,14 @@
 }
 
 .toolbar-container {
-  --min-height: 0;
   position: sticky;
   top: 0;
   z-index: 10;
-  margin-top: var(--ion-margin, 0);
 }
 
 .editor-toolbar {
+  --min-height: 0;
+  margin-top: var(--ion-margin, 0);
   background: var(--ion-toolbar-background, var(--ion-background-color, #fff));
 }
 
