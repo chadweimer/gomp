@@ -2,7 +2,7 @@ import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
 import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
-import { getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml, trap } from '../../helpers/utils';
+import { getRecipeImageUrl, getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml, trap } from '../../helpers/utils';
 
 @Component({
   tag: 'recipe-editor',
@@ -126,7 +126,8 @@ export class RecipeEditor {
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Directions" label-placement="stacked"
                 value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id, false)}
-                images={this.recipeImages.map(name => ({ name, url: getRecipeThumbnailUrl(this.recipe?.id, name) }))}
+                images={this.recipeImages.map(
+                  name => ({ name, url: getRecipeImageUrl(this.recipe?.id, name), thumbUrl: getRecipeThumbnailUrl(this.recipe?.id, name) }))}
                 onValueChanged={e => this.recipe = { ...this.recipe, directions: toStorageHtml(this.el, e.detail) }}
                 ref={el => this.directionsInput = el!} />
             </ion-item>

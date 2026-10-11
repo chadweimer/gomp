@@ -1,10 +1,16 @@
+@import '../../global/app.css';
+
 :host {
   display: block;
   width: 100%;
 }
 
+:host:focus-within ion-label {
+  color: var(--ion-color-primary);
+}
+
 .editor-content {
-  min-height: 1.5rem;
+  min-height: 2.5rem;
   padding-bottom: var(--ion-padding, 0);
   outline: none;
 }
@@ -13,36 +19,47 @@
   --min-height: 0;
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 10;
   margin-top: var(--ion-margin, 0);
+  background: var(--ion-toolbar-background, var(--ion-background-color, #fff));
 }
 
-:host:focus-within ion-label {
-  color: var(--ion-color-primary);
+/* Dropdown / Popover Panels */
+.editor-panel {
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--ion-background-color, #ffffff);
+  border: 1px solid var(--ion-color-step-200, #e0e0e0);
+  border-radius: 8px;
+  margin: 4px 0 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.editor-content img {
-  max-width: 100%;
-  height: auto;
+.link-panel {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.link-input {
+  flex: 1;
+  min-width: 180px;
+  padding: 6px 10px;
+  border: 1px solid var(--ion-color-step-300, #ccc);
   border-radius: 4px;
-  margin: 4px 0;
-  display: block;
+  background: var(--ion-item-background, var(--ion-background-color, #fff));
+  color: var(--ion-text-color, #000);
+  font-size: 0.9rem;
+}
+
+.link-input:focus {
+  outline: none;
+  border-color: var(--ion-color-primary, #3880ff);
 }
 
 .image-picker-panel {
-  border: 1px solid var(--ion-color-step-200, #e0e0e0);
-  border-radius: 8px;
-  background: var(--ion-background-color, #ffffff);
-  margin: 4px 0 8px 0;
-  padding: 8px;
-  z-index: 10;
-  position: relative;
-}
-
-.image-picker-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 5px;
   max-height: 220px;
   overflow-y: auto;
 }
@@ -50,4 +67,146 @@
 .image-picker-item img {
   object-fit: cover;
   border-radius: 4px;
+}
+
+.tiptap {
+  outline: none;
+  min-height: 2rem;
+}
+
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+}
+
+.tiptap img:not([style*="height" i]) {
+  max-height: 400px;
+}
+
+/* Image Node & Resizer Styling */
+.tiptap [data-resize-container] {
+  display: inline-flex;
+  position: relative;
+  margin: 0.5em 0;
+  max-width: 100%;
+}
+
+.tiptap [data-resize-wrapper] {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  max-width: 100%;
+}
+
+/* Selected state outline on wrapper */
+.tiptap [data-resize-container].ProseMirror-selectednode [data-resize-wrapper],
+.tiptap [data-resize-container][data-resize-state="true"] [data-resize-wrapper],
+.tiptap img.ProseMirror-selectednode {
+  outline: 2px solid var(--ion-color-primary, #3880ff);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Resize Handles - base styling */
+.tiptap [data-resize-handle] {
+  position: absolute;
+  z-index: 20;
+  box-sizing: border-box;
+  background-color: var(--ion-color-primary, #3880ff);
+  border: 1.5px solid #ffffff;
+  border-radius: 3px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  touch-action: none;
+  user-select: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out, background-color 0.15s ease-in-out;
+}
+
+/* Invisible extended hit target for effortless grabbing */
+.tiptap [data-resize-handle]::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+/* Reveal handles on hover, when selected, or during active resize */
+.tiptap [data-resize-container]:hover [data-resize-handle],
+.tiptap [data-resize-container].ProseMirror-selectednode [data-resize-handle],
+.tiptap [data-resize-container][data-resize-state="true"] [data-resize-handle] {
+  opacity: 1;
+}
+
+.tiptap [data-resize-handle]:hover {
+  background-color: var(--ion-color-primary-shade, #3171e0);
+}
+
+/* Corner Handles: 10px x 10px, centered on corners via */
+.tiptap [data-resize-handle][data-resize-handle="top-left"],
+.tiptap [data-resize-handle][data-resize-handle="top-right"],
+.tiptap [data-resize-handle][data-resize-handle="bottom-left"],
+.tiptap [data-resize-handle][data-resize-handle="bottom-right"] {
+  width: 10px;
+  height: 10px;
+}
+
+.tiptap [data-resize-handle][data-resize-handle="top-left"] {
+  cursor: nwse-resize;
+  top: -5px;
+  left: -5px;
+}
+
+.tiptap [data-resize-handle][data-resize-handle="top-right"] {
+  cursor: nesw-resize;
+  top: -5px;
+  right: -5px;
+}
+
+.tiptap [data-resize-handle][data-resize-handle="bottom-left"] {
+  cursor: nesw-resize;
+  bottom: -5px;
+  left: -5px;
+}
+
+.tiptap [data-resize-handle][data-resize-handle="bottom-right"] {
+  cursor: nwse-resize;
+  bottom: -5px;
+  right: -5px;
+}
+
+/* Edge Handles */
+.tiptap [data-resize-handle][data-resize-handle="top"],
+.tiptap [data-resize-handle][data-resize-handle="bottom"] {
+  cursor: ns-resize;
+  height: 6px;
+  left: 8px;
+  right: 8px;
+}
+
+.tiptap [data-resize-handle][data-resize-handle="top"] {
+  top: -3px;
+}
+
+.tiptap [data-resize-handle][data-resize-handle="bottom"] {
+  bottom: -3px;
+}
+
+.tiptap [data-resize-handle][data-resize-handle="left"],
+.tiptap [data-resize-handle][data-resize-handle="right"] {
+  cursor: ew-resize;
+  width: 6px;
+  top: 8px;
+  bottom: 8px;
+}
+
+.tiptap [data-resize-handle][data-resize-handle="left"] {
+  left: -3px;
+}
+
+.tiptap [data-resize-handle][data-resize-handle="right"] {
+  right: -3px;
 }

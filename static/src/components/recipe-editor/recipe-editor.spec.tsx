@@ -173,11 +173,13 @@ describe('recipe-editor', () => {
       expect(directionsEditor?.images).toEqual([
         {
           name: 'pic1.jpg',
-          url: '/uploads/recipes/1/thumbs/pic1.jpg',
+          url: '/uploads/recipes/1/images/pic1.jpg',
+          thumbUrl: '/uploads/recipes/1/thumbs/pic1.jpg',
         },
         {
           name: 'pic2.png',
-          url: '/uploads/recipes/1/thumbs/pic2.png',
+          url: '/uploads/recipes/1/images/pic2.png',
+          thumbUrl: '/uploads/recipes/1/thumbs/pic2.png',
         },
       ]);
 

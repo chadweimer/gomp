@@ -183,14 +183,34 @@ export function preProcessMultilineText(text: string | null | undefined) {
   return text;
 }
 
+const ALLOWED_STYLE_PROPERTIES = new Set(['width', 'height']);
+
+DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
+  if (data.attrName === 'style') {
+    const style = data.attrValue ?? '';
+    const safeProps = style
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => {
+        const [prop, val] = s.split(':').map(p => p.trim().toLowerCase());
+        if (!prop || !val) return false;
+        if (!ALLOWED_STYLE_PROPERTIES.has(prop)) return false;
+        if (val.includes('url(') || val.includes('javascript:') || val.includes('expression')) return false;
+        return true;
+      });
+    data.attrValue = safeProps.join('; ');
+    if (!data.attrValue) {
+      data.keepAttr = false;
+    }
+  }
+});
+
 export function sanitizeHTML(html: string) {
-  // Sanitize the HTML using DOMPurify to prevent XSS attacks.
-  // Forbid the use of style attributes and style tags.
-  // Also forbid span tags to prevent inline styles.
+  // Sanitize the HTML using DOMPurify to prevent XSS attacks while allowing safe formatting.
   return DOMPurify.sanitize(html, {
-    FORBID_ATTR: ['style'],
-    FORBID_TAGS: ['style', 'span'],
-    ADD_ATTR: ['target', 'data-image'],
+    ALLOWED_TAGS: ['b', 'i', 'u', 's', 'strong', 'em', 'p', 'ul', 'ol', 'li', 'br', 'span', 'a', 'img', 'div'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'data-image', 'data-width', 'data-height', 'class', 'style', 'loading'],
+    ALLOW_DATA_ATTR: true,
   });
 }
 
@@ -205,7 +225,22 @@ export function toStorageHtml(host: Element, value: string | null | undefined): 
   images.forEach(img => {
     const imageName = img.dataset.image;
     if (imageName) {
-      img.replaceWith(`{{image:${imageName}}}`);
+      const parts = [`image:${imageName}`];
+      const width = img.dataset.width || img.style.width;
+      if (width) {
+        parts.push(`width=${width}`);
+      }
+      const height = img.dataset.height || img.style.height;
+      if (height) {
+        parts.push(`height=${height}`);
+      }
+      const token = `{{${parts.join('|')}}}`;
+      const parent = img.parentElement;
+      if (parent?.tagName.toLowerCase() === 'a' && parent?.children.length === 1) {
+        parent.replaceWith(token);
+      } else {
+        img.replaceWith(token);
+      }
     }
   });
   return sanitizeHTML(template.innerHTML);
@@ -222,10 +257,25 @@ export function toPresentationHtml(
   }
 
   value = preProcessMultilineText(value);
-  value = value.replace(/\{\{image:([^}]+)\}\}/g, (_match, imageName: string) => {
-    const thumbUrl = getRecipeThumbnailUrl(recipeId, imageName);
+  value = value.replace(/\{\{image:([^}|]+)(?:\|([^}]+))?\}\}/g, (_match, imageName: string, attrString?: string) => {
+    const url = getRecipeImageUrl(recipeId, imageName);
     const template = host.ownerDocument.createElement('template');
-    const img = createImageElement(host, imageName, thumbUrl);
+
+    let width: string | null = null;
+    let height: string | null = null;
+    if (attrString) {
+      for (const part of attrString.split('|')) {
+        const [k, v] = part.split('=');
+        if (k === 'width' && v) {
+          width = v;
+        }
+        if (k === 'height' && v) {
+          height = v;
+        }
+      }
+    }
+
+    const img = createImageElement(host, imageName, url, width, height);
 
     if (!clickable) {
       template.content.appendChild(img);
@@ -238,17 +288,31 @@ export function toPresentationHtml(
       a.appendChild(img);
       template.content.appendChild(a);
     }
-    return template.innerHTML;;
+    return template.innerHTML;
   });
   return sanitizeHTML(value);
 }
 
-export function createImageElement(host: Element, imageName: string, src: string): HTMLImageElement {
+export function createImageElement(
+  host: Element,
+  imageName: string,
+  src: string,
+  width: string | null | undefined,
+  height: string | null | undefined
+): HTMLImageElement {
   const img = host.ownerDocument.createElement('img');
   img.loading = 'lazy';
   img.src = src;
   img.alt = imageName;
   img.dataset.image = imageName;
+  if (width) {
+    img.dataset.width = width;
+    img.style.width = width.endsWith('%') || width.endsWith('px') ? width : `${width}px`;
+  }
+  if (height) {
+    img.dataset.height = height;
+    img.style.height = height.endsWith('%') || height.endsWith('px') ? height : `${height}px`;
+  }
   return img;
 }
 
