@@ -1,5 +1,6 @@
-import { Component, Element, Event, EventEmitter, Fragment, h, Host, Method, Prop, State, Watch } from '@stencil/core';
-import { Editor } from '@tiptap/core';
+import { Component, Element, Event, EventEmitter, h, Host, Method, Prop, State, Watch } from '@stencil/core';
+import { ChainedCommands, Editor } from '@tiptap/core';
+import InvisibleCharacters, { HardBreakNode, ParagraphNode } from '@tiptap/extension-invisible-characters';
 import StarterKit from '@tiptap/starter-kit';
 import { isNullOrEmpty } from '../../helpers/utils';
 import { GompImage } from './extensions';
@@ -12,23 +13,24 @@ import { GompImage } from './extensions';
 export class HTMLEditor {
   @Element() el!: HTMLHtmlEditorElement;
 
-  @Prop() value: string = '';
+  @Prop() value = '';
   @Prop() label?: string;
   @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
   @Prop() images?: { name: string; url: string; thumbUrl: string }[];
 
   @Event() valueChanged!: EventEmitter<string>;
 
-  @State() isBoldActive: boolean = false;
-  @State() isItalicActive: boolean = false;
-  @State() isUnderlineActive: boolean = false;
-  @State() isOrderedListActive: boolean = false;
-  @State() isUnorderedListActive: boolean = false;
-  @State() isLinkActive: boolean = false;
+  @State() isBoldActive = false;
+  @State() isItalicActive = false;
+  @State() isUnderlineActive = false;
+  @State() isOrderedListActive = false;
+  @State() isUnorderedListActive = false;
+  @State() isLinkActive = false;
+  @State() isInvisibleCharactersActive = false;
 
-  @State() isImagePickerOpen: boolean = false;
-  @State() isLinkPanelOpen: boolean = false;
-  @State() linkUrl: string = '';
+  @State() isImagePickerOpen = false;
+  @State() isLinkPanelOpen = false;
+  @State() linkUrl = '';
 
   private editorContentRef!: HTMLElement;
   private editor: Editor | null = null;
@@ -64,7 +66,16 @@ export class HTMLEditor {
         <ion-toolbar class="editor-toolbar">
           <ion-buttons class="prevent-selection">
             <ion-button
-              onClick={() => this.toggleBold()}
+              onClick={() => this.editorCommand((chain) => chain.toggleInvisibleCharacters())}
+              size="default"
+              fill={this.isInvisibleCharactersActive ? 'solid' : 'clear'}
+              tabindex="-1"
+              title="Invisible characters"
+            >
+              <ion-icon icon="document-text-outline" />
+            </ion-button>
+            <ion-button
+              onClick={() => this.editorCommand((chain) => chain.toggleBold())}
               size="default"
               fill={this.isBoldActive ? 'solid' : 'clear'}
               tabindex="-1"
@@ -73,7 +84,7 @@ export class HTMLEditor {
               <strong>B</strong>
             </ion-button>
             <ion-button
-              onClick={() => this.toggleItalic()}
+              onClick={() => this.editorCommand((chain) => chain.toggleItalic())}
               size="default"
               fill={this.isItalicActive ? 'solid' : 'clear'}
               tabindex="-1"
@@ -82,7 +93,7 @@ export class HTMLEditor {
               <em>I</em>
             </ion-button>
             <ion-button
-              onClick={() => this.toggleUnderline()}
+              onClick={() => this.editorCommand((chain) => chain.toggleUnderline())}
               size="default"
               fill={this.isUnderlineActive ? 'solid' : 'clear'}
               tabindex="-1"
@@ -91,7 +102,7 @@ export class HTMLEditor {
               <u>U</u>
             </ion-button>
             <ion-button
-              onClick={() => this.toggleOrderedList()}
+              onClick={() => this.editorCommand((chain) => chain.toggleOrderedList())}
               size="default"
               fill={this.isOrderedListActive ? 'solid' : 'clear'}
               tabindex="-1"
@@ -100,7 +111,7 @@ export class HTMLEditor {
               #
             </ion-button>
             <ion-button
-              onClick={() => this.toggleUnorderedList()}
+              onClick={() => this.editorCommand((chain) => chain.toggleBulletList())}
               size="default"
               fill={this.isUnorderedListActive ? 'solid' : 'clear'}
               tabindex="-1"
@@ -150,14 +161,9 @@ export class HTMLEditor {
                 Apply
               </ion-button>
               {this.isLinkActive && (
-                <Fragment>
-                  <ion-button size="small" fill="outline" onClick={() => this.openLinkPreview()}>
-                    Open
-                  </ion-button>
-                  <ion-button size="small" fill="outline" color="danger" onClick={() => this.removeLink()}>
-                    Remove
-                  </ion-button>
-                </Fragment>
+                <ion-button size="small" fill="outline" color="danger" onClick={() => this.removeLink()}>
+                  Remove
+                </ion-button>
               )}
             </div>
           )}
@@ -179,7 +185,7 @@ export class HTMLEditor {
         </ion-toolbar>
 
         <div ref={el => (this.editorContentRef = el!)} class="editor-content" />
-      </Host>
+      </Host >
     );
   }
 
@@ -215,6 +221,10 @@ export class HTMLEditor {
           minHeight: 50,
           alwaysPreserveAspectRatio: true
         }
+      }),
+      InvisibleCharacters.configure({
+        builders: [new HardBreakNode(), new ParagraphNode()],
+        visible: false,
       }),
     ];
 
@@ -271,6 +281,7 @@ export class HTMLEditor {
     this.isOrderedListActive = this.editor.isActive('orderedList');
     this.isUnorderedListActive = this.editor.isActive('bulletList');
     this.isLinkActive = this.editor.isActive('link');
+    this.isInvisibleCharactersActive = this.editor.storage.invisibleCharacters.visibility();
 
     if (this.isLinkActive) {
       const linkAttrs = this.editor.getAttributes('link') as { href?: string };
@@ -278,24 +289,11 @@ export class HTMLEditor {
     }
   }
 
-  private toggleBold() {
-    this.editor?.chain().focus().toggleBold().run();
-  }
-
-  private toggleItalic() {
-    this.editor?.chain().focus().toggleItalic().run();
-  }
-
-  private toggleUnderline() {
-    this.editor?.chain().focus().toggleUnderline().run();
-  }
-
-  private toggleOrderedList() {
-    this.editor?.chain().focus().toggleOrderedList().run();
-  }
-
-  private toggleUnorderedList() {
-    this.editor?.chain().focus().toggleBulletList().run();
+  private editorCommand(fn: (chain: ChainedCommands) => ChainedCommands) {
+    if (!this.editor) {
+      return;
+    }
+    fn(this.editor.chain().focus()).run();
   }
 
   private toggleLinkPanel() {
@@ -314,22 +312,16 @@ export class HTMLEditor {
       return;
     }
 
-    this.editor?.chain().focus().extendMarkRange('link').setLink({ href: this.linkUrl }).run();
+    this.editorCommand((chain) => chain.extendMarkRange('link').setLink({ href: this.linkUrl }));
     this.isLinkPanelOpen = false;
     this.updateButtonStates();
   }
 
   private removeLink() {
-    this.editor?.chain().focus().extendMarkRange('link').unsetLink().run();
+    this.editorCommand((chain) => chain.extendMarkRange('link').unsetLink());
     this.linkUrl = '';
     this.isLinkPanelOpen = false;
     this.updateButtonStates();
-  }
-
-  private openLinkPreview() {
-    if (!isNullOrEmpty(this.linkUrl)) {
-      window.open(this.linkUrl, '_blank', 'noopener,noreferrer');
-    }
   }
 
   private toggleImagePicker() {
@@ -341,18 +333,14 @@ export class HTMLEditor {
     this.isImagePickerOpen = false;
 
     if (this.editor && !this.editor.isDestroyed) {
-      this.editor
-        .chain()
-        .focus()
-        .insertContent({
-          type: GompImage.name,
-          attrs: {
-            src: image.url,
-            alt: image.name,
-            'data-image': image.name,
-          },
-        })
-        .run();
+      this.editorCommand((chain) => chain.insertContent({
+        type: GompImage.name,
+        attrs: {
+          src: image.url,
+          alt: image.name,
+          'data-image': image.name,
+        },
+      }));
 
       this.updateButtonStates();
       this.valueChanged.emit(this.getCleanHTML());

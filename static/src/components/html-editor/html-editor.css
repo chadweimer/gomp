@@ -210,3 +210,15 @@
 .tiptap [data-resize-handle][data-resize-handle="right"] {
   right: -3px;
 }
+
+.tiptap-invisible-character {
+  color: var(--ion-color-medium);
+}
+
+.tiptap-invisible-character--break::before {
+  content: '⏎';
+}
+
+.tiptap-invisible-character--paragraph::before {
+  content: '¶';
+}
