@@ -311,14 +311,10 @@ export function createImageElement(
   if (width) {
     img.dataset.width = width;
     img.style.width = width.endsWith('%') || width.endsWith('px') ? width : `${width}px`;
-  } else {
-    img.style.maxWidth = '400px';
   }
   if (height) {
     img.dataset.height = height;
     img.style.height = height.endsWith('%') || height.endsWith('px') ? height : `${height}px`;
-  } else {
-    img.style.maxHeight = '400px';
   }
   return img;
 }

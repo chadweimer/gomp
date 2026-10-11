@@ -57,8 +57,6 @@ export class NoteEditor {
             <ion-item class="force-overflow" lines="full">
               <html-editor label="Text" label-placement="stacked" value={this.note?.text ?? ''}
                 autofocus
-                enableLinks={true}
-                enableLists={true}
                 onValueChanged={e => this.note = { ...this.note, text: e.detail }}
                 ref={el => this.textInput = el!} />
             </ion-item>

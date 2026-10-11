@@ -7,7 +7,7 @@ import { GompImage } from './extensions';
 @Component({
   tag: 'html-editor',
   styleUrl: 'html-editor.css',
-  shadow: false,
+  shadow: true,
 })
 export class HTMLEditor {
   @Element() el!: HTMLHtmlEditorElement;
@@ -16,9 +16,6 @@ export class HTMLEditor {
   @Prop() label?: string;
   @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
   @Prop() images?: { name: string; url: string; thumbUrl: string }[];
-
-  @Prop() enableLinks: boolean = true;
-  @Prop() enableLists: boolean = true;
 
   @Event() valueChanged!: EventEmitter<string>;
 
@@ -93,41 +90,33 @@ export class HTMLEditor {
             >
               <u>U</u>
             </ion-button>
-
-            {this.enableLists && (
-              <Fragment>
-                <ion-button
-                  onClick={() => this.toggleOrderedList()}
-                  size="default"
-                  fill={this.isOrderedListActive ? 'solid' : 'clear'}
-                  tabindex="-1"
-                  title="Numbered list"
-                >
-                  #
-                </ion-button>
-                <ion-button
-                  onClick={() => this.toggleUnorderedList()}
-                  size="default"
-                  fill={this.isUnorderedListActive ? 'solid' : 'clear'}
-                  tabindex="-1"
-                  title="Bullet list"
-                >
-                  <ion-icon icon="list" />
-                </ion-button>
-              </Fragment>
-            )}
-
-            {this.enableLinks && (
-              <ion-button
-                onClick={() => this.toggleLinkPanel()}
-                size="default"
-                fill={this.isLinkPanelOpen || this.isLinkActive ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Hyperlink"
-              >
-                <ion-icon icon="link" />
-              </ion-button>
-            )}
+            <ion-button
+              onClick={() => this.toggleOrderedList()}
+              size="default"
+              fill={this.isOrderedListActive ? 'solid' : 'clear'}
+              tabindex="-1"
+              title="Numbered list"
+            >
+              #
+            </ion-button>
+            <ion-button
+              onClick={() => this.toggleUnorderedList()}
+              size="default"
+              fill={this.isUnorderedListActive ? 'solid' : 'clear'}
+              tabindex="-1"
+              title="Bullet list"
+            >
+              <ion-icon icon="list" />
+            </ion-button>
+            <ion-button
+              onClick={() => this.toggleLinkPanel()}
+              size="default"
+              fill={this.isLinkPanelOpen || this.isLinkActive ? 'solid' : 'clear'}
+              tabindex="-1"
+              title="Hyperlink"
+            >
+              <ion-icon icon="link" />
+            </ion-button>
 
             {(this.images?.length ?? 0) > 0 && (
               <ion-button
@@ -174,19 +163,17 @@ export class HTMLEditor {
           )}
 
           {this.isImagePickerOpen && (
-            <div class="image-picker-panel">
-              <div class="image-picker-grid">
-                {this.images?.map(image => (
-                  <ion-button
-                    key={image.name}
-                    fill="clear"
-                    class="image-picker-item"
-                    onClick={() => this.insertImage(image)}
-                  >
-                    <img slot="icon-only" src={image.thumbUrl} alt={image.name} />
-                  </ion-button>
-                ))}
-              </div>
+            <div class="editor-panel image-picker-panel">
+              {this.images?.map(image => (
+                <ion-button
+                  key={image.name}
+                  fill="clear"
+                  class="image-picker-item"
+                  onClick={() => this.insertImage(image)}
+                >
+                  <img slot="icon-only" src={image.thumbUrl} alt={image.name} />
+                </ion-button>
+              ))}
             </div>
           )}
         </ion-toolbar>
@@ -208,18 +195,16 @@ export class HTMLEditor {
 
     const extensions = [
       StarterKit.configure({
-        bulletList: this.enableLists ? {} : false,
-        orderedList: this.enableLists ? {} : false,
-        link: this.enableLinks
-          ? {
-            openOnClick: false,
-            HTMLAttributes: {
-              target: '_blank',
-              rel: 'noopener noreferrer',
-            },
-          }
-          : false,
-        underline: {},
+        code: false,
+        codeBlock: false,
+        heading: false,
+        link: {
+          openOnClick: false,
+          HTMLAttributes: {
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          },
+        },
         trailingNode: false,
       }),
       GompImage.configure({

@@ -1,18 +1,18 @@
-:host,
-html-editor {
+@import '../../global/app.css';
+
+:host {
   display: block;
   width: 100%;
+}
+
+:host:focus-within ion-label {
+  color: var(--ion-color-primary);
 }
 
 .editor-content {
   min-height: 2.5rem;
   padding-bottom: var(--ion-padding, 0);
   outline: none;
-}
-
-.editor-content .tiptap {
-  outline: none;
-  min-height: 2rem;
 }
 
 .editor-toolbar {
@@ -24,15 +24,8 @@ html-editor {
   background: var(--ion-toolbar-background, var(--ion-background-color, #fff));
 }
 
-:host:focus-within ion-label,
-html-editor:focus-within ion-label {
-  color: var(--ion-color-primary);
-}
-
 /* Dropdown / Popover Panels */
 .editor-panel {
-  display: flex;
-  align-items: center;
   gap: 6px;
   padding: 6px 10px;
   background: var(--ion-background-color, #ffffff);
@@ -43,6 +36,8 @@ html-editor:focus-within ion-label {
 }
 
 .link-panel {
+  display: flex;
+  align-items: center;
   flex-wrap: wrap;
 }
 
@@ -63,20 +58,8 @@ html-editor:focus-within ion-label {
 }
 
 .image-picker-panel {
-  border: 1px solid var(--ion-color-step-200, #e0e0e0);
-  border-radius: 8px;
-  background: var(--ion-background-color, #ffffff);
-  margin: 4px 0 8px 0;
-  padding: 8px;
-  z-index: 10;
-  position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.image-picker-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 5px;
   max-height: 220px;
   overflow-y: auto;
 }
@@ -86,20 +69,29 @@ html-editor:focus-within ion-label {
   border-radius: 4px;
 }
 
-.editor-content .tiptap img {
+.tiptap {
+  outline: none;
+  min-height: 2rem;
+}
+
+.tiptap img {
   max-width: 100%;
   height: auto;
 }
 
+.tiptap img:not([style*="height" i]) {
+  max-height: 400px;
+}
+
 /* Image Node & Resizer Styling */
-.editor-content .tiptap [data-resize-container] {
+.tiptap [data-resize-container] {
   display: inline-flex;
   position: relative;
   margin: 0.5em 0;
   max-width: 100%;
 }
 
-.editor-content .tiptap [data-resize-wrapper] {
+.tiptap [data-resize-wrapper] {
   position: relative;
   display: inline-block;
   line-height: 0;
@@ -107,16 +99,16 @@ html-editor:focus-within ion-label {
 }
 
 /* Selected state outline on wrapper */
-.editor-content .tiptap [data-resize-container].ProseMirror-selectednode [data-resize-wrapper],
-.editor-content .tiptap [data-resize-container][data-resize-state="true"] [data-resize-wrapper],
-.editor-content .tiptap img.ProseMirror-selectednode {
+.tiptap [data-resize-container].ProseMirror-selectednode [data-resize-wrapper],
+.tiptap [data-resize-container][data-resize-state="true"] [data-resize-wrapper],
+.tiptap img.ProseMirror-selectednode {
   outline: 2px solid var(--ion-color-primary, #3880ff);
   outline-offset: 2px;
   border-radius: 3px;
 }
 
 /* Resize Handles - base styling */
-.editor-content .tiptap [data-resize-handle] {
+.tiptap [data-resize-handle] {
   position: absolute;
   z-index: 20;
   box-sizing: border-box;
@@ -131,7 +123,7 @@ html-editor:focus-within ion-label {
 }
 
 /* Invisible extended hit target for effortless grabbing */
-.editor-content .tiptap [data-resize-handle]::after {
+.tiptap [data-resize-handle]::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -143,78 +135,78 @@ html-editor:focus-within ion-label {
 }
 
 /* Reveal handles on hover, when selected, or during active resize */
-.editor-content .tiptap [data-resize-container]:hover [data-resize-handle],
-.editor-content .tiptap [data-resize-container].ProseMirror-selectednode [data-resize-handle],
-.editor-content .tiptap [data-resize-container][data-resize-state="true"] [data-resize-handle] {
+.tiptap [data-resize-container]:hover [data-resize-handle],
+.tiptap [data-resize-container].ProseMirror-selectednode [data-resize-handle],
+.tiptap [data-resize-container][data-resize-state="true"] [data-resize-handle] {
   opacity: 1;
 }
 
-.editor-content .tiptap [data-resize-handle]:hover {
+.tiptap [data-resize-handle]:hover {
   background-color: var(--ion-color-primary-shade, #3171e0);
 }
 
 /* Corner Handles: 10px x 10px, centered on corners via */
-.editor-content .tiptap [data-resize-handle][data-resize-handle="top-left"],
-.editor-content .tiptap [data-resize-handle][data-resize-handle="top-right"],
-.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom-left"],
-.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom-right"] {
+.tiptap [data-resize-handle][data-resize-handle="top-left"],
+.tiptap [data-resize-handle][data-resize-handle="top-right"],
+.tiptap [data-resize-handle][data-resize-handle="bottom-left"],
+.tiptap [data-resize-handle][data-resize-handle="bottom-right"] {
   width: 10px;
   height: 10px;
 }
 
-.editor-content .tiptap [data-resize-handle][data-resize-handle="top-left"] {
+.tiptap [data-resize-handle][data-resize-handle="top-left"] {
   cursor: nwse-resize;
   top: -5px;
   left: -5px;
 }
 
-.editor-content .tiptap [data-resize-handle][data-resize-handle="top-right"] {
+.tiptap [data-resize-handle][data-resize-handle="top-right"] {
   cursor: nesw-resize;
   top: -5px;
   right: -5px;
 }
 
-.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom-left"] {
+.tiptap [data-resize-handle][data-resize-handle="bottom-left"] {
   cursor: nesw-resize;
   bottom: -5px;
   left: -5px;
 }
 
-.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom-right"] {
+.tiptap [data-resize-handle][data-resize-handle="bottom-right"] {
   cursor: nwse-resize;
   bottom: -5px;
   right: -5px;
 }
 
 /* Edge Handles */
-.editor-content .tiptap [data-resize-handle][data-resize-handle="top"],
-.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom"] {
+.tiptap [data-resize-handle][data-resize-handle="top"],
+.tiptap [data-resize-handle][data-resize-handle="bottom"] {
   cursor: ns-resize;
   height: 6px;
   left: 8px;
   right: 8px;
 }
 
-.editor-content .tiptap [data-resize-handle][data-resize-handle="top"] {
+.tiptap [data-resize-handle][data-resize-handle="top"] {
   top: -3px;
 }
 
-.editor-content .tiptap [data-resize-handle][data-resize-handle="bottom"] {
+.tiptap [data-resize-handle][data-resize-handle="bottom"] {
   bottom: -3px;
 }
 
-.editor-content .tiptap [data-resize-handle][data-resize-handle="left"],
-.editor-content .tiptap [data-resize-handle][data-resize-handle="right"] {
+.tiptap [data-resize-handle][data-resize-handle="left"],
+.tiptap [data-resize-handle][data-resize-handle="right"] {
   cursor: ew-resize;
   width: 6px;
   top: 8px;
   bottom: 8px;
 }
 
-.editor-content .tiptap [data-resize-handle][data-resize-handle="left"] {
+.tiptap [data-resize-handle][data-resize-handle="left"] {
   left: -3px;
 }
 
-.editor-content .tiptap [data-resize-handle][data-resize-handle="right"] {
+.tiptap [data-resize-handle][data-resize-handle="right"] {
   right: -3px;
 }

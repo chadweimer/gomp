@@ -39,10 +39,10 @@ describe('utils', () => {
       expect(output).toEqualHtml('Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.');
     });
 
-    it('replaces image elements with width attribute with extended sentinels', () => {
-      const input = '<img src="/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg" data-width="300">';
+    it('replaces image elements with width and height attribute with extended sentinels', () => {
+      const input = '<img src="/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg" data-width="300" data-height="400px">';
       const output = toStorageHtml(globalThis.document.body, input);
-      expect(output).toEqualHtml('{{image:pancakes.jpg|width=300}}');
+      expect(output).toEqualHtml('{{image:pancakes.jpg|width=300|height=400px}}');
     });
 
     it('replaces multiple image elements with their corresponding sentinels', () => {
@@ -89,7 +89,7 @@ describe('utils', () => {
       const directions = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
       const output = toPresentationHtml(globalThis.document.body, directions, 42);
       expect(output).toEqualHtml(
-        'Step 1: Mix. <a href="/uploads/recipes/42/images/pancakes.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/42/images/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg" style="max-width: 400px; max-height: 400px"></a> Step 2: Cook.',
+        'Step 1: Mix. <a href="/uploads/recipes/42/images/pancakes.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/42/images/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"></a> Step 2: Cook.',
       );
     });
 
@@ -97,7 +97,7 @@ describe('utils', () => {
       const directions = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
       const output = toPresentationHtml(globalThis.document.body, directions, 42, false);
       expect(output).toEqualHtml(
-        'Step 1: Mix. <img src="/uploads/recipes/42/images/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg" style="max-width: 400px; max-height: 400px"> Step 2: Cook.',
+        'Step 1: Mix. <img src="/uploads/recipes/42/images/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"> Step 2: Cook.',
       );
     });
 
@@ -105,7 +105,7 @@ describe('utils', () => {
       const directions = '{{image:first.png}} then {{image:second.png}}';
       const output = toPresentationHtml(globalThis.document.body, directions, 10, false);
       expect(output).toEqualHtml(
-        '<img src="/uploads/recipes/10/images/first.png" alt="first.png" data-image="first.png" style="max-width: 400px; max-height: 400px"> then <img src="/uploads/recipes/10/images/second.png" alt="second.png" data-image="second.png" style="max-width: 400px; max-height: 400px">',
+        '<img src="/uploads/recipes/10/images/first.png" alt="first.png" data-image="first.png"> then <img src="/uploads/recipes/10/images/second.png" alt="second.png" data-image="second.png">',
       );
     });
   });

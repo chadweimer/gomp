@@ -6,35 +6,12 @@
   word-break: normal;
 }
 
-h1,
-h2,
-h3 {
-  margin: 0.8em 0 0.3em;
-  font-weight: 600;
-  color: var(--ion-text-color, inherit);
-}
-
-h2 {
-  font-size: 1.35em;
-}
-
-h3 {
-  font-size: 1.15em;
-}
-
-ul,
-ol {
-  padding-left: 1.5em;
-  margin: 0.5em 0;
-}
-
-a {
-  color: var(--ion-color-primary, #3880ff);
-  text-decoration: underline;
-}
-
 img {
   max-width: 100%;
   height: auto;
   border-radius: 4px;
+}
+
+img:not([style*="height" i]) {
+  max-height: 400px;
 }

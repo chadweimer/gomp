@@ -30,7 +30,7 @@ export const GompImage = Image.extend({
         },
       },
       height: {
-        default: '400px',
+        default: null,
         parseHTML: element => {
           return element.dataset.height || element.style.height;
         },

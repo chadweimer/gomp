@@ -45,14 +45,6 @@ export namespace Components {
         "value": number;
     }
     interface HtmlEditor {
-        /**
-          * @default true
-         */
-        "enableLinks": boolean;
-        /**
-          * @default true
-         */
-        "enableLists": boolean;
         "getValue": () => Promise<string>;
         "images"?: { name: string; url: string; thumbUrl: string }[];
         "label"?: string;
@@ -564,14 +556,6 @@ declare namespace LocalJSX {
         "value"?: number;
     }
     interface HtmlEditor {
-        /**
-          * @default true
-         */
-        "enableLinks"?: boolean;
-        /**
-          * @default true
-         */
-        "enableLists"?: boolean;
         "images"?: { name: string; url: string; thumbUrl: string }[];
         "label"?: string;
         "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
@@ -758,8 +742,6 @@ declare namespace LocalJSX {
         "value": string;
         "label": string;
         "labelPlacement": 'fixed' | 'floating' | 'stacked';
-        "enableLinks": boolean;
-        "enableLists": boolean;
     }
     interface HtmlViewerAttributes {
         "value": string;

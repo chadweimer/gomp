@@ -19,64 +19,67 @@ describe('html-editor', () => {
     const { root } = await render(<html-editor value="<p>Hello world</p>" />);
     expect(root).toHaveClass('hydrated');
 
-    const boldBtn = root.querySelector('ion-button strong');
+    const shadowRoot = root.shadowRoot;
+    expect(shadowRoot).not.toBeNull();
+
+    const boldBtn = shadowRoot?.querySelector('ion-button strong');
     expect(boldBtn).not.toBeNull();
     expect(boldBtn).toEqualText('B');
 
-    const italicBtn = root.querySelector('ion-button em');
+    const italicBtn = shadowRoot?.querySelector('ion-button em');
     expect(italicBtn).not.toBeNull();
 
-    const underlineBtn = root.querySelector('ion-button u');
+    const underlineBtn = shadowRoot?.querySelector('ion-button u');
     expect(underlineBtn).not.toBeNull();
 
-    const listIcon = root.querySelector('ion-button ion-icon[icon="list"]');
+    const listIcon = shadowRoot?.querySelector('ion-button ion-icon[icon="list"]');
     expect(listIcon).not.toBeNull();
 
-    const imageIcon = root.querySelector('ion-button ion-icon[icon="image"]');
+    const imageIcon = shadowRoot?.querySelector('ion-button ion-icon[icon="image"]');
     expect(imageIcon).toBeNull();
 
-    const picker = root.querySelector('.image-picker-panel');
+    const picker = shadowRoot?.querySelector('.image-picker-panel');
     expect(picker).toBeNull();
   });
 
   it('does not render image button when images is an empty array', async () => {
     const { root } = await render(<html-editor images={[]} />);
-    const imageIcon = root.querySelector('ion-button ion-icon[icon="image"]');
+    const imageIcon = root.shadowRoot?.querySelector('ion-button ion-icon[icon="image"]');
     expect(imageIcon).toBeNull();
   });
 
   it('renders image button when images has items', async () => {
     const { root } = await render(<html-editor images={mockImages} />);
-    const imageIcon = root.querySelector('ion-button ion-icon[icon="image"]');
+    const imageIcon = root.shadowRoot?.querySelector('ion-button ion-icon[icon="image"]');
     expect(imageIcon).not.toBeNull();
 
-    const picker = root.querySelector('.image-picker-panel');
+    const picker = root.shadowRoot?.querySelector('.image-picker-panel');
     expect(picker).toBeNull();
   });
 
   it('toggles image picker panel open and closed via image button', async () => {
     const { root, waitForChanges } = await render(<html-editor images={mockImages} />);
 
-    const imageBtn = root.querySelector('ion-button ion-icon[icon="image"]')?.closest<HTMLIonButtonElement>('ion-button');
+    const imageBtn = root.shadowRoot?.querySelector('ion-button ion-icon[icon="image"]')?.closest<HTMLIonButtonElement>('ion-button');
     expect(imageBtn).not.toBeNull();
 
     imageBtn?.click();
     await waitForChanges();
 
-    let picker = root.querySelector('.image-picker-panel');
+    let picker = root.shadowRoot?.querySelector('.image-picker-panel');
     expect(picker).not.toBeNull();
 
-    const items = root.querySelectorAll('.image-picker-item');
+    const items = root.shadowRoot?.querySelectorAll('.image-picker-item');
     expect(items).toHaveLength(mockImages.length);
 
-    const firstImg = items[0].querySelector('img');
+    const firstImg = items?.[0].querySelector('img');
     expect(firstImg).toEqualAttribute('src', mockImages[0].thumbUrl);
     expect(firstImg).toEqualAttribute('alt', mockImages[0].name);
 
     imageBtn?.click();
     await waitForChanges();
 
-    picker = root.querySelector('.image-picker-panel');
+    picker = root.shadowRoot?.querySelector('.image-picker-panel');
     expect(picker).toBeNull();
   });
 
@@ -86,20 +89,20 @@ describe('html-editor', () => {
     const valueChangedSpy = vi.fn();
     root.addEventListener('valueChanged', valueChangedSpy);
 
-    const imageBtn = root.querySelector('ion-button ion-icon[icon="image"]')?.closest<HTMLIonButtonElement>('ion-button');
+    const imageBtn = root.shadowRoot?.querySelector('ion-button ion-icon[icon="image"]')?.closest<HTMLIonButtonElement>('ion-button');
     imageBtn?.click();
     await waitForChanges();
 
-    const items = root.querySelectorAll<HTMLButtonElement>('.image-picker-item');
-    items[0]?.click();
+    const items = root.shadowRoot?.querySelectorAll<HTMLButtonElement>('.image-picker-item');
+    items?.[0]?.click();
     await waitForChanges();
 
     // Picker should be closed
-    const picker = root.querySelector('.image-picker-panel');
+    const picker = root.shadowRoot?.querySelector('.image-picker-panel');
     expect(picker).toBeNull();
 
     // Editor content should contain the image tag
-    const editorContent = root.querySelector('.editor-content');
+    const editorContent = root.shadowRoot?.querySelector('.editor-content');
     const img = editorContent?.querySelector('img[data-image]');
     expect(img).not.toBeNull();
     expect(img).toEqualAttribute('src', mockImages[0].url);
@@ -118,7 +121,7 @@ describe('html-editor', () => {
       <html-editor images={mockImages} value={`<p>Step 1: <img src="${mockImages[0].url}" data-image="${mockImages[0].name}" /></p>`} />,
     );
 
-    const editorContent = root.querySelector('.editor-content');
+    const editorContent = root.shadowRoot?.querySelector('.editor-content');
     const img = editorContent?.querySelector('img');
     expect(img).not.toBeNull();
 
@@ -128,7 +131,7 @@ describe('html-editor', () => {
     const outsideEl = document.createElement('div');
     document.body.appendChild(outsideEl);
 
-    editorContent?.dispatchEvent(new FocusEvent('focusout', { relatedTarget: outsideEl, bubbles: true }));
+    root.dispatchEvent(new FocusEvent('focusout', { relatedTarget: outsideEl, bubbles: true }));
     await waitForChanges();
 
     expect(valueChangedSpy).toHaveBeenCalledTimes(1);
@@ -141,26 +144,25 @@ describe('html-editor', () => {
   it('closes picker on blur when focus moves outside the component', async () => {
     const { root, waitForChanges } = await render(<html-editor images={mockImages} />);
 
-    const imageBtn = root.querySelector('ion-button ion-icon[icon="image"]')?.closest<HTMLIonButtonElement>('ion-button');
+    const imageBtn = root.shadowRoot?.querySelector('ion-button ion-icon[icon="image"]')?.closest<HTMLIonButtonElement>('ion-button');
     imageBtn?.click();
     await waitForChanges();
 
-    expect(root.querySelector('.image-picker-panel')).not.toBeNull();
+    expect(root.shadowRoot?.querySelector('.image-picker-panel')).not.toBeNull();
 
-    const editorContent = root.querySelector('.editor-content');
     const outsideEl = document.createElement('div');
     document.body.appendChild(outsideEl);
 
-    editorContent?.dispatchEvent(new FocusEvent('focusout', { relatedTarget: outsideEl, bubbles: true }));
+    root.dispatchEvent(new FocusEvent('focusout', { relatedTarget: outsideEl, bubbles: true }));
     await waitForChanges();
 
-    expect(root.querySelector('.image-picker-panel')).toBeNull();
+    expect(root.shadowRoot?.querySelector('.image-picker-panel')).toBeNull();
     outsideEl.remove();
   });
 
   it('delegates focus to .editor-content when html-editor receives focus', async () => {
     const { root } = await render(<html-editor />);
-    const editorContent = root.querySelector('.editor-content') as HTMLElement;
+    const editorContent = root.shadowRoot?.querySelector('.editor-content') as HTMLElement;
     expect(editorContent).not.toBeNull();
 
     const focusSpy = vi.spyOn(editorContent, 'focus');
@@ -172,9 +174,9 @@ describe('html-editor', () => {
 
   it('does not re-delegate focus when a child element receives focus', async () => {
     const { root } = await render(<html-editor />);
-    const editorToolbar = root.querySelector('.editor-toolbar') as HTMLElement;
+    const editorToolbar = root.shadowRoot?.querySelector('.editor-toolbar') as HTMLElement;
     expect(editorToolbar).not.toBeNull();
-    const editorContent = root.querySelector('.editor-content') as HTMLElement;
+    const editorContent = root.shadowRoot?.querySelector('.editor-content') as HTMLElement;
     expect(editorContent).not.toBeNull();
 
     const focusSpy = vi.spyOn(editorContent, 'focus');
@@ -184,30 +186,18 @@ describe('html-editor', () => {
     expect(focusSpy).not.toHaveBeenCalled();
   });
 
-  it('respects feature flags to toggle links', async () => {
-    const { root: defaultRoot } = await render(<html-editor />);
-    expect(defaultRoot.querySelector('ion-button[title="Hyperlink"]')).not.toBeNull();
-
-    const { root: customRoot } = await render(
-      <html-editor
-        enableLinks={false}
-      />
-    );
-    expect(customRoot.querySelector('ion-button[title="Hyperlink"]')).toBeNull();
-  });
-
   it('toggles link panel and creates a link', async () => {
     const { root, waitForChanges } = await render(
-      <html-editor enableLinks={true} value="<p>Click here</p>" />
+      <html-editor value="<p>Click here</p>" />
     );
 
-    const linkBtn = root.querySelector('ion-button[title="Hyperlink"]') as HTMLIonButtonElement;
+    const linkBtn = root.shadowRoot?.querySelector('ion-button[title="Hyperlink"]') as HTMLIonButtonElement;
     expect(linkBtn).not.toBeNull();
 
     linkBtn.click();
     await waitForChanges();
 
-    const panel = root.querySelector('.link-panel');
+    const panel = root.shadowRoot?.querySelector('.link-panel');
     expect(panel).not.toBeNull();
 
     const input = panel?.querySelector('.link-input') as HTMLInputElement;
@@ -229,7 +219,7 @@ describe('html-editor', () => {
       />
     );
 
-    const img = root.querySelector('.editor-content img') as HTMLImageElement;
+    const img = root.shadowRoot?.querySelector('.editor-content img') as HTMLImageElement;
     expect(img).not.toBeNull();
     expect(img.getAttribute('data-image')).toBe(mockImages[0].name);
     expect(img.getAttribute('data-height')).toBe('250px');
