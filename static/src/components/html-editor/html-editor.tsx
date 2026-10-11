@@ -14,8 +14,6 @@ export class HTMLEditor {
   @Element() el!: HTMLHtmlEditorElement;
 
   @Prop() value = '';
-  @Prop() label?: string;
-  @Prop() labelPlacement?: 'fixed' | 'floating' | 'stacked';
   @Prop() images?: { name: string; url: string; thumbUrl: string }[];
 
   @Event() valueChanged!: EventEmitter<string>;
@@ -69,7 +67,6 @@ export class HTMLEditor {
           }
         }}
       >
-        {!isNullOrEmpty(this.label) && <ion-label position={this.labelPlacement}>{this.label}</ion-label>}
         <div class="toolbar-container">
           <ion-toolbar class="editor-toolbar">
             <ion-buttons slot="start" class="prevent-selection">
@@ -306,7 +303,6 @@ export class HTMLEditor {
 
   private handleFocus(e: FocusEvent) {
     if (e.target === this.el) {
-      this.editorContentRef?.focus();
       this.editor?.commands.focus();
     }
   }

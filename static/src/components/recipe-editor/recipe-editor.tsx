@@ -118,13 +118,15 @@ export class RecipeEditor {
                 ref={el => this.timeInput = el!} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
-              <html-editor label="Ingredients" label-placement="stacked"
+              <ion-label position="stacked">Ingredients</ion-label>
+              <html-editor id="ingredients"
                 value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id, false)}
                 onValueChanged={e => this.recipe = { ...this.recipe, ingredients: toStorageHtml(this.el, e.detail) }}
                 ref={el => this.ingredientsInput = el!} />
             </ion-item>
             <ion-item class="force-overflow" lines="full">
-              <html-editor label="Directions" label-placement="stacked"
+              <ion-label position="stacked">Directions</ion-label>
+              <html-editor id="directions"
                 value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id, false)}
                 images={this.recipeImages.map(
                   name => ({ name, url: getRecipeImageUrl(this.recipe?.id, name), thumbUrl: getRecipeThumbnailUrl(this.recipe?.id, name) }))}
@@ -132,13 +134,15 @@ export class RecipeEditor {
                 ref={el => this.directionsInput = el!} />
             </ion-item>
             <ion-item lines="full">
-              <html-editor label="Storage Instructions" label-placement="stacked"
+              <ion-label position="stacked">Storage Instructions</ion-label>
+              <html-editor id="storage-instructions"
                 value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id, false)}
                 onValueChanged={e => this.recipe = { ...this.recipe, storageInstructions: toStorageHtml(this.el, e.detail) }}
                 ref={el => this.storageInput = el!} />
             </ion-item>
             <ion-item lines="full">
-              <html-editor label="Nutrition" label-placement="stacked"
+              <ion-label position="stacked">Nutrition</ion-label>
+              <html-editor id="nutrition"
                 value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id, false)}
                 onValueChanged={e => this.recipe = { ...this.recipe, nutritionInfo: toStorageHtml(this.el, e.detail) }}
                 ref={el => this.nutritionInput = el!} />

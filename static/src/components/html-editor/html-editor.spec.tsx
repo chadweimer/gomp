@@ -161,27 +161,30 @@ describe('html-editor', () => {
   });
 
   it('delegates focus to .editor-content when html-editor receives focus', async () => {
-    const { root } = await render(<html-editor />);
-    const editorContent = root.shadowRoot?.querySelector('.editor-content') as HTMLElement;
-    expect(editorContent).not.toBeNull();
+    const { root, waitForChanges } = await render(<html-editor />);
+    const editor = root.shadowRoot?.querySelector('.tiptap') as HTMLElement;
+    expect(editor).not.toBeNull();
 
-    const focusSpy = vi.spyOn(editorContent, 'focus');
+    const focusSpy = vi.spyOn(editor, 'focus');
 
     root.focus();
+    await waitForChanges();
 
-    expect(focusSpy).toHaveBeenCalledTimes(1);
+    expect(focusSpy).toHaveBeenCalled();
+    expect(root.shadowRoot?.activeElement).toBe(editor);
   });
 
   it('does not re-delegate focus when a child element receives focus', async () => {
-    const { root } = await render(<html-editor />);
+    const { root, waitForChanges } = await render(<html-editor />);
     const editorToolbar = root.shadowRoot?.querySelector('.editor-toolbar') as HTMLElement;
     expect(editorToolbar).not.toBeNull();
-    const editorContent = root.shadowRoot?.querySelector('.editor-content') as HTMLElement;
-    expect(editorContent).not.toBeNull();
+    const editor = root.shadowRoot?.querySelector('.tiptap') as HTMLElement;
+    expect(editor).not.toBeNull();
 
-    const focusSpy = vi.spyOn(editorContent, 'focus');
+    const focusSpy = vi.spyOn(editor, 'focus');
 
     editorToolbar.focus();
+    await waitForChanges();
 
     expect(focusSpy).not.toHaveBeenCalled();
   });

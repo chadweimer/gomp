@@ -47,8 +47,6 @@ export namespace Components {
     interface HtmlEditor {
         "getValue": () => Promise<string>;
         "images"?: { name: string; url: string; thumbUrl: string }[];
-        "label"?: string;
-        "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         /**
           * @default ''
          */
@@ -557,8 +555,6 @@ declare namespace LocalJSX {
     }
     interface HtmlEditor {
         "images"?: { name: string; url: string; thumbUrl: string }[];
-        "label"?: string;
-        "labelPlacement"?: 'fixed' | 'floating' | 'stacked';
         "onValueChanged"?: (event: HtmlEditorCustomEvent<string>) => void;
         /**
           * @default ''
@@ -740,8 +736,6 @@ declare namespace LocalJSX {
     }
     interface HtmlEditorAttributes {
         "value": string;
-        "label": string;
-        "labelPlacement": 'fixed' | 'floating' | 'stacked';
     }
     interface HtmlViewerAttributes {
         "value": string;
