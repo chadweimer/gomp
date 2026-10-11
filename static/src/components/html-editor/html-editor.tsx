@@ -72,7 +72,7 @@ export class HTMLEditor {
         {!isNullOrEmpty(this.label) && <ion-label position={this.labelPlacement}>{this.label}</ion-label>}
         <div class="toolbar-container">
           <ion-toolbar class="editor-toolbar">
-            <ion-buttons slot="primary" class="prevent-selection">
+            <ion-buttons slot="start" class="prevent-selection">
               <ion-button
                 onClick={() => this.editorCommand((chain) => chain.toggleBold())}
                 size="default"
@@ -141,7 +141,7 @@ export class HTMLEditor {
               )}
             </ion-buttons>
 
-            <ion-buttons slot="secondary" class="prevent-selection">
+            <ion-buttons slot="end" class="prevent-selection">
               <ion-button
                 onClick={() => this.editorCommand((chain) => chain.toggleInvisibleCharacters())}
                 size="default"
@@ -219,11 +219,11 @@ export class HTMLEditor {
                   <span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>U</kbd></span>
                 </div>
                 <div class="shortcut-row">
-                  <span class="shortcut-desc">Soft line break</span>
+                  <span class="shortcut-desc">Line break (⏎)</span>
                   <span class="shortcut-keys"><kbd>Shift</kbd>+<kbd>Enter</kbd></span>
                 </div>
                 <div class="shortcut-row">
-                  <span class="shortcut-desc">New paragraph</span>
+                  <span class="shortcut-desc">New paragraph (¶)</span>
                   <span class="shortcut-keys"><kbd>Enter</kbd></span>
                 </div>
                 <div class="shortcut-row">

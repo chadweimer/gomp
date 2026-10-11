@@ -226,9 +226,12 @@ describe('html-editor', () => {
     expect(img.style.height).toBe('250px');
   });
 
-  it('renders invisible characters and help buttons in slot="secondary"', async () => {
+  it('renders formatting buttons in slot="start" and utility buttons in slot="end"', async () => {
     const { root } = await render(<html-editor />);
-    const utilityButtons = root.shadowRoot?.querySelector('ion-buttons[slot="secondary"]');
+    const startButtons = root.shadowRoot?.querySelector('ion-buttons[slot="start"]');
+    expect(startButtons).not.toBeNull();
+
+    const utilityButtons = root.shadowRoot?.querySelector('ion-buttons[slot="end"]');
     expect(utilityButtons).not.toBeNull();
 
     const buttons = utilityButtons?.querySelectorAll('ion-button');
