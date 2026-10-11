@@ -4,6 +4,7 @@ import InvisibleCharacters, { HardBreakNode, ParagraphNode } from '@tiptap/exten
 import StarterKit from '@tiptap/starter-kit';
 import { isNullOrEmpty } from '../../helpers/utils';
 import { GompImage } from './extensions';
+import { isPlatform } from '@ionic/core';
 
 @Component({
   tag: 'html-editor',
@@ -55,6 +56,8 @@ export class HTMLEditor {
   }
 
   render() {
+    const ios = isPlatform('ios');
+    const modKey = ios ? '⌘' : 'Ctrl';
     return (
       <Host
         tabindex={this.el.getAttribute('tabindex') ?? '-1'}
@@ -205,35 +208,43 @@ export class HTMLEditor {
               <div class="shortcuts-grid">
                 <div class="shortcut-row">
                   <span class="shortcut-desc">Bold</span>
-                  <span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>B</kbd></span>
+                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>B</kbd></span>
                 </div>
                 <div class="shortcut-row">
                   <span class="shortcut-desc">Italic</span>
-                  <span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>I</kbd></span>
+                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>I</kbd></span>
                 </div>
                 <div class="shortcut-row">
                   <span class="shortcut-desc">Underline</span>
-                  <span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>U</kbd></span>
+                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>U</kbd></span>
                 </div>
                 <div class="shortcut-row">
-                  <span class="shortcut-desc">Line break (⏎)</span>
+                  <span class="shortcut-desc">Numbered</span>
+                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>7</kbd></span>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-desc">Bullets</span>
+                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>8</kbd></span>
+                </div>
+                <div class="shortcut-row">
+                  <span class="shortcut-desc">Line Break (⏎)</span>
                   <span class="shortcut-keys"><kbd>Shift</kbd>+<kbd>Enter</kbd></span>
                 </div>
                 <div class="shortcut-row">
-                  <span class="shortcut-desc">New paragraph (¶)</span>
+                  <span class="shortcut-desc">New Paragraph (¶)</span>
                   <span class="shortcut-keys"><kbd>Enter</kbd></span>
                 </div>
                 <div class="shortcut-row">
-                  <span class="shortcut-desc">Bullet list</span>
-                  <span class="shortcut-keys"><kbd>*</kbd> <kbd>Space</kbd></span>
-                </div>
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">Numbered list</span>
+                  <span class="shortcut-desc">New Numbered</span>
                   <span class="shortcut-keys"><kbd>1.</kbd> <kbd>Space</kbd></span>
                 </div>
                 <div class="shortcut-row">
+                  <span class="shortcut-desc">New Bullets</span>
+                  <span class="shortcut-keys"><kbd>*</kbd> <kbd>Space</kbd></span>
+                </div>
+                <div class="shortcut-row">
                   <span class="shortcut-desc">Undo / Redo</span>
-                  <span class="shortcut-keys"><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Y</kbd></span>
+                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd></span>
                 </div>
               </div>
             </div>
