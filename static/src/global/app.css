@@ -173,8 +173,9 @@ html:not(.hydrated) body {
 }
 
 p {
-  margin-top: 6px;
-  margin-bottom: 6px;
+  margin-top: 0.25lh;
+  margin-bottom: 0.25lh;
+  min-height: 1lh;
 }
 
 ion-item:has(:focus-within)>ion-label {
