@@ -15,13 +15,25 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  margin-top: var(--ion-margin);
+  border: 1px solid var(--ion-color-light-tint);
+  border-radius: 2px;
 }
 
 .editor-toolbar {
   --min-height: 0;
-  margin-top: var(--ion-margin, 0);
   --ion-toolbar-color: var(--ion-color-dark);
   --ion-toolbar-background: var(--ion-background-color);
+  padding: 4px 0px;
+}
+
+.toolbar-panel {
+  --ion-grid-padding: 2px;
+  border-top: 1px solid var(--ion-color-light-tint);
+}
+
+.image-picker-panel {
+  --ion-grid-column-padding: 2px;
 }
 
 .image-picker-panel img {
