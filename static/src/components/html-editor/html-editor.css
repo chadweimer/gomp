@@ -23,42 +23,10 @@
   background: var(--ion-toolbar-background, var(--ion-background-color, #fff));
 }
 
-/* Dropdown / Popover Panels */
-.editor-panel {
-  gap: 6px;
-  padding: 6px 10px;
-  background: var(--ion-background-color, #ffffff);
-  border: 1px solid var(--ion-color-step-200, #e0e0e0);
-  border-radius: 8px;
-  margin: 4px 0 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.link-panel {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.link-input {
-  flex: 1;
-  min-width: 180px;
-  padding: 6px 10px;
-  border: 1px solid var(--ion-color-step-300, #ccc);
-  border-radius: 4px;
-  background: var(--ion-item-background, var(--ion-background-color, #fff));
-  color: var(--ion-text-color, #000);
-  font-size: 0.9rem;
-}
-
-.link-input:focus {
-  outline: none;
-  border-color: var(--ion-color-primary, #3880ff);
-}
-
-.image-picker-panel {
+.image-picker-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 2px;
   max-height: 220px;
   overflow-y: auto;
 }
@@ -111,6 +79,11 @@
 .tiptap {
   outline: none;
   min-height: 2rem;
+}
+
+.tiptap .selection {
+  outline: 2px solid var(--ion-color-secondary, #000);
+  outline-offset: 1px;
 }
 
 .tiptap img {

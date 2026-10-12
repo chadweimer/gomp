@@ -1,10 +1,13 @@
 import { Component, Element, Event, EventEmitter, h, Host, Method, Prop, State, Watch } from '@stencil/core';
 import { ChainedCommands, Editor } from '@tiptap/core';
+import { Selection } from '@tiptap/extensions';
 import InvisibleCharacters, { HardBreakNode, ParagraphNode } from '@tiptap/extension-invisible-characters';
 import StarterKit from '@tiptap/starter-kit';
 import { isNullOrEmpty } from '../../helpers/utils';
 import { GompImage } from './extensions';
 import { isPlatform } from '@ionic/core';
+
+type Panel = 'imagePicker' | 'linkPanel' | 'helpPanel';
 
 @Component({
   tag: 'html-editor',
@@ -27,9 +30,7 @@ export class HTMLEditor {
   @State() isLinkActive = false;
   @State() isInvisibleCharactersActive = false;
 
-  @State() isImagePickerOpen = false;
-  @State() isLinkPanelOpen = false;
-  @State() isHelpPanelOpen = false;
+  @State() activePanel: Panel | null = null;
   @State() linkUrl = '';
 
   private editorContentRef!: HTMLElement;
@@ -64,9 +65,9 @@ export class HTMLEditor {
         onFocus={(e: FocusEvent) => this.handleFocus(e)}
         onFocusout={(e: FocusEvent) => this.handleBlur(e)}
         onKeyDown={(e: KeyboardEvent) => {
-          if (e.key === 'Escape' && this.isHelpPanelOpen) {
+          if (e.key === 'Escape') {
             e.preventDefault();
-            this.isHelpPanelOpen = false;
+            this.activePanel = null;
           }
         }}
       >
@@ -119,9 +120,9 @@ export class HTMLEditor {
                 <ion-icon icon="list" />
               </ion-button>
               <ion-button
-                onClick={() => this.toggleLinkPanel()}
+                onClick={() => this.togglePanel('linkPanel')}
                 size="default"
-                fill={this.isLinkPanelOpen || this.isLinkActive ? 'solid' : 'clear'}
+                fill={this.activePanel === 'linkPanel' || this.isLinkActive ? 'solid' : 'clear'}
                 tabindex="-1"
                 title="Hyperlink"
               >
@@ -130,9 +131,9 @@ export class HTMLEditor {
 
               {(this.images?.length ?? 0) > 0 && (
                 <ion-button
-                  onClick={() => this.toggleImagePicker()}
+                  onClick={() => this.togglePanel('imagePicker')}
                   size="default"
-                  fill={this.isImagePickerOpen ? 'solid' : 'clear'}
+                  fill={this.activePanel === 'imagePicker' ? 'solid' : 'clear'}
                   tabindex="-1"
                   title="Insert image"
                 >
@@ -152,9 +153,9 @@ export class HTMLEditor {
                 <ion-icon icon="document-text-outline" />
               </ion-button>
               <ion-button
-                onClick={() => this.toggleHelpPanel()}
+                onClick={() => this.togglePanel('helpPanel')}
                 size="default"
-                fill={this.isHelpPanelOpen ? 'solid' : 'clear'}
+                fill={this.activePanel === 'helpPanel' ? 'solid' : 'clear'}
                 tabindex="-1"
                 title="Keyboard shortcuts"
               >
@@ -162,14 +163,15 @@ export class HTMLEditor {
               </ion-button>
             </ion-buttons>
           </ion-toolbar>
-          {this.isLinkPanelOpen && (
-            <div class="editor-panel link-panel">
-              <input
+
+          {this.activePanel === 'linkPanel' && (
+            <ion-item class="fill link-panel" lines="full">
+              <ion-input
                 type="url"
                 class="link-input"
                 placeholder="https://example.com"
                 value={this.linkUrl}
-                onInput={e => (this.linkUrl = (e.target as HTMLInputElement).value)}
+                onIonInput={e => (this.linkUrl = e.detail.value ?? '')}
                 onKeyDown={(e: KeyboardEvent) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -177,35 +179,38 @@ export class HTMLEditor {
                   }
                 }}
               />
-              <ion-button size="small" fill="solid" onClick={() => this.applyLink()}>
+              <ion-button slot="end" size="small" fill="solid" onClick={() => this.applyLink()}>
                 Apply
               </ion-button>
               {this.isLinkActive && (
-                <ion-button size="small" fill="outline" color="danger" onClick={() => this.removeLink()}>
+                <ion-button slot="end" size="small" fill="outline" color="danger" onClick={() => this.removeLink()}>
                   Remove
                 </ion-button>
               )}
-            </div>
+            </ion-item>
           )}
 
-          {this.isImagePickerOpen && (
-            <div class="editor-panel image-picker-panel">
-              {this.images?.map(image => (
-                <ion-button
-                  key={image.name}
-                  fill="clear"
-                  class="image-picker-item"
-                  onClick={() => this.insertImage(image)}
-                >
-                  <img slot="icon-only" src={image.thumbUrl} alt={image.name} />
-                </ion-button>
-              ))}
-            </div>
+          {this.activePanel === 'imagePicker' && (
+            <ion-card class="image-picker-panel">
+              <ion-card-content class="image-picker-grid">
+                {this.images?.map(image => (
+                  <ion-button
+                    slot="start"
+                    key={image.name}
+                    fill="clear"
+                    class="image-picker-item"
+                    onClick={() => this.insertImage(image)}
+                  >
+                    <img slot="icon-only" src={image.thumbUrl} alt={image.name} />
+                  </ion-button>
+                ))}
+              </ion-card-content>
+            </ion-card>
           )}
 
-          {this.isHelpPanelOpen && (
-            <div class="editor-panel help-panel">
-              <div class="shortcuts-grid">
+          {this.activePanel === 'helpPanel' && (
+            <ion-card class="help-panel">
+              <ion-card-content class="shortcuts-grid">
                 <div class="shortcut-row">
                   <span class="shortcut-desc">Bold</span>
                   <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>B</kbd></span>
@@ -246,8 +251,8 @@ export class HTMLEditor {
                   <span class="shortcut-desc">Undo / Redo</span>
                   <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd></span>
                 </div>
-              </div>
-            </div>
+              </ion-card-content>
+            </ion-card>
           )}
         </div>
 
@@ -293,6 +298,7 @@ export class HTMLEditor {
         builders: [new HardBreakNode(), new ParagraphNode()],
         visible: false,
       }),
+      Selection,
     ];
 
     this.editor = new Editor({
@@ -304,8 +310,8 @@ export class HTMLEditor {
         this.valueChanged.emit(this.getCleanHTML());
       },
       onSelectionUpdate: () => {
+        this.closePanel('helpPanel');
         this.updateButtonStates();
-        this.isHelpPanelOpen = false;
       },
     });
 
@@ -323,10 +329,7 @@ export class HTMLEditor {
       return;
     }
 
-    this.isImagePickerOpen = false;
-    this.isLinkPanelOpen = false;
-    this.isHelpPanelOpen = false;
-
+    this.activePanel = null;
     this.valueChanged.emit(this.getCleanHTML());
   }
 
@@ -354,37 +357,24 @@ export class HTMLEditor {
     if (this.isLinkActive) {
       const linkAttrs = this.editor.getAttributes('link') as { href?: string };
       this.linkUrl = linkAttrs.href || '';
+    } else {
+      this.linkUrl = '';
     }
   }
 
   private editorCommand(fn: (chain: ChainedCommands) => ChainedCommands) {
-    if (!this.editor) {
+    if (!this.editor || this.editor.isDestroyed) {
       return;
     }
     fn(this.editor.chain().focus()).run();
   }
 
-  private toggleLinkPanel() {
-    this.isLinkPanelOpen = !this.isLinkPanelOpen;
-    this.isImagePickerOpen = false;
-    this.isHelpPanelOpen = false;
-
-    if (this.isLinkPanelOpen && this.isLinkActive) {
-      const linkAttrs = this.editor?.getAttributes('link') as { href?: string } | undefined;
-      this.linkUrl = linkAttrs?.href || '';
-    }
+  private togglePanel(panel: Panel) {
+    this.activePanel = this.activePanel === panel ? null : panel;
   }
 
-  private toggleImagePicker() {
-    this.isImagePickerOpen = !this.isImagePickerOpen;
-    this.isLinkPanelOpen = false;
-    this.isHelpPanelOpen = false;
-  }
-
-  private toggleHelpPanel() {
-    this.isHelpPanelOpen = !this.isHelpPanelOpen;
-    this.isLinkPanelOpen = false;
-    this.isImagePickerOpen = false;
+  private closePanel(panel: Panel) {
+    this.activePanel = this.activePanel === panel ? null : this.activePanel;
   }
 
   private applyLink() {
@@ -393,33 +383,32 @@ export class HTMLEditor {
       return;
     }
 
+    if (!this.linkUrl.startsWith('http://') && !this.linkUrl.startsWith('https://')) {
+      this.linkUrl = 'https://' + this.linkUrl;
+    }
+
     this.editorCommand((chain) => chain.extendMarkRange('link').setLink({ href: this.linkUrl }));
-    this.isLinkPanelOpen = false;
+    this.closePanel('linkPanel');
     this.updateButtonStates();
   }
 
   private removeLink() {
     this.editorCommand((chain) => chain.extendMarkRange('link').unsetLink());
-    this.linkUrl = '';
-    this.isLinkPanelOpen = false;
+    this.closePanel('linkPanel');
     this.updateButtonStates();
   }
 
   private insertImage(image: { name: string; url: string; thumbUrl: string }) {
-    this.isImagePickerOpen = false;
+    this.editorCommand((chain) => chain.insertContent({
+      type: GompImage.name,
+      attrs: {
+        src: image.url,
+        alt: image.name,
+        'data-image': image.name,
+      },
+    }));
 
-    if (this.editor && !this.editor.isDestroyed) {
-      this.editorCommand((chain) => chain.insertContent({
-        type: GompImage.name,
-        attrs: {
-          src: image.url,
-          alt: image.name,
-          'data-image': image.name,
-        },
-      }));
-
-      this.updateButtonStates();
-      this.valueChanged.emit(this.getCleanHTML());
-    }
+    this.closePanel('imagePicker');
+    this.updateButtonStates();
   }
 }
