@@ -175,11 +175,11 @@ export class HTMLEditor {
                 onKeyDown={(e: KeyboardEvent) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
-                    this.applyLink();
+                    this.applyLink(this.linkUrl);
                   }
                 }}
               />
-              <ion-button slot="end" size="small" fill="solid" onClick={() => this.applyLink()}>
+              <ion-button slot="end" size="small" fill="solid" onClick={() => this.applyLink(this.linkUrl)}>
                 Apply
               </ion-button>
               {this.isLinkActive && (
@@ -393,25 +393,23 @@ export class HTMLEditor {
     this.activePanel = this.activePanel === panel ? null : this.activePanel;
   }
 
-  private applyLink() {
-    if (isNullOrEmpty(this.linkUrl)) {
+  private applyLink(linkUrl: string) {
+    if (isNullOrEmpty(linkUrl)) {
       this.removeLink();
       return;
     }
 
-    if (!this.linkUrl.startsWith('http://') && !this.linkUrl.startsWith('https://')) {
-      this.linkUrl = 'https://' + this.linkUrl;
+    if (!linkUrl.startsWith('http://') && !linkUrl.startsWith('https://')) {
+      linkUrl = 'https://' + linkUrl;
     }
 
-    this.editorCommand((chain) => chain.extendMarkRange('link').setLink({ href: this.linkUrl }));
+    this.editorCommand((chain) => chain.extendMarkRange('link').setLink({ href: linkUrl }));
     this.closePanel('linkPanel');
-    this.updateButtonStates();
   }
 
   private removeLink() {
     this.editorCommand((chain) => chain.extendMarkRange('link').unsetLink());
     this.closePanel('linkPanel');
-    this.updateButtonStates();
   }
 
   private insertImage(image: { name: string; url: string; thumbUrl: string }) {
@@ -425,6 +423,5 @@ export class HTMLEditor {
     }));
 
     this.closePanel('imagePicker');
-    this.updateButtonStates();
   }
 }
