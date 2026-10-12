@@ -6,7 +6,7 @@
 }
 
 .editor-content {
-  min-height: 2.5rem;
+  min-height: 2.5em;
   padding-bottom: var(--ion-padding, 0);
   outline: none;
 }
@@ -23,50 +23,34 @@
   background: var(--ion-toolbar-background, var(--ion-background-color, #fff));
 }
 
-.image-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 2px;
-  max-height: 220px;
-  overflow-y: auto;
-}
-
-.image-picker-item img {
+.image-picker-panel img {
   object-fit: cover;
   border-radius: 4px;
 }
 
-.shortcuts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 8px 16px;
-}
-
-.shortcut-row {
-  display: flex;
+.shortcut-desc,
+.shortcut-keys {
+  font-size: 0.9em;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 0.8rem;
-  color: var(--ion-text-color, #000);
 }
 
 .shortcut-desc {
+  justify-content: right;
   color: var(--ion-color-step-800, var(--ion-text-color, #333));
 }
 
 .shortcut-keys {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
+  justify-content: left;
   white-space: nowrap;
+  gap: 2px;
 }
 
 .shortcut-keys kbd {
   display: inline-block;
-  padding: 2px 5px;
-  font-family: var(--ion-font-family, inherit), monospace;
-  font-size: 0.75rem;
+  padding: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
   font-weight: 500;
   line-height: 1;
   color: var(--ion-text-color, #222);
@@ -78,7 +62,7 @@
 
 .tiptap {
   outline: none;
-  min-height: 2rem;
+  min-height: 2em;
 }
 
 .tiptap .selection {

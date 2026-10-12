@@ -58,7 +58,7 @@ export class HTMLEditor {
 
   render() {
     const ios = isPlatform('ios');
-    const modKey = ios ? '⌘' : 'Ctrl';
+    const modKey = ios ? 'Cmd ⌘' : 'Ctrl';
     return (
       <Host
         tabindex={this.el.getAttribute('tabindex') ?? '-1'}
@@ -192,65 +192,89 @@ export class HTMLEditor {
 
           {this.activePanel === 'imagePicker' && (
             <ion-card class="image-picker-panel">
-              <ion-card-content class="image-picker-grid">
-                {this.images?.map(image => (
-                  <ion-button
-                    slot="start"
-                    key={image.name}
-                    fill="clear"
-                    class="image-picker-item"
-                    onClick={() => this.insertImage(image)}
-                  >
-                    <img slot="icon-only" src={image.thumbUrl} alt={image.name} />
-                  </ion-button>
-                ))}
+              <ion-card-content>
+                <ion-grid class="no-pad">
+                  <ion-row>
+                    {this.images?.map(image => (
+                      <ion-col key={image.name} size="3" size-sm="2" size-md="1">
+                        <ion-button fill="clear" onClick={() => this.insertImage(image)}>
+                          <img slot="icon-only" src={image.thumbUrl} alt={image.name} />
+                        </ion-button>
+                      </ion-col>
+                    ))}
+                  </ion-row>
+                </ion-grid>
               </ion-card-content>
             </ion-card>
           )}
 
           {this.activePanel === 'helpPanel' && (
             <ion-card class="help-panel">
-              <ion-card-content class="shortcuts-grid">
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">Bold</span>
-                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>B</kbd></span>
-                </div>
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">Italic</span>
-                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>I</kbd></span>
-                </div>
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">Underline</span>
-                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>U</kbd></span>
-                </div>
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">Numbered</span>
-                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>7</kbd></span>
-                </div>
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">Bullets</span>
-                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>8</kbd></span>
-                </div>
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">Line Break (⏎)</span>
-                  <span class="shortcut-keys"><kbd>Shift</kbd>+<kbd>Enter</kbd></span>
-                </div>
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">New Paragraph (¶)</span>
-                  <span class="shortcut-keys"><kbd>Enter</kbd></span>
-                </div>
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">New Numbered</span>
-                  <span class="shortcut-keys"><kbd>1.</kbd> <kbd>Space</kbd></span>
-                </div>
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">New Bullets</span>
-                  <span class="shortcut-keys"><kbd>*</kbd> <kbd>Space</kbd></span>
-                </div>
-                <div class="shortcut-row">
-                  <span class="shortcut-desc">Undo / Redo</span>
-                  <span class="shortcut-keys"><kbd>{modKey}</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd></span>
-                </div>
+              <ion-card-content>
+                <ion-grid>
+                  <ion-row>
+                    <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                      Bold
+                    </ion-col>
+                    <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                      <kbd>{modKey}</kbd>+<kbd>B</kbd>
+                    </ion-col>
+                    <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                      Italic
+                    </ion-col>
+                    <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                      <kbd>{modKey}</kbd>+<kbd>I</kbd>
+                    </ion-col>
+                    <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                      Underline
+                    </ion-col>
+                    <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                      <kbd>{modKey}</kbd>+<kbd>U</kbd>
+                    </ion-col>
+                    <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                      Numbered
+                    </ion-col>
+                    <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                      <kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>7</kbd>
+                    </ion-col>
+                    <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                      Bullets
+                    </ion-col>
+                    <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                      <kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>8</kbd>
+                    </ion-col>
+                    <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                      Line Break (⏎)
+                    </ion-col>
+                    <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                      <kbd>Shift</kbd>+<kbd>Enter</kbd>
+                    </ion-col>
+                    <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                      New Paragraph (¶)
+                    </ion-col>
+                    <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                      <kbd>Enter</kbd>
+                    </ion-col>
+                    <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                      New Numbered
+                    </ion-col>
+                    <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                      <kbd>1.</kbd> <kbd>Space</kbd>
+                    </ion-col>
+                    <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                      New Bullets
+                    </ion-col>
+                    <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                      <kbd>*</kbd> <kbd>Space</kbd>
+                    </ion-col>
+                    <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                      Undo / Redo
+                    </ion-col>
+                    <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                      <kbd>{modKey}</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
               </ion-card-content>
             </ion-card>
           )}
