@@ -69,7 +69,7 @@ describe('html-editor', () => {
     let picker = root.shadowRoot?.querySelector('.image-picker-panel');
     expect(picker).not.toBeNull();
 
-    const items = root.shadowRoot?.querySelectorAll('.image-picker-item');
+    const items = picker?.querySelectorAll('ion-button');
     expect(items).toHaveLength(mockImages.length);
 
     const firstImg = items?.[0].querySelector('img');
@@ -93,12 +93,13 @@ describe('html-editor', () => {
     imageBtn?.click();
     await waitForChanges();
 
-    const items = root.shadowRoot?.querySelectorAll<HTMLButtonElement>('.image-picker-item');
+    let picker = root.shadowRoot?.querySelector('.image-picker-panel');
+    const items = picker?.querySelectorAll('ion-button');
     items?.[0]?.click();
     await waitForChanges();
 
     // Picker should be closed
-    const picker = root.shadowRoot?.querySelector('.image-picker-panel');
+    picker = root.shadowRoot?.querySelector('.image-picker-panel');
     expect(picker).toBeNull();
 
     // Editor content should contain the image tag
@@ -263,11 +264,13 @@ describe('html-editor', () => {
     let helpPanel = root.shadowRoot?.querySelector('.help-panel');
     expect(helpPanel).not.toBeNull();
 
-    const grid = helpPanel?.querySelector('.shortcuts-grid');
-    expect(grid).not.toBeNull();
+    const shortcutDescs = helpPanel?.querySelectorAll('.shortcut-desc');
+    expect(shortcutDescs?.length).toBeGreaterThan(0);
 
-    const shortcuts = helpPanel?.querySelectorAll('.shortcut-row');
-    expect(shortcuts?.length).toBeGreaterThan(0);
+    const shortcutKeys = helpPanel?.querySelectorAll('.shortcut-keys');
+    expect(shortcutKeys?.length).toBeGreaterThan(0);
+
+    expect(shortcutDescs?.length).toEqual(shortcutKeys?.length);
 
     helpBtn.click();
     await waitForChanges();
