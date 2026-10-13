@@ -97,7 +97,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
           </ion-grid>
         </ion-content>
         <ion-footer class="hide-on-print">
-          <ion-toolbar>
+          <ion-toolbar color="light">
             <ion-buttons slot="start">
               <ion-back-button defaultHref="/recipes" />
             </ion-buttons>

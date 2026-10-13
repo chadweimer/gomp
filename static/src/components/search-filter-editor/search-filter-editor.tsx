@@ -60,7 +60,7 @@ export class SearchFilterEditor {
     return (
       <Host>
         <ion-header>
-          <ion-toolbar>
+          <ion-toolbar color="light">
             <ion-title>{this.prompt}</ion-title>
             <ion-buttons slot="secondary">
               <ion-button color="danger" onClick={() => this.onResetClicked()}>Reset</ion-button>

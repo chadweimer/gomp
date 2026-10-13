@@ -57,7 +57,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
         </ion-content>
 
         <ion-footer>
-          <ion-toolbar>
+          <ion-toolbar color="light">
             <page-navigator
               class="ion-justify-content-center"
               color="secondary"

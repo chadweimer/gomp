@@ -73,7 +73,7 @@ export class RecipeEditor {
     return (
       <Host>
         <ion-header>
-          <ion-toolbar>
+          <ion-toolbar color="light">
             <ion-buttons slot="primary">
               <ion-button color="primary" onClick={() => this.onSaveClicked()}>Save</ion-button>
             </ion-buttons>
