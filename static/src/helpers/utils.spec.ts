@@ -10,11 +10,15 @@ describe('utils', () => {
       expect(output).toContain('data-image="foo.jpg"');
     });
 
-    it('strips forbidden style tags and attributes', () => {
-      const input = '<div style="color: red;"><span style="font-weight: bold;">text</span></div>';
+    it('preserves safe style properties and span tags while stripping dangerous ones', () => {
+      const input = '<div style="margin: 10px; position: fixed; background: url(javascript:alert(1));"><span style="height: 100px; display: block;">text</span></div>';
       const output = sanitizeHTML(input);
-      expect(output).not.toContain('style');
-      expect(output).not.toContain('<span');
+      expect(output).toContain('<span');
+      expect(output).toContain('height: 100px');
+      expect(output).not.toContain('display: block');
+      expect(output).not.toContain('margin: 10px');
+      expect(output).not.toContain('position');
+      expect(output).not.toContain('javascript');
     });
   });
 
@@ -34,6 +38,12 @@ describe('utils', () => {
       const input = 'Step 1: Mix. <img src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"> Step 2: Cook.';
       const output = toStorageHtml(globalThis.document.body, input);
       expect(output).toEqualHtml('Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.');
+    });
+
+    it('replaces image elements with width and height attribute with extended sentinels', () => {
+      const input = '<img src="/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg" data-width="300" data-height="400px">';
+      const output = toStorageHtml(globalThis.document.body, input);
+      expect(output).toEqualHtml('{{image:pancakes.jpg|width=300|height=400px}}');
     });
 
     it('replaces multiple image elements with their corresponding sentinels', () => {
@@ -60,6 +70,13 @@ describe('utils', () => {
       const storage = toStorageHtml(globalThis.document.body, presentation);
       expect(storage).toEqualHtml(original);
     });
+
+    it('round-trips with toPresentationHtml with height attribute', () => {
+      const original = 'Step 1: Mix. {{image:pancakes.jpg|height=300px}} Step 2: Cook.';
+      const presentation = toPresentationHtml(globalThis.document.body, original, 42, false);
+      const storage = toStorageHtml(globalThis.document.body, presentation);
+      expect(storage).toEqualHtml(original);
+    });
   });
 
   describe('toPresentationHtml', () => {
@@ -73,7 +90,7 @@ describe('utils', () => {
       const directions = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
       const output = toPresentationHtml(globalThis.document.body, directions, 42);
       expect(output).toEqualHtml(
-        'Step 1: Mix. <a href="/uploads/recipes/42/images/pancakes.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"></a> Step 2: Cook.',
+        'Step 1: Mix. <a href="/uploads/recipes/42/images/pancakes.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/42/images/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"></a> Step 2: Cook.',
       );
     });
 
@@ -81,7 +98,7 @@ describe('utils', () => {
       const directions = 'Step 1: Mix. {{image:pancakes.jpg}} Step 2: Cook.';
       const output = toPresentationHtml(globalThis.document.body, directions, 42, false);
       expect(output).toEqualHtml(
-        'Step 1: Mix. <img src="/uploads/recipes/42/thumbs/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"> Step 2: Cook.',
+        'Step 1: Mix. <img src="/uploads/recipes/42/images/pancakes.jpg" alt="pancakes.jpg" data-image="pancakes.jpg"> Step 2: Cook.',
       );
     });
 
@@ -89,7 +106,7 @@ describe('utils', () => {
       const directions = '{{image:first.png}} then {{image:second.png}}';
       const output = toPresentationHtml(globalThis.document.body, directions, 10, false);
       expect(output).toEqualHtml(
-        '<img src="/uploads/recipes/10/thumbs/first.png" alt="first.png" data-image="first.png"> then <img src="/uploads/recipes/10/thumbs/second.png" alt="second.png" data-image="second.png">',
+        '<img src="/uploads/recipes/10/images/first.png" alt="first.png" data-image="first.png"> then <img src="/uploads/recipes/10/images/second.png" alt="second.png" data-image="second.png">',
       );
     });
   });

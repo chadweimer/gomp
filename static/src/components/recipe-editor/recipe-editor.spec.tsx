@@ -92,19 +92,19 @@ describe('recipe-editor', () => {
       expect(timeInput).not.toBeNull();
       expect(timeInput).toEqualAttribute('value', '');
 
-      const ingredientsEditor = root.shadowRoot?.querySelector('html-editor[label="Ingredients"]');
+      const ingredientsEditor = root.shadowRoot?.querySelector('html-editor[id="ingredients"]');
       expect(ingredientsEditor).not.toBeNull();
       expect(ingredientsEditor).toEqualAttribute('value', '');
 
-      const directionsEditor = root.shadowRoot?.querySelector('html-editor[label="Directions"]');
+      const directionsEditor = root.shadowRoot?.querySelector('html-editor[id="directions"]');
       expect(directionsEditor).not.toBeNull();
       expect(directionsEditor).toEqualAttribute('value', '');
 
-      const storageEditor = root.shadowRoot?.querySelector('html-editor[label="Storage Instructions"]');
+      const storageEditor = root.shadowRoot?.querySelector('html-editor[id="storage-instructions"]');
       expect(storageEditor).not.toBeNull();
       expect(storageEditor).toEqualAttribute('value', '');
 
-      const nutritionEditor = root.shadowRoot?.querySelector('html-editor[label="Nutrition"]');
+      const nutritionEditor = root.shadowRoot?.querySelector('html-editor[id="nutrition"]');
       expect(nutritionEditor).not.toBeNull();
       expect(nutritionEditor).toEqualAttribute('value', '');
 
@@ -144,16 +144,16 @@ describe('recipe-editor', () => {
       const timeInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Time"]');
       expect(timeInput).toEqualAttribute('value', mockRecipe.time);
 
-      const ingredientsEditor = root.shadowRoot?.querySelector('html-editor[label="Ingredients"]');
+      const ingredientsEditor = root.shadowRoot?.querySelector('html-editor[id="ingredients"]');
       expect(ingredientsEditor).toEqualAttribute('value', mockRecipe.ingredients);
 
-      const directionsEditor = root.shadowRoot?.querySelector('html-editor[label="Directions"]');
+      const directionsEditor = root.shadowRoot?.querySelector('html-editor[id="directions"]');
       expect(directionsEditor).toEqualAttribute('value', mockRecipe.directions);
 
-      const storageEditor = root.shadowRoot?.querySelector('html-editor[label="Storage Instructions"]');
+      const storageEditor = root.shadowRoot?.querySelector('html-editor[id="storage-instructions"]');
       expect(storageEditor).toEqualAttribute('value', mockRecipe.storageInstructions);
 
-      const nutritionEditor = root.shadowRoot?.querySelector('html-editor[label="Nutrition"]');
+      const nutritionEditor = root.shadowRoot?.querySelector('html-editor[id="nutrition"]');
       expect(nutritionEditor).toEqualAttribute('value', mockRecipe.nutritionInfo);
 
       const sourceInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Source"]');
@@ -169,19 +169,21 @@ describe('recipe-editor', () => {
         <recipe-editor recipe={mockRecipe} recipeImages={['pic1.jpg', 'pic2.png']} />,
       );
 
-      const directionsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Directions"]');
+      const directionsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[id="directions"]');
       expect(directionsEditor?.images).toEqual([
         {
           name: 'pic1.jpg',
-          url: '/uploads/recipes/1/thumbs/pic1.jpg',
+          url: '/uploads/recipes/1/images/pic1.jpg',
+          thumbUrl: '/uploads/recipes/1/thumbs/pic1.jpg',
         },
         {
           name: 'pic2.png',
-          url: '/uploads/recipes/1/thumbs/pic2.png',
+          url: '/uploads/recipes/1/images/pic2.png',
+          thumbUrl: '/uploads/recipes/1/thumbs/pic2.png',
         },
       ]);
 
-      const ingredientsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[label="Ingredients"]');
+      const ingredientsEditor = root.shadowRoot?.querySelector<HTMLHtmlEditorElement>('html-editor[id="ingredients"]');
       expect(ingredientsEditor?.images).toBeUndefined();
     });
   });
@@ -255,25 +257,25 @@ describe('recipe-editor', () => {
       expect(root.recipe.sourceUrl).toBe('https://example.com/waffles');
 
       // Ingredients valueChanged
-      const ingredientsEditor = root.shadowRoot?.querySelector('html-editor[label="Ingredients"]');
+      const ingredientsEditor = root.shadowRoot?.querySelector('html-editor[id="ingredients"]');
       ingredientsEditor?.dispatchEvent(new CustomEvent('valueChanged', { detail: 'Flour and butter' }));
       await waitForChanges();
       expect(root.recipe.ingredients).toBe('Flour and butter');
 
       // Directions valueChanged
-      const directionsEditor = root.shadowRoot?.querySelector('html-editor[label="Directions"]');
+      const directionsEditor = root.shadowRoot?.querySelector('html-editor[id="directions"]');
       directionsEditor?.dispatchEvent(new CustomEvent('valueChanged', { detail: 'Pour in iron' }));
       await waitForChanges();
       expect(root.recipe.directions).toBe('Pour in iron');
 
       // Storage Instructions valueChanged
-      const storageEditor = root.shadowRoot?.querySelector('html-editor[label="Storage Instructions"]');
+      const storageEditor = root.shadowRoot?.querySelector('html-editor[id="storage-instructions"]');
       storageEditor?.dispatchEvent(new CustomEvent('valueChanged', { detail: 'Freeze' }));
       await waitForChanges();
       expect(root.recipe.storageInstructions).toBe('Freeze');
 
       // Nutrition valueChanged
-      const nutritionEditor = root.shadowRoot?.querySelector('html-editor[label="Nutrition"]');
+      const nutritionEditor = root.shadowRoot?.querySelector('html-editor[id="nutrition"]');
       nutritionEditor?.dispatchEvent(new CustomEvent('valueChanged', { detail: '450 kcal' }));
       await waitForChanges();
       expect(root.recipe.nutritionInfo).toBe('450 kcal');

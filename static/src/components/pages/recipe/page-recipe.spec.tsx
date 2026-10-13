@@ -35,8 +35,8 @@ describe('page-recipe', () => {
     { id: 10, recipeId: 1, text: 'Use fresh eggs' },
   ];
 
-  function getSideMenuItem(root: HTMLElement, text: string): HTMLIonItemElement | undefined {
-    const items = Array.from(root.querySelectorAll<HTMLIonItemElement>('.side-menu ion-item'));
+  function getBottomToolbarItem(root: HTMLElement, text: string): HTMLIonButtonElement | undefined {
+    const items = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-footer ion-buttons[slot="primary"] ion-button'));
     return items.find(item => item.textContent?.trim().includes(text));
   }
 
@@ -245,13 +245,13 @@ describe('page-recipe', () => {
         expect(card.hasAttribute('readonly') || card.readonly === true).toBe(true);
       });
 
-      expect(getSideMenuItem(root, 'Edit')).toBeUndefined();
-      expect(getSideMenuItem(root, 'Add Note')).toBeUndefined();
-      expect(getSideMenuItem(root, 'Upload Picture')).toBeUndefined();
-      expect(getSideMenuItem(root, 'Add Link')).toBeUndefined();
-      expect(getSideMenuItem(root, 'Archive')).toBeUndefined();
-      expect(getSideMenuItem(root, 'Delete')).toBeUndefined();
-      expect(getSideMenuItem(root, 'Print')).toBeDefined();
+      expect(getBottomToolbarItem(root, 'Edit')).toBeUndefined();
+      expect(getBottomToolbarItem(root, 'Add Note')).toBeUndefined();
+      expect(getBottomToolbarItem(root, 'Upload Picture')).toBeUndefined();
+      expect(getBottomToolbarItem(root, 'Add Link')).toBeUndefined();
+      expect(getBottomToolbarItem(root, 'Archive')).toBeUndefined();
+      expect(getBottomToolbarItem(root, 'Delete')).toBeUndefined();
+      expect(getBottomToolbarItem(root, 'Print')).toBeDefined();
 
       const footerButtons = Array.from(root.querySelectorAll('ion-footer ion-button'));
       const footerTexts = footerButtons.map(b => b.textContent?.trim());
@@ -274,13 +274,13 @@ describe('page-recipe', () => {
         expect(card.hasAttribute('readonly')).toBe(false);
       });
 
-      expect(getSideMenuItem(root, 'Edit')).toBeDefined();
-      expect(getSideMenuItem(root, 'Add Note')).toBeDefined();
-      expect(getSideMenuItem(root, 'Upload Picture')).toBeDefined();
-      expect(getSideMenuItem(root, 'Add Link')).toBeDefined();
-      expect(getSideMenuItem(root, 'Archive')).toBeDefined();
-      expect(getSideMenuItem(root, 'Delete')).toBeDefined();
-      expect(getSideMenuItem(root, 'Print')).toBeDefined();
+      expect(getBottomToolbarItem(root, 'Edit')).toBeDefined();
+      expect(getBottomToolbarItem(root, 'Add Note')).toBeDefined();
+      expect(getBottomToolbarItem(root, 'Upload Picture')).toBeDefined();
+      expect(getBottomToolbarItem(root, 'Add Link')).toBeDefined();
+      expect(getBottomToolbarItem(root, 'Archive')).toBeDefined();
+      expect(getBottomToolbarItem(root, 'Delete')).toBeDefined();
+      expect(getBottomToolbarItem(root, 'Print')).toBeDefined();
 
       const pictureButtons = root.querySelectorAll('.images-container ion-card ion-button');
       expect(pictureButtons.length).toBeGreaterThan(0);
@@ -290,8 +290,8 @@ describe('page-recipe', () => {
       state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
 
       const { root: activeRoot } = await render(<page-recipe recipeId={1} />);
-      expect(getSideMenuItem(activeRoot, 'Archive')).toBeDefined();
-      expect(getSideMenuItem(activeRoot, 'Unarchive')).toBeUndefined();
+      expect(getBottomToolbarItem(activeRoot, 'Archive')).toBeDefined();
+      expect(getBottomToolbarItem(activeRoot, 'Unarchive')).toBeUndefined();
 
       const archivedRecipe: Recipe = {
         ...mockRecipe,
@@ -300,8 +300,8 @@ describe('page-recipe', () => {
       setupDefaultFetchMock(archivedRecipe);
 
       const { root: archivedRoot } = await render(<page-recipe recipeId={1} />);
-      expect(getSideMenuItem(archivedRoot, 'Unarchive')).toBeDefined();
-      expect(getSideMenuItem(archivedRoot, 'Archive')).toBeUndefined();
+      expect(getBottomToolbarItem(archivedRoot, 'Unarchive')).toBeDefined();
+      expect(getBottomToolbarItem(archivedRoot, 'Archive')).toBeUndefined();
     });
   });
 
@@ -325,7 +325,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      const editBtn = getSideMenuItem(root, 'Edit');
+      const editBtn = getBottomToolbarItem(root, 'Edit');
       expect(editBtn).toBeDefined();
       editBtn?.click();
       await waitForChanges();
@@ -353,7 +353,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Edit')?.click();
+      getBottomToolbarItem(root, 'Edit')?.click();
       await waitForChanges();
 
       const putRequest = requests.find(r => r.url.match(/\/recipes\/1$/) && r.method === 'PUT');
@@ -373,7 +373,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Edit')?.click();
+      getBottomToolbarItem(root, 'Edit')?.click();
       await waitForChanges();
 
       expect(createToastSpy).toHaveBeenCalledWith(
@@ -395,7 +395,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Delete')?.click();
+      getBottomToolbarItem(root, 'Delete')?.click();
       await waitForChanges();
 
       expect(createAlertSpy).toHaveBeenCalledWith(
@@ -419,7 +419,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Delete')?.click();
+      getBottomToolbarItem(root, 'Delete')?.click();
       await waitForChanges();
 
       const deleteReq = requests.find(r => r.url.match(/\/recipes\/1$/) && r.method === 'DELETE');
@@ -440,7 +440,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Delete')?.click();
+      getBottomToolbarItem(root, 'Delete')?.click();
       await waitForChanges();
 
       expect(createToastSpy).toHaveBeenCalledWith(
@@ -462,7 +462,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Archive')?.click();
+      getBottomToolbarItem(root, 'Archive')?.click();
       await waitForChanges();
 
       expect(createAlertSpy).toHaveBeenCalledWith(
@@ -497,7 +497,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      const unarchiveBtn = getSideMenuItem(root, 'Unarchive');
+      const unarchiveBtn = getBottomToolbarItem(root, 'Unarchive');
       expect(unarchiveBtn).toBeDefined();
       unarchiveBtn?.click();
       await waitForChanges();
@@ -525,7 +525,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Archive')?.click();
+      getBottomToolbarItem(root, 'Archive')?.click();
       await waitForChanges();
 
       expect(createToastSpy).toHaveBeenCalledWith(
@@ -592,7 +592,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Print')?.click();
+      getBottomToolbarItem(root, 'Print')?.click();
       await waitForChanges();
 
       expect(printSpy).toHaveBeenCalled();
@@ -618,7 +618,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Add Link')?.click();
+      getBottomToolbarItem(root, 'Add Link')?.click();
       await waitForChanges();
 
       expect(createModalSpy).toHaveBeenCalled();
@@ -642,7 +642,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Add Link')?.click();
+      getBottomToolbarItem(root, 'Add Link')?.click();
       await waitForChanges();
 
       const putReq = requests.find(r => r.url.match(/\/recipes\/1\/links/) && r.method === 'PUT');
@@ -662,7 +662,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Add Link')?.click();
+      getBottomToolbarItem(root, 'Add Link')?.click();
       await waitForChanges();
 
       expect(createToastSpy).toHaveBeenCalledWith(
@@ -759,7 +759,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Add Note')?.click();
+      getBottomToolbarItem(root, 'Add Note')?.click();
       await waitForChanges();
 
       expect(createModalSpy).toHaveBeenCalled();
@@ -783,7 +783,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Add Note')?.click();
+      getBottomToolbarItem(root, 'Add Note')?.click();
       await waitForChanges();
 
       const postReq = requests.find(r => r.url.match(/\/recipes\/1\/notes$/) && r.method === 'POST');
@@ -803,7 +803,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Add Note')?.click();
+      getBottomToolbarItem(root, 'Add Note')?.click();
       await waitForChanges();
 
       expect(createToastSpy).toHaveBeenCalledWith(
@@ -972,7 +972,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Upload Picture')?.click();
+      getBottomToolbarItem(root, 'Upload Picture')?.click();
       await waitForChanges();
 
       expect(createModalSpy).toHaveBeenCalled();
@@ -995,7 +995,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Upload Picture')?.click();
+      getBottomToolbarItem(root, 'Upload Picture')?.click();
       await waitForChanges();
 
       const postReq = requests.find(r => r.url.match(/\/recipes\/1\/images$/) && r.method === 'POST');
@@ -1017,7 +1017,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      getSideMenuItem(root, 'Upload Picture')?.click();
+      getBottomToolbarItem(root, 'Upload Picture')?.click();
       await waitForChanges();
 
       expect(createToastSpy).toHaveBeenCalledWith(

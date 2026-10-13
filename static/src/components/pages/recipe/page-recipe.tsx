@@ -45,49 +45,6 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                   onDeleteLinkClicked={e => void this.onDeleteLinkClicked(e.detail)}
                   onTagClicked={e => void this.onTagClicked(e.detail)} />
               </ion-col>
-              <ion-col size="0" size-lg="3" size-xl="2">
-                <ion-list class="side-menu">
-                  {isAuthorized(state.currentUser, AccessLevel.Editor) &&
-                    <Fragment>
-                      <ion-item button onClick={() => this.onEditClicked()}>
-                        <ion-icon slot="start" icon="create" />
-                        Edit
-                      </ion-item>
-                      <ion-item button onClick={() => this.onAddNoteClicked()}>
-                        <ion-icon slot="start" icon="chatbox" />
-                        Add Note
-                      </ion-item>
-                      <ion-item button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
-                        <ion-icon slot="start" icon="camera" />
-                        Upload Picture
-                      </ion-item>
-                      <ion-item button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
-                        <ion-icon slot="start" icon="link" />
-                        Add Link
-                      </ion-item>
-                      {this.recipe?.state === RecipeState.Archived ?
-                        <ion-item button class="ion-hide-lg-down" onClick={() => this.onUnarchiveClicked()}>
-                          <ion-icon slot="start" icon="archive" />
-                          Unarchive
-                        </ion-item>
-                        :
-                        <ion-item button class="ion-hide-lg-down" onClick={() => this.onArchiveClicked()}>
-                          <ion-icon slot="start" icon="archive" />
-                          Archive
-                        </ion-item>
-                      }
-                      <ion-item button class="ion-hide-lg-down" onClick={() => this.onDeleteClicked()}>
-                        <ion-icon slot="start" icon="trash" />
-                        Delete
-                      </ion-item>
-                    </Fragment>
-                  }
-                  <ion-item button class="ion-hide-md-down" onClick={() => this.onPrintClicked()}>
-                    <ion-icon slot="start" icon="print" />
-                    Print
-                  </ion-item>
-                </ion-list>
-              </ion-col>
             </ion-row>
             <ion-row>
               <ion-col size="12" size-md="6" size-xl="4" offset-xl="2">
@@ -140,8 +97,8 @@ export class PageRecipe implements ComponentWithActivatedCallback {
             </ion-row>
           </ion-grid>
         </ion-content>
-        <ion-footer class="ion-hide-lg-up hide-on-print">
-          <ion-toolbar>
+        <ion-footer class="hide-on-print">
+          <ion-toolbar color="light">
             <ion-buttons slot="start">
               <ion-back-button defaultHref="/recipes" />
             </ion-buttons>
@@ -164,9 +121,28 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                     <ion-icon slot="start" icon="link" />
                     Add Link
                   </ion-button>
+                  {this.recipe?.state === RecipeState.Archived ?
+                    <ion-button class="ion-hide-lg-down" onClick={() => this.onUnarchiveClicked()}>
+                      <ion-icon slot="start" icon="archive" />
+                      Unarchive
+                    </ion-button>
+                    :
+                    <ion-button class="ion-hide-lg-down" onClick={() => this.onArchiveClicked()}>
+                      <ion-icon slot="start" icon="archive" />
+                      Archive
+                    </ion-button>
+                  }
+                  <ion-button class="ion-hide-lg-down" onClick={() => this.onDeleteClicked()}>
+                    <ion-icon slot="start" icon="trash" />
+                    Delete
+                  </ion-button>
                 </Fragment>
               }
-              <ion-button onClick={() => this.onRecipeMenuClicked()}>
+              <ion-button class="ion-hide-md-down" onClick={() => this.onPrintClicked()}>
+                <ion-icon slot="start" icon="print" />
+                Print
+              </ion-button>
+              <ion-button class="ion-hide-lg-up" onClick={() => this.onRecipeMenuClicked()}>
                 <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
               </ion-button>
             </ion-buttons>
