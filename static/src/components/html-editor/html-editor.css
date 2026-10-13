@@ -15,9 +15,10 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  margin-top: var(--ion-margin);
+  margin: var(--ion-margin) 0;
   border: 1px solid var(--ion-color-light-tint);
   border-radius: 2px;
+  background: var(--ion-background-color);
 }
 
 .editor-toolbar {
