@@ -5,3 +5,12 @@
   overflow-wrap: anywhere;
   word-break: normal;
 }
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+img:not([style*="height" i]) {
+  max-height: 400px;
+}

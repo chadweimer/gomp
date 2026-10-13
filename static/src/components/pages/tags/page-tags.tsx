@@ -55,7 +55,7 @@ export class PageTags implements ComponentWithActivatedCallback {
     return (
       <Host>
         <ion-header>
-          <ion-toolbar>
+          <ion-toolbar color="light">
             <ion-buttons class="ion-justify-content-center">
               <ion-button color="secondary" onClick={() => this.onSortByClicked()}>
                 <ion-icon slot="start" icon='swap-vertical' />
@@ -90,7 +90,7 @@ export class PageTags implements ComponentWithActivatedCallback {
         </ion-content>
 
         <ion-footer>
-          <ion-toolbar>
+          <ion-toolbar color="light">
             <page-navigator
               class="ion-justify-content-center"
               color="secondary"

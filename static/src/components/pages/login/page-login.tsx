@@ -54,7 +54,7 @@ export class PageLogin {
                   <ion-text color="danger">{this.errorMessage}</ion-text>
                 </ion-card-content>
                 <ion-footer>
-                  <ion-toolbar>
+                  <ion-toolbar color="light">
                     <ion-buttons slot="primary">
                       <ion-button color="primary" onClick={() => this.onLoginClicked()}>Login</ion-button>
                     </ion-buttons>

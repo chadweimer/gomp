@@ -50,7 +50,7 @@ export class PageSearch {
     return (
       <Host>
         <ion-header>
-          <ion-toolbar>
+          <ion-toolbar color="light">
             <ion-buttons class="ion-justify-content-center">
               <ion-button color="secondary" class="ion-hide-md-down" onClick={() => this.onSearchStatesClicked()}>
                 <ion-icon slot="start" icon="filter" />
@@ -108,7 +108,7 @@ export class PageSearch {
         </ion-content>
 
         <ion-footer>
-          <ion-toolbar>
+          <ion-toolbar color="light">
             <page-navigator class="ion-justify-content-center" color="secondary" page={state.searchPage} numPages={state.searchNumPages} onPageChanged={e => state.searchPage = e.detail} />
           </ion-toolbar>
         </ion-footer>

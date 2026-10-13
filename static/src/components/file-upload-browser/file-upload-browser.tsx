@@ -25,7 +25,7 @@ export class FileUploadBrowser {
     return (
       <Host>
         <ion-header>
-          <ion-toolbar>
+          <ion-toolbar color="light">
             <ion-buttons slot="primary">
               <ion-button color="primary" onClick={() => this.onSaveClicked()}>Upload</ion-button>
             </ion-buttons>
