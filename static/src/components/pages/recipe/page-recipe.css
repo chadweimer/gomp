@@ -11,6 +11,11 @@
   border-bottom: 2px solid var(--ion-color-primary);
 }
 
-ion-thumbnail.upload {
-  --size: 150px;
+.thumb {
+  object-fit: cover;
+  width: 100%;
+}
+
+swiper-container::part(wrapper) {
+  margin-bottom: var(--ion-margin);
 }

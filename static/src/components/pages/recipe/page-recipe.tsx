@@ -92,37 +92,38 @@ export class PageRecipe implements ComponentWithActivatedCallback {
             <ion-row>
               <ion-col size="12" size-md="6" size-xl="4" offset-xl="2">
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
-                <ion-grid class="no-pad">
-                  <ion-row class="ion-justify-content-center">
-                    {this.images?.map(image =>
-                      <ion-col key={image} size="auto">
-                        <ion-card class="zoom">
-                          <a href={getRecipeImageUrl(this.recipeId, image)} target="_blank" rel="noopener noreferrer">
-                            <ion-thumbnail class="upload">
-                              <img loading="lazy" alt={image} class="thumb" src={getRecipeThumbnailUrl(this.recipeId, image)} />
-                            </ion-thumbnail>
-                          </a>
-                          {isAuthorized(state.currentUser, AccessLevel.Editor) &&
-                            <ion-card-content class="ion-no-padding">
-                              <ion-buttons>
-                                <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
-                                  <ion-icon slot="icon-only" icon="star" size="small" />
-                                </ion-button>
-                                <ion-button size="small" color="danger" onClick={() => this.onDeleteImageClicked(image)}>
-                                  <ion-icon slot="icon-only" icon="trash" size="small" />
-                                </ion-button>
-                              </ion-buttons>
-                            </ion-card-content>
-                          }
-                        </ion-card>
-                      </ion-col>
-                    )}
-                  </ion-row>
-                </ion-grid>
+                <swiper-container
+                  class="ion-margin-horizontal images-container"
+                  scrollbar="true"
+                  slides-per-view="1.75"
+                  center-insufficient-slides="true"
+                >
+                  {this.images?.map(image =>
+                    <swiper-slide lazy="true">
+                      <ion-card class="zoom">
+                        <a href={getRecipeImageUrl(this.recipeId, image)} target="_blank" rel="noopener noreferrer">
+                          <img class="thumb" loading="lazy" alt={image} src={getRecipeThumbnailUrl(this.recipeId, image)} />
+                        </a>
+                        {isAuthorized(state.currentUser, AccessLevel.Editor) &&
+                          <ion-card-content class="ion-no-padding">
+                            <ion-buttons>
+                              <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
+                                <ion-icon slot="icon-only" icon="star" size="small" />
+                              </ion-button>
+                              <ion-button size="small" color="danger" onClick={() => this.onDeleteImageClicked(image)}>
+                                <ion-icon slot="icon-only" icon="trash" size="small" />
+                              </ion-button>
+                            </ion-buttons>
+                          </ion-card-content>
+                        }
+                      </ion-card>
+                    </swiper-slide>
+                  )}
+                </swiper-container>
               </ion-col>
               <ion-col size="12" size-md="6" size-xl="4">
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Notes</ion-text></h4>
-                <ion-grid>
+                <ion-grid class="no-pad">
                   {this.notes?.map(note =>
                     <ion-row key={note.id}>
                       <ion-col>
