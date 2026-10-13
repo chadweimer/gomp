@@ -323,7 +323,6 @@ export class HTMLEditor {
       content: this.value || '',
       onTransaction: () => {
         this.updateButtonStates();
-        this.valueChanged.emit(this.getCleanHTML());
       },
       onSelectionUpdate: () => {
         this.closePanel('helpPanel');
