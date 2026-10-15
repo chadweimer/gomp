@@ -88,7 +88,8 @@ export class RecipeEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item lines="full">
               <ion-input label="Name" label-placement="stacked" value={this.recipe?.name}
-                autocorrect="on"
+                // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                autocorrect={true}
                 spellcheck
                 required
                 autofocus
@@ -105,14 +106,16 @@ export class RecipeEditor {
             }
             <ion-item lines="full">
               <ion-input label="Serving Size" label-placement="stacked" value={this.recipe?.servingSize}
-                autocorrect="on"
+                // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                autocorrect={true}
                 spellcheck
                 onIonChange={e => this.recipe = { ...this.recipe, servingSize: e.detail.value as string }}
                 ref={el => this.servingSizeInput = el!} />
             </ion-item>
             <ion-item lines="full">
               <ion-input label="Time" label-placement="stacked" value={this.recipe?.time}
-                autocorrect="on"
+                // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                autocorrect={true}
                 spellcheck
                 onIonChange={e => this.recipe = { ...this.recipe, time: e.detail.value as string }}
                 ref={el => this.timeInput = el!} />

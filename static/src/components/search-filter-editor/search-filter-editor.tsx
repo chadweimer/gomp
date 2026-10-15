@@ -90,7 +90,8 @@ export class SearchFilterEditor {
             {!this.hideName &&
               <ion-item lines="full">
                 <ion-input label="Name" label-placement="stacked" value={this.name}
-                  autocorrect="on"
+                  // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                  autocorrect={true}
                   spellcheck
                   required
                   autofocus
@@ -100,7 +101,8 @@ export class SearchFilterEditor {
             }
             <ion-item lines="full">
               <ion-input label="Search Terms" label-placement="stacked" value={this.searchFilter?.query}
-                autocorrect="on"
+                // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                autocorrect={true}
                 spellcheck
                 onIonChange={e => this.searchFilter = { ...this.searchFilter, query: e.detail.value as string }}
                 ref={el => this.queryInput = el!} />
