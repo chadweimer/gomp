@@ -153,7 +153,11 @@ export class AppRoot {
             <ion-toolbar color="primary">
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
                 <ion-buttons slot="start">
-                  <ion-menu-button />
+                  <ion-menu-button>
+                    {state.loadingCount > 0 &&
+                      <ion-spinner name="bubbles" />
+                    }
+                  </ion-menu-button>
                 </ion-buttons>
               }
 
@@ -226,11 +230,6 @@ export class AppRoot {
                   </ion-button>
                 </ion-buttons>
               </ion-toolbar>
-            }
-            {state.loadingCount > 0 ?
-              <ion-progress-bar type="indeterminate" color="secondary" />
-              :
-              <ion-progress-bar value={100} color="primary" />
             }
           </ion-header>
 
