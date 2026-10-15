@@ -5,6 +5,7 @@ import { showActionSheet, showAlert, showLoading, showModal, showToast } from '.
 import { ComponentWithActivatedCallback, getRecipeImageUrl, getRecipeThumbnailUrl, isAuthorized, isNull, redirect } from '../../../helpers/utils';
 import state from '../../../stores/state';
 import { getDefaultSearchFilter } from '../../../models';
+import { Swiper } from 'swiper/types';
 
 @Component({
   tag: 'page-recipe',
@@ -52,7 +53,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                 <swiper-container
                   class="ion-margin-horizontal images-container"
                   scrollbar="true"
-                  slides-per-view="1.75"
+                  slides-per-view="2.5"
                   center-insufficient-slides="true"
                 >
                   {this.images?.map(image =>
