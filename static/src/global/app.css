@@ -240,6 +240,11 @@ ion-grid.no-pad {
   --ion-grid-column-padding: 0px;
 }
 
+ion-grid {
+  --ion-grid-width-sm: 100%;
+  --ion-grid-width-md: 100%;
+}
+
 ion-thumbnail.preview {
   --size: 35px;
   --border-radius: 5px;
