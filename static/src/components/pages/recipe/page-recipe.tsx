@@ -50,9 +50,9 @@ export class PageRecipe implements ComponentWithActivatedCallback {
               <ion-col size="12" size-md="6">
                 <h4 class="tab ion-text-center ion-margin-horizontal"><ion-text color="primary">Pictures</ion-text></h4>
                 <ion-grid class="no-pad">
-                  <ion-row class="ion-justify-content-center">
+                  <ion-row class="ion-justify-content-evenly">
                     {this.images?.map(image =>
-                      <ion-col key={image} size="auto">
+                      <ion-col key={image} size="4">
                         <ion-card class="zoom">
                           <a href={getRecipeImageUrl(this.recipeId, image)} target="_blank" rel="noopener noreferrer">
                             <ion-thumbnail class="upload">

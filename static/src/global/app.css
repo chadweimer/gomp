@@ -197,12 +197,12 @@
 }
 
 .zoom {
-  transition: transform .2s;
+  transition: transform .15s;
 }
 
 .zoom.ion-activated,
 .zoom:hover {
-  transform: scale(1.05);
+  transform: scale(1.04);
   z-index: 1;
 }
 

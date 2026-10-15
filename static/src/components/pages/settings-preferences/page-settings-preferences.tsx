@@ -32,7 +32,8 @@ export class PageSettingsPreferences implements ComponentWithActivatedCallback {
                     <ion-card-content>
                       <ion-item lines="full">
                         <ion-input label="Home Title" label-placement="stacked" value={this.settings?.homeTitle}
-                          autocorrect="on"
+                          // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                          autocorrect={true}
                           spellcheck
                           required
                           onIonBlur={(e: Event) => this.settings = { ...this.settings, homeTitle: (e.currentTarget as HTMLIonInputElement).value as string, favoriteTags: this.settings?.favoriteTags ?? [] }} />

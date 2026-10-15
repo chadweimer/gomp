@@ -34,7 +34,8 @@ export class PageAdminConfiguration implements ComponentWithActivatedCallback {
                     <ion-card-content>
                       <ion-item lines="full">
                         <ion-input label="Application Title" label-placement="stacked" value={this.appConfig?.title}
-                          autocorrect="on"
+                          // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                          autocorrect={true}
                           spellcheck
                           required
                           onIonBlur={(e: Event) => this.appConfig = { ...this.appConfig, title: (e.currentTarget as HTMLIonInputElement).value as string }} />

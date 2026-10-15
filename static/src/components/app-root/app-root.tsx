@@ -7,7 +7,6 @@ import { redirect, sendActivatedCallback, isNull, isNullOrEmpty, isAuthorized } 
 import { getDefaultSearchFilter } from '../../models';
 import appConfig from '../../stores/config';
 import state, { clearState } from '../../stores/state';
-import { NavigationHookResult } from '@ionic/core/dist/types/components/route/route-interface';
 import { Subscription } from 'rxjs/internal/Subscription';
 
 @Component({
@@ -154,7 +153,11 @@ export class AppRoot {
             <ion-toolbar color="primary">
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
                 <ion-buttons slot="start">
-                  <ion-menu-button />
+                  <ion-menu-button>
+                    {state.loadingCount > 0 &&
+                      <ion-spinner name="bubbles" />
+                    }
+                  </ion-menu-button>
                 </ion-buttons>
               }
 
@@ -183,7 +186,8 @@ export class AppRoot {
                 <ion-searchbar
                   slot="end"
                   class="end ion-hide-md-down"
-                  autocorrect="on"
+                  // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                  autocorrect={true}
                   spellcheck={true}
                   show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
                   cancel-button-text="Reset"
@@ -207,7 +211,8 @@ export class AppRoot {
             {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
               <ion-toolbar color="primary" class="ion-hide-md-up">
                 <ion-searchbar
-                  autocorrect="on"
+                  // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                  autocorrect={true}
                   spellcheck={true}
                   show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
                   cancel-button-text="Reset"
@@ -225,11 +230,6 @@ export class AppRoot {
                   </ion-button>
                 </ion-buttons>
               </ion-toolbar>
-            }
-            {state.loadingCount > 0 ?
-              <ion-progress-bar type="indeterminate" color="secondary" />
-              :
-              <ion-progress-bar value={100} color="primary" />
             }
           </ion-header>
 
@@ -289,7 +289,7 @@ export class AppRoot {
     return !isNull(state.currentUser);
   }
 
-  private requireLogin(): NavigationHookResult {
+  private requireLogin() {
     if (this.isLoggedIn()) {
       return true;
     }
@@ -297,7 +297,7 @@ export class AppRoot {
     return { redirect: '/login' };
   }
 
-  private requireAdmin(): NavigationHookResult {
+  private requireAdmin() {
     if (isAuthorized(state.currentUser, AccessLevel.Admin)) {
       return true;
     }

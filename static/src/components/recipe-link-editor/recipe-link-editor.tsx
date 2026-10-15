@@ -44,7 +44,8 @@ export class RecipeLinkEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             <ion-item lines="full">
               <ion-input label="Find Recipe" label-placement="stacked" value={this.query} type="search"
-                autocorrect="on"
+                // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                autocorrect={true}
                 spellcheck
                 autofocus
                 debounce={500}
