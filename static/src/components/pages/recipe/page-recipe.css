@@ -12,7 +12,7 @@
 }
 
 ion-thumbnail.upload {
-  --size: 150px;
+  --size: 100%;
 }
 
 /* Add what is essentially an xxl breakpoint for very large screens */
