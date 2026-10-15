@@ -22,12 +22,6 @@
 @import '../../node_modules/@ionic/core/css/text-transformation.css';
 @import '../../node_modules/@ionic/core/css/flex-utils.css';
 
-/* Workaround for bug in stencil 4.25.2 and later that causes the corresponding
-item in @ionic/core/css/structure.css to hide everything on the page*/
-html:not(.hydrated) body {
-  display: unset !important;
-}
-
 /*
   The CSS Variables below can be used to theme your app.
   For more info on CSS variables check out:
