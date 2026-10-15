@@ -197,25 +197,26 @@ describe('app-root', () => {
     });
   });
 
-  describe('progress bar indicators', () => {
-    it('renders indeterminate progress bar when operations are loading', async () => {
+  describe('spinner indicators', () => {
+    beforeEach(() => {
+      state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
+    });
+
+    it('renders spinner when operations are loading', async () => {
       state.loadingCount = 2;
       const { root } = await render(<app-root />);
 
-      const progressBar = root.querySelector('ion-progress-bar');
-      expect(progressBar).not.toBeNull();
-      expect(progressBar).toEqualAttribute('type', 'indeterminate');
-      expect(progressBar).toEqualAttribute('color', 'secondary');
+      const spinner = root.querySelector('ion-spinner');
+      expect(spinner).not.toBeNull();
+      expect(spinner).toEqualAttribute('name', 'bubbles');
     });
 
-    it('renders static 100% progress bar when nothing is loading', async () => {
+    it('does not render spinner when nothing is loading', async () => {
       state.loadingCount = 0;
       const { root } = await render(<app-root />);
 
-      const progressBar = root.querySelector('ion-progress-bar');
-      expect(progressBar).not.toBeNull();
-      expect(progressBar).toEqualAttribute('value', '100');
-      expect(progressBar).toEqualAttribute('color', 'primary');
+      const spinner = root.querySelector('ion-spinner');
+      expect(spinner).toBeNull();
     });
   });
 
