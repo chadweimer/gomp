@@ -36,7 +36,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         <ion-content class="hide-on-print">
           <ion-grid class="no-pad">
             <ion-row>
-              <ion-col size="12" size-lg="9" size-xl="8" offset-xl="2">
+              <ion-col size="12" size-lg="10" size-xl="8" offset-lg="1" offset-xl="2">
                 <recipe-viewer
                   recipe={this.recipe}
                   links={this.links}
