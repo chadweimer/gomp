@@ -1,6 +1,6 @@
 import { Component, Element, Host, Method, State, h } from '@stencil/core';
 import { Backup } from '../../../helpers/schema.gen';
-import { api } from '../../../helpers/api';
+import { api, fileContentSerializer } from '../../../helpers/api';
 import { showActionSheet, showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, isNull, scaleValue } from '../../../helpers/utils';
 
@@ -103,7 +103,12 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
     try {
       await showLoading(
         async () => {
-          const { error } = await api.client.POST('/backups');
+          const { error } = await api.client.POST('/backups', {
+            body: {},
+            bodySerializer(body) {
+              return fileContentSerializer(body)
+            }
+          });
 
           if (error) {
             throw new Error('Failed to create backup.', { cause: error });
@@ -204,7 +209,10 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
       await showLoading(
         async () => {
           const { error } = await api.client.POST('/backups', {
-            body: { fileContent: file }
+            body: file,
+            bodySerializer(body) {
+              return fileContentSerializer(body, file)
+            }
           });
 
           if (error) {
