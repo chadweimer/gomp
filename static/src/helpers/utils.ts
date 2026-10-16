@@ -105,6 +105,24 @@ export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirect
     el: el,
     threshold: 30,
     gestureName: 'swipe',
+    canStart: detail => {
+      // 1. Prevent tab swipe if the touch started on or inside an ion-item-sliding
+      const path = detail.event?.composedPath ? detail.event.composedPath() : [];
+      const isInsideSlidingItem = path.some(
+        node => node instanceof HTMLElement && node.tagName.toLowerCase() === 'ion-item-sliding'
+      );
+      if (isInsideSlidingItem) {
+        return false;
+      }
+      // 2. Prevent tab swipe if any ion-item-sliding is currently open (swiped open)
+      const hasOpenSlidingItem = !!document.querySelector(
+        'ion-item-sliding.item-sliding-active-slide, ion-item-sliding.item-sliding-active-options-end, ion-item-sliding.item-sliding-active-options-start'
+      );
+      if (hasOpenSlidingItem) {
+        return false;
+      }
+      return true;
+    },
     onEnd: e => {
       const swipe = getSwipe(e);
       if (isNullOrEmpty(swipe)) return;
