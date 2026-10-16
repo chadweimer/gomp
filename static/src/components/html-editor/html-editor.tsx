@@ -1,4 +1,4 @@
-import { Component, Element, Event, EventEmitter, h, Host, Method, Prop, State, Watch } from '@stencil/core';
+import { Component, Element, Event, EventEmitter, Fragment, h, Host, Method, Prop, State, Watch } from '@stencil/core';
 import { ChainedCommands, Editor } from '@tiptap/core';
 import { Selection } from '@tiptap/extensions';
 import InvisibleCharacters, { HardBreakNode, ParagraphNode } from '@tiptap/extension-invisible-characters';
@@ -8,6 +8,17 @@ import { GompImage } from './extensions';
 import { isPlatform } from '@ionic/core';
 
 type Panel = 'imagePicker' | 'linkPanel' | 'helpPanel';
+interface ToolbarButton {
+  name: string;
+  title: string;
+  content: unknown;
+  click: () => void;
+  active: boolean;
+}
+interface ShortcutKey {
+  desc: string;
+  keys: unknown;
+}
 
 @Component({
   tag: 'html-editor',
@@ -57,14 +68,6 @@ export class HTMLEditor {
   }
 
   render() {
-    interface ToolbarButton {
-      name: string;
-      title: string;
-      content: unknown;
-      click: () => void;
-      active: boolean;
-    }
-
     const primaryButtons: ToolbarButton[] = [
       {
         name: 'bold',
@@ -137,18 +140,18 @@ export class HTMLEditor {
     ];
 
     const modKey = isPlatform('ios') ? 'Cmd ⌘' : 'Ctrl';
-    const shortcutKeys = [
-      { desc: 'Bold', keys: [<kbd>{modKey}</kbd>, '+', <kbd>B</kbd>] },
-      { desc: 'Italic', keys: [<kbd>{modKey}</kbd>, '+', <kbd>I</kbd>] },
-      { desc: 'Underline', keys: [<kbd>{modKey}</kbd>, '+', <kbd>U</kbd>] },
-      { desc: 'Ordered List', keys: [<kbd>{modKey}</kbd>, '+', <kbd>Shift</kbd>, '+', <kbd>7</kbd>] },
-      { desc: 'Bullet List', keys: [<kbd>{modKey}</kbd>, '+', <kbd>Shift</kbd>, '+', <kbd>8</kbd>] },
-      { desc: 'Hyperlink', keys: [<kbd>{modKey}</kbd>, '+', <kbd>K</kbd>] },
-      { desc: 'Line Break (⏎)', keys: [<kbd>Shift</kbd>, '+', <kbd>Enter</kbd>] },
-      { desc: 'New Paragraph (¶)', keys: [<kbd>Enter</kbd>] },
-      { desc: 'New Numbered', keys: [<kbd>1.</kbd>, ' ', <kbd>Space</kbd>] },
-      { desc: 'New Bullets', keys: [<kbd>*</kbd>, ' ', <kbd>Space</kbd>] },
-      { desc: 'Undo / Redo', keys: [<kbd>{modKey}</kbd>, '+', <kbd>Z</kbd>, '/', <kbd>Y</kbd>] },
+    const shortcutKeys: ShortcutKey[] = [
+      { desc: 'Bold', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>B</kbd></Fragment> },
+      { desc: 'Italic', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>I</kbd></Fragment> },
+      { desc: 'Underline', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>U</kbd></Fragment> },
+      { desc: 'Ordered List', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>7</kbd></Fragment> },
+      { desc: 'Bullet List', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>8</kbd></Fragment> },
+      { desc: 'Hyperlink', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>K</kbd></Fragment> },
+      { desc: 'Line Break (⏎)', keys: <Fragment><kbd>Shift</kbd>+<kbd>Enter</kbd></Fragment> },
+      { desc: 'New Paragraph (¶)', keys: <kbd>Enter</kbd> },
+      { desc: 'New Numbered', keys: <Fragment><kbd>1.</kbd><kbd>Space</kbd></Fragment> },
+      { desc: 'New Bullets', keys: <Fragment><kbd>*</kbd><kbd>Space</kbd></Fragment> },
+      { desc: 'Undo / Redo', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd></Fragment> },
     ];
     return (
       <Host
