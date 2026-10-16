@@ -112,36 +112,36 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                     <ion-icon slot="start" icon="chatbox" />
                     Add Note
                   </ion-button>
-                  <ion-button class="ion-hide-sm-down" onClick={() => this.onUploadImageClicked()}>
+                  <ion-button class="ion-display-none ion-display-sm-flex" onClick={() => this.onUploadImageClicked()}>
                     <ion-icon slot="start" icon="camera" />
                     Upload Picture
                   </ion-button>
-                  <ion-button class="ion-hide-md-down" onClick={() => this.onAddLinkClicked()}>
+                  <ion-button class="ion-display-none ion-display-md-flex" onClick={() => this.onAddLinkClicked()}>
                     <ion-icon slot="start" icon="link" />
                     Add Link
                   </ion-button>
                   {this.recipe?.state === RecipeState.Archived ?
-                    <ion-button class="ion-hide-lg-down" onClick={() => this.onUnarchiveClicked()}>
+                    <ion-button class="ion-display-none ion-display-lg-flex" onClick={() => this.onUnarchiveClicked()}>
                       <ion-icon slot="start" icon="archive" />
                       Unarchive
                     </ion-button>
                     :
-                    <ion-button class="ion-hide-lg-down" onClick={() => this.onArchiveClicked()}>
+                    <ion-button class="ion-display-none ion-display-lg-flex" onClick={() => this.onArchiveClicked()}>
                       <ion-icon slot="start" icon="archive" />
                       Archive
                     </ion-button>
                   }
-                  <ion-button class="ion-hide-lg-down" onClick={() => this.onDeleteClicked()}>
+                  <ion-button class="ion-display-none ion-display-lg-flex" onClick={() => this.onDeleteClicked()}>
                     <ion-icon slot="start" icon="trash" />
                     Delete
                   </ion-button>
                 </Fragment>
               }
-              <ion-button class="ion-hide-md-down" onClick={() => this.onPrintClicked()}>
+              <ion-button class="ion-display-none ion-display-md-flex" onClick={() => this.onPrintClicked()}>
                 <ion-icon slot="start" icon="print" />
                 Print
               </ion-button>
-              <ion-button class="ion-hide-lg-up" onClick={() => this.onRecipeMenuClicked()}>
+              <ion-button class="ion-display-lg-none" onClick={() => this.onRecipeMenuClicked()}>
                 <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
               </ion-button>
             </ion-buttons>

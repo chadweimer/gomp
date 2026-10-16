@@ -48,19 +48,19 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                             <p>Version: {backup.metadata.version}</p>
                             <p>Size: {scaleValue(backup.sizeInBytes, 1048576, 2)} MiB</p>
                           </ion-label>
-                          <ion-button class="ion-hide-lg-down" slot="end" fill="clear" onClick={() => this.onRestoreBackupClicked(backup)}>
+                          <ion-button class="ion-display-none ion-display-lg-flex" slot="end" fill="clear" onClick={() => this.onRestoreBackupClicked(backup)}>
                             <ion-icon slot="start" name="open-outline" />
                             Restore
                           </ion-button>
-                          <ion-button class="ion-hide-lg-down" slot="end" fill="clear" onClick={() => this.onDownloadBackupClicked(backup)}>
+                          <ion-button class="ion-display-none ion-display-lg-flex" slot="end" fill="clear" onClick={() => this.onDownloadBackupClicked(backup)}>
                             <ion-icon slot="start" name="download-outline" />
                             Download
                           </ion-button>
-                          <ion-button class="ion-hide-lg-down" slot="end" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
+                          <ion-button class="ion-display-none ion-display-lg-flex" slot="end" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
                             <ion-icon slot="start" name="trash" />
                             Delete
                           </ion-button>
-                          <ion-button class="ion-hide-lg-up" slot="end" color="dark" fill="clear" onClick={() => this.onBackupMenuClicked(backup)}>
+                          <ion-button class="ion-display-lg-none" slot="end" color="dark" fill="clear" onClick={() => this.onBackupMenuClicked(backup)}>
                             <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
                           </ion-button>
                         </ion-item>

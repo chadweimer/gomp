@@ -167,7 +167,7 @@ export class AppRoot {
               </ion-title>
 
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-buttons slot="end" class="ion-hide-md-down">
+                <ion-buttons slot="end" class="ion-display-none ion-display-md-flex">
                   {this.appLinks
                     .filter(link => link.toolbar && (isNull(link.access) || isAuthorized(state.currentUser, link.access)))
                     .map(link => (
@@ -185,7 +185,7 @@ export class AppRoot {
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
                 <ion-searchbar
                   slot="end"
-                  class="end ion-hide-md-down"
+                  class="end ion-display-none ion-display-md-flex"
                   // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
                   autocorrect={true}
                   spellcheck={true}
@@ -200,7 +200,7 @@ export class AppRoot {
                 ></ion-searchbar>
               }
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-buttons slot="end" class="ion-hide-md-down">
+                <ion-buttons slot="end" class="ion-display-none ion-display-md-flex">
                   <ion-button color="light" onClick={() => this.onSearchFilterClicked()}>
                     <ion-icon icon="filter" slot="start" />
                     <ion-badge color="secondary">{state.searchResultCount}</ion-badge>
@@ -209,7 +209,7 @@ export class AppRoot {
               }
             </ion-toolbar>
             {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-              <ion-toolbar color="primary" class="ion-hide-md-up">
+              <ion-toolbar color="primary" class="ion-display-md-none">
                 <ion-searchbar
                   // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
                   autocorrect={true}

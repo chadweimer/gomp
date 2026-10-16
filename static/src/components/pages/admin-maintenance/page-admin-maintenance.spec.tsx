@@ -574,7 +574,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-hide-lg-up');
+      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-display-lg-none');
       menuBtn?.click();
       await waitForChanges();
 
@@ -603,7 +603,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-hide-lg-up');
+      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-display-lg-none');
       menuBtn?.click();
       await waitForChanges();
 
@@ -627,7 +627,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-hide-lg-up');
+      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-display-lg-none');
       menuBtn?.click();
       await waitForChanges();
 
@@ -652,7 +652,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-hide-lg-up');
+      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-display-lg-none');
       menuBtn?.click();
       await waitForChanges();
 
