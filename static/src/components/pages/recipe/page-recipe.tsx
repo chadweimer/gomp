@@ -120,17 +120,10 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                     <ion-icon slot="start" icon="link" />
                     Add Link
                   </ion-button>
-                  {this.recipe?.state === RecipeState.Archived ?
-                    <ion-button class="ion-display-none ion-display-lg-flex" onClick={() => this.onUnarchiveClicked()}>
-                      <ion-icon slot="start" icon="archive" />
-                      Unarchive
-                    </ion-button>
-                    :
-                    <ion-button class="ion-display-none ion-display-lg-flex" onClick={() => this.onArchiveClicked()}>
-                      <ion-icon slot="start" icon="archive" />
-                      Archive
-                    </ion-button>
-                  }
+                  <ion-button class="ion-display-none ion-display-lg-flex" onClick={() => this.onArchiveClicked()}>
+                    <ion-icon slot="start" icon="archive" />
+                    {this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive'}
+                  </ion-button>
                   <ion-button class="ion-display-none ion-display-lg-flex" onClick={() => this.onDeleteClicked()}>
                     <ion-icon slot="start" icon="trash" />
                     Delete
@@ -465,9 +458,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
         await this.onDeleteClicked();
         break;
       case 'archive':
-        await (this.recipe?.state === RecipeState.Archived
-          ? this.onUnarchiveClicked()
-          : this.onArchiveClicked());
+        await this.onArchiveClicked();
         break;
       case 'add-link':
         await this.onAddLinkClicked();
@@ -525,28 +516,15 @@ export class PageRecipe implements ComponentWithActivatedCallback {
   }
 
   private async onArchiveClicked() {
-    const { role } = await showAlert({
-      header: 'Archive Recipe?',
-      message: 'Are you sure you want to archive this recipe?',
-      buttons: [
-        { text: 'No', role: 'cancel' },
-        { text: 'Yes', role: 'confirm' }
-      ],
-    });
-
-    if (role === 'confirm') {
-      await this.setRecipeState(RecipeState.Archived);
-      await this.loadRecipe();
-
-      // Update the search results since the modified recipe may be in them
-      await refreshSearchResults();
+    let header = 'Archive Recipe?';
+    let message = 'Are you sure you want to archive this recipe?';
+    if (this.recipe?.state === RecipeState.Archived) {
+      header = 'Unarchive Recipe?';
+      message = 'Are you sure you want to unarchive this recipe?';
     }
-  }
-
-  private async onUnarchiveClicked() {
     const { role } = await showAlert({
-      header: 'Unarchive Recipe?',
-      message: 'Are you sure you want to unarchive this recipe?',
+      header,
+      message,
       buttons: [
         { text: 'No', role: 'cancel' },
         { text: 'Yes', role: 'confirm' }
@@ -554,7 +532,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
     });
 
     if (role === 'confirm') {
-      await this.setRecipeState(RecipeState.Active);
+      await this.setRecipeState(this.recipe?.state === RecipeState.Archived ? RecipeState.Active : RecipeState.Archived);
       await this.loadRecipe();
 
       // Update the search results since the modified recipe may be in them
