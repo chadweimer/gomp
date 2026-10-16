@@ -167,7 +167,7 @@ export class AppRoot {
               </ion-title>
 
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-buttons slot="end" class="ion-display-none ion-display-xs-flex">
+                <ion-buttons slot="end" class="ion-display-none ion-display-sm-flex">
                   {this.appLinks
                     .filter(link => link.toolbar && (isNull(link.access) || isAuthorized(state.currentUser, link.access)))
                     .map(link => ([
