@@ -66,7 +66,7 @@ describe('app-root', () => {
 
       expect(root.querySelector('ion-menu-button')).toBeNull();
       expect(root.querySelector('ion-searchbar')).toBeNull();
-      expect(root.querySelector('ion-buttons.ion-display-none.ion-display-md-flex')).toBeNull();
+      expect(root.querySelector('ion-buttons.ion-display-none.ion-display-sm-flex')).toBeNull();
     });
 
     it('renders viewer navigation and hides admin links for Viewer users', async () => {
