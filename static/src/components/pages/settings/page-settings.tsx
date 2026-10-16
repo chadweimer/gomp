@@ -53,7 +53,7 @@ export class PageSettings {
     return (
       <ion-tabs
         onIonTabsDidChange={() => sendActivatedCallback(this.tabs)}
-        ref={(el: HTMLIonTabsElement) => this.tabs = el}>
+        ref={el => this.tabs = el!}>
         <ion-tab tab="tab-settings-preferences" component="page-settings-preferences" />
         <ion-tab tab="tab-settings-searches" component="page-settings-searches" />
         <ion-tab tab="tab-settings-security" component="page-settings-security" />

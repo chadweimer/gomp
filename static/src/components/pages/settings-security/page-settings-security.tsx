@@ -55,7 +55,7 @@ export class PageSettingsSecurity implements ComponentWithActivatedCallback {
                         <ion-input label="Confirm Password" label-placement="stacked" type="password" value={this.repeatPassword}
                           autocomplete="new-password"
                           onIonBlur={(e: Event) => this.repeatPassword = (e.currentTarget as HTMLIonInputElement).value as string}
-                          ref={(el: HTMLIonInputElement) => this.repeatPasswordInput = el}
+                          ref={el => this.repeatPasswordInput = el!}
                           required />
                       </ion-item>
                     </ion-card-content>

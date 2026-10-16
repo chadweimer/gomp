@@ -32,7 +32,7 @@ export class PageLogin {
                       label="Email"
                       autocomplete="username"
                       onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
-                      ref={(el: HTMLIonInputElement) => this.usernameInput = el}
+                      ref={el => this.usernameInput = el!}
                       required />
                   </ion-item>
                   <ion-item>
@@ -41,7 +41,7 @@ export class PageLogin {
                       label="Password"
                       autocomplete="current-password"
                       onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
-                      ref={(el: HTMLIonInputElement) => this.passwordInput = el}
+                      ref={el => this.passwordInput = el!}
                       required />
                   </ion-item>
                   <ion-item lines="none">
