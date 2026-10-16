@@ -167,18 +167,28 @@ export class AppRoot {
               </ion-title>
 
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-buttons slot="end" class="ion-display-none ion-display-md-flex">
+                <ion-buttons slot="end" class="ion-display-none ion-display-xs-flex">
                   {this.appLinks
                     .filter(link => link.toolbar && (isNull(link.access) || isAuthorized(state.currentUser, link.access)))
-                    .map(link => (
+                    .map(link => ([
                       <ion-button
                         key={link.url}
-                        class={{ active: this.pageTitle === link.title }}
+                        class={{ 'active': this.pageTitle === link.title, 'ion-display-none': true, 'ion-display-lg-flex': true }}
                         href={link.url}
+                        title={link.title}
                       >
+                        <ion-icon slot="start" icon={link.icon} />
                         {link.title}
+                      </ion-button>,
+                      <ion-button
+                        key={link.url}
+                        class={{ 'active': this.pageTitle === link.title, 'ion-display-lg-none': true }}
+                        href={link.url}
+                        title={link.title}
+                      >
+                        <ion-icon slot="icon-only" icon={link.icon} />
                       </ion-button>
-                    ))
+                    ]))
                   }
                 </ion-buttons>
               }
