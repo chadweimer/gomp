@@ -130,11 +130,13 @@ export async function refreshSearchResults() {
   }
 }
 
-export function fileContentSerializer(_body: { file_content?: string } | undefined, file: File) {
+export function fileContentSerializer(_body: { file_content?: string } | undefined, file?: File) {
   // The unused _body parameter is required to match the expected signature for bodySerializer,
   // so that we know we're using the right part name in the form data
 
   const fd = new FormData();
-  fd.append('file_content', file);
+  if (file) {
+    fd.append('file_content', file);
+  }
   return fd;
 }
