@@ -66,7 +66,16 @@ describe('app-root', () => {
 
       expect(root.querySelector('ion-menu-button')).toBeNull();
       expect(root.querySelector('ion-searchbar')).toBeNull();
-      expect(root.querySelector('ion-buttons.ion-display-none.ion-display-sm-flex')).toBeNull();
+      expect(root.querySelector('#toolbar-menu')).toBeNull();
+    });
+
+    it('shows menu button, searchbar, and toolbar links when user is authenticated', async () => {
+      state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
+      const { root } = await render(<app-root />);
+
+      expect(root.querySelector('ion-menu-button')).not.toBeNull();
+      expect(root.querySelector('ion-searchbar')).not.toBeNull();
+      expect(root.querySelector('#toolbar-menu')).not.toBeNull();
     });
 
     it('renders viewer navigation and hides admin links for Viewer users', async () => {
