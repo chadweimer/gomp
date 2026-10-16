@@ -40,8 +40,8 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                         <ion-label>Backups</ion-label>
                       </ion-list-header>
                       {this.backups?.map(backup =>
-                        <ion-item-sliding>
-                          <ion-item key={backup.metadata.name}>
+                        <ion-item-sliding key={backup.metadata.name}>
+                          <ion-item>
                             <ion-label>
                               {backup.metadata.name}
                               <ion-note class="ion-display-block">Version: {backup.metadata.version}</ion-note>
