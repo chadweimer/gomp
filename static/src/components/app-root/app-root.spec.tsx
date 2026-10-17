@@ -81,6 +81,7 @@ describe('app-root', () => {
     it('renders viewer navigation and hides admin links for Viewer users', async () => {
       state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
       state.totalRecipeCount = 42;
+      state.totalTagsCount = 43;
       const { root } = await render(<app-root />);
 
       expect(root.querySelector('ion-menu-button')).not.toBeNull();
@@ -92,6 +93,10 @@ describe('app-root', () => {
       const recipesLink = root.querySelector('ion-item[href="/recipes"]');
       expect(recipesLink).not.toBeNull();
       expect(recipesLink).toHaveTextContent('42');
+
+      const tagsLink = root.querySelector('ion-item[href="/tags"]');
+      expect(tagsLink).not.toBeNull();
+      expect(tagsLink).toHaveTextContent('43');
 
       const settingsLink = root.querySelector('ion-item[href="/settings"]');
       expect(settingsLink).not.toBeNull();
@@ -244,6 +249,12 @@ describe('app-root', () => {
           return {
             status: 200,
             body: JSON.stringify({ total: 0, recipes: [] }),
+          };
+        }
+        if (req.url.match(/\/tags(\?.*)?$/)) {
+          return {
+            status: 200,
+            body: JSON.stringify({ total: 0, tags: [] }),
           };
         }
         return { status: 404 };

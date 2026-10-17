@@ -22,7 +22,7 @@ export class AppRoot {
   private readonly appLinks = [
     { url: '/', title: 'Home', icon: 'home', toolbar: true },
     { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.totalRecipeCount ?? 0 },
-    { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true },
+    { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true, detail: () => state.totalTagsCount ?? 0 },
     {
       url: '/settings',
       title: 'Settings',
@@ -143,8 +143,8 @@ export class AppRoot {
             </ion-list>
           </ion-content>
 
-          <ion-footer color="medium" class="ion-text-center ion-padding">
-            <div class="copyright">GOMP: Go Meal Planner {appConfig.info.version}. {appConfig.info.copyright}</div>
+          <ion-footer color="medium" class="ion-text-center ion-padding copyright">
+            GOMP: Go Meal Planner {appConfig.info.version}. {appConfig.info.copyright}
           </ion-footer>
         </ion-menu>
 
