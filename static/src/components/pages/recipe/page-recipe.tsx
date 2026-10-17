@@ -63,7 +63,7 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                             <ion-card-content class="ion-no-padding">
                               <ion-buttons>
                                 <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
-                                  <ion-icon slot="icon-only" icon="star" size="small" />
+                                  <ion-icon slot="icon-only" icon="star" size="small" class={{ 'selected': this.recipe?.mainImageName === image }} />
                                 </ion-button>
                                 <ion-button size="small" color="danger" onClick={() => this.onDeleteImageClicked(image)}>
                                   <ion-icon slot="icon-only" icon="trash" size="small" />

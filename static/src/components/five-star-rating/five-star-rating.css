@@ -6,7 +6,7 @@
 
 .icon {
   float: right;
-  color: var(--five-star-rating-text-color, #c0c0c0);
+  color: var(--five-star-rating-text-color, var(--ion-color-medium, #c0c0c0));
   cursor: pointer;
 }
 
@@ -16,7 +16,7 @@
 
 .icon:hover:not(.disabled),
 .icon:hover:not(.disabled)~.icon {
-  color: var(--five-star-rating-text-hover-color, #ffeb3b) !important;
+  color: var(--five-star-rating-text-hover-color, var(--ion-color-tertiary-tint, #ffeb3b)) !important;
 }
 
 .icon.whole {
@@ -32,5 +32,5 @@
 }
 
 .icon.selected {
-  color: var(--five-star-rating-text-selected-color, #fdd835);
+  color: var(--five-star-rating-text-selected-color, var(--ion-color-tertiary, #fdd835));
 }
