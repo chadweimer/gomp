@@ -32,34 +32,29 @@ export class PageLogin {
                       label="Email"
                       autocomplete="username"
                       onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
-                      ref={(el: HTMLIonInputElement) => this.usernameInput = el}
+                      ref={el => this.usernameInput = el!}
                       required />
                   </ion-item>
                   <ion-item>
-                    <ion-icon slot="end" name="eye-off" />
                     <ion-input type="password"
                       label="Password"
                       autocomplete="current-password"
                       onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
-                      ref={(el: HTMLIonInputElement) => this.passwordInput = el}
-                      required />
+                      ref={el => this.passwordInput = el!}
+                      required>
+                      <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+                    </ion-input>
                   </ion-item>
                   <ion-item lines="none">
-                    <ion-checkbox justify="start"
+                    <ion-toggle justify="start"
                       checked={this.rememberMe}
                       onIonChange={e => this.rememberMe = e.detail.checked}>
                       Remember Me
-                    </ion-checkbox>
+                    </ion-toggle>
                   </ion-item>
                   <ion-text color="danger">{this.errorMessage}</ion-text>
                 </ion-card-content>
-                <ion-footer>
-                  <ion-toolbar color="light">
-                    <ion-buttons slot="primary">
-                      <ion-button color="primary" onClick={() => this.onLoginClicked()}>Login</ion-button>
-                    </ion-buttons>
-                  </ion-toolbar>
-                </ion-footer>
+                <ion-button fill="clear" color="primary" onClick={() => this.onLoginClicked()}>Login</ion-button>
               </ion-card>
             </ion-col>
           </ion-row>

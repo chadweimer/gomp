@@ -64,11 +64,13 @@ jobs:
 
       - name: Set env vars (push)
         if: github.event_name == 'push'
-        run: echo "BUILD_VERSION=0.0.0-beta+commit.${{ github.sha }}" >> $GITHUB_ENV
+        run: echo "BUILD_VERSION=0.0.0-beta+commit.${GITHUB_SHA:0:7}" >> $GITHUB_ENV
       - name: Set env vars (pr)
         if: github.event_name == 'pull_request'
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
+          echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${PR_SHA:0:7}" >> $GITHUB_ENV
       - name: Set env vars (release)
         if: github.event_name == 'release'
         run: echo "BUILD_VERSION=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
@@ -105,12 +107,14 @@ jobs:
       - name: Set env vars (push)
         if: github.event_name == 'push'
         run: |
-          echo "BUILD_VERSION=0.0.0-beta+commit.${{ github.sha }}" >> $GITHUB_ENV
+          echo "BUILD_VERSION=0.0.0-beta+commit.${GITHUB_SHA:0:7}" >> $GITHUB_ENV
           echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:beta" >> $GITHUB_ENV
       - name: Set env vars (pr)
         if: github.event_name == 'pull_request'
+        env:
+          PR_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${{ github.sha }}" >> $GITHUB_ENV
+          echo "BUILD_VERSION=0.0.0-pr${{ github.event.pull_request.number }}+commit.${PR_SHA:0:7}" >> $GITHUB_ENV
           echo "DOCKER_ARGS=${{ env.DOCKER_BASE_ARGS }} -t ${{ env.CONTAINER_REGISTRY }}/${{ env.REPO_NAME }}:pr${{ github.event.pull_request.number }}" >> $GITHUB_ENV
       - name: Set env vars (release)
         if: github.event_name == 'release'

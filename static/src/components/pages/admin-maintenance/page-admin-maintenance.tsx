@@ -1,7 +1,7 @@
 import { Component, Element, Host, Method, State, h } from '@stencil/core';
 import { Backup } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
-import { showActionSheet, showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
+import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, isNull, scaleValue } from '../../../helpers/utils';
 
 @Component({
@@ -30,40 +30,43 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                     <ion-card-title>Backup & Restore</ion-card-title>
                   </ion-card-header>
                   <ion-card-content>
-                    <p>
-                      <ion-note>
-                        Creating a backup will save all current data to a backup file.
-                        Restoring a backup will replace all current data with the data from the backup file; this is a destructive operation and cannot be undone.
-                        These operations may take a while depending on the amount of data.
-                      </ion-note>
-                    </p>
+                    <ion-note class="ion-display-block">
+                      Creating a backup will save all current data to a backup file.
+                      Restoring a backup will replace all current data with the data from the backup file; this is a destructive operation and cannot be undone.
+                      These operations may take a while depending on the amount of data.
+                    </ion-note>
                     <ion-list lines="full">
                       <ion-list-header>
                         <ion-label>Backups</ion-label>
                       </ion-list-header>
                       {this.backups?.map(backup =>
-                        <ion-item key={backup.metadata.name}>
-                          <ion-label>
-                            <h2>{backup.metadata.name}</h2>
-                            <p>Version: {backup.metadata.version}</p>
-                            <p>Size: {scaleValue(backup.sizeInBytes, 1048576, 2)} MiB</p>
-                          </ion-label>
-                          <ion-button class="ion-hide-lg-down" slot="end" fill="clear" onClick={() => this.onRestoreBackupClicked(backup)}>
-                            <ion-icon slot="start" name="open-outline" />
-                            Restore
-                          </ion-button>
-                          <ion-button class="ion-hide-lg-down" slot="end" fill="clear" onClick={() => this.onDownloadBackupClicked(backup)}>
-                            <ion-icon slot="start" name="download-outline" />
-                            Download
-                          </ion-button>
-                          <ion-button class="ion-hide-lg-down" slot="end" fill="clear" color="danger" onClick={() => this.onDeleteBackupClicked(backup)}>
-                            <ion-icon slot="start" name="trash" />
-                            Delete
-                          </ion-button>
-                          <ion-button class="ion-hide-lg-up" slot="end" color="dark" fill="clear" onClick={() => this.onBackupMenuClicked(backup)}>
-                            <ion-icon slot="icon-only" ios="ellipsis-horizontal" md="ellipsis-vertical" />
-                          </ion-button>
-                        </ion-item>
+                        <ion-item-sliding key={backup.metadata.name}>
+                          <ion-item>
+                            <ion-label>
+                              {backup.metadata.name}
+                              <ion-note class="ion-display-block">Version: {backup.metadata.version}</ion-note>
+                            </ion-label>
+                            <ion-note slot="end">
+                              Size: {scaleValue(backup.sizeInBytes, 1048576, 2)} MiB
+                            </ion-note>
+                          </ion-item>
+                          <ion-item-options side="start" onIonSwipe={() => this.onDeleteBackupClicked(backup)}>
+                            <ion-item-option color="danger" expandable={true} onClick={() => this.onDeleteBackupClicked(backup)}>
+                              <ion-icon slot="top" name="trash" />
+                              Delete
+                            </ion-item-option>
+                          </ion-item-options>
+                          <ion-item-options side="end">
+                            <ion-item-option color="primary" onClick={() => this.onDownloadBackupClicked(backup)}>
+                              <ion-icon slot="top" name="download-outline" />
+                              Download
+                            </ion-item-option>
+                            <ion-item-option color="warning" onClick={() => this.onRestoreBackupClicked(backup)}>
+                              <ion-icon slot="top" name="open-outline" />
+                              Restore
+                            </ion-item-option>
+                          </ion-item-options>
+                        </ion-item-sliding>
                       )}
                     </ion-list>
                   </ion-card-content>
@@ -249,29 +252,5 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
     document.body.appendChild(link);
     link.click();
     link.remove();
-  }
-
-  private async onBackupMenuClicked(backup: Backup) {
-    const { role } = await showActionSheet({
-      header: backup.metadata.name,
-      buttons: [
-        { text: 'Delete', icon: 'trash', role: 'destructive' },
-        { text: 'Download', icon: 'download-outline', role: 'download' },
-        { text: 'Restore', icon: 'open-outline', role: 'restore' },
-        { text: 'Cancel', icon: 'close', role: 'cancel' }
-      ],
-    });
-
-    switch (role) {
-      case 'destructive':
-        await this.onDeleteBackupClicked(backup);
-        break;
-      case 'download':
-        this.onDownloadBackupClicked(backup);
-        break;
-      case 'restore':
-        await this.onRestoreBackupClicked(backup);
-        break;
-    }
   }
 }

@@ -1,4 +1,4 @@
-import { Component, Element, Event, EventEmitter, h, Host, Method, Prop, State, Watch } from '@stencil/core';
+import { Component, Element, Event, EventEmitter, Fragment, h, Host, Method, Prop, State, Watch } from '@stencil/core';
 import { ChainedCommands, Editor } from '@tiptap/core';
 import { Selection } from '@tiptap/extensions';
 import InvisibleCharacters, { HardBreakNode, ParagraphNode } from '@tiptap/extension-invisible-characters';
@@ -8,6 +8,17 @@ import { GompImage } from './extensions';
 import { isPlatform } from '@ionic/core';
 
 type Panel = 'imagePicker' | 'linkPanel' | 'helpPanel';
+interface ToolbarButton {
+  name: string;
+  title: string;
+  content: unknown;
+  click: () => void;
+  active: boolean;
+}
+interface ShortcutKey {
+  desc: string;
+  keys: unknown;
+}
 
 @Component({
   tag: 'html-editor',
@@ -57,8 +68,91 @@ export class HTMLEditor {
   }
 
   render() {
-    const ios = isPlatform('ios');
-    const modKey = ios ? 'Cmd ⌘' : 'Ctrl';
+    const primaryButtons: ToolbarButton[] = [
+      {
+        name: 'bold',
+        content: <strong>B</strong>,
+        title: 'Bold',
+        click: () => this.editorCommand((chain) => chain.toggleBold()),
+        active: this.isBoldActive,
+      },
+      {
+        name: 'italic',
+        content: <em>I</em>,
+        title: 'Italic',
+        click: () => this.editorCommand((chain) => chain.toggleItalic()),
+        active: this.isItalicActive,
+      },
+      {
+        name: 'underline',
+        content: <u>U</u>,
+        title: 'Underline',
+        click: () => this.editorCommand((chain) => chain.toggleUnderline()),
+        active: this.isUnderlineActive,
+      },
+      {
+        name: 'ordered-list',
+        content: '#',
+        title: 'Numbered list',
+        click: () => this.editorCommand((chain) => chain.toggleOrderedList()),
+        active: this.isOrderedListActive,
+      },
+      {
+        name: 'unordered-list',
+        content: <ion-icon icon="list" />,
+        title: 'Bullet list',
+        click: () => this.editorCommand((chain) => chain.toggleBulletList()),
+        active: this.isUnorderedListActive,
+      },
+      {
+        name: 'link',
+        content: <ion-icon icon="link" />,
+        title: 'Hyperlink',
+        click: () => this.togglePanel('linkPanel'),
+        active: this.activePanel === 'linkPanel' || this.isLinkActive,
+      },
+    ];
+    if ((this.images?.length ?? 0) > 0) {
+      primaryButtons.push({
+        name: 'image',
+        title: 'Insert image',
+        content: <ion-icon icon="image" />,
+        click: () => this.togglePanel('imagePicker'),
+        active: this.activePanel === 'imagePicker',
+      });
+    }
+
+    const secondaryButtons: ToolbarButton[] = [
+      {
+        name: 'invisible-characters',
+        content: <ion-icon icon="document-text-outline" />,
+        title: 'Invisible characters',
+        click: () => this.editorCommand((chain) => chain.toggleInvisibleCharacters()),
+        active: this.isInvisibleCharactersActive,
+      },
+      {
+        name: 'help',
+        content: <ion-icon icon="help-circle-outline" />,
+        title: 'Keyboard shortcuts',
+        click: () => this.togglePanel('helpPanel'),
+        active: this.activePanel === 'helpPanel',
+      },
+    ];
+
+    const modKey = isPlatform('ios') ? 'Cmd ⌘' : 'Ctrl';
+    const shortcutKeys: ShortcutKey[] = [
+      { desc: 'Bold', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>B</kbd></Fragment> },
+      { desc: 'Italic', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>I</kbd></Fragment> },
+      { desc: 'Underline', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>U</kbd></Fragment> },
+      { desc: 'Ordered List', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>7</kbd></Fragment> },
+      { desc: 'Bullet List', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>8</kbd></Fragment> },
+      { desc: 'Hyperlink', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>K</kbd></Fragment> },
+      { desc: 'Line Break (⏎)', keys: <Fragment><kbd>Shift</kbd>+<kbd>Enter</kbd></Fragment> },
+      { desc: 'New Paragraph (¶)', keys: <kbd>Enter</kbd> },
+      { desc: 'New Numbered', keys: <Fragment><kbd>1.</kbd><kbd>Space</kbd></Fragment> },
+      { desc: 'New Bullets', keys: <Fragment><kbd>*</kbd><kbd>Space</kbd></Fragment> },
+      { desc: 'Undo / Redo', keys: <Fragment><kbd>{modKey}</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd></Fragment> },
+    ];
     return (
       <Host
         tabindex={this.el.getAttribute('tabindex') ?? '-1'}
@@ -74,93 +168,19 @@ export class HTMLEditor {
         <div class="toolbar-container">
           <ion-toolbar class="editor-toolbar">
             <ion-buttons slot="start" class="prevent-selection">
-              <ion-button
-                onClick={() => this.editorCommand((chain) => chain.toggleBold())}
-                size="default"
-                fill={this.isBoldActive ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Bold"
-              >
-                <strong>B</strong>
-              </ion-button>
-              <ion-button
-                onClick={() => this.editorCommand((chain) => chain.toggleItalic())}
-                size="default"
-                fill={this.isItalicActive ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Italic"
-              >
-                <em>I</em>
-              </ion-button>
-              <ion-button
-                onClick={() => this.editorCommand((chain) => chain.toggleUnderline())}
-                size="default"
-                fill={this.isUnderlineActive ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Underline"
-              >
-                <u>U</u>
-              </ion-button>
-              <ion-button
-                onClick={() => this.editorCommand((chain) => chain.toggleOrderedList())}
-                size="default"
-                fill={this.isOrderedListActive ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Numbered list"
-              >
-                #
-              </ion-button>
-              <ion-button
-                onClick={() => this.editorCommand((chain) => chain.toggleBulletList())}
-                size="default"
-                fill={this.isUnorderedListActive ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Bullet list"
-              >
-                <ion-icon icon="list" />
-              </ion-button>
-              <ion-button
-                onClick={() => this.togglePanel('linkPanel')}
-                size="default"
-                fill={this.activePanel === 'linkPanel' || this.isLinkActive ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Hyperlink"
-              >
-                <ion-icon icon="link" />
-              </ion-button>
-
-              {(this.images?.length ?? 0) > 0 && (
-                <ion-button
-                  onClick={() => this.togglePanel('imagePicker')}
-                  size="default"
-                  fill={this.activePanel === 'imagePicker' ? 'solid' : 'clear'}
-                  tabindex="-1"
-                  title="Insert image"
-                >
-                  <ion-icon icon="image" />
+              {primaryButtons.map(btn =>
+                <ion-button key={btn.name} onClick={btn.click} fill={btn.active ? 'solid' : 'clear'} title={btn.title} tabindex="-1">
+                  {btn.content}
                 </ion-button>
               )}
             </ion-buttons>
 
             <ion-buttons slot="end" class="prevent-selection">
-              <ion-button
-                onClick={() => this.editorCommand((chain) => chain.toggleInvisibleCharacters())}
-                size="default"
-                fill={this.isInvisibleCharactersActive ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Invisible characters"
-              >
-                <ion-icon icon="document-text-outline" />
-              </ion-button>
-              <ion-button
-                onClick={() => this.togglePanel('helpPanel')}
-                size="default"
-                fill={this.activePanel === 'helpPanel' ? 'solid' : 'clear'}
-                tabindex="-1"
-                title="Keyboard shortcuts"
-              >
-                <ion-icon icon="help-circle-outline" />
-              </ion-button>
+              {secondaryButtons.map(btn =>
+                <ion-button key={btn.name} onClick={btn.click} fill={btn.active ? 'solid' : 'clear'} title={btn.title} tabindex="-1">
+                  {btn.content}
+                </ion-button>
+              )}
             </ion-buttons>
           </ion-toolbar>
 
@@ -207,66 +227,14 @@ export class HTMLEditor {
           {this.activePanel === 'helpPanel' && (
             <ion-grid class="toolbar-panel help-panel">
               <ion-row>
-                <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
-                  Bold
-                </ion-col>
-                <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
-                  <kbd>{modKey}</kbd>+<kbd>B</kbd>
-                </ion-col>
-                <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
-                  Italic
-                </ion-col>
-                <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
-                  <kbd>{modKey}</kbd>+<kbd>I</kbd>
-                </ion-col>
-                <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
-                  Underline
-                </ion-col>
-                <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
-                  <kbd>{modKey}</kbd>+<kbd>U</kbd>
-                </ion-col>
-                <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
-                  Numbered
-                </ion-col>
-                <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
-                  <kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>7</kbd>
-                </ion-col>
-                <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
-                  Bullets
-                </ion-col>
-                <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
-                  <kbd>{modKey}</kbd>+<kbd>Shift</kbd>+<kbd>8</kbd>
-                </ion-col>
-                <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
-                  Line Break (⏎)
-                </ion-col>
-                <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
-                  <kbd>Shift</kbd>+<kbd>Enter</kbd>
-                </ion-col>
-                <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
-                  New Paragraph (¶)
-                </ion-col>
-                <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
-                  <kbd>Enter</kbd>
-                </ion-col>
-                <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
-                  New Numbered
-                </ion-col>
-                <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
-                  <kbd>1.</kbd> <kbd>Space</kbd>
-                </ion-col>
-                <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
-                  New Bullets
-                </ion-col>
-                <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
-                  <kbd>*</kbd> <kbd>Space</kbd>
-                </ion-col>
-                <ion-col class="shortcut-desc" size="6" size-md="3" size-xl="2">
-                  Undo / Redo
-                </ion-col>
-                <ion-col class="shortcut-keys" size="6" size-md="3" size-xl="2">
-                  <kbd>{modKey}</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd>
-                </ion-col>
+                {shortcutKeys.map(shortcut => [
+                  <ion-col key={`${shortcut.desc}-desc`} class="shortcut-desc" size="6" size-md="3" size-xl="2">
+                    {shortcut.desc}
+                  </ion-col>,
+                  <ion-col key={`${shortcut.desc}-keys`} class="shortcut-keys" size="6" size-md="3" size-xl="2">
+                    {shortcut.keys}
+                  </ion-col>,
+                ])}
               </ion-row>
             </ion-grid>
           )}

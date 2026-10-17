@@ -22,7 +22,7 @@ export class AppRoot {
   private readonly appLinks = [
     { url: '/', title: 'Home', icon: 'home', toolbar: true },
     { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.totalRecipeCount ?? 0 },
-    { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true },
+    { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true, detail: () => state.totalTagsCount ?? 0 },
     {
       url: '/settings',
       title: 'Settings',
@@ -143,8 +143,8 @@ export class AppRoot {
             </ion-list>
           </ion-content>
 
-          <ion-footer color="medium" class="ion-text-center ion-padding">
-            <div class="copyright">GOMP: Go Meal Planner {appConfig.info.version}. {appConfig.info.copyright}</div>
+          <ion-footer color="medium" class="ion-text-center ion-padding copyright">
+            GOMP: Go Meal Planner {appConfig.info.version}. {appConfig.info.copyright}
           </ion-footer>
         </ion-menu>
 
@@ -167,25 +167,35 @@ export class AppRoot {
               </ion-title>
 
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-buttons slot="end" class="ion-hide-md-down">
+                <ion-buttons id="toolbar-menu" slot="end" class="ion-display-none ion-display-sm-flex">
                   {this.appLinks
                     .filter(link => link.toolbar && (isNull(link.access) || isAuthorized(state.currentUser, link.access)))
-                    .map(link => (
+                    .map(link => ([
                       <ion-button
                         key={link.url}
-                        class={{ active: this.pageTitle === link.title }}
+                        class={{ 'active': this.pageTitle === link.title, 'ion-display-none': true, 'ion-display-lg-flex': true }}
                         href={link.url}
+                        title={link.title}
                       >
+                        <ion-icon slot="start" icon={link.icon} />
                         {link.title}
+                      </ion-button>,
+                      <ion-button
+                        key={link.url}
+                        class={{ 'active': this.pageTitle === link.title, 'ion-display-lg-none': true }}
+                        href={link.url}
+                        title={link.title}
+                      >
+                        <ion-icon slot="icon-only" icon={link.icon} />
                       </ion-button>
-                    ))
+                    ]))
                   }
                 </ion-buttons>
               }
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
                 <ion-searchbar
                   slot="end"
-                  class="end ion-hide-md-down"
+                  class="end ion-display-none ion-display-md-flex"
                   // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
                   autocorrect={true}
                   spellcheck={true}
@@ -200,7 +210,7 @@ export class AppRoot {
                 ></ion-searchbar>
               }
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-buttons slot="end" class="ion-hide-md-down">
+                <ion-buttons slot="end" class="ion-display-none ion-display-md-flex">
                   <ion-button color="light" onClick={() => this.onSearchFilterClicked()}>
                     <ion-icon icon="filter" slot="start" />
                     <ion-badge color="secondary">{state.searchResultCount}</ion-badge>
@@ -209,7 +219,7 @@ export class AppRoot {
               }
             </ion-toolbar>
             {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-              <ion-toolbar color="primary" class="ion-hide-md-up">
+              <ion-toolbar color="primary" class="ion-display-md-none">
                 <ion-searchbar
                   // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
                   autocorrect={true}

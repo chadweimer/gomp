@@ -32,10 +32,6 @@ export namespace Components {
          */
         "disabled": boolean;
         /**
-          * @default 'star'
-         */
-        "icon": string;
-        /**
           * @default 'small'
          */
         "size": string;
@@ -539,10 +535,6 @@ declare namespace LocalJSX {
           * @default false
          */
         "disabled"?: boolean;
-        /**
-          * @default 'star'
-         */
-        "icon"?: string;
         "onValueSelected"?: (event: FiveStarRatingCustomEvent<number>) => void;
         /**
           * @default 'small'
@@ -731,7 +723,6 @@ declare namespace LocalJSX {
     interface FiveStarRatingAttributes {
         "value": number;
         "disabled": boolean;
-        "icon": string;
         "size": string;
     }
     interface HtmlEditorAttributes {

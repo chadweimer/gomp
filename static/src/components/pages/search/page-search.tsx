@@ -52,7 +52,7 @@ export class PageSearch {
         <ion-header>
           <ion-toolbar color="light">
             <ion-buttons class="ion-justify-content-center">
-              <ion-button color="secondary" class="ion-hide-md-down" onClick={() => this.onSearchStatesClicked()}>
+              <ion-button color="secondary" class="ion-display-none ion-display-sm-flex" onClick={() => this.onSearchStatesClicked()}>
                 <ion-icon slot="start" icon="filter" />
                 {insertSpacesBetweenWords(this.getRecipeStatesText(state.searchFilter.states))}
                 <ion-icon slot="end" icon="caret-down" />
