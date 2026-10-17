@@ -4,33 +4,14 @@
   display: inline-block;
 }
 
-.icon {
-  float: right;
-  color: var(--five-star-rating-text-color, var(--ion-color-medium, #c0c0c0));
+ion-icon:not(.disabled) {
   cursor: pointer;
 }
 
-.icon:not(.disabled) {
-  cursor: pointer;
-}
-
-.icon:hover:not(.disabled),
-.icon:hover:not(.disabled)~.icon {
-  color: var(--five-star-rating-text-hover-color, var(--ion-color-tertiary-tint, #ffeb3b)) !important;
-}
-
-.icon.whole {
-  clip-path: inset(0 0 0 50%);
-  position: relative;
-  left: calc(1em * -1);
-  margin-right: calc(1em * -1);
-}
-
-.icon.half {
-  clip-path: inset(0 50% 0 0);
-  position: relative;
-}
-
-.icon.selected {
+ion-icon {
   color: var(--five-star-rating-text-selected-color, var(--ion-color-tertiary, #fdd835));
+}
+
+ion-icon.hover:not(.disabled) {
+  color: var(--five-star-rating-text-hover-color, var(--ion-color-tertiary-tint, #ffeb3b));
 }
