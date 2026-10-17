@@ -36,13 +36,14 @@ export class PageLogin {
                       required />
                   </ion-item>
                   <ion-item>
-                    <ion-icon slot="end" name="eye-off" />
                     <ion-input type="password"
                       label="Password"
                       autocomplete="current-password"
                       onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
                       ref={el => this.passwordInput = el!}
-                      required />
+                      required>
+                      <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+                    </ion-input>
                   </ion-item>
                   <ion-item lines="none">
                     <ion-toggle justify="start"
