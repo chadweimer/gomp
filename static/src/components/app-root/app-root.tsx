@@ -322,8 +322,17 @@ export class AppRoot {
   }
 
   private async onPageChanged(e: CustomEvent<RouterEventDetail>) {
+    // Where the route contains dynamic segments (e.g., /recipes/:id),
+    // we need to get the base route without the dynamic segment.
+    let route = e.detail.to;
+    const idRouteMatcher = /^(?<base>\/[\w-]+)\/\d+\/?$/;
+    const match = idRouteMatcher.exec(e.detail.to);
+    if (match) {
+      route = match.groups?.base ?? route;
+    }
+
     // Set the page title based on the active page
-    const link = this.appLinks.get(e.detail.to);
+    const link = this.appLinks.get(route);
     if (!isNull(link)) {
       if (!isNullOrEmpty(link.parentUrl)) {
         const parentLink = this.appLinks.get(link.parentUrl);

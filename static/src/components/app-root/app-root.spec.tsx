@@ -549,6 +549,39 @@ describe('app-root', () => {
       expect(homeItem).not.toHaveClass('active');
     });
 
+    it('updates pageTitle to "Recipes" on dynamic routes like "/recipes/123" and highlights matching toolbar buttons and side menu item', async () => {
+      const { root, waitForChanges } = await render(<app-root />);
+      const router = setupRouterOutlet(root);
+
+      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes/123', from: '/' } }));
+      await waitForChanges();
+
+      const titleText = root.querySelector('ion-title ion-text');
+      expect(titleText).not.toBeNull();
+      expect(titleText).toEqualText(' | Recipes');
+
+      // Toolbar: both desktop and mobile Recipes buttons are active/solid
+      const recipesButtons = root.querySelectorAll('#toolbar-menu ion-button[href="/recipes"]');
+      expect(recipesButtons).toHaveLength(2);
+      recipesButtons.forEach(btn => {
+        expect(btn).toEqualAttribute('fill', 'solid');
+        expect(btn).toHaveClass('active');
+      });
+
+      // Side menu: Recipes is active, Home is inactive
+      const recipesItem = root.querySelector('ion-menu ion-item[href="/recipes"]');
+      expect(recipesItem).toEqualAttribute('color', 'secondary');
+      expect(recipesItem).toHaveAttribute('detail');
+      expect(recipesItem).toHaveClass('active');
+
+      // Also verify with trailing slash
+      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes/456/', from: '/recipes/123' } }));
+      await waitForChanges();
+
+      expect(root.querySelector('ion-title ion-text')).toEqualText(' | Recipes');
+      expect(recipesItem).toHaveClass('active');
+    });
+
     it('matches parent and child link on child routes like "/settings/preferences"', async () => {
       const { root, waitForChanges } = await render(<app-root />);
       const router = setupRouterOutlet(root);
