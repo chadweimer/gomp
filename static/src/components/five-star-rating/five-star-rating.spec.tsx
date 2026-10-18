@@ -68,7 +68,7 @@ describe('five-star-rating', () => {
     });
 
     // Hover right half of 3rd star -> 3
-    icons![2].dispatchEvent(new MouseEvent('mousemove', { clientX: 55, bubbles: true }));
+    icons?.item(2).dispatchEvent(new MouseEvent('mousemove', { clientX: 55, bubbles: true }));
     await waitForChanges();
 
     expect(icons?.item(2)).toEqualAttribute('name', 'star');

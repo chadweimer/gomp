@@ -42,7 +42,7 @@ export class PageLogin {
                       onKeyDown={(e: KeyboardEvent) => this.onInputKeyDown(e)}
                       ref={el => this.passwordInput = el!}
                       required>
-                      <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+                      <ion-input-password-toggle slot="end" />
                     </ion-input>
                   </ion-item>
                   <ion-item lines="none">

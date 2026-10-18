@@ -115,7 +115,7 @@ export async function refreshSearchResults() {
     }
   }
 
-  // Also populate total recipe and tags counts
+  // Also populate total recipe and tag counts
   try {
     const { data: results, error } = await api.client.GET('/recipes', { params: { query: { count: 0, } } });
 
