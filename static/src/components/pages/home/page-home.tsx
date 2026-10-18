@@ -52,7 +52,7 @@ export class PageHome implements ComponentWithActivatedCallback {
               <ion-row key={`${search.title}-list`}>
                 {search.results.map(recipe =>
                   <ion-col key={recipe.id} size="6" size-md="4" size-lg="4" size-xl="2">
-                    <recipe-card recipe={recipe} size="small" />
+                    <recipe-card recipe={recipe} class="zoom" />
                   </ion-col>
                 )}
               </ion-row>
@@ -62,7 +62,7 @@ export class PageHome implements ComponentWithActivatedCallback {
 
         {isAuthorized(state.currentUser, AccessLevel.Editor) &&
           <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-            <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
+            <ion-fab-button color="secondary" onClick={() => this.onNewRecipeClicked()}>
               <ion-icon icon="add" />
             </ion-fab-button>
           </ion-fab>

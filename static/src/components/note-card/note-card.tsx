@@ -19,7 +19,7 @@ export class NoteCard {
   render() {
     return (
       <Host>
-        <ion-card class="zoom">
+        <ion-card>
           <ion-card-header>
             <ion-card-title class="title">
               <ion-icon icon="chatbox" />&nbsp;{formatDate(this.note?.createdAt)}

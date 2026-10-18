@@ -53,23 +53,33 @@ export class PageRecipe implements ComponentWithActivatedCallback {
                   <ion-row class="ion-justify-content-evenly">
                     {this.images?.map(image =>
                       <ion-col key={image} size="4">
-                        <ion-card class="zoom">
+                        <ion-card class="image">
                           <a href={getRecipeImageUrl(this.recipeId, image)} target="_blank" rel="noopener noreferrer">
-                            <ion-thumbnail class="upload">
+                            <ion-thumbnail class="upload zoom">
                               <img loading="lazy" alt={image} class="thumb" src={getRecipeThumbnailUrl(this.recipeId, image)} />
                             </ion-thumbnail>
                           </a>
                           {isAuthorized(state.currentUser, AccessLevel.Editor) &&
-                            <ion-card-content class="ion-no-padding">
-                              <ion-buttons>
-                                <ion-button size="small" onClick={() => this.onSetMainImageClicked(image)}>
-                                  <ion-icon slot="icon-only" icon="star" size="small" class={{ 'selected': this.recipe?.mainImageName === image }} />
-                                </ion-button>
-                                <ion-button size="small" color="danger" onClick={() => this.onDeleteImageClicked(image)}>
-                                  <ion-icon slot="icon-only" icon="trash" size="small" />
-                                </ion-button>
-                              </ion-buttons>
-                            </ion-card-content>
+                            <Fragment>
+                              <ion-button
+                                size="small"
+                                fill="clear"
+                                color={this.recipe?.mainImageName === image ? 'tertiary' : 'medium'}
+                                onClick={() => this.onSetMainImageClicked(image)}
+                                title="Set as main image"
+                              >
+                                <ion-icon slot="icon-only" icon="heart" />
+                              </ion-button>
+                              <ion-button
+                                size="small"
+                                fill="clear"
+                                color="danger"
+                                onClick={() => this.onDeleteImageClicked(image)}
+                                title="Delete image"
+                              >
+                                <ion-icon slot="icon-only" icon="trash" />
+                              </ion-button>
+                            </Fragment>
                           }
                         </ion-card>
                       </ion-col>

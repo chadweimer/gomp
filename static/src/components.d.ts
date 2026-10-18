@@ -126,10 +126,6 @@ export namespace Components {
           * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     rating: 0,   }
          */
         "recipe": RecipeCompact;
-        /**
-          * @default 'large'
-         */
-        "size": 'large' | 'small';
     }
     interface RecipeEditor {
         /**
@@ -625,10 +621,6 @@ declare namespace LocalJSX {
           * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     rating: 0,   }
          */
         "recipe"?: RecipeCompact;
-        /**
-          * @default 'large'
-         */
-        "size"?: 'large' | 'small';
     }
     interface RecipeEditor {
         /**
@@ -743,9 +735,6 @@ declare namespace LocalJSX {
     interface PageRecipeAttributes {
         "recipeId": number;
     }
-    interface RecipeCardAttributes {
-        "size": 'large' | 'small';
-    }
     interface RecipeLinkEditorAttributes {
         "parentRecipeId": number;
     }
@@ -786,7 +775,7 @@ declare namespace LocalJSX {
         "page-settings-searches": PageSettingsSearches;
         "page-settings-security": PageSettingsSecurity;
         "page-tags": PageTags;
-        "recipe-card": Omit<RecipeCard, keyof RecipeCardAttributes> & { [K in keyof RecipeCard & keyof RecipeCardAttributes]?: RecipeCard[K] } & { [K in keyof RecipeCard & keyof RecipeCardAttributes as `attr:${K}`]?: RecipeCardAttributes[K] } & { [K in keyof RecipeCard & keyof RecipeCardAttributes as `prop:${K}`]?: RecipeCard[K] };
+        "recipe-card": RecipeCard;
         "recipe-editor": RecipeEditor;
         "recipe-link-editor": Omit<RecipeLinkEditor, keyof RecipeLinkEditorAttributes> & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes]?: RecipeLinkEditor[K] } & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes as `attr:${K}`]?: RecipeLinkEditorAttributes[K] } & { [K in keyof RecipeLinkEditor & keyof RecipeLinkEditorAttributes as `prop:${K}`]?: RecipeLinkEditor[K] };
         "recipe-print": RecipePrint;

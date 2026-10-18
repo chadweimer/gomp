@@ -57,11 +57,11 @@ export class PageAdminMaintenance implements ComponentWithActivatedCallback {
                             </ion-item-option>
                           </ion-item-options>
                           <ion-item-options side="end">
-                            <ion-item-option color="primary" onClick={() => this.onDownloadBackupClicked(backup)}>
+                            <ion-item-option color="secondary" onClick={() => this.onDownloadBackupClicked(backup)}>
                               <ion-icon slot="top" name="download-outline" />
                               Download
                             </ion-item-option>
-                            <ion-item-option color="warning" onClick={() => this.onRestoreBackupClicked(backup)}>
+                            <ion-item-option color="tertiary" onClick={() => this.onRestoreBackupClicked(backup)}>
                               <ion-icon slot="top" name="open-outline" />
                               Restore
                             </ion-item-option>

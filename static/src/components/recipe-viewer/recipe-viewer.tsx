@@ -24,7 +24,7 @@ export class RecipeViewer {
           {!isNullOrEmpty(this.recipe?.mainImageName) && (
             <a href={getRecipeImageUrl(this.recipe?.id, this.recipe?.mainImageName)} target="_blank" rel="noopener noreferrer">
               <img
-                class="main"
+                class="main zoom"
                 alt={this.recipe?.name}
                 src={getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName)}
                 onLoad={e => {
@@ -111,7 +111,7 @@ export class RecipeViewer {
             </div>
           </ion-card-content>
           {this.recipe?.state === RecipeState.Archived &&
-            <ion-badge class="top-right-padded opacity-75" color="medium">Archived</ion-badge>}
+            <ion-badge class="top-right-padded translucent" color="dark">Archived</ion-badge>}
         </ion-card>
       </Host>
     );

@@ -11,10 +11,6 @@
   border-bottom: 2px solid var(--ion-color-primary);
 }
 
-.selected {
-  color: var(--ion-color-tertiary, #fdd835);
-}
-
 ion-thumbnail.upload {
   --size: 100%;
 }

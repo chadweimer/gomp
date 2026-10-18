@@ -75,7 +75,7 @@ export class TagsInput {
         <slot />
         <div class="ion-padding-bottom">
           {this.filteredSuggestions.map(tag =>
-            <ion-chip key={tag} class="suggested" color="success" onClick={() => this.addTag(tag)}>
+            <ion-chip key={tag} class="suggested" color="secondary" onClick={() => this.addTag(tag)}>
               {tag}
               <ion-icon icon="add-circle" />
             </ion-chip>

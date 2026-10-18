@@ -125,9 +125,9 @@ describe('page-admin-maintenance', () => {
 
     const firstOptionsEnd = slidingItems[0].querySelector('ion-item-options[side="end"]');
     expect(firstOptionsEnd).not.toBeNull();
-    const firstDownloadOption = firstOptionsEnd?.querySelector('ion-item-option[color="primary"]');
+    const firstDownloadOption = firstOptionsEnd?.querySelector('ion-item-option[color="secondary"]');
     expect(firstDownloadOption).toHaveTextContent('Download');
-    const firstRestoreOption = firstOptionsEnd?.querySelector('ion-item-option[color="warning"]');
+    const firstRestoreOption = firstOptionsEnd?.querySelector('ion-item-option[color="tertiary"]');
     expect(firstRestoreOption).toHaveTextContent('Restore');
   });
 
@@ -401,7 +401,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="warning"]');
+      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="tertiary"]');
       restoreOption?.click();
       await waitForChanges();
 
@@ -433,7 +433,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="warning"]');
+      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="tertiary"]');
       restoreOption?.click();
       await waitForChanges();
 
@@ -462,7 +462,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="warning"]');
+      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="tertiary"]');
       restoreOption?.click();
       await waitForChanges();
 
@@ -588,7 +588,7 @@ describe('page-admin-maintenance', () => {
 
       const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => { });
 
-      const downloadOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="primary"]');
+      const downloadOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
       downloadOption?.click();
       await waitForChanges();
 

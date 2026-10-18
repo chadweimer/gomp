@@ -8,21 +8,14 @@
 .image {
   object-fit: cover;
   width: 100%;
-}
-
-.large .image {
-  height: 200px;
+  height: 110px;
 }
 
 .no-overflow {
   overflow: hidden;
 }
 
-.small .image {
-  height: 110px;
-}
-
-.small ion-card-title.title {
+.title {
   font-size: 0.9rem;
 }
 

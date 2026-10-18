@@ -83,15 +83,18 @@ export class PageSearch {
               {state.searchResults?.map(recipe =>
                 state.searchSettings?.viewMode === SearchViewMode.Card ?
                   <ion-col key={recipe.id} size="6" size-md="4" size-lg="3" size-xl="2">
-                    <recipe-card recipe={recipe} size="small" />
+                    <recipe-card recipe={recipe} class="zoom" />
                   </ion-col>
                   :
                   <ion-col key={recipe.id} size="12" size-md="6" size-lg="4" size-xl="3">
-                    <ion-item href={`/recipes/${recipe.id}`} lines="none">
+                    <ion-item href={`/recipes/${recipe.id}`} title={recipe.name}>
                       <ion-thumbnail slot="start" class="preview">
-                        {!isNullOrEmpty(recipe.mainImageName) && <img loading="lazy" alt="" src={getRecipeThumbnailUrl(recipe.id, recipe.mainImageName)} />}
+                        {!isNullOrEmpty(recipe.mainImageName) &&
+                          <img loading="lazy" alt="" src={getRecipeThumbnailUrl(recipe.id, recipe.mainImageName)} />}
                       </ion-thumbnail>
-                      <ion-label>{recipe.name}</ion-label>
+                      <ion-label class="single-line">{recipe.name}</ion-label>
+                      {recipe.state === RecipeState.Archived &&
+                        <ion-badge color="medium" slot="end">Archived</ion-badge>}
                     </ion-item>
                   </ion-col>
               )}
@@ -100,7 +103,7 @@ export class PageSearch {
 
           {isAuthorized(state.currentUser, AccessLevel.Editor) &&
             <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-              <ion-fab-button color="success" onClick={() => this.onNewRecipeClicked()}>
+              <ion-fab-button color="secondary" onClick={() => this.onNewRecipeClicked()}>
                 <ion-icon icon="add" />
               </ion-fab-button>
             </ion-fab>

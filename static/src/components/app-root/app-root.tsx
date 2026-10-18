@@ -20,14 +20,14 @@ export class AppRoot {
   private readonly subscriptions: Subscription[] = [];
 
   private readonly appLinks = [
-    { url: '/', title: 'Home', icon: 'home', toolbar: true },
+    { url: '/', title: 'Home', icon: 'home', toolbar: false },
     { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.totalRecipeCount ?? 0 },
     { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true, detail: () => state.totalTagsCount ?? 0 },
     {
       url: '/settings',
       title: 'Settings',
       icon: 'settings',
-      toolbar: false,
+      toolbar: true,
       children: [
         { url: '/settings/preferences', title: 'Preferences', icon: 'options' },
         { url: '/settings/searches', title: 'Searches', icon: 'search' },
@@ -38,7 +38,7 @@ export class AppRoot {
       url: '/admin',
       title: 'Admin',
       icon: 'shield-checkmark',
-      toolbar: false,
+      toolbar: true,
       access: AccessLevel.Admin,
       children: [
         { url: '/admin/configuration', title: 'Configuration', icon: 'document-text' },
@@ -163,7 +163,6 @@ export class AppRoot {
 
               <ion-title slot="start">
                 <ion-router-link color="light" href="/">{appConfig.config.title}</ion-router-link>
-                {!isNullOrEmpty(this.pageTitle) && <ion-text color="light"> | {this.pageTitle}</ion-text>}
               </ion-title>
 
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
@@ -173,6 +172,7 @@ export class AppRoot {
                     .map(link => ([
                       <ion-button
                         key={link.url}
+                        fill={this.pageTitle === link.title ? 'solid' : 'clear'}
                         class={{ 'active': this.pageTitle === link.title, 'ion-display-none': true, 'ion-display-lg-flex': true }}
                         href={link.url}
                         title={link.title}
@@ -182,11 +182,12 @@ export class AppRoot {
                       </ion-button>,
                       <ion-button
                         key={link.url}
+                        fill={this.pageTitle === link.title ? 'solid' : 'clear'}
                         class={{ 'active': this.pageTitle === link.title, 'ion-display-lg-none': true }}
                         href={link.url}
                         title={link.title}
                       >
-                        <ion-icon slot="icon-only" icon={link.icon} />
+                        <ion-icon slot="icon-only" icon={link.icon} size="small" />
                       </ion-button>
                     ]))
                   }
