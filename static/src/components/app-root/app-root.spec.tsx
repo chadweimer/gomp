@@ -103,6 +103,14 @@ describe('app-root', () => {
 
       const adminLink = root.querySelector('ion-item[href="/admin"]');
       expect(adminLink).toBeNull();
+      expect(root.querySelector('ion-item[href="/admin/configuration"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/admin/users"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/admin/maintenance"]')).toBeNull();
+
+      const preferencesLink = root.querySelector('ion-item[href="/settings/preferences"]');
+      expect(preferencesLink).not.toBeNull();
+      expect(preferencesLink).toHaveClass('child-link');
+      expect(settingsLink).not.toHaveClass('child-link');
     });
 
     it('renders admin links and child routes for Admin users', async () => {
@@ -111,15 +119,19 @@ describe('app-root', () => {
 
       const adminLink = root.querySelector('ion-item[href="/admin"]');
       expect(adminLink).not.toBeNull();
+      expect(adminLink).not.toHaveClass('child-link');
 
       const adminConfigLink = root.querySelector('ion-item[href="/admin/configuration"]');
       expect(adminConfigLink).not.toBeNull();
+      expect(adminConfigLink).toHaveClass('child-link');
 
       const adminUsersLink = root.querySelector('ion-item[href="/admin/users"]');
       expect(adminUsersLink).not.toBeNull();
+      expect(adminUsersLink).toHaveClass('child-link');
 
       const adminMaintenanceLink = root.querySelector('ion-item[href="/admin/maintenance"]');
       expect(adminMaintenanceLink).not.toBeNull();
+      expect(adminMaintenanceLink).toHaveClass('child-link');
     });
   });
 

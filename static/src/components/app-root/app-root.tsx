@@ -1,5 +1,5 @@
 import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
-import { Component, Element, Fragment, h, State } from '@stencil/core';
+import { Component, Element, h, State } from '@stencil/core';
 import { AccessLevel, SearchFilter } from '../../helpers/schema.gen';
 import { api, refreshSearchResults } from '../../helpers/api';
 import { showModal } from '../../helpers/modals';
@@ -19,42 +19,19 @@ export class AppRoot {
   private menu!: HTMLIonMenuElement;
   private readonly subscriptions: Subscription[] = [];
 
-  private readonly appLinks: {
-    url: string;
-    title: string;
-    icon: string;
-    toolbar: boolean;
-    detail?: () => number;
-    access?: AccessLevel;
-    children: { url: string; title: string; icon: string }[]
-  }[] = [
-      { url: '/', title: 'Home', icon: 'home', toolbar: false, children: [] },
-      { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.totalRecipeCount ?? 0, children: [] },
-      { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true, detail: () => state.totalTagsCount ?? 0, children: [] },
-      {
-        url: '/settings',
-        title: 'Settings',
-        icon: 'settings',
-        toolbar: true,
-        children: [
-          { url: '/settings/preferences', title: 'Preferences', icon: 'options' },
-          { url: '/settings/searches', title: 'Searches', icon: 'search' },
-          { url: '/settings/security', title: 'Security', icon: 'finger-print' }
-        ]
-      },
-      {
-        url: '/admin',
-        title: 'Admin',
-        icon: 'shield-checkmark',
-        toolbar: true,
-        access: AccessLevel.Admin,
-        children: [
-          { url: '/admin/configuration', title: 'Configuration', icon: 'document-text' },
-          { url: '/admin/users', title: 'Users', icon: 'people' },
-          { url: '/admin/maintenance', title: 'Maintenance', icon: 'build' }
-        ]
-      }
-    ];
+  private readonly appLinks = new Map([
+    ['/', { title: 'Home', icon: 'home', toolbar: false }],
+    ['/recipes', { title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.totalRecipeCount ?? 0 }],
+    ['/tags', { title: 'Tags', icon: 'bookmarks', toolbar: true, detail: () => state.totalTagsCount ?? 0 }],
+    ['/settings', { title: 'Settings', icon: 'settings', toolbar: true }],
+    ['/settings/preferences', { title: 'Preferences', icon: 'options', toolbar: false, parentUrl: '/settings' }],
+    ['/settings/searches', { title: 'Searches', icon: 'search', toolbar: false, parentUrl: '/settings' }],
+    ['/settings/security', { title: 'Security', icon: 'finger-print', toolbar: false, parentUrl: '/settings' }],
+    ['/admin', { title: 'Admin', icon: 'shield-checkmark', toolbar: true, access: AccessLevel.Admin }],
+    ['/admin/configuration', { title: 'Configuration', icon: 'document-text', toolbar: false, access: AccessLevel.Admin, parentUrl: '/admin' }],
+    ['/admin/users', { title: 'Users', icon: 'people', toolbar: false, access: AccessLevel.Admin, parentUrl: '/admin' }],
+    ['/admin/maintenance', { title: 'Maintenance', icon: 'build', toolbar: false, access: AccessLevel.Admin, parentUrl: '/admin' }],
+  ]);
 
   @State() pageTitle: string = '';
   @State() childPageTitle: string = '';
@@ -116,37 +93,25 @@ export class AppRoot {
         <ion-menu side="start" type="reveal" content-id="main-content" ref={el => this.menu = el!}>
           <ion-content>
             <ion-list class="ion-no-padding">
-              {this.appLinks
-                .filter(link => isNull(link.access) || isAuthorized(state.currentUser, link.access))
-                .map(link =>
-                  <Fragment>
+              {Array.from(this.appLinks.entries())
+                .filter(([, link]) => isNull(link.access) || isAuthorized(state.currentUser, link.access))
+                .map(([url, link]) => {
+                  const isActive = this.pageTitle === link.title || this.childPageTitle === link.title;
+                  const isParentOfActive = this.pageTitle === link.title && !isNullOrEmpty(this.childPageTitle);
+                  return (
                     <ion-item
-                      href={link.url}
-                      color={this.pageTitle === link.title && isNullOrEmpty(this.childPageTitle) ? 'secondary' : undefined}
-                      detail={this.pageTitle === link.title && isNullOrEmpty(this.childPageTitle)}
-                      class={{ 'active': this.pageTitle === link.title }}
+                      key={url}
+                      href={url}
+                      color={isActive && !isParentOfActive ? 'secondary' : undefined}
+                      detail={isActive && !isParentOfActive}
+                      class={{ 'active': isActive, 'child-link': !isNullOrEmpty(link.parentUrl) }}
                     >
-                      <ion-icon name={link.icon} slot="start" color={this.pageTitle === link.title && !isNullOrEmpty(this.childPageTitle) ? 'secondary' : undefined} />
-                      <ion-label color={this.pageTitle === link.title && !isNullOrEmpty(this.childPageTitle) ? 'secondary' : undefined}>{link.title}</ion-label>
+                      <ion-icon name={link.icon} slot="start" color={isParentOfActive ? 'secondary' : undefined} />
+                      <ion-label color={isParentOfActive ? 'secondary' : undefined}>{link.title}</ion-label>
                       {!isNull(link.detail) && <ion-label slot="end">{link.detail()}</ion-label>}
                     </ion-item>
-                    {(link.children ?? []).length > 0 &&
-                      <ion-list class="ion-no-padding child-links">
-                        {link.children?.map(child =>
-                          <ion-item
-                            href={child.url}
-                            color={this.childPageTitle === child.title ? 'secondary' : undefined}
-                            detail={this.childPageTitle === child.title}
-                            class={{ 'active': this.childPageTitle === child.title }}
-                          >
-                            <ion-icon name={child.icon} slot="start" />
-                            <ion-label>{child.title}</ion-label>
-                          </ion-item>
-                        )}
-                      </ion-list>
-                    }
-                  </Fragment>
-                )}
+                  );
+                })}
               <ion-item button onClick={() => this.logout()}>
                 <ion-icon name="log-out" slot="start" />
                 <ion-label>Logout</ion-label>
@@ -179,26 +144,26 @@ export class AppRoot {
 
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
                 <ion-buttons id="toolbar-menu" slot="end" class="ion-display-none ion-display-sm-flex">
-                  {this.appLinks
-                    .filter(link => link.toolbar && (isNull(link.access) || isAuthorized(state.currentUser, link.access)))
-                    .map(link => ([
+                  {Array.from(this.appLinks.entries())
+                    .filter(([, link]) => link.toolbar && (isNull(link.access) || isAuthorized(state.currentUser, link.access)))
+                    .map(([url, link]) => ([
                       <ion-button
-                        key={link.url}
+                        key={url}
                         size="small"
                         fill={this.pageTitle === link.title ? 'solid' : 'clear'}
                         class={{ 'active': this.pageTitle === link.title, 'ion-display-none': true, 'ion-display-md-flex': true }}
-                        href={link.url}
+                        href={url}
                         title={link.title}
                       >
                         <ion-icon slot="start" icon={link.icon} />
                         {link.title}
                       </ion-button>,
                       <ion-button
-                        key={link.url}
+                        key={url}
                         size="small"
                         fill={this.pageTitle === link.title ? 'solid' : 'clear'}
                         class={{ 'active': this.pageTitle === link.title, 'ion-display-md-none': true }}
-                        href={link.url}
+                        href={url}
                         title={link.title}
                       >
                         <ion-icon slot="icon-only" icon={link.icon} size="small" />
@@ -353,29 +318,20 @@ export class AppRoot {
 
   private async onPageChanged(e: CustomEvent<RouterEventDetail>) {
     // Set the page title based on the active page
-    let activeTitle = '';
-    let activeChildTitle = '';
-    for (const link of this.appLinks) {
-      let matched = false;
-      if (link.url === e.detail.to) {
-        activeTitle = link.title;
-        matched = true;
-      } else if (link.children.length > 0) {
-        for (const child of link.children) {
-          if (child.url === e.detail.to) {
-            activeTitle = link.title;
-            activeChildTitle = child.title;
-            matched = true;
-            break;
-          }
-        }
+    const link = this.appLinks.get(e.detail.to);
+    if (!isNull(link)) {
+      if (!isNullOrEmpty(link.parentUrl)) {
+        const parentLink = this.appLinks.get(link.parentUrl);
+        this.pageTitle = parentLink?.title ?? '';
+        this.childPageTitle = link.title;
+      } else {
+        this.pageTitle = link.title;
+        this.childPageTitle = '';
       }
-      if (matched) {
-        break;
-      }
+    } else {
+      this.pageTitle = '';
+      this.childPageTitle = '';
     }
-    this.pageTitle = activeTitle;
-    this.childPageTitle = activeChildTitle;
 
     if (this.isLoggedIn()) {
       // Make sure there are search results on initial load
