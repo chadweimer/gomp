@@ -19,19 +19,27 @@ export class AppRoot {
   private menu!: HTMLIonMenuElement;
   private readonly subscriptions: Subscription[] = [];
 
-  private readonly appLinks = new Map([
-    ['/', { title: 'Home', icon: 'home', toolbar: false }],
-    ['/recipes', { title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.totalRecipeCount ?? 0 }],
-    ['/tags', { title: 'Tags', icon: 'bookmarks', toolbar: true, detail: () => state.totalTagsCount ?? 0 }],
-    ['/settings', { title: 'Settings', icon: 'settings', toolbar: true }],
-    ['/settings/preferences', { title: 'Preferences', icon: 'options', toolbar: false, parentUrl: '/settings' }],
-    ['/settings/searches', { title: 'Searches', icon: 'search', toolbar: false, parentUrl: '/settings' }],
-    ['/settings/security', { title: 'Security', icon: 'finger-print', toolbar: false, parentUrl: '/settings' }],
-    ['/admin', { title: 'Admin', icon: 'shield-checkmark', toolbar: true, access: AccessLevel.Admin }],
-    ['/admin/configuration', { title: 'Configuration', icon: 'document-text', toolbar: false, access: AccessLevel.Admin, parentUrl: '/admin' }],
-    ['/admin/users', { title: 'Users', icon: 'people', toolbar: false, access: AccessLevel.Admin, parentUrl: '/admin' }],
-    ['/admin/maintenance', { title: 'Maintenance', icon: 'build', toolbar: false, access: AccessLevel.Admin, parentUrl: '/admin' }],
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  private readonly appLinks: Map<string, {
+    title: string;
+    icon: string;
+    showOn: (type: 'menu' | 'toolbar') => boolean;
+    detail?: () => number;
+    parentUrl?: string
+  }> = new Map([
+    ['/', { title: 'Home', icon: 'home', showOn: (type) => type === 'menu' }],
+    ['/recipes', { title: 'Recipes', icon: 'restaurant', showOn: (type) => this.isLoggedIn(), detail: () => state.totalRecipeCount ?? 0 }],
+    ['/tags', { title: 'Tags', icon: 'bookmarks', showOn: (type) => this.isLoggedIn(), detail: () => state.totalTagsCount ?? 0 }],
+    ['/settings', { title: 'Settings', icon: 'settings', showOn: (type) => this.isLoggedIn() }],
+    ['/settings/preferences', { title: 'Preferences', icon: 'options', showOn: (type) => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
+    ['/settings/searches', { title: 'Searches', icon: 'search', showOn: (type) => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
+    ['/settings/security', { title: 'Security', icon: 'finger-print', showOn: (type) => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
+    ['/admin', { title: 'Admin', icon: 'shield-checkmark', showOn: (type) => this.isAdmin() }],
+    ['/admin/configuration', { title: 'Configuration', icon: 'document-text', showOn: (type) => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
+    ['/admin/users', { title: 'Users', icon: 'people', showOn: (type) => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
+    ['/admin/maintenance', { title: 'Maintenance', icon: 'build', showOn: (type) => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
   ]);
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   @State() pageTitle: string = '';
   @State() childPageTitle: string = '';
@@ -94,7 +102,7 @@ export class AppRoot {
           <ion-content>
             <ion-list class="ion-no-padding">
               {Array.from(this.appLinks.entries())
-                .filter(([, link]) => isNull(link.access) || isAuthorized(state.currentUser, link.access))
+                .filter(([, link]) => link.showOn('menu'))
                 .map(([url, link]) => {
                   const isActive = this.pageTitle === link.title || this.childPageTitle === link.title;
                   const isParentOfActive = this.pageTitle === link.title && !isNullOrEmpty(this.childPageTitle);
@@ -127,100 +135,93 @@ export class AppRoot {
         <div class="ion-page" id="main-content">
           <ion-header mode="md" class="hide-on-print">
             <ion-toolbar color="primary">
-              {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-buttons slot="start">
-                  <ion-menu-button>
-                    {state.loadingCount > 0 &&
-                      <ion-spinner name="bubbles" />
-                    }
-                  </ion-menu-button>
-                </ion-buttons>
-              }
+              <ion-buttons slot="start">
+                <ion-menu-button>
+                  {state.loadingCount > 0 &&
+                    <ion-spinner name="bubbles" />
+                  }
+                </ion-menu-button>
+              </ion-buttons>
 
               <ion-title slot="start">
                 <ion-router-link color="light" href="/">{appConfig.config.title}</ion-router-link>
                 {!isNullOrEmpty(this.pageTitle) && <ion-text color="light" class="ion-display-md-none"> | {this.pageTitle}</ion-text>}
               </ion-title>
 
-              {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-buttons id="toolbar-menu" slot="end" class="ion-display-none ion-display-sm-flex">
-                  {Array.from(this.appLinks.entries())
-                    .filter(([, link]) => link.toolbar && (isNull(link.access) || isAuthorized(state.currentUser, link.access)))
-                    .map(([url, link]) => ([
-                      <ion-button
-                        key={url}
-                        size="small"
-                        fill={this.pageTitle === link.title ? 'solid' : 'clear'}
-                        class={{ 'active': this.pageTitle === link.title, 'ion-display-none': true, 'ion-display-md-flex': true }}
-                        href={url}
-                        title={link.title}
-                      >
-                        <ion-icon slot="start" icon={link.icon} />
-                        {link.title}
-                      </ion-button>,
-                      <ion-button
-                        key={url}
-                        size="small"
-                        fill={this.pageTitle === link.title ? 'solid' : 'clear'}
-                        class={{ 'active': this.pageTitle === link.title, 'ion-display-md-none': true }}
-                        href={url}
-                        title={link.title}
-                      >
-                        <ion-icon slot="icon-only" icon={link.icon} size="small" />
-                      </ion-button>
-                    ]))
-                  }
-                </ion-buttons>
-              }
-              {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-searchbar
-                  slot="end"
-                  class="end ion-display-none ion-display-lg-flex"
-                  // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
-                  autocorrect={true}
-                  spellcheck={true}
-                  show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
-                  cancel-button-text="Reset"
-                  cancel-button-icon="arrow-undo-outline"
-                  value={state.searchFilter?.query}
-                  onKeyDown={(e: KeyboardEvent) => this.onSearchKeyDown(e)}
-                  onIonBlur={(e: Event) => (e.currentTarget as HTMLIonSearchbarElement).value = state.searchFilter?.query ?? ''}
-                  onIonClear={() => this.onSearchClearClicked()}
-                  onIonCancel={() => this.onSearchCancelClicked()}
-                ></ion-searchbar>
-              }
-              {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-buttons slot="end" class="ion-display-none ion-display-lg-flex">
-                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}>
-                    <ion-icon icon="filter" slot="start" />
-                    <ion-badge color="secondary">{state.searchResultCount}</ion-badge>
-                  </ion-button>
-                </ion-buttons>
-              }
+              <ion-buttons id="toolbar-menu" slot="end" class="ion-display-none ion-display-sm-flex">
+                {Array.from(this.appLinks.entries())
+                  .filter(([, link]) => link.showOn('toolbar'))
+                  .map(([url, link]) => ([
+                    <ion-button
+                      key={url}
+                      size="small"
+                      fill={this.pageTitle === link.title ? 'solid' : 'clear'}
+                      class={{ 'active': this.pageTitle === link.title, 'ion-display-none': true, 'ion-display-md-flex': true }}
+                      href={url}
+                      title={link.title}
+                    >
+                      <ion-icon slot="start" icon={link.icon} />
+                      {link.title}
+                    </ion-button>,
+                    <ion-button
+                      key={url}
+                      size="small"
+                      fill={this.pageTitle === link.title ? 'solid' : 'clear'}
+                      class={{ 'active': this.pageTitle === link.title, 'ion-display-md-none': true }}
+                      href={url}
+                      title={link.title}
+                    >
+                      <ion-icon slot="icon-only" icon={link.icon} size="small" />
+                    </ion-button>
+                  ]))
+                }
+              </ion-buttons>
+
+              <ion-searchbar
+                slot="end"
+                class="end ion-display-none ion-display-lg-flex"
+                // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                autocorrect={true}
+                spellcheck={true}
+                disabled={!this.isLoggedIn()}
+                show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
+                cancel-button-text="Reset"
+                cancel-button-icon="arrow-undo-outline"
+                value={state.searchFilter?.query}
+                onKeyDown={(e: KeyboardEvent) => this.onSearchKeyDown(e)}
+                onIonBlur={(e: Event) => (e.currentTarget as HTMLIonSearchbarElement).value = state.searchFilter?.query ?? ''}
+                onIonClear={() => this.onSearchClearClicked()}
+                onIonCancel={() => this.onSearchCancelClicked()}
+              />
+              <ion-buttons slot="end" class="ion-display-none ion-display-lg-flex">
+                <ion-button color="light" disabled={!this.isLoggedIn()} onClick={() => this.onSearchFilterClicked()}>
+                  <ion-icon icon="filter" slot="start" />
+                  <ion-badge color="secondary">{state.searchResultCount}</ion-badge>
+                </ion-button>
+              </ion-buttons>
             </ion-toolbar>
-            {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-              <ion-toolbar color="primary" class="ion-display-lg-none">
-                <ion-searchbar
-                  // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
-                  autocorrect={true}
-                  spellcheck={true}
-                  show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
-                  cancel-button-text="Reset"
-                  cancel-button-icon="arrow-undo-outline"
-                  value={state.searchFilter?.query}
-                  onKeyDown={(e: KeyboardEvent) => this.onSearchKeyDown(e)}
-                  onIonBlur={(e: Event) => (e.currentTarget as HTMLIonSearchbarElement).value = state.searchFilter?.query ?? ''}
-                  onIonClear={() => this.onSearchClearClicked()}
-                  onIonCancel={() => this.onSearchCancelClicked()}
-                ></ion-searchbar>
-                <ion-buttons slot="end">
-                  <ion-button color="light" onClick={() => this.onSearchFilterClicked()}>
-                    <ion-icon icon="filter" slot="start" />
-                    <ion-badge color="secondary">{state.searchResultCount}</ion-badge>
-                  </ion-button>
-                </ion-buttons>
-              </ion-toolbar>
-            }
+            <ion-toolbar color="primary" class="ion-display-lg-none">
+              <ion-searchbar
+                // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
+                autocorrect={true}
+                spellcheck={true}
+                disabled={!this.isLoggedIn()}
+                show-cancel-button={this.isDefaultSearch() ? 'never' : 'always'}
+                cancel-button-text="Reset"
+                cancel-button-icon="arrow-undo-outline"
+                value={state.searchFilter?.query}
+                onKeyDown={(e: KeyboardEvent) => this.onSearchKeyDown(e)}
+                onIonBlur={(e: Event) => (e.currentTarget as HTMLIonSearchbarElement).value = state.searchFilter?.query ?? ''}
+                onIonClear={() => this.onSearchClearClicked()}
+                onIonCancel={() => this.onSearchCancelClicked()}
+              />
+              <ion-buttons slot="end">
+                <ion-button color="light" disabled={!this.isLoggedIn()} onClick={() => this.onSearchFilterClicked()}>
+                  <ion-icon icon="filter" slot="start" />
+                  <ion-badge color="secondary">{state.searchResultCount}</ion-badge>
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
           </ion-header>
 
           <ion-content>
@@ -287,8 +288,12 @@ export class AppRoot {
     return { redirect: '/login' };
   }
 
+  private isAdmin() {
+    return this.isLoggedIn() && isAuthorized(state.currentUser, AccessLevel.Admin);
+  }
+
   private requireAdmin() {
-    if (isAuthorized(state.currentUser, AccessLevel.Admin)) {
+    if (this.isAdmin()) {
       return true;
     }
 
@@ -347,6 +352,10 @@ export class AppRoot {
   }
 
   private async onSearchKeyDown(e: KeyboardEvent) {
+    if (!this.isLoggedIn()) {
+      return;
+    }
+
     if (e.key === 'Enter') {
       const searchBar = e.target as HTMLIonInputElement;
       state.searchFilter = {
@@ -358,6 +367,10 @@ export class AppRoot {
   }
 
   private async onSearchClearClicked() {
+    if (!this.isLoggedIn()) {
+      return;
+    }
+
     state.searchFilter = {
       ...state.searchFilter,
       query: ''
@@ -366,11 +379,19 @@ export class AppRoot {
   }
 
   private async onSearchCancelClicked() {
+    if (!this.isLoggedIn()) {
+      return;
+    }
+
     state.searchFilter = getDefaultSearchFilter();
     await redirect('/recipes');
   }
 
   private async onSearchFilterClicked() {
+    if (!this.isLoggedIn()) {
+      return;
+    }
+
     const { data } = await showModal<{ searchFilter: SearchFilter }>({
       presentingElement: this.el,
       component: 'search-filter-editor',

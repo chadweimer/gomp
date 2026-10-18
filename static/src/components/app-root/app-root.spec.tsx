@@ -60,22 +60,68 @@ describe('app-root', () => {
   });
 
   describe('authorization and navigation rendering', () => {
-    it('hides menu button, searchbar, and toolbar links when user is not authenticated', async () => {
+    it('disables searchbars and filter buttons, and hides toolbar buttons when user is not authenticated', async () => {
       state.currentUser = undefined;
       const { root } = await render(<app-root />);
 
-      expect(root.querySelector('ion-menu-button')).toBeNull();
-      expect(root.querySelector('ion-searchbar')).toBeNull();
-      expect(root.querySelector('#toolbar-menu')).toBeNull();
+      expect(root.querySelector('ion-menu-button')).not.toBeNull();
+      expect(root.querySelector('#toolbar-menu')).not.toBeNull();
+      expect(root.querySelectorAll('#toolbar-menu ion-button')).toHaveLength(0);
+
+      const searchbars = root.querySelectorAll('ion-searchbar');
+      expect(searchbars).toHaveLength(2);
+      searchbars.forEach(searchbar => {
+        expect(searchbar).toHaveAttribute('disabled');
+      });
+
+      const filterButtons = root.querySelectorAll('ion-button ion-icon[icon="filter"]');
+      expect(filterButtons).toHaveLength(2);
+      filterButtons.forEach(icon => {
+        expect(icon.closest('ion-button')).toHaveAttribute('disabled');
+      });
     });
 
-    it('shows menu button, searchbar, and toolbar links when user is authenticated', async () => {
+    it('renders only Home link in the side menu when user is not authenticated', async () => {
+      state.currentUser = undefined;
+      const { root } = await render(<app-root />);
+
+      const homeLink = root.querySelector('ion-item[href="/"]');
+      expect(homeLink).not.toBeNull();
+
+      expect(root.querySelector('ion-item[href="/recipes"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/tags"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/settings"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/settings/preferences"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/settings/searches"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/settings/security"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/admin"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/admin/configuration"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/admin/users"]')).toBeNull();
+      expect(root.querySelector('ion-item[href="/admin/maintenance"]')).toBeNull();
+
+      const logoutItem = Array.from(root.querySelectorAll('ion-item')).find(item => item.textContent?.includes('Logout'));
+      expect(logoutItem).toBeDefined();
+    });
+
+    it('shows menu button, enabled searchbars, and toolbar links when user is authenticated', async () => {
       state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
       const { root } = await render(<app-root />);
 
       expect(root.querySelector('ion-menu-button')).not.toBeNull();
-      expect(root.querySelector('ion-searchbar')).not.toBeNull();
       expect(root.querySelector('#toolbar-menu')).not.toBeNull();
+      expect(root.querySelectorAll('#toolbar-menu ion-button').length).toBeGreaterThan(0);
+
+      const searchbars = root.querySelectorAll('ion-searchbar');
+      expect(searchbars).toHaveLength(2);
+      searchbars.forEach(searchbar => {
+        expect(searchbar).not.toHaveAttribute('disabled');
+      });
+
+      const filterButtons = root.querySelectorAll('ion-button ion-icon[icon="filter"]');
+      expect(filterButtons).toHaveLength(2);
+      filterButtons.forEach(icon => {
+        expect(icon.closest('ion-button')).not.toHaveAttribute('disabled');
+      });
     });
 
     it('renders viewer navigation and hides admin links for Viewer users', async () => {
@@ -224,10 +270,6 @@ describe('app-root', () => {
   });
 
   describe('spinner indicators', () => {
-    beforeEach(() => {
-      state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
-    });
-
     it('renders spinner when operations are loading', async () => {
       state.loadingCount = 2;
       const { root } = await render(<app-root />);
@@ -252,25 +294,70 @@ describe('app-root', () => {
 
       fetchMocker.mockResponse((req: Request) => {
         if (req.url.match(/\/app\/info$/)) {
-          return { status: 200, body: JSON.stringify(mockInfo) };
+          return { status: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(mockInfo) };
         }
         if (req.url.match(/\/app\/configuration$/)) {
-          return { status: 200, body: JSON.stringify(mockConfig) };
+          return { status: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(mockConfig) };
         }
-        if (req.url.match(/\/recipes(\?.*)?$/)) {
+        if (req.url.includes('/recipes')) {
           return {
             status: 200,
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ total: 0, recipes: [] }),
           };
         }
-        if (req.url.match(/\/tags(\?.*)?$/)) {
+        if (req.url.includes('/tags')) {
           return {
             status: 200,
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ total: 0, tags: [] }),
           };
         }
         return { status: 404 };
       });
+    });
+
+    it('ignores search input and filter clicks when user is unauthenticated', async () => {
+      state.currentUser = undefined;
+      const initialFilter = { ...getDefaultSearchFilter() };
+      state.searchFilter = initialFilter;
+
+      const { root } = await render(<app-root />);
+      const router = root.querySelector<HTMLIonRouterElement>('ion-router');
+      if (router) {
+        router.push = vi.fn().mockResolvedValue(true);
+      }
+
+      const searchbar = root.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
+      expect(searchbar).not.toBeNull();
+      if (searchbar) {
+        searchbar.value = 'pasta';
+        searchbar.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      }
+
+      expect(state.searchFilter).toEqual(initialFilter);
+      if (router) {
+        expect(router.push).not.toHaveBeenCalled();
+      }
+
+      searchbar?.dispatchEvent(new CustomEvent('ionClear', { bubbles: true }));
+      expect(state.searchFilter).toEqual(initialFilter);
+      if (router) {
+        expect(router.push).not.toHaveBeenCalled();
+      }
+
+      searchbar?.dispatchEvent(new CustomEvent('ionCancel', { bubbles: true }));
+      expect(state.searchFilter).toEqual(initialFilter);
+      if (router) {
+        expect(router.push).not.toHaveBeenCalled();
+      }
+
+      const filterButton = root.querySelector<HTMLIonButtonElement>('ion-button ion-icon[icon="filter"]')?.closest('ion-button');
+      expect(filterButton).not.toBeNull();
+      filterButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      if (router) {
+        expect(router.push).not.toHaveBeenCalled();
+      }
     });
 
     it('updates query and redirects to /recipes on Enter key press', async () => {
@@ -498,6 +585,48 @@ describe('app-root', () => {
       expect(searchesItem).not.toHaveAttribute('color');
       expect(searchesItem).not.toHaveAttribute('detail');
       expect(searchesItem).not.toHaveClass('active');
+    });
+
+    it('clears pageTitle on unmatched routes like /login when user is unauthenticated', async () => {
+      state.currentUser = undefined;
+      const { root, waitForChanges } = await render(<app-root />);
+      const router = setupRouterOutlet(root);
+
+      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/login', from: '' } }));
+      await waitForChanges();
+
+      const title = root.querySelector('ion-title');
+      expect(title?.querySelector('ion-text')).toBeNull();
+
+      const toolbarButtons = root.querySelectorAll('#toolbar-menu ion-button');
+      expect(toolbarButtons).toHaveLength(0);
+
+      const menuItems = root.querySelectorAll('ion-menu ion-item[href]');
+      menuItems.forEach(item => {
+        expect(item).not.toHaveClass('active');
+      });
+    });
+
+    it('updates pageTitle to "Home" on root route "/" and highlights Home without toolbar buttons when user is unauthenticated', async () => {
+      state.currentUser = undefined;
+      const { root, waitForChanges } = await render(<app-root />);
+      const router = setupRouterOutlet(root);
+
+      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/', from: '' } }));
+      await waitForChanges();
+
+      const titleText = root.querySelector('ion-title ion-text');
+      expect(titleText).not.toBeNull();
+      expect(titleText).toEqualText(' | Home');
+
+      const toolbarButtons = root.querySelectorAll('#toolbar-menu ion-button');
+      expect(toolbarButtons).toHaveLength(0);
+
+      const homeItem = root.querySelector('ion-menu ion-item[href="/"]');
+      expect(homeItem).not.toBeNull();
+      expect(homeItem).toEqualAttribute('color', 'secondary');
+      expect(homeItem).toHaveAttribute('detail');
+      expect(homeItem).toHaveClass('active');
     });
   });
 });
