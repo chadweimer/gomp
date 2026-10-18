@@ -332,4 +332,160 @@ describe('app-root', () => {
       }).not.toThrow();
     });
   });
+
+  describe('pageTitle state and active navigation highlighting', () => {
+    function setupRouterOutlet(root: HTMLElement) {
+      const routerOutlet = root.querySelector<HTMLIonRouterOutletElement>('ion-router-outlet');
+      if (routerOutlet) {
+        routerOutlet.getRouteId = vi.fn().mockResolvedValue(undefined);
+      }
+      return root.querySelector('ion-router');
+    }
+
+    beforeEach(() => {
+      state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
+      state.searchResults = [];
+    });
+
+    it('has empty pageTitle initially and clears pageTitle on unmatched routes like /login', async () => {
+      const { root, waitForChanges } = await render(<app-root />);
+      const router = setupRouterOutlet(root);
+      expect(router).not.toBeNull();
+
+      // Initially pageTitle is empty: no ion-text in ion-title
+      const title = root.querySelector('ion-title');
+      expect(title?.querySelector('ion-text')).toBeNull();
+
+      // Navigate to /recipes first to set a non-empty pageTitle
+      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes', from: '/' } }));
+      await waitForChanges();
+      expect(title?.querySelector('ion-text')).toEqualText(' | Recipes');
+
+      // Navigate to unmatched route /login -> clears pageTitle
+      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/login', from: '/recipes' } }));
+      await waitForChanges();
+
+      expect(title?.querySelector('ion-text')).toBeNull();
+
+      const toolbarButtons = root.querySelectorAll('#toolbar-menu ion-button');
+      toolbarButtons.forEach(btn => {
+        expect(btn).toEqualAttribute('fill', 'clear');
+        expect(btn).not.toHaveClass('active');
+      });
+
+      const menuItems = root.querySelectorAll('ion-menu ion-item[href]');
+      menuItems.forEach(item => {
+        expect(item).not.toHaveAttribute('color');
+        expect(item).not.toHaveAttribute('detail');
+        expect(item).not.toHaveClass('active');
+      });
+    });
+
+    it('updates pageTitle to "Home" on root route "/" and highlights only the Home side menu item', async () => {
+      const { root, waitForChanges } = await render(<app-root />);
+      const router = setupRouterOutlet(root);
+
+      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/', from: '' } }));
+      await waitForChanges();
+
+      const titleText = root.querySelector('ion-title ion-text');
+      expect(titleText).not.toBeNull();
+      expect(titleText).toEqualText(' | Home');
+
+      // Home is not in toolbar, so all toolbar buttons remain inactive
+      const toolbarButtons = root.querySelectorAll('#toolbar-menu ion-button');
+      expect(toolbarButtons.length).toBeGreaterThan(0);
+      toolbarButtons.forEach(btn => {
+        expect(btn).toEqualAttribute('fill', 'clear');
+        expect(btn).not.toHaveClass('active');
+      });
+
+      // Side menu: Home is active, others are inactive
+      const homeItem = root.querySelector('ion-menu ion-item[href="/"]');
+      expect(homeItem).toEqualAttribute('color', 'secondary');
+      expect(homeItem).toHaveAttribute('detail');
+      expect(homeItem).toHaveClass('active');
+
+      const recipesItem = root.querySelector('ion-menu ion-item[href="/recipes"]');
+      expect(recipesItem).not.toHaveAttribute('color');
+      expect(recipesItem).not.toHaveAttribute('detail');
+      expect(recipesItem).not.toHaveClass('active');
+    });
+
+    it('updates pageTitle to "Recipes" on "/recipes" and highlights matching toolbar buttons and side menu item', async () => {
+      const { root, waitForChanges } = await render(<app-root />);
+      const router = setupRouterOutlet(root);
+
+      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes', from: '/' } }));
+      await waitForChanges();
+
+      const titleText = root.querySelector('ion-title ion-text');
+      expect(titleText).not.toBeNull();
+      expect(titleText).toEqualText(' | Recipes');
+
+      // Toolbar: both desktop and mobile Recipes buttons are active/solid; others are clear
+      const recipesButtons = root.querySelectorAll('#toolbar-menu ion-button[href="/recipes"]');
+      expect(recipesButtons).toHaveLength(2);
+      recipesButtons.forEach(btn => {
+        expect(btn).toEqualAttribute('fill', 'solid');
+        expect(btn).toHaveClass('active');
+      });
+
+      const otherButtons = root.querySelectorAll('#toolbar-menu ion-button:not([href="/recipes"])');
+      expect(otherButtons.length).toBeGreaterThan(0);
+      otherButtons.forEach(btn => {
+        expect(btn).toEqualAttribute('fill', 'clear');
+        expect(btn).not.toHaveClass('active');
+      });
+
+      // Side menu: Recipes is active, Home is inactive
+      const recipesItem = root.querySelector('ion-menu ion-item[href="/recipes"]');
+      expect(recipesItem).toEqualAttribute('color', 'secondary');
+      expect(recipesItem).toHaveAttribute('detail');
+      expect(recipesItem).toHaveClass('active');
+
+      const homeItem = root.querySelector('ion-menu ion-item[href="/"]');
+      expect(homeItem).not.toHaveAttribute('color');
+      expect(homeItem).not.toHaveAttribute('detail');
+      expect(homeItem).not.toHaveClass('active');
+    });
+
+    it('matches parent and child link on child routes like "/settings/preferences"', async () => {
+      const { root, waitForChanges } = await render(<app-root />);
+      const router = setupRouterOutlet(root);
+
+      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/settings/preferences', from: '/' } }));
+      await waitForChanges();
+
+      const titleText = root.querySelector('ion-title ion-text');
+      expect(titleText).not.toBeNull();
+      expect(titleText).toEqualText(' | Settings');
+
+      // Toolbar: Settings buttons are active/solid
+      const settingsButtons = root.querySelectorAll('#toolbar-menu ion-button[href="/settings"]');
+      expect(settingsButtons).toHaveLength(2);
+      settingsButtons.forEach(btn => {
+        expect(btn).toEqualAttribute('fill', 'solid');
+        expect(btn).toHaveClass('active');
+      });
+
+      // Side menu: parent Settings item has active class and secondary icon/label, while child Preferences item has secondary color and detail
+      const settingsItem = root.querySelector('ion-menu ion-item[href="/settings"]');
+      expect(settingsItem).not.toHaveAttribute('color');
+      expect(settingsItem).not.toHaveAttribute('detail');
+      expect(settingsItem).toHaveClass('active');
+      expect(settingsItem?.querySelector('ion-icon')).toEqualAttribute('color', 'secondary');
+      expect(settingsItem?.querySelector('ion-label')).toEqualAttribute('color', 'secondary');
+
+      const preferencesItem = root.querySelector('ion-menu ion-item[href="/settings/preferences"]');
+      expect(preferencesItem).toEqualAttribute('color', 'secondary');
+      expect(preferencesItem).toHaveAttribute('detail');
+      expect(preferencesItem).toHaveClass('active');
+
+      const searchesItem = root.querySelector('ion-menu ion-item[href="/settings/searches"]');
+      expect(searchesItem).not.toHaveAttribute('color');
+      expect(searchesItem).not.toHaveAttribute('detail');
+      expect(searchesItem).not.toHaveClass('active');
+    });
+  });
 });

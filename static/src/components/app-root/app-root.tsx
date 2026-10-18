@@ -19,36 +19,45 @@ export class AppRoot {
   private menu!: HTMLIonMenuElement;
   private readonly subscriptions: Subscription[] = [];
 
-  private readonly appLinks = [
-    { url: '/', title: 'Home', icon: 'home', toolbar: false },
-    { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.totalRecipeCount ?? 0 },
-    { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true, detail: () => state.totalTagsCount ?? 0 },
-    {
-      url: '/settings',
-      title: 'Settings',
-      icon: 'settings',
-      toolbar: true,
-      children: [
-        { url: '/settings/preferences', title: 'Preferences', icon: 'options' },
-        { url: '/settings/searches', title: 'Searches', icon: 'search' },
-        { url: '/settings/security', title: 'Security', icon: 'finger-print' }
-      ]
-    },
-    {
-      url: '/admin',
-      title: 'Admin',
-      icon: 'shield-checkmark',
-      toolbar: true,
-      access: AccessLevel.Admin,
-      children: [
-        { url: '/admin/configuration', title: 'Configuration', icon: 'document-text' },
-        { url: '/admin/users', title: 'Users', icon: 'people' },
-        { url: '/admin/maintenance', title: 'Maintenance', icon: 'build' }
-      ]
-    }
-  ];
+  private readonly appLinks: {
+    url: string;
+    title: string;
+    icon: string;
+    toolbar: boolean;
+    detail?: () => number;
+    access?: AccessLevel;
+    children: { url: string; title: string; icon: string }[]
+  }[] = [
+      { url: '/', title: 'Home', icon: 'home', toolbar: false, children: [] },
+      { url: '/recipes', title: 'Recipes', icon: 'restaurant', toolbar: true, detail: () => state.totalRecipeCount ?? 0, children: [] },
+      { url: '/tags', title: 'Tags', icon: 'bookmarks', toolbar: true, detail: () => state.totalTagsCount ?? 0, children: [] },
+      {
+        url: '/settings',
+        title: 'Settings',
+        icon: 'settings',
+        toolbar: true,
+        children: [
+          { url: '/settings/preferences', title: 'Preferences', icon: 'options' },
+          { url: '/settings/searches', title: 'Searches', icon: 'search' },
+          { url: '/settings/security', title: 'Security', icon: 'finger-print' }
+        ]
+      },
+      {
+        url: '/admin',
+        title: 'Admin',
+        icon: 'shield-checkmark',
+        toolbar: true,
+        access: AccessLevel.Admin,
+        children: [
+          { url: '/admin/configuration', title: 'Configuration', icon: 'document-text' },
+          { url: '/admin/users', title: 'Users', icon: 'people' },
+          { url: '/admin/maintenance', title: 'Maintenance', icon: 'build' }
+        ]
+      }
+    ];
 
   @State() pageTitle: string = '';
+  @State() childPageTitle: string = '';
 
   connectedCallback() {
     // Automatically trigger a logout if an API returns a 401
@@ -113,11 +122,12 @@ export class AppRoot {
                   <Fragment>
                     <ion-item
                       href={link.url}
-                      color={this.pageTitle === link.title ? 'dark' : ''}
-                      detail={this.pageTitle === link.title}
+                      color={this.pageTitle === link.title && isNullOrEmpty(this.childPageTitle) ? 'secondary' : undefined}
+                      detail={this.pageTitle === link.title && isNullOrEmpty(this.childPageTitle)}
+                      class={{ 'active': this.pageTitle === link.title }}
                     >
-                      <ion-icon name={link.icon} slot="start" />
-                      <ion-label>{link.title}</ion-label>
+                      <ion-icon name={link.icon} slot="start" color={this.pageTitle === link.title && !isNullOrEmpty(this.childPageTitle) ? 'secondary' : undefined} />
+                      <ion-label color={this.pageTitle === link.title && !isNullOrEmpty(this.childPageTitle) ? 'secondary' : undefined}>{link.title}</ion-label>
                       {!isNull(link.detail) && <ion-label slot="end">{link.detail()}</ion-label>}
                     </ion-item>
                     {(link.children ?? []).length > 0 &&
@@ -125,8 +135,9 @@ export class AppRoot {
                         {link.children?.map(child =>
                           <ion-item
                             href={child.url}
-                            color={this.pageTitle === child.title ? 'dark' : ''}
-                            detail={this.pageTitle === child.title}
+                            color={this.childPageTitle === child.title ? 'secondary' : undefined}
+                            detail={this.childPageTitle === child.title}
+                            class={{ 'active': this.childPageTitle === child.title }}
                           >
                             <ion-icon name={child.icon} slot="start" />
                             <ion-label>{child.title}</ion-label>
@@ -163,6 +174,7 @@ export class AppRoot {
 
               <ion-title slot="start">
                 <ion-router-link color="light" href="/">{appConfig.config.title}</ion-router-link>
+                {!isNullOrEmpty(this.pageTitle) && <ion-text color="light" class="ion-display-md-none"> | {this.pageTitle}</ion-text>}
               </ion-title>
 
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
@@ -172,8 +184,9 @@ export class AppRoot {
                     .map(link => ([
                       <ion-button
                         key={link.url}
+                        size="small"
                         fill={this.pageTitle === link.title ? 'solid' : 'clear'}
-                        class={{ 'active': this.pageTitle === link.title, 'ion-display-none': true, 'ion-display-lg-flex': true }}
+                        class={{ 'active': this.pageTitle === link.title, 'ion-display-none': true, 'ion-display-md-flex': true }}
                         href={link.url}
                         title={link.title}
                       >
@@ -182,8 +195,9 @@ export class AppRoot {
                       </ion-button>,
                       <ion-button
                         key={link.url}
+                        size="small"
                         fill={this.pageTitle === link.title ? 'solid' : 'clear'}
-                        class={{ 'active': this.pageTitle === link.title, 'ion-display-lg-none': true }}
+                        class={{ 'active': this.pageTitle === link.title, 'ion-display-md-none': true }}
                         href={link.url}
                         title={link.title}
                       >
@@ -196,7 +210,7 @@ export class AppRoot {
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
                 <ion-searchbar
                   slot="end"
-                  class="end ion-display-none ion-display-md-flex"
+                  class="end ion-display-none ion-display-lg-flex"
                   // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
                   autocorrect={true}
                   spellcheck={true}
@@ -211,7 +225,7 @@ export class AppRoot {
                 ></ion-searchbar>
               }
               {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-                <ion-buttons slot="end" class="ion-display-none ion-display-md-flex">
+                <ion-buttons slot="end" class="ion-display-none ion-display-lg-flex">
                   <ion-button color="light" onClick={() => this.onSearchFilterClicked()}>
                     <ion-icon icon="filter" slot="start" />
                     <ion-badge color="secondary">{state.searchResultCount}</ion-badge>
@@ -220,7 +234,7 @@ export class AppRoot {
               }
             </ion-toolbar>
             {isAuthorized(state.currentUser, AccessLevel.Viewer) &&
-              <ion-toolbar color="primary" class="ion-display-md-none">
+              <ion-toolbar color="primary" class="ion-display-lg-none">
                 <ion-searchbar
                   // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
                   autocorrect={true}
@@ -340,15 +354,28 @@ export class AppRoot {
   private async onPageChanged(e: CustomEvent<RouterEventDetail>) {
     // Set the page title based on the active page
     let activeTitle = '';
+    let activeChildTitle = '';
     for (const link of this.appLinks) {
-      // Intentionally not trying to match the children links here.
-      // If we are on a child link, the parent link will be the one that matches.
-      if (link.url === e.detail.to || (link.url != '/' && e.detail.to.startsWith(link.url))) {
+      let matched = false;
+      if (link.url === e.detail.to) {
         activeTitle = link.title;
+        matched = true;
+      } else if (link.children.length > 0) {
+        for (const child of link.children) {
+          if (child.url === e.detail.to) {
+            activeTitle = link.title;
+            activeChildTitle = child.title;
+            matched = true;
+            break;
+          }
+        }
+      }
+      if (matched) {
         break;
       }
     }
     this.pageTitle = activeTitle;
+    this.childPageTitle = activeChildTitle;
 
     if (this.isLoggedIn()) {
       // Make sure there are search results on initial load
