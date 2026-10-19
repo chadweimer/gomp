@@ -49,48 +49,51 @@ export class RecipeViewer {
               <five-star-rating value={this.recipe?.rating} disabled={this.readonly} onValueSelected={e => this.ratingSelected.emit(e.detail)} />
               {!isNullOrEmpty(this.recipe?.servingSize) && <div>Servings: {this.recipe?.servingSize}</div>}
               {!isNullOrEmpty(this.recipe?.time) && <div>Time: {this.recipe?.time}</div>}
+              {!isNullOrEmpty(this.recipe?.sourceUrl) && <div>Source: <a href={this.recipe?.sourceUrl} target="_blank" rel="noopener noreferrer">{this.recipe?.sourceUrl}</a></div>}
               <div>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</div>
             </ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
-            {!isNullOrEmpty(this.recipe?.ingredients) &&
-              <ion-item lines="full">
-                <ion-label position="stacked">Ingredients</ion-label>
-                <html-viewer class="ion-padding" value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id)} />
+            {!isNullOrEmpty(this.recipe?.ingredients) && [
+              <ion-list-header lines="full">
+                <ion-label>Ingredients</ion-label>
+              </ion-list-header>,
+              <ion-item lines="none">
+                <html-viewer value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id)} />
               </ion-item>
-            }
-            {!isNullOrEmpty(this.recipe?.directions) &&
-              <ion-item lines="full">
-                <ion-label position="stacked">Directions</ion-label>
-                <html-viewer class="ion-padding" value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id)} />
+            ]}
+            {!isNullOrEmpty(this.recipe?.directions) && [
+              <ion-list-header lines="full">
+                <ion-label>Directions</ion-label>
+              </ion-list-header>,
+              <ion-item lines="none">
+                <html-viewer value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id)} />
               </ion-item>
-            }
-            {!isNullOrEmpty(this.recipe?.storageInstructions) &&
-              <ion-item lines="full">
-                <ion-label position="stacked">Storage Instructions</ion-label>
-                <html-viewer class="ion-padding" value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id)} />
+            ]}
+            {!isNullOrEmpty(this.recipe?.storageInstructions) && [
+              <ion-list-header lines="full">
+                <ion-label>Storage Instructions</ion-label>
+              </ion-list-header>,
+              <ion-item lines="none">
+                <html-viewer value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id)} />
               </ion-item>
-            }
-            {!isNullOrEmpty(this.recipe?.nutritionInfo) &&
-              <ion-item lines="full">
-                <ion-label position="stacked">Nutrition</ion-label>
-                <html-viewer class="ion-padding" value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id)} />
+            ]}
+            {!isNullOrEmpty(this.recipe?.nutritionInfo) && [
+              <ion-list-header lines="full">
+                <ion-label>Nutrition</ion-label>
+              </ion-list-header>,
+              <ion-item lines="none">
+                <html-viewer value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id)} />
               </ion-item>
-            }
-            {!isNullOrEmpty(this.recipe?.sourceUrl) &&
-              <ion-item lines="full">
-                <ion-label position="stacked">Source</ion-label>
-                <div class="plain ion-padding">
-                  <a href={this.recipe?.sourceUrl} target="_blank" rel="noopener noreferrer">{this.recipe?.sourceUrl}</a>
-                </div>
-              </ion-item>
-            }
+            ]}
             {this.links?.length > 0 &&
-              <ion-item lines="full">
-                <ion-label position="stacked">Related Recipes</ion-label>
-                <div class="ion-padding-top fill">
-                  {this.links.map(link =>
-                    <ion-item key={link.id} lines="none">
+              <ion-list class="links">
+                <ion-list-header lines="full">
+                  <ion-label>Related Recipes</ion-label>
+                </ion-list-header>
+                {this.links.map(link =>
+                  <ion-item-sliding key={link.id}>
+                    <ion-item lines="none">
                       <ion-thumbnail slot="start" class="preview">
                         {!isNullOrEmpty(link.mainImageName) && <img loading="lazy" alt="" src={getRecipeThumbnailUrl(link.id, link.mainImageName)} />}
                       </ion-thumbnail>
@@ -99,15 +102,18 @@ export class RecipeViewer {
                           {link.name}
                         </ion-router-link>
                       </ion-label>
-                      {!this.readonly &&
-                        <ion-button slot="end" fill="clear" color="danger" onClick={() => this.deleteLinkClicked.emit(link)}>
-                          <ion-icon slot="icon-only" icon="close-circle" />
-                        </ion-button>
-                      }
                     </ion-item>
-                  )}
-                </div>
-              </ion-item>
+                    {!this.readonly &&
+                      <ion-item-options side="start">
+                        <ion-item-option color="danger" onClick={() => this.deleteLinkClicked.emit(link)}>
+                          <ion-icon slot="start" icon="close" />
+                          Remove
+                        </ion-item-option>
+                      </ion-item-options>
+                    }
+                  </ion-item-sliding>
+                )}
+              </ion-list>
             }
           </ion-card-content>
           {this.recipe?.state === RecipeState.Archived &&

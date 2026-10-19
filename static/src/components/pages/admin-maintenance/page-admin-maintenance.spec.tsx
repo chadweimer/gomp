@@ -125,9 +125,9 @@ describe('page-admin-maintenance', () => {
 
     const firstOptionsEnd = slidingItems[0].querySelector('ion-item-options[side="end"]');
     expect(firstOptionsEnd).not.toBeNull();
-    const firstDownloadOption = firstOptionsEnd?.querySelector('ion-item-option[color="secondary"]');
+    const firstDownloadOption = firstOptionsEnd?.querySelector('ion-item-option[color="medium"]');
     expect(firstDownloadOption).toHaveTextContent('Download');
-    const firstRestoreOption = firstOptionsEnd?.querySelector('ion-item-option[color="tertiary"]');
+    const firstRestoreOption = firstOptionsEnd?.querySelector('ion-item-option[color="secondary"]');
     expect(firstRestoreOption).toHaveTextContent('Restore');
   });
 
@@ -401,7 +401,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="tertiary"]');
+      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
       restoreOption?.click();
       await waitForChanges();
 
@@ -462,7 +462,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="tertiary"]');
+      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
       restoreOption?.click();
       await waitForChanges();
 
@@ -588,7 +588,7 @@ describe('page-admin-maintenance', () => {
 
       const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => { });
 
-      const downloadOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
+      const downloadOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="medium"]');
       downloadOption?.click();
       await waitForChanges();
 
