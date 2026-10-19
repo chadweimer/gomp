@@ -8,6 +8,7 @@ import (
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
+	"github.com/samber/lo"
 )
 
 type sqlRecipeDriverAdapter interface {
@@ -242,20 +243,20 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 	selectArgs := append(whereArgs, limitArgs...)
 	selectStmt := d.Db.Rebind(combinedStr)
 
-	recipes := make([]models.RecipeCompact, 0)
+	recipes := make([]*models.RecipeCompact, 0)
 	if err = sqlx.SelectContext(ctx, d.Db, &recipes, selectStmt, selectArgs...); err != nil {
 		return nil, 0, err
 	}
 
-	recipePtrs := make([]*models.RecipeCompact, len(recipes))
-	for i := range recipes {
-		recipePtrs[i] = &recipes[i]
-	}
-	if err = fillTagsForRecipes(ctx, d.Db, recipePtrs...); err != nil {
+	if err = fillTagsForRecipes(ctx, d.Db, recipes...); err != nil {
 		return nil, 0, err
 	}
 
-	return &recipes, total, nil
+	result := lo.Map(recipes, func(r *models.RecipeCompact, _ int) models.RecipeCompact {
+		return *r
+	})
+
+	return &result, total, nil
 }
 
 func getFieldsStmt(query string, fields []models.SearchField, adapter sqlRecipeDriverAdapter) (string, []any) {
