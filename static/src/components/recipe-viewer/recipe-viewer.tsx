@@ -40,6 +40,11 @@ export class RecipeViewer {
           )}
           <ion-card-header>
             <ion-card-title>{this.recipe?.name}</ion-card-title>
+            <ion-card-subtitle class="tags">
+              {this.recipe?.tags?.map(tag =>
+                <ion-badge key={tag} color="medium" onClick={() => this.tagClicked.emit(tag)}>{tag}</ion-badge>
+              )}
+            </ion-card-subtitle>
             <ion-card-subtitle>
               <five-star-rating value={this.recipe?.rating} disabled={this.readonly} onValueSelected={e => this.ratingSelected.emit(e.detail)} />
               {!isNullOrEmpty(this.recipe?.servingSize) && <div>Servings: {this.recipe?.servingSize}</div>}
@@ -104,11 +109,6 @@ export class RecipeViewer {
                 </div>
               </ion-item>
             }
-            <div class="ion-margin-top">
-              {this.recipe?.tags?.map(tag =>
-                <ion-chip key={tag} onClick={() => this.tagClicked.emit(tag)}>{tag}</ion-chip>
-              )}
-            </div>
           </ion-card-content>
           {this.recipe?.state === RecipeState.Archived &&
             <ion-badge class="top-right-padded translucent" color="dark">Archived</ion-badge>}
