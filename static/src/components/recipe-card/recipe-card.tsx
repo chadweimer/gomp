@@ -56,7 +56,7 @@ export class RecipeCard {
 
     return (
       <Host>
-        <ion-card href={isNull(this.recipe?.id) ? '' : `/recipes/${this.recipe?.id}`}>
+        <ion-card class="card" href={isNull(this.recipe?.id) ? '' : `/recipes/${this.recipe?.id}`}>
           <div class="image-container">
             <img loading="lazy" class={{ image: true, hidden: isNullOrEmpty(this.recipe?.mainImageName) }} alt="" src={getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName)} />
             {visibleTags.length > 0 &&
@@ -97,7 +97,7 @@ export class RecipeCard {
               {this.recipe?.name}
             </ion-card-title>
           </ion-card-header>
-          <ion-card-content class="no-overflow content">
+          <ion-card-content class="content">
             <five-star-rating value={this.recipe?.rating ?? 0} disabled />
           </ion-card-content>
           {this.recipe?.state === RecipeState.Archived &&

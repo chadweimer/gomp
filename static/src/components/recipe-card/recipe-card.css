@@ -18,14 +18,6 @@
   height: 100%;
 }
 
-.no-overflow {
-  overflow: hidden;
-}
-
-.title {
-  font-size: 0.9rem;
-}
-
 .tags {
   position: absolute;
   bottom: var(--ion-padding, 8px);
@@ -62,20 +54,21 @@
   left: -9999px;
 }
 
-ion-card {
+.card {
   margin: var(--ion-margin, 8px);
 }
 
-ion-card-content.content {
+.content {
   padding: var(--ion-padding, 8px);
   padding-top: 2px;
+  overflow: hidden;
 }
 
-ion-card-header.header {
+.header {
   padding: var(--ion-padding, 8px);
   padding-bottom: 2px;
 }
 
-ion-card-title.title {
+.title {
   font-size: 0.9rem;
 }
