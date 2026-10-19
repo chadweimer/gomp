@@ -1,4 +1,4 @@
-import { Component, Element, Event, EventEmitter, Host, Prop, h } from '@stencil/core';
+import { Component, Element, Event, EventEmitter, Fragment, Host, Prop, h } from '@stencil/core';
 import { Recipe, RecipeCompact, RecipeState } from '../../helpers/schema.gen';
 import { formatDate, getRecipeImageUrl, getRecipeThumbnailUrl, isNullOrEmpty, toPresentationHtml } from '../../helpers/utils';
 
@@ -49,43 +49,58 @@ export class RecipeViewer {
               <five-star-rating value={this.recipe?.rating} disabled={this.readonly} onValueSelected={e => this.ratingSelected.emit(e.detail)} />
               {!isNullOrEmpty(this.recipe?.servingSize) && <div>Servings: {this.recipe?.servingSize}</div>}
               {!isNullOrEmpty(this.recipe?.time) && <div>Time: {this.recipe?.time}</div>}
-              {!isNullOrEmpty(this.recipe?.sourceUrl) && <div>Source: <a href={this.recipe?.sourceUrl} target="_blank" rel="noopener noreferrer">{this.recipe?.sourceUrl}</a></div>}
+              {!isNullOrEmpty(this.recipe?.sourceUrl) &&
+                <div>
+                  Source: {this.recipe?.sourceUrl?.startsWith('http')
+                    ? <a href={this.recipe?.sourceUrl} target="_blank" rel="noopener noreferrer">{this.recipe?.sourceUrl}</a>
+                    : this.recipe?.sourceUrl
+                  }
+                </div>
+              }
               <div>{this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</div>
             </ion-card-subtitle>
           </ion-card-header>
           <ion-card-content>
-            {!isNullOrEmpty(this.recipe?.ingredients) && [
-              <ion-list-header lines="full">
-                <ion-label>Ingredients</ion-label>
-              </ion-list-header>,
-              <ion-item lines="none">
-                <html-viewer value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id)} />
-              </ion-item>
-            ]}
-            {!isNullOrEmpty(this.recipe?.directions) && [
-              <ion-list-header lines="full">
-                <ion-label>Directions</ion-label>
-              </ion-list-header>,
-              <ion-item lines="none">
-                <html-viewer value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id)} />
-              </ion-item>
-            ]}
-            {!isNullOrEmpty(this.recipe?.storageInstructions) && [
-              <ion-list-header lines="full">
-                <ion-label>Storage Instructions</ion-label>
-              </ion-list-header>,
-              <ion-item lines="none">
-                <html-viewer value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id)} />
-              </ion-item>
-            ]}
-            {!isNullOrEmpty(this.recipe?.nutritionInfo) && [
-              <ion-list-header lines="full">
-                <ion-label>Nutrition</ion-label>
-              </ion-list-header>,
-              <ion-item lines="none">
-                <html-viewer value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id)} />
-              </ion-item>
-            ]}
+            {!isNullOrEmpty(this.recipe?.ingredients) &&
+              <Fragment>
+                <ion-list-header lines="full">
+                  <ion-label>Ingredients</ion-label>
+                </ion-list-header>
+                <ion-item lines="none">
+                  <html-viewer value={toPresentationHtml(this.el, this.recipe?.ingredients, this.recipe?.id)} />
+                </ion-item>
+              </Fragment>
+            }
+            {!isNullOrEmpty(this.recipe?.directions) &&
+              <Fragment>
+                <ion-list-header lines="full">
+                  <ion-label>Directions</ion-label>
+                </ion-list-header>
+                <ion-item lines="none">
+                  <html-viewer value={toPresentationHtml(this.el, this.recipe?.directions, this.recipe?.id)} />
+                </ion-item>
+              </Fragment>
+            }
+            {!isNullOrEmpty(this.recipe?.storageInstructions) &&
+              <Fragment>
+                <ion-list-header lines="full">
+                  <ion-label>Storage Instructions</ion-label>
+                </ion-list-header>
+                <ion-item lines="none">
+                  <html-viewer value={toPresentationHtml(this.el, this.recipe?.storageInstructions, this.recipe?.id)} />
+                </ion-item>
+              </Fragment>
+            }
+            {!isNullOrEmpty(this.recipe?.nutritionInfo) &&
+              <Fragment>
+                <ion-list-header lines="full">
+                  <ion-label>Nutrition</ion-label>
+                </ion-list-header>
+                <ion-item lines="none">
+                  <html-viewer value={toPresentationHtml(this.el, this.recipe?.nutritionInfo, this.recipe?.id)} />
+                </ion-item>
+              </Fragment>
+            }
             {this.links?.length > 0 &&
               <ion-list class="links">
                 <ion-list-header lines="full">

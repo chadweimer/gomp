@@ -11,7 +11,7 @@ export class RecipeCard {
   private tagsContainer?: HTMLElement;
   private probeBadgeElement?: HTMLElement;
   private resizeObserver?: ResizeObserver;
-  private tagWidths: Map<string, number> = new Map();
+  private readonly tagWidths: Map<string, number> = new Map();
 
   @Prop() recipe: RecipeCompact = {
     name: '',
@@ -129,7 +129,7 @@ export class RecipeCard {
     // Cache intrinsic widths from rendered elements
     const badges = this.tagsContainer.querySelectorAll<HTMLElement>('.tag-badge');
     badges.forEach(el => {
-      const tag = el.getAttribute('data-tag');
+      const tag = el.dataset.tag;
       if (tag) {
         const w = el.getBoundingClientRect().width;
         if (w > 0) {
