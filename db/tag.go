@@ -84,14 +84,17 @@ func deleteAllTagsFromRecipe(ctx context.Context, recipeID int64, db sqlx.Execer
 func fillTagsForRecipes[T models.TaggableRecipe](ctx context.Context, db *sqlx.DB, recipes ...T) error {
 	validRecipes := lo.Filter(recipes, func(r T, _ int) bool {
 		var zero T
-		return r != zero && r.GetID() != nil
+		if r == zero {
+			return false
+		}
+		r.SetTags(make([]string, 0))
+		return r.GetID() != nil
 	})
 	if len(validRecipes) == 0 {
 		return nil
 	}
 
 	recipeIDs := lo.Map(validRecipes, func(r T, _ int) int64 {
-		r.SetTags(make([]string, 0))
 		return *r.GetID()
 	})
 
