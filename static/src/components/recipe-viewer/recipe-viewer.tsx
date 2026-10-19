@@ -45,7 +45,7 @@ export class RecipeViewer {
                 <ion-badge key={tag} color="medium" onClick={() => this.tagClicked.emit(tag)}>{tag}</ion-badge>
               )}
             </ion-card-subtitle>
-            <ion-card-subtitle>
+            <ion-card-subtitle class="details">
               <five-star-rating value={this.recipe?.rating} disabled={this.readonly} onValueSelected={e => this.ratingSelected.emit(e.detail)} />
               {!isNullOrEmpty(this.recipe?.servingSize) && <div>Servings: {this.recipe?.servingSize}</div>}
               {!isNullOrEmpty(this.recipe?.time) && <div>Time: {this.recipe?.time}</div>}

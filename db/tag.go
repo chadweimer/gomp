@@ -80,11 +80,61 @@ func deleteAllTagsFromRecipe(ctx context.Context, recipeID int64, db sqlx.Execer
 	return err
 }
 
-func listTagsForRecipe(ctx context.Context, recipeID int64, db sqlx.QueryerContext) (*[]string, error) {
-	tags := make([]string, 0)
-	if err := sqlx.SelectContext(ctx, db, &tags, "SELECT tag FROM recipe_tag WHERE recipe_id = $1", recipeID); err != nil {
-		return nil, err
+func fillTagsForRecipes[T models.TaggableRecipe](ctx context.Context, db *sqlx.DB, recipes ...T) error {
+	if len(recipes) == 0 {
+		return nil
 	}
 
-	return &tags, nil
+	recipeIDs := make([]int64, 0, len(recipes))
+	for _, r := range recipes {
+		var zero T
+		if r == zero {
+			continue
+		}
+		r.SetTags(make([]string, 0))
+		if id := r.GetID(); id != nil {
+			recipeIDs = append(recipeIDs, *id)
+		}
+	}
+
+	if len(recipeIDs) == 0 {
+		return nil
+	}
+
+	query, args, err := sqlx.In(
+		"SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN (?) ORDER BY recipe_id, tag ASC",
+		recipeIDs,
+	)
+	if err != nil {
+		return fmt.Errorf("building tags query: %w", err)
+	}
+
+	type recipeTagRow struct {
+		RecipeID int64  `db:"recipe_id"`
+		Tag      string `db:"tag"`
+	}
+
+	var rows []recipeTagRow
+	if err := sqlx.SelectContext(ctx, db, &rows, db.Rebind(query), args...); err != nil {
+		return fmt.Errorf("reading tags for recipes: %w", err)
+	}
+
+	tagsByRecipe := make(map[int64][]string, len(recipeIDs))
+	for _, row := range rows {
+		tagsByRecipe[row.RecipeID] = append(tagsByRecipe[row.RecipeID], row.Tag)
+	}
+
+	for _, r := range recipes {
+		var zero T
+		if r == zero {
+			continue
+		}
+		if id := r.GetID(); id != nil {
+			if tags, ok := tagsByRecipe[*id]; ok {
+				r.SetTags(tags)
+			}
+		}
+	}
+
+	return nil
 }

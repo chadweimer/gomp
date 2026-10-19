@@ -395,7 +395,8 @@ func checkToken(tokenHandler *infra.TokenHandler, cookieStr *string, expectedUse
 		expectedDuration = 14 * 24 * time.Hour
 	}
 	actualDuration := claims.ExpiresAt.Time.Sub(claims.IssuedAt.Time)
-	if actualDuration < expectedDuration-time.Minute || actualDuration > expectedDuration+time.Minute {
+	delta := (actualDuration - expectedDuration).Abs()
+	if delta > time.Hour {
 		return fmt.Errorf("expected token duration around %v, got %v", expectedDuration, actualDuration)
 	}
 

@@ -22,6 +22,7 @@ describe('page-home', () => {
     state: RecipeState.Active,
     rating: 5,
     mainImageName: 'pancakes.jpg',
+    tags: ['breakfast'],
   };
 
   const mockRecipe2: RecipeCompact = {
@@ -30,6 +31,7 @@ describe('page-home', () => {
     state: RecipeState.Active,
     rating: 4,
     mainImageName: 'waffles.jpg',
+    tags: ['breakfast'],
   };
 
   const mockSavedFilters: SavedSearchFilterCompact[] = [

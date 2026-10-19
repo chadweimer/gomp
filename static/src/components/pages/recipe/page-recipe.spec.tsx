@@ -26,7 +26,7 @@ describe('page-recipe', () => {
   };
 
   const mockLinks: RecipeCompact[] = [
-    { id: 2, name: 'Waffles', state: RecipeState.Active, mainImageName: 'waffles.jpg', rating: 4 },
+    { id: 2, name: 'Waffles', state: RecipeState.Active, mainImageName: 'waffles.jpg', rating: 4, tags: ['breakfast'] },
   ];
 
   const mockImages: string[] = ['pancakes.jpg', 'extra.jpg'];

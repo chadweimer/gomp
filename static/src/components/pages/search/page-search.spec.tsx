@@ -37,6 +37,7 @@ describe('page-search', () => {
       state: RecipeState.Active,
       rating: 4.5,
       mainImageName: 'pancakes.jpg',
+      tags: ['breakfast'],
     },
     {
       id: 2,
@@ -44,6 +45,7 @@ describe('page-search', () => {
       state: RecipeState.Active,
       rating: 4.0,
       mainImageName: '',
+      tags: ['breakfast'],
     },
   ];
 
@@ -187,6 +189,7 @@ describe('page-search', () => {
           state: RecipeState.Active,
           rating: 5,
           mainImageName: '',
+          tags: [],
         },
         {
           id: 2,
@@ -194,6 +197,7 @@ describe('page-search', () => {
           state: RecipeState.Archived,
           rating: 4,
           mainImageName: '',
+          tags: [],
         },
       ];
 

@@ -5,10 +5,17 @@
   overflow: visible;
 }
 
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+}
+
 .image {
   object-fit: cover;
   width: 100%;
-  height: 110px;
+  height: 100%;
 }
 
 .no-overflow {
@@ -17,6 +24,46 @@
 
 .title {
   font-size: 0.9rem;
+}
+
+.tags {
+  position: absolute;
+  bottom: var(--ion-padding, 8px);
+  left: var(--ion-padding, 8px);
+  right: var(--ion-padding, 8px);
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--ion-padding, 8px);
+  overflow: hidden;
+  z-index: 1;
+}
+
+.tags ion-badge {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.tags ion-badge.truncate-single {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tags .more-badge {
+  flex-shrink: 0;
+}
+
+.probe-badge {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  top: -9999px;
+  left: -9999px;
+}
+
+ion-card {
+  margin: var(--ion-margin, 8px);
 }
 
 ion-card-content.content {
@@ -30,5 +77,5 @@ ion-card-header.header {
 }
 
 ion-card-title.title {
-  font-size: 1rem;
+  font-size: 0.9rem;
 }

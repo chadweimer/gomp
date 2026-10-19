@@ -53,20 +53,20 @@ describe('recipe-viewer', () => {
     const heading = root.shadowRoot?.querySelector('ion-card-title');
     expect(heading).not.toBeNull();
     expect(heading).toEqualText(recipe.name);
-    let subtitle = root.shadowRoot?.querySelector('ion-card-subtitle');
+    let subtitle = root.shadowRoot?.querySelector('ion-card-subtitle.details');
     expect(subtitle).not.toHaveTextContent('Servings:');
     expect(subtitle).not.toHaveTextContent('Time:');
 
     // Serving Size
     await setProps({ recipe: { ...recipe, servingSize: 'serving size' } });
     await waitForChanges();
-    subtitle = root.shadowRoot?.querySelector('ion-card-subtitle');
+    subtitle = root.shadowRoot?.querySelector('ion-card-subtitle.details');
     expect(subtitle).toHaveTextContent('Servings: serving size');
 
     // Time
     await setProps({ recipe: { ...recipe, time: 'time' } });
     await waitForChanges();
-    subtitle = root.shadowRoot?.querySelector('ion-card-subtitle');
+    subtitle = root.shadowRoot?.querySelector('ion-card-subtitle.details');
     expect(subtitle).toHaveTextContent('Time: time');
 
     // Ingredients
@@ -123,12 +123,12 @@ describe('recipe-viewer', () => {
     expect(link).toEqualText(root.recipe!.sourceUrl);
 
     // Tags
-    let chips = root.shadowRoot?.querySelectorAll('ion-chip');
+    let chips = root.shadowRoot?.querySelectorAll('.tags ion-badge');
     expect(chips).toHaveLength(0);
     await setProps({ recipe: { ...recipe, tags: ['a', 'b'] } });
     await waitForChanges();
     expect(root.recipe).not.toBeNull();
-    chips = root.shadowRoot?.querySelectorAll('ion-chip');
+    chips = root.shadowRoot?.querySelectorAll('.tags ion-badge');
     expect(chips).toHaveLength(root.recipe!.tags.length);
   });
 
@@ -156,7 +156,7 @@ describe('recipe-viewer', () => {
         modifiedAt: modifiedAt.toISOString()
       };
       const { root } = await render(<recipe-viewer recipe={recipe}></recipe-viewer>);
-      const label = root.shadowRoot?.querySelector('ion-card-subtitle');
+      const label = root.shadowRoot?.querySelector('ion-card-subtitle.details');
       expect(label).not.toBeNull();
       if (modified) {
         expect(label).toHaveTextContent('Last Modified');
@@ -197,7 +197,8 @@ describe('recipe-viewer', () => {
         name: `recipe ${i}`,
         state: RecipeState.Active,
         mainImageName: `${i}.jpg`,
-        rating: 0
+        rating: 0,
+        tags: []
       });
     }
     const { root } = await render(<recipe-viewer links={links}></recipe-viewer>);

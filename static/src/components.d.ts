@@ -123,7 +123,7 @@ export namespace Components {
     }
     interface RecipeCard {
         /**
-          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     rating: 0,   }
+          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     rating: 0,     tags: []   }
          */
         "recipe": RecipeCompact;
     }
@@ -618,7 +618,7 @@ declare namespace LocalJSX {
     }
     interface RecipeCard {
         /**
-          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     rating: 0,   }
+          * @default {     name: '',     state: RecipeState.Active,     mainImageName: '',     rating: 0,     tags: []   }
          */
         "recipe"?: RecipeCompact;
     }

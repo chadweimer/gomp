@@ -63,11 +63,9 @@ func (d *sqlRecipeDriver) Read(ctx context.Context, id int64) (*models.Recipe, e
 			return nil, err
 		}
 
-		tags, err := listTagsForRecipe(ctx, id, q)
-		if err != nil {
+		if err := fillTagsForRecipes(ctx, d.Db, recipe); err != nil {
 			return nil, fmt.Errorf("reading tags for recipe: %w", err)
 		}
-		recipe.Tags = *tags
 
 		return recipe, nil
 	})
@@ -246,6 +244,14 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 
 	recipes := make([]models.RecipeCompact, 0)
 	if err = sqlx.SelectContext(ctx, d.Db, &recipes, selectStmt, selectArgs...); err != nil {
+		return nil, 0, err
+	}
+
+	recipePtrs := make([]*models.RecipeCompact, len(recipes))
+	for i := range recipes {
+		recipePtrs[i] = &recipes[i]
+	}
+	if err = fillTagsForRecipes(ctx, d.Db, recipePtrs...); err != nil {
 		return nil, 0, err
 	}
 

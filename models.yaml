@@ -216,6 +216,10 @@ components:
         state: active
         mainImageName: lemon-garlic-chicken.jpg
         rating: 4.5
+        tags:
+          - weeknight
+          - chicken
+          - high-protein
         createdAt: '2026-04-19T09:00:00Z'
         modifiedAt: '2026-04-20T18:15:00Z'
       type: object
@@ -224,6 +228,7 @@ components:
         - state
         - mainImageName
         - rating
+        - tags
       properties:
         id:
           type: integer
@@ -249,6 +254,13 @@ components:
           x-go-custom-tag: db:"rating"
           x-oapi-codegen-extra-tags:
             db: rating
+        tags:
+          type: array
+          items:
+            type: string
+          x-go-custom-tag: db:"tags"
+          x-oapi-codegen-extra-tags:
+            db: tags
         createdAt:
           type: string
           format: date-time

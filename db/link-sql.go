@@ -54,6 +54,14 @@ func (d *sqlLinkDriver) List(ctx context.Context, recipeID int64) (*[]models.Rec
 			return nil, err
 		}
 
+		recipePtrs := make([]*models.RecipeCompact, len(recipes))
+		for i := range recipes {
+			recipePtrs[i] = &recipes[i]
+		}
+		if err := fillTagsForRecipes(ctx, d.Db, recipePtrs...); err != nil {
+			return nil, err
+		}
+
 		return &recipes, nil
 	})
 }

@@ -15,6 +15,7 @@ describe('recipe-link-editor', () => {
       state: RecipeState.Active,
       rating: 5,
       mainImageName: 'carbonara.jpg',
+      tags: ['pasta'],
     },
     {
       id: 2,
@@ -22,6 +23,7 @@ describe('recipe-link-editor', () => {
       state: RecipeState.Active,
       rating: 4,
       mainImageName: '',
+      tags: ['main'],
     },
     {
       id: 3,
@@ -29,6 +31,7 @@ describe('recipe-link-editor', () => {
       state: RecipeState.Active,
       rating: 4.5,
       mainImageName: '',
+      tags: ['chicken'],
     },
   ];
 

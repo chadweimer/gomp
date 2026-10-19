@@ -54,3 +54,30 @@ func (q ImageQualityLevel) IsValid() bool {
 func (m BackupMetadata) IsValid() bool {
 	return strings.TrimSpace(m.Name) != "" && strings.TrimSpace(m.Version) != ""
 }
+
+// TaggableRecipe represents a recipe model that has an ID and tags
+type TaggableRecipe interface {
+	comparable
+	GetID() *int64
+	SetTags(tags []string)
+}
+
+// GetID returns the ID of the recipe
+func (r *Recipe) GetID() *int64 {
+	return r.ID
+}
+
+// SetTags sets the tags on the recipe
+func (r *Recipe) SetTags(tags []string) {
+	r.Tags = tags
+}
+
+// GetID returns the ID of the recipe
+func (r *RecipeCompact) GetID() *int64 {
+	return r.ID
+}
+
+// SetTags sets the tags on the recipe
+func (r *RecipeCompact) SetTags(tags []string) {
+	r.Tags = tags
+}
