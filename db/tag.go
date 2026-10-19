@@ -6,6 +6,7 @@ import (
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
+	"github.com/samber/lo"
 )
 
 type sqlTagDriver struct {
@@ -81,25 +82,18 @@ func deleteAllTagsFromRecipe(ctx context.Context, recipeID int64, db sqlx.Execer
 }
 
 func fillTagsForRecipes[T models.TaggableRecipe](ctx context.Context, db *sqlx.DB, recipes ...T) error {
-	if len(recipes) == 0 {
-		return nil
-	}
-
-	recipeIDs := make([]int64, 0, len(recipes))
-	for _, r := range recipes {
+	validRecipes := lo.Filter(recipes, func(r T, _ int) bool {
 		var zero T
-		if r == zero {
-			continue
-		}
-		r.SetTags(make([]string, 0))
-		if id := r.GetID(); id != nil {
-			recipeIDs = append(recipeIDs, *id)
-		}
-	}
-
-	if len(recipeIDs) == 0 {
+		return r != zero && r.GetID() != nil
+	})
+	if len(validRecipes) == 0 {
 		return nil
 	}
+
+	recipeIDs := lo.Map(validRecipes, func(r T, _ int) int64 {
+		r.SetTags(make([]string, 0))
+		return *r.GetID()
+	})
 
 	query, args, err := sqlx.In(
 		"SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN (?) ORDER BY recipe_id, tag ASC",
@@ -124,15 +118,9 @@ func fillTagsForRecipes[T models.TaggableRecipe](ctx context.Context, db *sqlx.D
 		tagsByRecipe[row.RecipeID] = append(tagsByRecipe[row.RecipeID], row.Tag)
 	}
 
-	for _, r := range recipes {
-		var zero T
-		if r == zero {
-			continue
-		}
-		if id := r.GetID(); id != nil {
-			if tags, ok := tagsByRecipe[*id]; ok {
-				r.SetTags(tags)
-			}
+	for _, r := range validRecipes {
+		if tags, ok := tagsByRecipe[*r.GetID()]; ok {
+			r.SetTags(tags)
 		}
 	}
 
