@@ -63,7 +63,7 @@ export class RecipeViewer {
           <ion-card-content>
             {!isNullOrEmpty(this.recipe?.ingredients) &&
               <Fragment>
-                <ion-list-header lines="full">
+                <ion-list-header class="section" lines="full">
                   <ion-label>Ingredients</ion-label>
                 </ion-list-header>
                 <ion-item lines="none">
@@ -73,7 +73,7 @@ export class RecipeViewer {
             }
             {!isNullOrEmpty(this.recipe?.directions) &&
               <Fragment>
-                <ion-list-header lines="full">
+                <ion-list-header class="section" lines="full">
                   <ion-label>Directions</ion-label>
                 </ion-list-header>
                 <ion-item lines="none">
@@ -83,7 +83,7 @@ export class RecipeViewer {
             }
             {!isNullOrEmpty(this.recipe?.storageInstructions) &&
               <Fragment>
-                <ion-list-header lines="full">
+                <ion-list-header class="section" lines="full">
                   <ion-label>Storage Instructions</ion-label>
                 </ion-list-header>
                 <ion-item lines="none">
@@ -93,7 +93,7 @@ export class RecipeViewer {
             }
             {!isNullOrEmpty(this.recipe?.nutritionInfo) &&
               <Fragment>
-                <ion-list-header lines="full">
+                <ion-list-header class="section" lines="full">
                   <ion-label>Nutrition</ion-label>
                 </ion-list-header>
                 <ion-item lines="none">
@@ -103,7 +103,7 @@ export class RecipeViewer {
             }
             {this.links?.length > 0 &&
               <ion-list class="links">
-                <ion-list-header lines="full">
+                <ion-list-header class="section" lines="full">
                   <ion-label>Related Recipes</ion-label>
                 </ion-list-header>
                 {this.links.map(link =>

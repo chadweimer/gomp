@@ -5,6 +5,10 @@
   contain: content;
 }
 
+ion-list-header.section {
+  color: var(--ion-text-color-step-300, #4d4d4d);
+}
+
 img.main {
   object-fit: cover;
   width: 100%;
