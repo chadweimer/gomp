@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/chadweimer/gomp/db"
@@ -12,7 +13,6 @@ import (
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
-	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
 
@@ -73,15 +73,8 @@ func Test_GetLinks(t *testing.T) {
 					if !ok {
 						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
-					if len(got) != len(expected) {
-						t.Errorf("expected length: %d, actual length: %d", len(expected), len(got))
-					}
-					missingLinks, unexpectedLinks := lo.Difference(got, expected)
-					if len(missingLinks) > 0 {
-						t.Errorf("missing links: %v", missingLinks)
-					}
-					if len(unexpectedLinks) > 0 {
-						t.Errorf("unexpected links: %v", unexpectedLinks)
+					if !reflect.DeepEqual(got, expected) {
+						t.Errorf("expected: %v, got: %v", expected, got)
 					}
 				case GetLinks404Response:
 					if _, ok := resp.(GetLinks404Response); !ok {

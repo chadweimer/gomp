@@ -8,6 +8,7 @@ import (
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
+	"github.com/samber/lo"
 )
 
 type sqlRecipeDriverAdapter interface {
@@ -63,11 +64,9 @@ func (d *sqlRecipeDriver) Read(ctx context.Context, id int64) (*models.Recipe, e
 			return nil, err
 		}
 
-		tags, err := listTagsForRecipe(ctx, id, q)
-		if err != nil {
+		if err := fillTagsForRecipes(ctx, d.Db, recipe); err != nil {
 			return nil, fmt.Errorf("reading tags for recipe: %w", err)
 		}
-		recipe.Tags = *tags
 
 		return recipe, nil
 	})
@@ -244,12 +243,20 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 	selectArgs := append(whereArgs, limitArgs...)
 	selectStmt := d.Db.Rebind(combinedStr)
 
-	recipes := make([]models.RecipeCompact, 0)
+	recipes := make([]*models.RecipeCompact, 0)
 	if err = sqlx.SelectContext(ctx, d.Db, &recipes, selectStmt, selectArgs...); err != nil {
 		return nil, 0, err
 	}
 
-	return &recipes, total, nil
+	if err = fillTagsForRecipes(ctx, d.Db, recipes...); err != nil {
+		return nil, 0, err
+	}
+
+	result := lo.Map(recipes, func(r *models.RecipeCompact, _ int) models.RecipeCompact {
+		return *r
+	})
+
+	return &result, total, nil
 }
 
 func getFieldsStmt(query string, fields []models.SearchField, adapter sqlRecipeDriverAdapter) (string, []any) {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"reflect"
+	"slices"
 	"testing"
 	"time"
 
@@ -169,7 +170,7 @@ func Test_Recipe_Read(t *testing.T) {
 				rows := sqlmock.NewRows([]string{"id", "name", "serving_size", "nutrition_info", "ingredients", "directions", "storage_instructions", "source_url", "recipe_time", "current_state", "main_image_name", "rating", "created_at", "modified_at"}).
 					AddRow(test.recipeID, fixture.Name, fixture.ServingSize, fixture.NutritionInfo, fixture.Ingredients, fixture.Directions, fixture.StorageInstructions, fixture.SourceURL, fixture.Time, models.Active, fixture.MainImageName, fixture.Rating, time.Now(), time.Now())
 				query.WillReturnRows(rows)
-				dbmock.ExpectQuery("SELECT tag FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipeID).WillReturnRows(&sqlmock.Rows{})
+				dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(\\?\\) ORDER BY recipe_id, tag ASC").WithArgs(test.recipeID).WillReturnRows(&sqlmock.Rows{})
 			} else {
 				query.WillReturnError(test.dbError)
 			}
@@ -793,11 +794,17 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "rating", "main_image_name"}).
 						AddRow(1, "Recipe1", models.Active, time.Now(), time.Now(), 4.5, "url1").
 						AddRow(2, "Recipe2", models.Active, time.Now(), time.Now(), 3.0, "url2"))
+				// Tags query
+				dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(\\?, \\?\\) ORDER BY recipe_id, tag ASC").
+					WithArgs(int64(1), int64(2)).
+					WillReturnRows(sqlmock.NewRows([]string{"recipe_id", "tag"}).
+						AddRow(1, "tag1").
+						AddRow(1, "tag2"))
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: new(int64(1)), Name: "Recipe1", State: models.Active, Rating: new(float32(4.5)), MainImageName: "url1"},
-				{ID: new(int64(2)), Name: "Recipe2", State: models.Active, Rating: new(float32(3.0)), MainImageName: "url2"},
+				{ID: new(int64(1)), Name: "Recipe1", State: models.Active, Rating: new(float32(4.5)), MainImageName: "url1", Tags: []string{"tag1", "tag2"}},
+				{ID: new(int64(2)), Name: "Recipe2", State: models.Active, Rating: new(float32(3.0)), MainImageName: "url2", Tags: []string{}},
 			},
 			expectedTotal: 2,
 		},
@@ -817,10 +824,14 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 					WithArgs(models.Active, models.Archived, 1, 0).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "rating", "main_image_name"}).
 						AddRow(3, "Recipe3", models.Archived, time.Now(), time.Now(), 2.0, "url3"))
+				// Tags query
+				dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(\\?\\) ORDER BY recipe_id, tag ASC").
+					WithArgs(int64(3)).
+					WillReturnRows(sqlmock.NewRows([]string{"recipe_id", "tag"}))
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: new(int64(3)), Name: "Recipe3", State: models.Archived, Rating: new(float32(2.0)), MainImageName: "url3"},
+				{ID: new(int64(3)), Name: "Recipe3", State: models.Archived, Rating: new(float32(2.0)), MainImageName: "url3", Tags: []string{}},
 			},
 			expectedTotal: 1,
 		},
@@ -840,10 +851,16 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 					WithArgs("tag1", "tag2", 1, 0).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "rating", "main_image_name"}).
 						AddRow(4, "Recipe4", models.Active, time.Now(), time.Now(), 5.0, "url4"))
+				// Tags query
+				dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(\\?\\) ORDER BY recipe_id, tag ASC").
+					WithArgs(int64(4)).
+					WillReturnRows(sqlmock.NewRows([]string{"recipe_id", "tag"}).
+						AddRow(4, "tag1").
+						AddRow(4, "tag2"))
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: new(int64(4)), Name: "Recipe4", State: models.Active, Rating: new(float32(5.0)), MainImageName: "url4"},
+				{ID: new(int64(4)), Name: "Recipe4", State: models.Active, Rating: new(float32(5.0)), MainImageName: "url4", Tags: []string{"tag1", "tag2"}},
 			},
 			expectedTotal: 1,
 		},
@@ -861,10 +878,14 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 					WithArgs(1, 0).
 					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "rating", "main_image_name"}).
 						AddRow(5, "Recipe5", models.Active, time.Now(), time.Now(), 1.0, "url5"))
+				// Tags query
+				dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(\\?\\) ORDER BY recipe_id, tag ASC").
+					WithArgs(int64(5)).
+					WillReturnRows(sqlmock.NewRows([]string{"recipe_id", "tag"}))
 			},
 			expectedErr: nil,
 			expectedResult: &[]models.RecipeCompact{
-				{ID: new(int64(5)), Name: "Recipe5", State: models.Active, Rating: new(float32(1.0)), MainImageName: "url5"},
+				{ID: new(int64(5)), Name: "Recipe5", State: models.Active, Rating: new(float32(1.0)), MainImageName: "url5", Tags: []string{}},
 			},
 			expectedTotal: 1,
 		},
@@ -895,6 +916,28 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL ORDER BY r\\.name LIMIT \\? OFFSET \\?").
 					WithArgs(1, 0).
+					WillReturnError(sql.ErrConnDone)
+			},
+			expectedErr:    sql.ErrConnDone,
+			expectedResult: nil,
+			expectedTotal:  0,
+		},
+		{
+			name: "Find returns error on fillTags",
+			args: args{
+				filter: &models.SearchFilter{},
+				page:   1,
+				count:  1,
+			},
+			setupMock: func(dbmock sqlmock.Sqlmock) {
+				dbmock.ExpectQuery("SELECT count\\(r\\.id\\) FROM recipe AS r WHERE r\\.current_state IS NOT NULL").
+					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
+				dbmock.ExpectQuery("SELECT r\\.id, r\\.name, r\\.current_state, r\\.created_at, r\\.modified_at, COALESCE\\(g\\.rating, 0\\) AS rating, r\\.main_image_name FROM recipe AS r LEFT OUTER JOIN recipe_rating as g ON r\\.id = g\\.recipe_id WHERE r\\.current_state IS NOT NULL ORDER BY r\\.name LIMIT \\? OFFSET \\?").
+					WithArgs(1, 0).
+					WillReturnRows(sqlmock.NewRows([]string{"id", "name", "current_state", "created_at", "modified_at", "rating", "main_image_name"}).
+						AddRow(6, "Recipe6", models.Active, time.Now(), time.Now(), 1.0, "url6"))
+				dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(\\?\\) ORDER BY recipe_id, tag ASC").
+					WithArgs(int64(6)).
 					WillReturnError(sql.ErrConnDone)
 			},
 			expectedErr:    sql.ErrConnDone,
@@ -940,6 +983,9 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 					}
 					if gotItem.MainImageName != wantItem.MainImageName {
 						t.Errorf("result at index %d: MainImageName mismatch: got %v, want %v", i, gotItem.MainImageName, wantItem.MainImageName)
+					}
+					if !slices.Equal(gotItem.Tags, wantItem.Tags) {
+						t.Errorf("result at index %d: Tags mismatch: got %v, want %v", i, gotItem.Tags, wantItem.Tags)
 					}
 				}
 			}

@@ -31,7 +31,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
             <ion-row>
               {this.filters?.map(filter =>
                 <ion-col key={filter.id} size="12" size-md="6" size-lg="4" size-xl="3">
-                  <ion-card class="zoom">
+                  <ion-card>
                     <ion-card-header>
                       <ion-card-title>{filter.name}</ion-card-title>
                     </ion-card-header>
@@ -54,7 +54,7 @@ export class PageSettingsSearches implements ComponentWithActivatedCallback {
           </ion-grid>
 
           <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-            <ion-fab-button color="success" onClick={() => this.onAddFilterClicked()}>
+            <ion-fab-button color="secondary" onClick={() => this.onAddFilterClicked()}>
               <ion-icon icon="add" />
             </ion-fab-button>
           </ion-fab>

@@ -236,66 +236,127 @@ func Test_deleteAllTagsFromRecipe(t *testing.T) {
 	}
 }
 
-func Test_listTagsForRecipe(t *testing.T) {
-	type testArgs struct {
-		recipeID       int64
-		expectedResult []string
-		dbError        error
-		expectedError  error
-	}
+func Test_fillTagsForRecipes(t *testing.T) {
+	t.Run("empty recipes slice", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
 
-	// Arrange
-	tests := []testArgs{
-		{1, []string{"weeknight", "high-protein"}, nil, nil},
-		{0, nil, sql.ErrConnDone, sql.ErrConnDone},
-	}
-	for i, test := range tests {
-		t.Run(fmt.Sprint(i), func(t *testing.T) {
-			// Arrange
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+		err := fillTagsForRecipes[*models.Recipe](t.Context(), sut.Db)
+		if err != nil {
+			t.Errorf("expected nil error, got: %v", err)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
 
-			sut, dbmock := getMockDb(t, nil)
-			defer sut.Close()
+	t.Run("recipes with nil IDs", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
 
-			query := dbmock.ExpectQuery("SELECT tag FROM recipe_tag WHERE recipe_id = \\$1").WithArgs(test.recipeID)
-			if test.dbError == nil {
-				rows := sqlmock.NewRows([]string{"tag"})
-				for _, tag := range test.expectedResult {
-					rows.AddRow(tag)
-				}
-				query.WillReturnRows(rows)
-			} else {
-				query.WillReturnError(test.dbError)
-			}
+		recipe := &models.Recipe{}
+		err := fillTagsForRecipes(t.Context(), sut.Db, recipe)
+		if err != nil {
+			t.Errorf("expected nil error, got: %v", err)
+		}
+		if recipe.Tags == nil || len(recipe.Tags) != 0 {
+			t.Errorf("expected empty tags slice, got: %v", recipe.Tags)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
 
-			// Act
-			result, err := listTagsForRecipe(t.Context(), test.recipeID, sut.Db)
+	t.Run("single Recipe with tags", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
 
-			// Assert
-			if !errors.Is(err, test.expectedError) {
-				t.Errorf("expected error: %v, received error: %v", test.expectedError, err)
-			}
-			if err := dbmock.ExpectationsWereMet(); err != nil {
-				t.Errorf("there were unfulfilled expectations: %s", err)
-			}
-			if test.expectedResult == nil {
-				if result != nil {
-					t.Errorf("did not expect results, but received %v", result)
-				}
-			} else {
-				if result == nil {
-					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
-				} else if len(test.expectedResult) != len(*result) {
-					t.Errorf("expected %d results, received %d results", len(test.expectedResult), len(*result))
-				} else {
-					for i, tag := range test.expectedResult {
-						if tag != (*result)[i] {
-							t.Errorf("tags don't match, expected: %s, received: %s", tag, (*result)[i])
-						}
-					}
-				}
-			}
-		})
-	}
+		recipe := &models.Recipe{ID: new(int64(1))}
+		rows := sqlmock.NewRows([]string{"recipe_id", "tag"}).
+			AddRow(1, "chicken").
+			AddRow(1, "dinner")
+		dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(\\?\\) ORDER BY recipe_id, tag ASC").
+			WithArgs(int64(1)).
+			WillReturnRows(rows)
+
+		err := fillTagsForRecipes(t.Context(), sut.Db, recipe)
+		if err != nil {
+			t.Errorf("expected nil error, got: %v", err)
+		}
+		if len(recipe.Tags) != 2 || recipe.Tags[0] != "chicken" || recipe.Tags[1] != "dinner" {
+			t.Errorf("unexpected tags: %v", recipe.Tags)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
+
+	t.Run("single Recipe without tags", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		recipe := &models.Recipe{ID: new(int64(1))}
+		rows := sqlmock.NewRows([]string{"recipe_id", "tag"})
+		dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(\\?\\) ORDER BY recipe_id, tag ASC").
+			WithArgs(int64(1)).
+			WillReturnRows(rows)
+
+		err := fillTagsForRecipes(t.Context(), sut.Db, recipe)
+		if err != nil {
+			t.Errorf("expected nil error, got: %v", err)
+		}
+		if recipe.Tags == nil || len(recipe.Tags) != 0 {
+			t.Errorf("expected empty tags slice, got: %v", recipe.Tags)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
+
+	t.Run("multiple RecipeCompact mixed tags", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		r1 := &models.RecipeCompact{ID: new(int64(1))}
+		r2 := &models.RecipeCompact{ID: new(int64(2))}
+		rows := sqlmock.NewRows([]string{"recipe_id", "tag"}).
+			AddRow(1, "tag1").
+			AddRow(1, "tag2")
+		dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(\\?, \\?\\) ORDER BY recipe_id, tag ASC").
+			WithArgs(int64(1), int64(2)).
+			WillReturnRows(rows)
+
+		err := fillTagsForRecipes(t.Context(), sut.Db, r1, r2)
+		if err != nil {
+			t.Errorf("expected nil error, got: %v", err)
+		}
+		if len(r1.Tags) != 2 || r1.Tags[0] != "tag1" || r1.Tags[1] != "tag2" {
+			t.Errorf("unexpected r1 tags: %v", r1.Tags)
+		}
+		if len(r2.Tags) != 0 {
+			t.Errorf("expected empty r2 tags, got: %v", r2.Tags)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
+
+	t.Run("db error", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		recipe := &models.Recipe{ID: new(int64(1))}
+		dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(\\?\\) ORDER BY recipe_id, tag ASC").
+			WithArgs(int64(1)).
+			WillReturnError(sql.ErrConnDone)
+
+		err := fillTagsForRecipes(t.Context(), sut.Db, recipe)
+		if !errors.Is(err, sql.ErrConnDone) {
+			t.Errorf("expected sql.ErrConnDone, got: %v", err)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
 }
+

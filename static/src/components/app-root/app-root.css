@@ -16,8 +16,8 @@ ion-searchbar.end {
   pointer-events: auto;
 }
 
-.child-links {
-  margin-left: 16px;
+.child-link ion-icon {
+  margin-inline-start: 16px;
 }
 
 .copyright {

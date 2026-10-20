@@ -174,8 +174,8 @@
   right: var(--ion-padding, 8px);
 }
 
-.opacity-75 {
-  opacity: 0.75;
+.translucent {
+  opacity: 0.7;
 }
 
 .send-to-back {
@@ -202,7 +202,7 @@
 
 .zoom.ion-activated,
 .zoom:hover {
-  transform: scale(1.04);
+  transform: scale(1.03);
   z-index: 1;
 }
 

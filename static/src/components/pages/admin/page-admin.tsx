@@ -52,7 +52,7 @@ export class PageAdmin {
   render() {
     return (
       <Host>
-        <ion-tabs ref={(el: HTMLIonTabsElement) => this.tabs = el}
+        <ion-tabs ref={el => this.tabs = el!}
           onIonTabsDidChange={() => sendActivatedCallback(this.tabs)}>
           <ion-tab tab="tab-admin-configuration" component="page-admin-configuration" />
           <ion-tab tab="tab-admin-users" component="page-admin-users" />

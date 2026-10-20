@@ -115,7 +115,7 @@ export async function refreshSearchResults() {
     }
   }
 
-  // Also populate total recipe count
+  // Also populate total recipe and tag counts
   try {
     const { data: results, error } = await api.client.GET('/recipes', { params: { query: { count: 0, } } });
 
@@ -127,6 +127,19 @@ export async function refreshSearchResults() {
   } catch (ex) {
     console.error(ex);
     state.totalRecipeCount = undefined;
+  }
+
+  try {
+    const { data: tagResults, error: tagError } = await api.client.GET('/tags', { params: { query: { count: 0 } } });
+
+    if (tagError) {
+      throw new Error('Failed to fetch total tags count.', { cause: tagError });
+    }
+
+    state.totalTagsCount = tagResults.total;
+  } catch (ex) {
+    console.error(ex);
+    state.totalTagsCount = undefined;
   }
 }
 

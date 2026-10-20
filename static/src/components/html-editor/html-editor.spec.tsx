@@ -221,8 +221,8 @@ describe('html-editor', () => {
 
     const img = root.shadowRoot?.querySelector('.editor-content img') as HTMLImageElement;
     expect(img).not.toBeNull();
-    expect(img.getAttribute('data-image')).toBe(mockImages[0].name);
-    expect(img.getAttribute('data-height')).toBe('250px');
+    expect(img.dataset.image).toBe(mockImages[0].name);
+    expect(img.dataset.height).toBe('250px');
     expect(img.style.height).toBe('250px');
   });
 

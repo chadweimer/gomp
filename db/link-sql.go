@@ -5,6 +5,7 @@ import (
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
+	"github.com/samber/lo"
 )
 
 type sqlLinkDriver struct {
@@ -40,7 +41,7 @@ func (*sqlLinkDriver) deleteImpl(ctx context.Context, recipeID, destRecipeID int
 
 func (d *sqlLinkDriver) List(ctx context.Context, recipeID int64) (*[]models.RecipeCompact, error) {
 	return get(d.Db, func(db sqlx.QueryerContext) (*[]models.RecipeCompact, error) {
-		recipes := make([]models.RecipeCompact, 0)
+		recipes := make([]*models.RecipeCompact, 0)
 
 		selectStmt := "SELECT " +
 			"r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS rating, r.main_image_name " +
@@ -54,6 +55,14 @@ func (d *sqlLinkDriver) List(ctx context.Context, recipeID int64) (*[]models.Rec
 			return nil, err
 		}
 
-		return &recipes, nil
+		if err := fillTagsForRecipes(ctx, d.Db, recipes...); err != nil {
+			return nil, err
+		}
+
+		result := lo.Map(recipes, func(r *models.RecipeCompact, _ int) models.RecipeCompact {
+			return *r
+		})
+
+		return &result, nil
 	})
 }

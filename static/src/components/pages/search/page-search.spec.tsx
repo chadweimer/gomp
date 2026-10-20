@@ -37,6 +37,7 @@ describe('page-search', () => {
       state: RecipeState.Active,
       rating: 4.5,
       mainImageName: 'pancakes.jpg',
+      tags: ['breakfast'],
     },
     {
       id: 2,
@@ -44,6 +45,7 @@ describe('page-search', () => {
       state: RecipeState.Active,
       rating: 4.0,
       mainImageName: '',
+      tags: ['breakfast'],
     },
   ];
 
@@ -142,7 +144,6 @@ describe('page-search', () => {
       const cards = root.querySelectorAll('recipe-card');
       expect(cards).toHaveLength(2);
       expect((cards[0] as unknown as { recipe: RecipeCompact }).recipe).toEqual(mockRecipes[0]);
-      expect(cards[0]).toEqualAttribute('size', 'small');
       expect((cards[1] as unknown as { recipe: RecipeCompact }).recipe).toEqual(mockRecipes[1]);
 
       const items = root.querySelectorAll('ion-item');
@@ -163,6 +164,7 @@ describe('page-search', () => {
 
       // First item has mainImageName -> renders img
       expect(items[0]).toEqualAttribute('href', '/recipes/1');
+      expect(items[0]).toEqualAttribute('title', 'Pancakes');
       const img1 = items[0].querySelector('img');
       expect(img1).not.toBeNull();
       expect(img1).toEqualAttribute('src', '/uploads/recipes/1/thumbs/pancakes.jpg');
@@ -171,10 +173,49 @@ describe('page-search', () => {
 
       // Second item has no mainImageName -> no img
       expect(items[1]).toEqualAttribute('href', '/recipes/2');
+      expect(items[1]).toEqualAttribute('title', 'Waffles');
       const img2 = items[1].querySelector('img');
       expect(img2).toBeNull();
       const label2 = items[1].querySelector('ion-label');
       expect(label2).toEqualText('Waffles');
+    });
+
+    it('renders archived badge for archived recipes in List view mode', async () => {
+      state.searchSettings = { ...state.searchSettings, viewMode: SearchViewMode.List };
+      state.searchResults = [
+        {
+          id: 1,
+          name: 'Active Recipe',
+          state: RecipeState.Active,
+          rating: 5,
+          mainImageName: '',
+          tags: [],
+        },
+        {
+          id: 2,
+          name: 'Archived Recipe',
+          state: RecipeState.Archived,
+          rating: 4,
+          mainImageName: '',
+          tags: [],
+        },
+      ];
+
+      const { root } = await render(<page-search />);
+
+      const items = root.querySelectorAll('ion-item');
+      expect(items).toHaveLength(2);
+
+      // Active recipe: no archived badge
+      const activeBadge = items[0].querySelector('ion-badge');
+      expect(activeBadge).toBeNull();
+
+      // Archived recipe: archived badge is rendered with proper attributes and text
+      const archivedBadge = items[1].querySelector('ion-badge');
+      expect(archivedBadge).not.toBeNull();
+      expect(archivedBadge).toEqualAttribute('color', 'medium');
+      expect(archivedBadge).toEqualAttribute('slot', 'end');
+      expect(archivedBadge).toEqualText('Archived');
     });
 
     it('handles empty and null search results safely', async () => {

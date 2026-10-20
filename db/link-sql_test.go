@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -112,6 +113,7 @@ func Test_Link_List(t *testing.T) {
 		recipeID       int64
 		expectedResult []models.RecipeCompact
 		dbError        error
+		tagError       error
 		expectedError  error
 	}
 
@@ -127,6 +129,7 @@ func Test_Link_List(t *testing.T) {
 				ModifiedAt:    &now,
 				Rating:        new(float32(2.5)),
 				MainImageName: "",
+				Tags:          []string{"linked-tag"},
 			},
 			{
 				ID:            new(int64(2)),
@@ -136,10 +139,17 @@ func Test_Link_List(t *testing.T) {
 				ModifiedAt:    &now,
 				Rating:        new(float32(4)),
 				MainImageName: "",
+				Tags:          []string{},
 			},
-		}, nil, nil},
-		{0, nil, sql.ErrNoRows, ErrNotFound},
-		{0, nil, sql.ErrConnDone, sql.ErrConnDone},
+		}, nil, nil, nil},
+		{0, nil, sql.ErrNoRows, nil, ErrNotFound},
+		{0, nil, sql.ErrConnDone, nil, sql.ErrConnDone},
+		{1, []models.RecipeCompact{
+			{
+				ID:   new(int64(1)),
+				Name: "My Linked Recipe",
+			},
+		}, nil, sql.ErrConnDone, sql.ErrConnDone},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -157,6 +167,21 @@ func Test_Link_List(t *testing.T) {
 					rows.AddRow(recipe.ID, recipe.Name, recipe.State, recipe.CreatedAt, recipe.ModifiedAt, recipe.Rating, recipe.MainImageName)
 				}
 				query.WillReturnRows(rows)
+
+				if len(test.expectedResult) > 0 {
+					tagQuery := dbmock.ExpectQuery("SELECT recipe_id, tag FROM recipe_tag WHERE recipe_id IN \\(.*\\) ORDER BY recipe_id, tag ASC")
+					if test.tagError == nil {
+						tagRows := sqlmock.NewRows([]string{"recipe_id", "tag"})
+						for _, r := range test.expectedResult {
+							for _, tag := range r.Tags {
+								tagRows.AddRow(*r.ID, tag)
+							}
+						}
+						tagQuery.WillReturnRows(tagRows)
+					} else {
+						tagQuery.WillReturnError(test.tagError)
+					}
+				}
 			} else {
 				query.WillReturnError(test.dbError)
 			}
@@ -171,21 +196,26 @@ func Test_Link_List(t *testing.T) {
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("there were unfulfilled expectations: %s", err)
 			}
-			if test.expectedResult == nil {
+			if test.expectedError != nil {
 				if result != nil {
-					t.Errorf("did not expect results, but received %v", result)
+					t.Errorf("did not expect results on error, but received %v", result)
 				}
-			} else {
-				if result == nil {
-					t.Errorf("expected results %v, but did not receive any", test.expectedResult)
-				} else if len(test.expectedResult) != len(*result) {
-					t.Errorf("expected %d results, received %d results", len(test.expectedResult), len(*result))
-				} else {
-					for i, recipe := range test.expectedResult {
-						if recipe.Name != (*result)[i].Name {
-							t.Errorf("names don't match, expected: %s, received: %s", recipe.Name, (*result)[i].Name)
-						}
-					}
+				return
+			}
+			if result == nil {
+				t.Errorf("expected results %v, but did not receive any", test.expectedResult)
+				return
+			}
+			if len(test.expectedResult) != len(*result) {
+				t.Errorf("expected %d results, received %d results", len(test.expectedResult), len(*result))
+				return
+			}
+			for i, recipe := range test.expectedResult {
+				if recipe.Name != (*result)[i].Name {
+					t.Errorf("names don't match, expected: %s, received: %s", recipe.Name, (*result)[i].Name)
+				}
+				if !slices.Equal(recipe.Tags, (*result)[i].Tags) {
+					t.Errorf("tags content mismatch, expected: %v, received: %v", recipe.Tags, (*result)[i].Tags)
 				}
 			}
 		})

@@ -26,7 +26,7 @@ describe('page-recipe', () => {
   };
 
   const mockLinks: RecipeCompact[] = [
-    { id: 2, name: 'Waffles', state: RecipeState.Active, mainImageName: 'waffles.jpg', rating: 4 },
+    { id: 2, name: 'Waffles', state: RecipeState.Active, mainImageName: 'waffles.jpg', rating: 4, tags: ['breakfast'] },
   ];
 
   const mockImages: string[] = ['pancakes.jpg', 'extra.jpg'];
@@ -176,7 +176,7 @@ describe('page-recipe', () => {
       expect(recipeViewer?.recipe).toEqual(mockRecipe);
       expect(recipeViewer?.links).toEqual(mockLinks);
 
-      const pictureCards = root.querySelectorAll('ion-card.zoom');
+      const pictureCards = root.querySelectorAll('ion-card.image');
       expect(pictureCards).toHaveLength(mockImages.length);
 
       const firstThumb = pictureCards[0].querySelector('img');
@@ -210,7 +210,7 @@ describe('page-recipe', () => {
       expect(recipeViewer?.recipe).toBeFalsy();
       expect(recipeViewer?.links?.length ?? 0).toBe(0);
 
-      const pictureCards = root?.querySelectorAll('ion-card.zoom');
+      const pictureCards = root?.querySelectorAll('ion-card.image');
       expect(pictureCards).toHaveLength(0);
 
       const noteCards = root?.querySelectorAll<HTMLNoteCardElement>('note-card');
@@ -258,7 +258,7 @@ describe('page-recipe', () => {
       expect(footerTexts).not.toContain('Edit');
       expect(footerTexts).not.toContain('Add Note');
 
-      const pictureButtons = root.querySelectorAll('ion-card.zoom ion-button');
+      const pictureButtons = root.querySelectorAll('ion-card.image ion-button');
       expect(pictureButtons).toHaveLength(0);
     });
 
@@ -282,7 +282,7 @@ describe('page-recipe', () => {
       expect(getBottomToolbarItem(root, 'Delete')).toBeDefined();
       expect(getBottomToolbarItem(root, 'Print')).toBeDefined();
 
-      const pictureButtons = root.querySelectorAll('ion-card.zoom ion-button');
+      const pictureButtons = root.querySelectorAll('ion-card.image ion-button');
       expect(pictureButtons.length).toBeGreaterThan(0);
     });
 
@@ -1039,7 +1039,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      const starBtn = root.querySelector<HTMLIonButtonElement>('ion-card.zoom ion-button:not([color="danger"])');
+      const starBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button:not([color="danger"])');
       expect(starBtn).toBeDefined();
       starBtn?.click();
       await waitForChanges();
@@ -1065,8 +1065,8 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      const starBtn = root.querySelector<HTMLIonButtonElement>('ion-card.zoom ion-button:not([color="danger"])');
-      starBtn?.click();
+      const setAsMainBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button:not([color="danger"])');
+      setAsMainBtn?.click();
       await waitForChanges();
 
       const patchReq = requests.find(r => r.url.match(/\/recipes\/1$/) && r.method === 'PATCH');
@@ -1086,8 +1086,8 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      const starBtn = root.querySelector<HTMLIonButtonElement>('ion-card.zoom ion-button:not([color="danger"])');
-      starBtn?.click();
+      const setAsMainBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button:not([color="danger"])');
+      setAsMainBtn?.click();
       await waitForChanges();
 
       expect(createToastSpy).toHaveBeenCalledWith(
@@ -1109,7 +1109,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      const deleteImgBtn = root.querySelector<HTMLIonButtonElement>('ion-card.zoom ion-button[color="danger"]');
+      const deleteImgBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button[color="danger"]');
       expect(deleteImgBtn).toBeDefined();
       deleteImgBtn?.click();
       await waitForChanges();
@@ -1133,7 +1133,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      const deleteImgBtn = root.querySelector<HTMLIonButtonElement>('ion-card.zoom ion-button[color="danger"]');
+      const deleteImgBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button[color="danger"]');
       deleteImgBtn?.click();
       await waitForChanges();
 
@@ -1154,7 +1154,7 @@ describe('page-recipe', () => {
 
       const { root, waitForChanges } = await render(<page-recipe recipeId={1} />);
 
-      const deleteImgBtn = root.querySelector<HTMLIonButtonElement>('ion-card.zoom ion-button[color="danger"]');
+      const deleteImgBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button[color="danger"]');
       deleteImgBtn?.click();
       await waitForChanges();
 

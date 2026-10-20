@@ -6,5 +6,7 @@
 }
 
 ion-card-title.title {
+  display: flex;
+  align-items: center;
   font-size: 1rem;
 }

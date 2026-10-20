@@ -1,5 +1,5 @@
 import { render, h, describe, it, expect, beforeEach, afterEach, vi } from '@stencil/vitest';
-import { actionSheetController, alertController, loadingController, modalController, toastController } from '@ionic/core';
+import { alertController, loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { Backup } from '../../../helpers/schema.gen';
 import { clearState } from '../../../stores/state';
@@ -43,13 +43,6 @@ describe('page-admin-maintenance', () => {
     } as unknown as HTMLIonAlertElement;
   }
 
-  function mockActionSheet(role = 'cancel'): HTMLIonActionSheetElement {
-    return {
-      present: vi.fn().mockResolvedValue(undefined),
-      onDidDismiss: vi.fn().mockResolvedValue({ role }),
-    } as unknown as HTMLIonActionSheetElement;
-  }
-
   function mockToast(): HTMLIonToastElement {
     return {
       present: vi.fn().mockResolvedValue(undefined),
@@ -88,6 +81,9 @@ describe('page-admin-maintenance', () => {
     const items = root.querySelectorAll('ion-item');
     expect(items).toHaveLength(0);
 
+    const slidingItems = root.querySelectorAll('ion-item-sliding');
+    expect(slidingItems).toHaveLength(0);
+
     const buttons = root.querySelectorAll('ion-card > ion-button');
     expect(buttons).toHaveLength(2);
     expect(buttons[0]).toEqualText('Backup Now');
@@ -106,20 +102,33 @@ describe('page-admin-maintenance', () => {
     await root.activatedCallback();
     await waitForChanges();
 
+    const slidingItems = root.querySelectorAll('ion-item-sliding');
+    expect(slidingItems).toHaveLength(2);
+
     const items = root.querySelectorAll('ion-item');
     expect(items).toHaveLength(2);
 
-    const firstItemTitle = items[0].querySelector('h2');
-    expect(firstItemTitle).toEqualText('AutoBackup-1');
+    const firstLabel = items[0].querySelector('ion-label');
+    expect(firstLabel).toHaveTextContent('AutoBackup-1');
+    expect(firstLabel?.querySelector('ion-note')).toEqualText('Version: 1.0');
+    expect(items[0].querySelector('ion-note[slot="end"]')).toEqualText('Size: 2.00 MiB');
 
-    const firstItemDetails = items[0].querySelectorAll('p');
-    expect(firstItemDetails[0]).toEqualText('Version: 1.0');
-    expect(firstItemDetails[1]).toEqualText('Size: 2.00 MiB');
+    const secondLabel = items[1].querySelector('ion-label');
+    expect(secondLabel).toHaveTextContent('AutoBackup-2');
+    expect(secondLabel?.querySelector('ion-note')).toEqualText('Version: 1.0');
+    expect(items[1].querySelector('ion-note[slot="end"]')).toEqualText('Size: 1.00 MiB');
 
-    const secondItemTitle = items[1].querySelector('h2');
-    expect(secondItemTitle).toEqualText('AutoBackup-2');
-    const secondItemDetails = items[1].querySelectorAll('p');
-    expect(secondItemDetails[1]).toEqualText('Size: 1.00 MiB');
+    const firstOptionsStart = slidingItems[0].querySelector('ion-item-options[side="start"]');
+    expect(firstOptionsStart).not.toBeNull();
+    const firstDeleteOption = firstOptionsStart?.querySelector('ion-item-option[color="danger"]');
+    expect(firstDeleteOption).toHaveTextContent('Delete');
+
+    const firstOptionsEnd = slidingItems[0].querySelector('ion-item-options[side="end"]');
+    expect(firstOptionsEnd).not.toBeNull();
+    const firstDownloadOption = firstOptionsEnd?.querySelector('ion-item-option[color="medium"]');
+    expect(firstDownloadOption).toHaveTextContent('Download');
+    const firstRestoreOption = firstOptionsEnd?.querySelector('ion-item-option[color="secondary"]');
+    expect(firstRestoreOption).toHaveTextContent('Restore');
   });
 
   it('handles GET backups failure gracefully', async () => {
@@ -260,9 +269,45 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      // Find Delete button on first item (color="danger")
-      const deleteBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button[color="danger"]');
-      deleteBtn?.click();
+      const deleteOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
+      deleteOption?.click();
+      await waitForChanges();
+
+      expect(createAlertSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ header: 'Delete Backup?' })
+      );
+      expect(createLoadingSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Deleting backup...' })
+      );
+
+      const deleteReq = requests.find(r => r.url.match(/\/backups\/backup-2026-09-01\.zip$/) && r.method === 'DELETE');
+      expect(deleteReq).toBeDefined();
+    });
+
+    it('deletes backup when start options are swiped', async () => {
+      const alert = mockAlert('confirm');
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
+      const loading = mockLoading();
+      const createLoadingSpy = vi.spyOn(loadingController, 'create').mockResolvedValue(loading);
+
+      const requests: Request[] = [];
+      fetchMocker.mockResponse((req: Request) => {
+        requests.push(req);
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockBackups) };
+        }
+        if (req.url.match(/\/backups\/backup-2026-09-01\.zip$/) && req.method === 'DELETE') {
+          return { status: 200, body: '' };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const { root, waitForChanges } = await render<HTMLPageAdminMaintenanceElement>(<page-admin-maintenance />);
+      await root.activatedCallback();
+      await waitForChanges();
+
+      const startOptions = root.querySelector<HTMLIonItemOptionsElement>('ion-item-options[side="start"]');
+      startOptions?.dispatchEvent(new CustomEvent('ionSwipe'));
       await waitForChanges();
 
       expect(createAlertSpy).toHaveBeenCalledWith(
@@ -293,8 +338,8 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const deleteBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button[color="danger"]');
-      deleteBtn?.click();
+      const deleteOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
+      deleteOption?.click();
       await waitForChanges();
 
       const deleteRequests = requests.filter(r => r.method === 'DELETE');
@@ -322,8 +367,8 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const deleteBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button[color="danger"]');
-      deleteBtn?.click();
+      const deleteOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
+      deleteOption?.click();
       await waitForChanges();
 
       expect(createToastSpy).toHaveBeenCalledWith(
@@ -356,10 +401,8 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      // Find Restore button on first item
-      const restoreButtons = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-item ion-button'));
-      const restoreBtn = restoreButtons.find(b => b.textContent?.includes('Restore'));
-      restoreBtn?.click();
+      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
+      restoreOption?.click();
       await waitForChanges();
 
       expect(createAlertSpy).toHaveBeenCalledWith(
@@ -390,9 +433,8 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const restoreButtons = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-item ion-button'));
-      const restoreBtn = restoreButtons.find(b => b.textContent?.includes('Restore'));
-      restoreBtn?.click();
+      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="tertiary"]');
+      restoreOption?.click();
       await waitForChanges();
 
       const restoreRequests = requests.filter(r => r.method === 'POST' && r.url.match(/\/backups\/.+$/));
@@ -420,9 +462,8 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await waitForChanges();
 
-      const restoreButtons = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-item ion-button'));
-      const restoreBtn = restoreButtons.find(b => b.textContent?.includes('Restore'));
-      restoreBtn?.click();
+      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
+      restoreOption?.click();
       await waitForChanges();
 
       expect(createToastSpy).toHaveBeenCalledWith(
@@ -547,116 +588,11 @@ describe('page-admin-maintenance', () => {
 
       const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => { });
 
-      const downloadButtons = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-item ion-button'));
-      const downloadBtn = downloadButtons.find(b => b.textContent?.includes('Download'));
-      downloadBtn?.click();
+      const downloadOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="medium"]');
+      downloadOption?.click();
       await waitForChanges();
 
       expect(clickSpy).toHaveBeenCalled();
-    });
-  });
-
-  describe('Mobile Action Sheet', () => {
-    it('presents action sheet and triggers delete on destructive role', async () => {
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/backups$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockBackups) };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const actionSheet = mockActionSheet('destructive');
-      const createActionSheetSpy = vi.spyOn(actionSheetController, 'create').mockResolvedValue(actionSheet);
-      const alert = mockAlert('cancel');
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
-
-      const { root, waitForChanges } = await render<HTMLPageAdminMaintenanceElement>(<page-admin-maintenance />);
-      await root.activatedCallback();
-      await waitForChanges();
-
-      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-hide-lg-up');
-      menuBtn?.click();
-      await waitForChanges();
-
-      expect(createActionSheetSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ header: 'AutoBackup-1' })
-      );
-      expect(actionSheet.present).toHaveBeenCalled();
-      expect(createAlertSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ header: 'Delete Backup?' })
-      );
-    });
-
-    it('triggers download on download role in action sheet', async () => {
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/backups$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockBackups) };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const actionSheet = mockActionSheet('download');
-      vi.spyOn(actionSheetController, 'create').mockResolvedValue(actionSheet);
-      const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => { });
-
-      const { root, waitForChanges } = await render<HTMLPageAdminMaintenanceElement>(<page-admin-maintenance />);
-      await root.activatedCallback();
-      await waitForChanges();
-
-      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-hide-lg-up');
-      menuBtn?.click();
-      await waitForChanges();
-
-      expect(clickSpy).toHaveBeenCalled();
-    });
-
-    it('triggers restore confirmation on restore role in action sheet', async () => {
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/backups$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockBackups) };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const actionSheet = mockActionSheet('restore');
-      vi.spyOn(actionSheetController, 'create').mockResolvedValue(actionSheet);
-      const alert = mockAlert('cancel');
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
-
-      const { root, waitForChanges } = await render<HTMLPageAdminMaintenanceElement>(<page-admin-maintenance />);
-      await root.activatedCallback();
-      await waitForChanges();
-
-      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-hide-lg-up');
-      menuBtn?.click();
-      await waitForChanges();
-
-      expect(createAlertSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ header: 'Restore Backup?' })
-      );
-    });
-
-    it('does nothing on cancel role in action sheet', async () => {
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/backups$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockBackups) };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const actionSheet = mockActionSheet('cancel');
-      vi.spyOn(actionSheetController, 'create').mockResolvedValue(actionSheet);
-      const createAlertSpy = vi.spyOn(alertController, 'create');
-
-      const { root, waitForChanges } = await render<HTMLPageAdminMaintenanceElement>(<page-admin-maintenance />);
-      await root.activatedCallback();
-      await waitForChanges();
-
-      const menuBtn = root.querySelector<HTMLIonButtonElement>('ion-item ion-button.ion-hide-lg-up');
-      menuBtn?.click();
-      await waitForChanges();
-
-      expect(createAlertSpy).not.toHaveBeenCalled();
     });
   });
 });

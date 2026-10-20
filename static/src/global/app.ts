@@ -1,7 +1,9 @@
 import { setupConfig } from '@ionic/core';
 
 const setup = () => {
-  setupConfig({});
+  setupConfig({
+    mode: 'md'
+  });
 };
 
 export default setup;

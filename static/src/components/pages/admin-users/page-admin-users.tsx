@@ -28,9 +28,9 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
         <ion-content>
           <ion-grid class="no-pad">
             <ion-row>
-              {this.users?.map(user =>
+              {this.users.map(user =>
                 <ion-col key={user.id} size="12" size-md="6" size-lg="4" size-xl="3">
-                  <ion-card class="zoom">
+                  <ion-card>
                     <ion-card-header>
                       <ion-card-title>{user.username}</ion-card-title>
                       <ion-card-subtitle>{enumKeyFromValue(AccessLevel, user.accessLevel)}</ion-card-subtitle>
@@ -50,7 +50,7 @@ export class PageAdminUsers implements ComponentWithActivatedCallback {
           </ion-grid>
 
           <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-            <ion-fab-button color="success" onClick={() => this.onAddUserClicked()}>
+            <ion-fab-button color="secondary" onClick={() => this.onAddUserClicked()}>
               <ion-icon icon="person-add" />
             </ion-fab-button>
           </ion-fab>
