@@ -196,8 +196,11 @@
   overflow: visible !important;
 }
 
-.zoom {
-  transition: transform .15s;
+
+@media (prefers-reduced-motion: no-preference) {
+  .zoom {
+    transition: transform 150ms;
+  }
 }
 
 .zoom.ion-activated,
