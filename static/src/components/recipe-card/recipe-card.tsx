@@ -2,6 +2,10 @@ import { Component, Host, h, Prop, State, Watch } from '@stencil/core';
 import { RecipeCompact, RecipeState } from '../../helpers/schema.gen';
 import { getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
 
+const TAG_GAP = 8;
+const DEFAULT_TAG_WIDTH = 50;
+const DEFAULT_BADGE_WIDTH = 36;
+
 @Component({
   tag: 'recipe-card',
   styleUrl: 'recipe-card.css',
@@ -108,75 +112,80 @@ export class RecipeCard {
   }
 
   private getBadgeWidth(hiddenCount: number): number {
-    if (!this.probeBadgeElement) return 36;
+    if (!this.probeBadgeElement) return DEFAULT_BADGE_WIDTH;
     this.probeBadgeElement.textContent = `+${hiddenCount}`;
     const width = this.probeBadgeElement.getBoundingClientRect().width;
-    return width > 0 ? width : 36;
+    return width > 0 ? width : DEFAULT_BADGE_WIDTH;
+  }
+
+  private getTagWidth(tag: string): number {
+    return this.tagWidths.get(tag) ?? DEFAULT_TAG_WIDTH;
+  }
+
+  private setVisibleCount(count: number) {
+    if (this.visibleCount !== count) {
+      this.visibleCount = count;
+    }
+  }
+
+  private cacheTagWidths() {
+    const badges = this.tagsContainer?.querySelectorAll<HTMLElement>('.tag-badge');
+    badges?.forEach(el => {
+      const tag = el.dataset.tag;
+      const width = el.getBoundingClientRect().width;
+      if (tag && width > 0) {
+        this.tagWidths.set(tag, width);
+      }
+    });
+  }
+
+  private canFitAllTags(tags: string[], containerWidth: number): boolean {
+    let totalWidth = 0;
+    for (let i = 0; i < tags.length; i++) {
+      const spacing = i > 0 ? TAG_GAP : 0;
+      totalWidth += spacing + this.getTagWidth(tags[i]);
+      if (totalWidth > containerWidth) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private calculateOverflowVisibleCount(tags: string[], containerWidth: number): number {
+    let count = 0;
+    let currentWidth = 0;
+
+    for (let k = 1; k < tags.length; k++) {
+      const badgeW = this.getBadgeWidth(tags.length - k);
+      const availableForTags = containerWidth - badgeW - TAG_GAP;
+      const spacing = k > 1 ? TAG_GAP : 0;
+      const nextWidth = currentWidth + spacing + this.getTagWidth(tags[k - 1]);
+      if (nextWidth > availableForTags) {
+        break;
+      }
+      currentWidth = nextWidth;
+      count = k;
+    }
+
+    return Math.max(1, count);
   }
 
   private calculateVisibleTags() {
-    if (!this.tagsContainer) return;
-    const containerWidth = this.tagsContainer.clientWidth;
+    const containerWidth = this.tagsContainer?.clientWidth ?? 0;
     const tags = this.recipe?.tags ?? [];
 
     if (containerWidth <= 0 || tags.length <= 1) {
-      if (this.visibleCount !== tags.length) {
-        this.visibleCount = tags.length;
-      }
+      this.setVisibleCount(tags.length);
       return;
     }
 
-    // Cache intrinsic widths from rendered elements
-    const badges = this.tagsContainer.querySelectorAll<HTMLElement>('.tag-badge');
-    badges.forEach(el => {
-      const tag = el.dataset.tag;
-      if (tag) {
-        const w = el.getBoundingClientRect().width;
-        if (w > 0) {
-          this.tagWidths.set(tag, w);
-        }
-      }
-    });
+    this.cacheTagWidths();
 
-    const gap = 8;
-    let totalWidth = 0;
-    let fitsAll = true;
-
-    for (let i = 0; i < tags.length; i++) {
-      const w = this.tagWidths.get(tags[i]) ?? 50;
-      if (i > 0) totalWidth += gap;
-      totalWidth += w;
-      if (totalWidth > containerWidth) {
-        fitsAll = false;
-        break;
-      }
-    }
-
-    if (fitsAll) {
-      if (this.visibleCount !== tags.length) {
-        this.visibleCount = tags.length;
-      }
+    if (this.canFitAllTags(tags, containerWidth)) {
+      this.setVisibleCount(tags.length);
       return;
     }
 
-    let count = 0;
-    let currentWidth = 0;
-    for (let k = 1; k < tags.length; k++) {
-      const badgeW = this.getBadgeWidth(tags.length - k);
-      const availableForTags = containerWidth - badgeW - gap;
-      const w = this.tagWidths.get(tags[k - 1]) ?? 50;
-      const nextWidth = currentWidth + (k > 1 ? gap : 0) + w;
-      if (nextWidth <= availableForTags) {
-        currentWidth = nextWidth;
-        count = k;
-      } else {
-        break;
-      }
-    }
-
-    const newVisibleCount = Math.max(1, count);
-    if (this.visibleCount !== newVisibleCount) {
-      this.visibleCount = newVisibleCount;
-    }
+    this.setVisibleCount(this.calculateOverflowVisibleCount(tags, containerWidth));
   }
 }
