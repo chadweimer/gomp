@@ -95,8 +95,8 @@ export class PageHome implements ComponentWithActivatedCallback {
 
       // Then load the first 10 of the user's saved filters
       const savedFilters = await api.loadSearchFilters(1, 10);
-      for (const savedFilter of savedFilters) {
-        if (isNull(savedFilter.id)) continue;
+      const results = await Promise.all(savedFilters.map(async savedFilter => {
+        if (isNull(savedFilter.id)) return null;
         const { data: savedSearchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {
           params: { path: { filterId: savedFilter.id } }
         });
@@ -106,17 +106,18 @@ export class PageHome implements ComponentWithActivatedCallback {
         }
 
         if (!savedSearchFilter) {
-          continue;
+          return null;
         }
 
         const { total, recipes } = await this.performSearch(savedSearchFilter);
-        searches.push({
+        return {
           title: savedSearchFilter.name,
           filter: savedSearchFilter,
           count: total,
           results: recipes ?? []
-        });
-      }
+        };
+      }));
+      searches.push(...results.filter(r => r !== null));
 
       this.searches = searches;
     } catch (ex) {

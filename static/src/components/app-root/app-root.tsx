@@ -308,13 +308,7 @@ export class AppRoot {
       modalController,
       popoverController
     ];
-    for (const controller of controllers) {
-      try {
-        await controller.dismiss();
-      } catch {
-        // Nothing to do here. There might not have been something open
-      }
-    }
+    await Promise.all(controllers.map(controller => controller.dismiss().catch(() => { })));
   }
 
   private async onPageChanging() {
