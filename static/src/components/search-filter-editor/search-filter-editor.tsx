@@ -80,7 +80,7 @@ export class SearchFilterEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             {this.showSavedLoader &&
               <ion-item id="savedSearchLoader" lines="full">
-                <ion-select label="Load From Saved" labelPlacement="floating" interface="popover" value={this.selectedFilterId}
+                <ion-select label="Load From Saved" label-placement="floating" interface="popover" value={this.selectedFilterId}
                   onIonChange={(e: CustomEvent<{ value: number }>) => this.selectedFilterId = e.detail.value}>
                   {this.filters?.map(item =>
                     <ion-select-option key={item.id} value={item.id}>{item.name}</ion-select-option>
