@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
+import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
 import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull, trap } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
@@ -57,13 +57,7 @@ export class SearchFilterEditor {
   }
 
   componentDidLoad() {
-    // WORKAROUND: Fix for Ionic popover interface not receiving the correct event target in shadow DOM
-    const selects = this.el.shadowRoot?.querySelectorAll('ion-select');
-    selects?.forEach(s => {
-      s.interfaceOptions = {
-        event: { target: s, detail: { ionShadowTarget: s } }
-      };
-    });
+    configureModalSelectsWorkaround(this.el);
   }
 
   render() {

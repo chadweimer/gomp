@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { AccessLevel, User } from '../../helpers/schema.gen';
-import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
+import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
 import { insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 
 @Component({
@@ -45,13 +45,7 @@ export class UserEditor {
   }
 
   componentDidLoad() {
-    // WORKAROUND: Fix for Ionic popover interface not receiving the correct event target in shadow DOM
-    const selects = this.el.shadowRoot?.querySelectorAll('ion-select');
-    selects?.forEach(s => {
-      s.interfaceOptions = {
-        event: { target: s, detail: { ionShadowTarget: s } }
-      };
-    });
+    configureModalSelectsWorkaround(this.el);
   }
 
   render() {

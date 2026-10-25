@@ -81,6 +81,16 @@ export function configureModalCanDismiss(
   };
 }
 
+export function configureModalSelectsWorkaround(el: HTMLElement) {
+  // WORKAROUND: Fix for Ionic popover interface not receiving the correct event target in shadow DOM
+  const selects = el.shadowRoot?.querySelectorAll('ion-select');
+  selects?.forEach(s => {
+    s.interfaceOptions = {
+      event: { target: s, detail: { ionShadowTarget: s } }
+    };
+  });
+}
+
 export function getContainingModal(el: HTMLElement) {
   return el.closest('ion-modal');
 }
