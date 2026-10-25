@@ -44,6 +44,16 @@ export class UserEditor {
     });
   }
 
+  componentDidLoad() {
+    // WORKAROUND: Fix for Ionic popover interface not receiving the correct event target in shadow DOM
+    const selects = this.el.shadowRoot?.querySelectorAll('ion-select');
+    selects?.forEach(s => {
+      s.interfaceOptions = {
+        event: { target: s, detail: { ionShadowTarget: s } }
+      };
+    });
+  }
+
   render() {
     return (
       <Host>
@@ -69,7 +79,7 @@ export class UserEditor {
                 autofocus />
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Access Level" label-placement="stacked" value={this.user?.accessLevel ?? AccessLevel.Editor}
+              <ion-select label="Access Level" label-placement="stacked" interface="popover" value={this.user?.accessLevel ?? AccessLevel.Editor}
                 onIonChange={(e: CustomEvent<{ value: AccessLevel }>) => this.user = { ...this.user, accessLevel: e.detail.value }}>
                 {Object.keys(AccessLevel).map(item =>
                   <ion-select-option key={item} value={AccessLevel[item as keyof typeof AccessLevel]}>{insertSpacesBetweenWords(item)}</ion-select-option>
