@@ -91,11 +91,11 @@ export class SearchFilterEditor {
                   {this.filters?.map(item =>
                     <ion-select-option key={item.id} value={item.id}>{item.name}</ion-select-option>
                   )}
+                  <ion-button slot="end" fill="clear" disabled={isNull(this.selectedFilterId)} onClick={() => this.onLoadSearchClicked()}>
+                    <ion-icon slot="start" name="open-outline" />
+                    Load
+                  </ion-button>
                 </ion-select>
-                <ion-button slot="end" fill="clear" disabled={isNull(this.selectedFilterId)} onClick={() => this.onLoadSearchClicked()}>
-                  <ion-icon slot="start" name="open-outline" />
-                  Load
-                </ion-button>
               </ion-item>
             }
             {this.showName &&
