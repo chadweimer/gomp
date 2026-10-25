@@ -401,7 +401,7 @@ export class AppRoot {
       componentProps: {
         saveLabel: 'Search',
         prompt: 'Search',
-        hideName: true,
+        showName: false,
         showSavedLoader: true,
         searchFilter: state.searchFilter
       },

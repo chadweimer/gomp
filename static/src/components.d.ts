@@ -165,10 +165,6 @@ export namespace Components {
     }
     interface SearchFilterEditor {
         /**
-          * @default false
-         */
-        "hideName": boolean;
-        /**
           * @default ''
          */
         "name": string;
@@ -184,6 +180,10 @@ export namespace Components {
           * @default getDefaultSearchFilter()
          */
         "searchFilter": SearchFilter;
+        /**
+          * @default true
+         */
+        "showName": boolean;
         /**
           * @default false
          */
@@ -663,10 +663,6 @@ declare namespace LocalJSX {
     }
     interface SearchFilterEditor {
         /**
-          * @default false
-         */
-        "hideName"?: boolean;
-        /**
           * @default ''
          */
         "name"?: string;
@@ -682,6 +678,10 @@ declare namespace LocalJSX {
           * @default getDefaultSearchFilter()
          */
         "searchFilter"?: SearchFilter;
+        /**
+          * @default true
+         */
+        "showName"?: boolean;
         /**
           * @default false
          */
@@ -744,7 +744,7 @@ declare namespace LocalJSX {
     interface SearchFilterEditorAttributes {
         "name": string;
         "saveLabel": string;
-        "hideName": boolean;
+        "showName": boolean;
         "showSavedLoader": boolean;
         "prompt": string;
     }

@@ -13,7 +13,7 @@ import { getDefaultSearchFilter } from '../../models';
 export class SearchFilterEditor {
   @Prop() name = '';
   @Prop() saveLabel = 'Save';
-  @Prop() hideName = false;
+  @Prop() showName = true;
   @Prop() showSavedLoader = false;
   @Prop() searchFilter: SearchFilter = getDefaultSearchFilter();
   @Prop() prompt = 'New Search';
@@ -86,18 +86,19 @@ export class SearchFilterEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             {this.showSavedLoader &&
               <ion-item id="savedSearchLoader" lines="full">
-                <ion-select label="Load From Saved" value={this.selectedFilterId}
+                <ion-select label="Load From Saved" labelPlacement="floating" interface="popover" value={this.selectedFilterId}
                   onIonChange={(e: CustomEvent<{ value: number }>) => this.selectedFilterId = e.detail.value}>
                   {this.filters?.map(item =>
                     <ion-select-option key={item.id} value={item.id}>{item.name}</ion-select-option>
                   )}
                 </ion-select>
                 <ion-button slot="end" fill="clear" disabled={isNull(this.selectedFilterId)} onClick={() => this.onLoadSearchClicked()}>
-                  <ion-icon slot="icon-only" name="open-outline" />
+                  <ion-icon slot="start" name="open-outline" />
+                  Load
                 </ion-button>
               </ion-item>
             }
-            {!this.hideName &&
+            {this.showName &&
               <ion-item lines="full">
                 <ion-input label="Name" label-placement="stacked" value={this.name}
                   // @ts-expect-error - TS 5.9 + Ionic v9 type conflict

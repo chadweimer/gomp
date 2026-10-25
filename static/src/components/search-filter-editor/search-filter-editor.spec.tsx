@@ -212,8 +212,8 @@ describe('search-filter-editor', () => {
       expect(fieldsSelect?.value).toEqual([SearchField.Directions]);
     });
 
-    it('hides name input when hideName is true', async () => {
-      const { root } = await render<HTMLSearchFilterEditorElement>(<search-filter-editor hideName={true} />);
+    it('hides name input when showName is false', async () => {
+      const { root } = await render<HTMLSearchFilterEditorElement>(<search-filter-editor showName={false} />);
       const nameInput = root.shadowRoot?.querySelector('ion-input[label="Name"]');
       expect(nameInput).toBeNull();
     });
@@ -658,9 +658,9 @@ describe('search-filter-editor', () => {
       expect(createAlertSpy).not.toHaveBeenCalled();
     });
 
-    it('handles canDismiss safely when hideName is true', async () => {
+    it('handles canDismiss safely when showName is false', async () => {
       const { root, waitForChanges } = await render<HTMLSearchFilterEditorElement>(
-        <search-filter-editor hideName={true} />,
+        <search-filter-editor showName={false} />,
       );
       modalEl.appendChild(root);
       await waitForChanges();
