@@ -148,6 +148,75 @@ func TestLogRequests(t *testing.T) {
 	}
 }
 
+func TestCacheControl(t *testing.T) {
+	tests := []struct {
+		name       string
+		path       string
+		wantHeader string
+	}{
+		{
+			name:       "API endpoint returns no-store",
+			path:       "/api/v1/recipes",
+			wantHeader: "no-store",
+		},
+		{
+			name:       "API root returns no-store",
+			path:       "/api/",
+			wantHeader: "no-store",
+		},
+		{
+			name:       "Hashed static asset returns immutable cache",
+			path:       "/static/build/p-abc12345.js",
+			wantHeader: "public, max-age=31536000, immutable",
+		},
+		{
+			name:       "Unhashed static asset returns no-cache",
+			path:       "/static/build/app.esm.js",
+			wantHeader: "no-cache",
+		},
+		{
+			name:       "Unhashed static stylesheet returns no-cache",
+			path:       "/static/build/app.css",
+			wantHeader: "no-cache",
+		},
+		{
+			name:       "Root document returns no-cache",
+			path:       "/",
+			wantHeader: "no-cache",
+		},
+		{
+			name:       "Client-side SPA route returns no-cache",
+			path:       "/recipes/123",
+			wantHeader: "no-cache",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sut := CacheControl()
+			nextCalled := false
+			handler := sut(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				nextCalled = true
+				w.WriteHeader(http.StatusOK)
+			}))
+
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodGet, tt.path, nil)
+
+			handler.ServeHTTP(w, req)
+
+			if !nextCalled {
+				t.Error("expected next handler to be called")
+			}
+
+			gotHeader := w.Header().Get("Cache-Control")
+			if gotHeader != tt.wantHeader {
+				t.Errorf("expected Cache-Control %q, got %q", tt.wantHeader, gotHeader)
+			}
+		})
+	}
+}
+
 func TestWrap(t *testing.T) {
 	type args struct {
 		middleware []func(http.Handler) http.Handler
