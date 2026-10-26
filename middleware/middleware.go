@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"path/filepath"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -110,10 +112,35 @@ func LogRequests(logger *slog.Logger, trustedProxies []net.IPNet) func(http.Hand
 	}
 }
 
+// CacheControl provides a middleware that sets appropriate Cache-Control headers based on the request path.
+func CacheControl() func(http.Handler) http.Handler {
+	cacheControlHeader := http.CanonicalHeaderKey("Cache-Control")
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			path := r.URL.Path
+			switch {
+			case strings.HasPrefix(path, "/api/"):
+				w.Header().Set(cacheControlHeader, "no-store")
+			case strings.HasPrefix(path, "/static/"):
+				if strings.HasPrefix(filepath.Base(path), "p-") {
+					w.Header().Set(cacheControlHeader, "public, max-age=31536000, immutable")
+				} else {
+					w.Header().Set(cacheControlHeader, "no-cache")
+				}
+			default:
+				// Everything else (index.html and SPA client routes)
+				w.Header().Set(cacheControlHeader, "no-cache")
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 // Wrap returns a handler that wraps the provided http.Handler with a collection of provided middleware
 func Wrap(h http.Handler, middleware ...func(http.Handler) http.Handler) http.Handler {
-	for i := len(middleware) - 1; i >= 0; i-- {
-		h = middleware[i](h)
+	for _, m := range slices.Backward(middleware) {
+		h = m(h)
 	}
 
 	return h

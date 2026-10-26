@@ -79,6 +79,7 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 			mux,
 			middleware.LogRequests(slog.Default(), cfg.Server.GetTrustedProxies()),
 			middleware.Recover("Recovered from panic"),
+			middleware.CacheControl(),
 			middleware.Authenticate(tokenHandler, dbDriver.Users()),
 			middleware.AutoRefreshToken(tokenHandler),
 		)
