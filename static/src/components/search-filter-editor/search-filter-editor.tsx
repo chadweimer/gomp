@@ -1,7 +1,7 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { RecipeState, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings, YesNoAny } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
-import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
+import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
 import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull, trap } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 
@@ -13,7 +13,7 @@ import { getDefaultSearchFilter } from '../../models';
 export class SearchFilterEditor {
   @Prop() name = '';
   @Prop() saveLabel = 'Save';
-  @Prop() hideName = false;
+  @Prop() showName = true;
   @Prop() showSavedLoader = false;
   @Prop() searchFilter: SearchFilter = getDefaultSearchFilter();
   @Prop() prompt = 'New Search';
@@ -56,6 +56,10 @@ export class SearchFilterEditor {
     }
   }
 
+  componentDidLoad() {
+    configureModalSelectsWorkaround(this.el);
+  }
+
   render() {
     return (
       <Host>
@@ -76,18 +80,19 @@ export class SearchFilterEditor {
           <form onSubmit={e => e.preventDefault()} ref={el => this.form = el!}>
             {this.showSavedLoader &&
               <ion-item id="savedSearchLoader" lines="full">
-                <ion-select label="Load From Saved" value={this.selectedFilterId}
+                <ion-select label="Load From Saved" label-placement="floating" interface="popover" value={this.selectedFilterId}
                   onIonChange={(e: CustomEvent<{ value: number }>) => this.selectedFilterId = e.detail.value}>
                   {this.filters?.map(item =>
                     <ion-select-option key={item.id} value={item.id}>{item.name}</ion-select-option>
                   )}
+                  <ion-button slot="end" fill="clear" disabled={isNull(this.selectedFilterId)} onClick={() => this.onLoadSearchClicked()}>
+                    <ion-icon slot="start" name="open-outline" />
+                    Load
+                  </ion-button>
                 </ion-select>
-                <ion-button slot="end" fill="clear" disabled={isNull(this.selectedFilterId)} onClick={() => this.onLoadSearchClicked()}>
-                  <ion-icon slot="icon-only" name="open-outline" />
-                </ion-button>
               </ion-item>
             }
-            {!this.hideName &&
+            {this.showName &&
               <ion-item lines="full">
                 <ion-input label="Name" label-placement="stacked" value={this.name}
                   // @ts-expect-error - TS 5.9 + Ionic v9 type conflict
@@ -115,7 +120,7 @@ export class SearchFilterEditor {
               </tags-input>
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Sort By" label-placement="stacked" value={this.searchFilter?.sortBy}
+              <ion-select label="Sort By" label-placement="stacked" interface="popover" value={this.searchFilter?.sortBy}
                 onIonChange={(e: CustomEvent<{ value: SortBy }>) => this.searchFilter = { ...this.searchFilter, sortBy: e.detail.value }}>
                 {Object.keys(SortBy).map(item =>
                   <ion-select-option key={item} value={SortBy[item as keyof typeof SortBy]}>{insertSpacesBetweenWords(item)}</ion-select-option>
@@ -123,7 +128,7 @@ export class SearchFilterEditor {
               </ion-select>
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Sort Order" label-placement="stacked" value={this.searchFilter?.sortDir}
+              <ion-select label="Sort Order" label-placement="stacked" interface="popover" value={this.searchFilter?.sortDir}
                 onIonChange={(e: CustomEvent<{ value: SortDir }>) => this.searchFilter = { ...this.searchFilter, sortDir: e.detail.value }}>
                 {Object.keys(SortDir).map(item =>
                   <ion-select-option key={item} value={SortDir[item as keyof typeof SortDir]}>{insertSpacesBetweenWords(item)}</ion-select-option>
@@ -131,7 +136,7 @@ export class SearchFilterEditor {
               </ion-select>
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Pictures" label-placement="stacked" value={toYesNoAny(this.searchFilter?.withPictures)}
+              <ion-select label="Pictures" label-placement="stacked" interface="popover" value={toYesNoAny(this.searchFilter?.withPictures)}
                 onIonChange={(e: CustomEvent<{ value: YesNoAny }>) => this.searchFilter = { ...this.searchFilter, withPictures: fromYesNoAny(e.detail.value) }}>
                 {Object.keys(YesNoAny).map(item =>
                   <ion-select-option key={item} value={YesNoAny[item as keyof typeof YesNoAny]}>{insertSpacesBetweenWords(item)}</ion-select-option>
@@ -139,7 +144,7 @@ export class SearchFilterEditor {
               </ion-select>
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="States" label-placement="stacked" multiple value={this.searchFilter?.states}
+              <ion-select label="States" label-placement="stacked" interface="popover" multiple value={this.searchFilter?.states}
                 onIonChange={(e: CustomEvent<{ value: RecipeState[] }>) => this.searchFilter = { ...this.searchFilter, states: e.detail.value }}>
                 {Object.keys(RecipeState).map(item =>
                   <ion-select-option key={item} value={RecipeState[item as keyof typeof RecipeState]}>{insertSpacesBetweenWords(item)}</ion-select-option>
@@ -147,7 +152,7 @@ export class SearchFilterEditor {
               </ion-select>
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Fields to Search" label-placement="stacked" multiple value={this.searchFilter?.fields}
+              <ion-select label="Fields to Search" label-placement="stacked" interface="popover" multiple value={this.searchFilter?.fields}
                 onIonChange={(e: CustomEvent<{ value: SearchField[] }>) => this.searchFilter = { ...this.searchFilter, fields: e.detail.value }}>
                 {Object.keys(SearchField).map(item =>
                   <ion-select-option key={item} value={SearchField[item as keyof typeof SearchField]}>{insertSpacesBetweenWords(item)}</ion-select-option>

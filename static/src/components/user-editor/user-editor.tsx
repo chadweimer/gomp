@@ -1,6 +1,6 @@
 import { Component, Element, Host, h, Prop, State } from '@stencil/core';
 import { AccessLevel, User } from '../../helpers/schema.gen';
-import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
+import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
 import { insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 
 @Component({
@@ -44,6 +44,10 @@ export class UserEditor {
     });
   }
 
+  componentDidLoad() {
+    configureModalSelectsWorkaround(this.el);
+  }
+
   render() {
     return (
       <Host>
@@ -69,7 +73,7 @@ export class UserEditor {
                 autofocus />
             </ion-item>
             <ion-item lines="full">
-              <ion-select label="Access Level" label-placement="stacked" value={this.user?.accessLevel ?? AccessLevel.Editor}
+              <ion-select label="Access Level" label-placement="stacked" interface="popover" value={this.user?.accessLevel ?? AccessLevel.Editor}
                 onIonChange={(e: CustomEvent<{ value: AccessLevel }>) => this.user = { ...this.user, accessLevel: e.detail.value }}>
                 {Object.keys(AccessLevel).map(item =>
                   <ion-select-option key={item} value={AccessLevel[item as keyof typeof AccessLevel]}>{insertSpacesBetweenWords(item)}</ion-select-option>
