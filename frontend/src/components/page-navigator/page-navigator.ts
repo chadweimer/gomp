@@ -6,7 +6,7 @@ import { globalStyles } from '../../global/shared-styles';
 
 @customElement('page-navigator')
 export class PageNavigator extends LitElement {
-  static styles = [
+  static readonly styles = [
     globalStyles,
     css`
       :host {

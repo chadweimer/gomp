@@ -7,8 +7,8 @@ import { redirect, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuth
 import state, { appStateStore } from '../../../stores/state';
 import { StoreController } from '../../../stores/store';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../helpers/schema.gen';
-import '../../recipe-card/recipe-card.placeholder';
-import '../../recipe-editor/recipe-editor.placeholder';
+import '../../recipe-card/recipe-card';
+import '../../recipe-editor/recipe-editor';
 import './page-home.css';
 
 @customElement('page-home')
@@ -73,13 +73,13 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
         </ion-grid>
       </ion-content>
 
-      ${isAuthorized(state.currentUser, AccessLevel.Editor) && html`
+      ${isAuthorized(state.currentUser, AccessLevel.Editor) ? html`
         <ion-fab horizontal="end" vertical="bottom" slot="fixed">
           <ion-fab-button color="secondary" @click=${() => this.onNewRecipeClicked()}>
             <ion-icon icon="add"></ion-icon>
           </ion-fab-button>
         </ion-fab>
-      `}
+      ` : ''}
     `;
   }
 

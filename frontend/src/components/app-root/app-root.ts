@@ -13,13 +13,15 @@ import state, { appStateStore, clearState } from '../../stores/state';
 import { StoreController } from '../../stores/store';
 
 // Import page components and placeholders
+import './app-root.css';
 import '../pages/home/page-home';
 import '../pages/login/page-login';
-import '../pages/page-search.placeholder';
-import '../pages/page-recipe.placeholder';
+import '../pages/search/page-search';
+import '../pages/recipe/page-recipe';
 import '../pages/tags/page-tags';
 import '../pages/page-settings.placeholder';
 import '../pages/page-admin.placeholder';
+import '../search-filter-editor/search-filter-editor';
 
 interface AppLink {
   title: string;
@@ -143,7 +145,7 @@ export class AppRoot extends LitElement {
                     >
                       <ion-icon name=${link.icon} slot="start" color=${isParentOfActive ? 'secondary' : undefined}></ion-icon>
                       <ion-label color=${isParentOfActive ? 'secondary' : undefined}>${link.title}</ion-label>
-                      ${!isNull(link.detail) && html`<ion-label slot="end">${link.detail()}</ion-label>`}
+                      ${!isNull(link.detail) ? html`<ion-label slot="end">${link.detail()}</ion-label>` : ''}
                     </ion-item>
                   `;
         })}
@@ -170,7 +172,7 @@ export class AppRoot extends LitElement {
 
               <ion-title slot="start">
                 <ion-router-link color="light" href="/">${appConfig.config.title}</ion-router-link>
-                ${!isNullOrEmpty(this.pageTitle) && html`<ion-text color="light" class="ion-display-md-none"> | ${this.pageTitle}</ion-text>`}
+                ${!isNullOrEmpty(this.pageTitle) ? html`<ion-text color="light" class="ion-display-md-none"> | ${this.pageTitle}</ion-text>` : ''}
               </ion-title>
 
               <ion-buttons id="toolbar-menu" slot="end" class="ion-display-none ion-display-sm-flex">

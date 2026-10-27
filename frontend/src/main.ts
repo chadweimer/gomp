@@ -3,7 +3,6 @@ import { defineCustomElements } from '@ionic/core/loader';
 import { setAssetPath } from 'ionicons';
 
 import './global/app.css';
-import './components/app-root/app-root.css';
 
 // Configure asset path for Ionicons SVGs
 setAssetPath('/static/');
@@ -18,4 +17,3 @@ defineCustomElements(window, {
 
 // Register the root element
 import './components/app-root/app-root';
-

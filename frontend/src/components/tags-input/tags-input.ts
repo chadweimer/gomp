@@ -1,0 +1,133 @@
+import { LitElement, html, css, PropertyValues } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { isNullOrEmpty } from '../../helpers/utils';
+import { globalStyles } from '../../global/shared-styles';
+
+@customElement('tags-input')
+export class TagsInput extends LitElement {
+  static readonly styles = [
+    globalStyles,
+    css`
+      :host {
+        display: block;
+        width: 100%;
+      }
+
+      :host:focus-within ion-label {
+        color: var(--ion-color-primary);
+      }
+    `
+  ];
+
+  @property({ type: String }) label?: string;
+  @property({ type: String, attribute: 'label-placement' }) labelPlacement?: 'fixed' | 'floating' | 'stacked';
+  @property({ type: Array }) value: string[] = [];
+  @property({ type: Array }) suggestions: string[] = [];
+
+  @state() private internalValue: string[] = [];
+  @state() private filteredSuggestions: string[] = [];
+
+  constructor() {
+    super();
+    this.addEventListener('keydown', (e: KeyboardEvent) => this.handleKeyDown(e));
+  }
+
+  willUpdate(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has('value')) {
+      this.internalValue = this.value ?? [];
+      this.filterSuggestedTags(this.suggestions);
+    }
+    if (changedProperties.has('suggestions')) {
+      this.filterSuggestedTags(this.suggestions);
+    }
+  }
+
+  private handleKeyDown(e: KeyboardEvent) {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+
+    const tagName = target.tagName.toLowerCase();
+    if (tagName !== 'input' && tagName !== 'ion-input') {
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      const input = target as HTMLInputElement | HTMLIonInputElement;
+      const val = typeof input.value === 'string' ? input.value.trim() : '';
+      if (!isNullOrEmpty(val)) {
+        e.preventDefault();
+        e.stopPropagation();
+        void this.addTag(val);
+        input.value = '';
+      }
+    }
+  }
+
+  async addTag(tag: string): Promise<void> {
+    this.internalValue = [
+      ...this.internalValue,
+      tag.toLowerCase()
+    ].filter((value, index, self) => self.indexOf(value) === index);
+    this.filterSuggestedTags(this.suggestions);
+    this.dispatchEvent(new CustomEvent('valueChanged', {
+      detail: this.internalValue,
+      bubbles: true,
+      composed: true,
+    }));
+    await this.updateComplete;
+  }
+
+  removeTag(tag: string) {
+    this.internalValue = this.internalValue.filter(value => value !== tag);
+    this.filterSuggestedTags(this.suggestions);
+    this.dispatchEvent(new CustomEvent('valueChanged', {
+      detail: this.internalValue,
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
+  render() {
+    return html`
+      ${!isNullOrEmpty(this.label)
+        ? html`<ion-label position=${ifDefined(this.labelPlacement)}>${this.label}</ion-label>`
+        : ''}
+      ${this.internalValue.length > 0
+        ? html`
+            <div class="ion-padding-top">
+              ${this.internalValue.map(
+          tag => html`
+                  <ion-chip @click=${() => this.removeTag(tag)}>
+                    ${tag}
+                    <ion-icon icon="close-circle"></ion-icon>
+                  </ion-chip>
+                `
+        )}
+            </div>
+          `
+        : ''}
+      <slot></slot>
+      <div class="ion-padding-bottom">
+        ${this.filteredSuggestions.map(
+          tag => html`
+            <ion-chip class="suggested" color="secondary" @click=${() => this.addTag(tag)}>
+              ${tag}
+              <ion-icon icon="add-circle"></ion-icon>
+            </ion-chip>
+          `
+        )}
+      </div>
+    `;
+  }
+
+  private filterSuggestedTags(suggestions: string[] | null) {
+    this.filteredSuggestions = suggestions?.filter(value => !(this.internalValue.includes(value))) ?? [];
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'tags-input': TagsInput;
+  }
+}
