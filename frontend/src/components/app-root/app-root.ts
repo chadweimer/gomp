@@ -19,8 +19,8 @@ import '../pages/login/page-login';
 import '../pages/search/page-search';
 import '../pages/recipe/page-recipe';
 import '../pages/tags/page-tags';
-import '../pages/page-settings.placeholder';
-import '../pages/page-admin.placeholder';
+import '../pages/settings/page-settings';
+import '../pages/admin/page-admin';
 import '../search-filter-editor/search-filter-editor';
 
 interface AppLink {

@@ -179,8 +179,8 @@ describe('app-root', () => {
     });
   });
 
-  describe('routing placeholders', () => {
-    it('defines and registers all route placeholder components', () => {
+  describe('registered page components', () => {
+    it('defines and registers all page components', () => {
       expect(customElements.get('page-home')).toBeDefined();
       expect(customElements.get('page-login')).toBeDefined();
       expect(customElements.get('page-search')).toBeDefined();
@@ -188,12 +188,12 @@ describe('app-root', () => {
       expect(customElements.get('page-tags')).toBeDefined();
       expect(customElements.get('page-settings')).toBeDefined();
       expect(customElements.get('page-admin')).toBeDefined();
-      expect(customElements.get('tab-settings-preferences')).toBeDefined();
-      expect(customElements.get('tab-settings-searches')).toBeDefined();
-      expect(customElements.get('tab-settings-security')).toBeDefined();
-      expect(customElements.get('tab-admin-configuration')).toBeDefined();
-      expect(customElements.get('tab-admin-users')).toBeDefined();
-      expect(customElements.get('tab-admin-maintenance')).toBeDefined();
+      expect(customElements.get('page-settings-preferences')).toBeDefined();
+      expect(customElements.get('page-settings-searches')).toBeDefined();
+      expect(customElements.get('page-settings-security')).toBeDefined();
+      expect(customElements.get('page-admin-configuration')).toBeDefined();
+      expect(customElements.get('page-admin-users')).toBeDefined();
+      expect(customElements.get('page-admin-maintenance')).toBeDefined();
     });
   });
 });
