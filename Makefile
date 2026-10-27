@@ -19,8 +19,19 @@ COPYRIGHT:=Copyright © 2016-$(shell date +%Y) Chad Weimer
 # Output directories
 ROOT_BUILD_DIR:=build
 BUILD_DIR=$(ROOT_BUILD_DIR)/$(TARGETOS)/$(TARGETARCH)
+
+# Frontend selection: stencil (default) or lit
+FRONTEND?=stencil
+
+ifeq ($(FRONTEND),lit)
+CLIENT_INSTALL_DIR:=frontend/node_modules
+CLIENT_BUILD_DIR:=frontend/dist
+CLIENT_BUILD_CMD=npm --prefix frontend run build
+else
 CLIENT_INSTALL_DIR:=static/node_modules
 CLIENT_BUILD_DIR:=static/www/static
+CLIENT_BUILD_CMD=npm --prefix static run build $(CLIENT_EXTRA_BUILD_ARGS)
+endif
 
 # Codegen-related files and directories
 CLIENT_CODEGEN_DIR:=static/src/generated
@@ -57,6 +68,9 @@ install: $(CLIENT_INSTALL_DIR)
 $(CLIENT_INSTALL_DIR): static/package.json
 	npm --prefix static ci --silent
 
+frontend/node_modules: frontend/package.json
+	npm --prefix frontend install --silent
+
 .PHONY: uninstall
 uninstall:
 	npm --prefix static run clear
@@ -65,7 +79,11 @@ uninstall:
 # ---- CODEGEN ----
 
 .PHONY: codegen
-codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_DIR)
+codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_DIR) codegen-lit
+
+.PHONY: codegen-lit
+codegen-lit: openapi.yaml
+	npm --prefix frontend run codegen
 
 $(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	npm --prefix static run codegen
@@ -111,8 +129,8 @@ clean:
 
 $(ROOT_BUILD_DIR): $(BUILD_DIR)
 
-$(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR) $(CLIENT_FILES)
-	rm -rf $@ && npm --prefix static run build $(CLIENT_EXTRA_BUILD_ARGS)
+$(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR)
+	rm -rf $@ && $(CLIENT_BUILD_CMD)
 
 $(BUILD_DIR): $(BUILD_DIR)/gomp $(BUILD_DIR)/db/migrations $(BUILD_DIR)/static
 
@@ -133,6 +151,22 @@ run: LOG_LEVEL?=debug
 run: PORT?=5678
 run: go.mod $(CODEGEN_FILES) $(GO_FILES) $(CLIENT_BUILD_DIR)
 	LOG_LEVEL=$(LOG_LEVEL) PORT=$(PORT) BASE_ASSETS_PATH=$(CLIENT_BUILD_DIR) go run .
+
+.PHONY: run-lit
+run-lit:
+	$(MAKE) run FRONTEND=lit
+
+.PHONY: run-stencil
+run-stencil:
+	$(MAKE) run FRONTEND=stencil
+
+.PHONY: test-lit
+test-lit:
+	npm --prefix frontend run test
+
+.PHONY: build-lit
+build-lit: frontend/node_modules
+	npm --prefix frontend run build
 
 
 # ---- TEST ----
