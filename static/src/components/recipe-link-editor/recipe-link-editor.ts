@@ -15,8 +15,8 @@ export class RecipeLinkEditor extends LitElement {
         display: block;
       }
 
-      .sc-ion-searchbar-md-h {
-        height: 48px;
+      form {
+        height: 100%;
       }
     `
   ];
