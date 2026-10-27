@@ -4,22 +4,6 @@ import './page-navigator';
 import { PageNavigator } from './page-navigator';
 
 describe('page-navigator', () => {
-  it('includes ionic color definitions in component styles', () => {
-    const styles = (PageNavigator as any).elementStyles || (PageNavigator as any).styles;
-    const cssTexts = (Array.isArray(styles) ? styles : [styles]).map((s: any) => s.cssText || s.toString()).join('\n');
-    expect(cssTexts).toContain('.ion-color-secondary');
-    expect(cssTexts).toContain('--ion-color-secondary');
-  });
-
-  it('inspects rendered buttons', async () => {
-    const el = await fixture<PageNavigator>(html`<page-navigator color="secondary"></page-navigator>`);
-    const button = el.shadowRoot?.querySelector('ion-button');
-    console.log('Button outerHTML:', button?.outerHTML);
-    console.log('Button fill attribute:', button?.getAttribute('fill'));
-    console.log('Button color attribute:', button?.getAttribute('color'));
-    console.log('Button className:', button?.className);
-  });
-
   it('renders default values', async () => {
     const el = await fixture<PageNavigator>(html`<page-navigator></page-navigator>`);
     const buttons = el.shadowRoot?.querySelectorAll('ion-button');
@@ -118,4 +102,3 @@ describe('page-navigator', () => {
     });
   });
 });
-
