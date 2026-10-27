@@ -7,7 +7,7 @@ import { globalStyles } from '../../global/shared-styles';
 
 @customElement('user-editor')
 export class UserEditor extends LitElement {
-  static styles = [
+  static readonly styles = [
     globalStyles,
     css`
       :host {
@@ -160,4 +160,3 @@ export class UserEditor extends LitElement {
     await this.parentModal?.dismiss(undefined, 'cancel');
   }
 }
-
