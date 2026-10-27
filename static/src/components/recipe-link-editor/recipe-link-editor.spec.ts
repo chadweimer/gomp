@@ -7,7 +7,7 @@ import './recipe-link-editor';
 import { RecipeLinkEditor } from './recipe-link-editor';
 
 describe('recipe-link-editor', () => {
-  let modalEl: HTMLIonModalElement;
+  const originalFetch = globalThis.fetch;
 
   const mockRecipes: RecipeCompact[] = [
     {
@@ -36,13 +36,21 @@ describe('recipe-link-editor', () => {
     },
   ];
 
+  async function createRecipeLinkEditor(template = html`<recipe-link-editor></recipe-link-editor>`) {
+    const modal = await fixture<HTMLIonModalElement>(html`
+      <ion-modal>
+        ${template}
+      </ion-modal>
+    `);
+    modal.dismiss = vi.fn().mockResolvedValue(true);
+    const el = modal.querySelector<RecipeLinkEditor>('recipe-link-editor')!;
+    await el.updateComplete;
+    return { modal, el };
+  }
+
   beforeEach(() => {
     fetchMocker.resetMocks();
     clearState();
-
-    modalEl = document.createElement('ion-modal');
-    modalEl.dismiss = vi.fn().mockResolvedValue(true);
-    document.body.appendChild(modalEl);
 
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/recipes(\?.*)?$/) && req.method === 'GET') {
@@ -53,60 +61,198 @@ describe('recipe-link-editor', () => {
           } as SearchResult)
         );
       }
-      return Promise.resolve(JSON.stringify({}));
+      return Promise.resolve('{}');
     });
   });
 
   afterEach(() => {
+    globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
     clearState();
-    modalEl.remove();
     vi.restoreAllMocks();
   });
 
   it('builds and renders default state', async () => {
-    const el = await fixture<RecipeLinkEditor>(html`<recipe-link-editor></recipe-link-editor>`);
+    const { el } = await createRecipeLinkEditor();
 
     const title = el.shadowRoot?.querySelector('ion-title');
     expect(title?.textContent?.trim()).toBe('Add Link');
+
+    const input = el.shadowRoot?.querySelector('ion-input[type="search"]');
+    expect(input).not.toBeNull();
+    expect(input?.getAttribute('.value') ?? (input as any).value).toBe('');
 
     const toggleBtn = el.shadowRoot?.querySelector('ion-list-header ion-button');
     expect(toggleBtn?.textContent?.trim()).toBe('Include Archived');
   });
 
-  it('searches when query is entered and excludes parent recipe', async () => {
-    const el = await fixture<RecipeLinkEditor>(html`<recipe-link-editor .parentRecipeId=${2}></recipe-link-editor>`);
+  describe('search query input', () => {
+    it('does not search and clears results when query has fewer than 2 characters', async () => {
+      const { el } = await createRecipeLinkEditor();
+      const searchInput = el.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
 
-    // Set query with 2+ characters
-    (el as any).query = 'ch';
-    await (el as any).onSearchInputChanged();
-    await el.updateComplete;
+      if (searchInput) {
+        searchInput.value = 'a';
+        searchInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'a' } }));
+      }
+      await new Promise(r => setTimeout(r, 20));
+      await el.updateComplete;
 
-    // Matching recipes should exclude parent recipe (id: 2)
-    const items = el.shadowRoot?.querySelectorAll('ion-radio-group ion-item');
-    expect(items).toHaveLength(2);
+      const items = el.shadowRoot?.querySelectorAll('ion-radio-group ion-item');
+      expect(items).toHaveLength(0);
+    });
+
+    it('searches recipes and filters out parent recipe when query has 2 or more characters', async () => {
+      let capturedUrl = '';
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/recipes(\?.*)?$/) && req.method === 'GET') {
+          capturedUrl = req.url;
+          return Promise.resolve(
+            JSON.stringify({
+              total: mockRecipes.length,
+              recipes: mockRecipes,
+            } as SearchResult)
+          );
+        }
+        return Promise.resolve('{}');
+      });
+
+      const { el } = await createRecipeLinkEditor(
+        html`<recipe-link-editor .parentRecipeId=${2}></recipe-link-editor>`
+      );
+      const searchInput = el.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
+
+      if (searchInput) {
+        searchInput.value = 'pasta';
+        searchInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'pasta' } }));
+      }
+      await new Promise(r => setTimeout(r, 20));
+      await el.updateComplete;
+
+      expect(capturedUrl).toContain('q=pasta');
+
+      // Parent recipe (id: 2) should be excluded, leaving 2 recipes
+      const items = el.shadowRoot?.querySelectorAll('ion-radio-group ion-item');
+      expect(items).toHaveLength(2);
+
+      // Verify recipe names
+      const radios = el.shadowRoot?.querySelectorAll('ion-radio');
+      expect(radios?.[0].textContent?.trim()).toBe('Spaghetti Carbonara');
+      expect(radios?.[1].textContent?.trim()).toBe('Chicken Alfredo');
+
+      // Verify thumbnail for recipe with mainImageName
+      const img = items?.[0]?.querySelector('img');
+      expect(img).not.toBeNull();
+      expect(img?.getAttribute('src')).toBe('/uploads/recipes/1/thumbs/carbonara.jpg');
+    });
   });
 
-  it('dismisses modal on save when recipe is selected', async () => {
-    const el = await fixture<RecipeLinkEditor>(html`<recipe-link-editor .parentRecipeId=${2}></recipe-link-editor>`);
-    modalEl.appendChild(el);
-    await el.updateComplete;
+  describe('archived filter toggle', () => {
+    it('toggles includeArchived and triggers search with archived state', async () => {
+      let lastUrl = '';
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/recipes(\?.*)?$/) && req.method === 'GET') {
+          lastUrl = req.url;
+          return Promise.resolve(
+            JSON.stringify({
+              total: mockRecipes.length,
+              recipes: mockRecipes,
+            } as SearchResult)
+          );
+        }
+        return Promise.resolve('{}');
+      });
 
-    (el as any).selectedRecipeId = 1;
-    const saveBtn = el.shadowRoot?.querySelector('ion-buttons[slot="primary"] ion-button') as HTMLElement;
-    saveBtn.click();
+      const { el } = await createRecipeLinkEditor();
+      const searchInput = el.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
+      if (searchInput) {
+        searchInput.value = 'pasta';
+        searchInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'pasta' } }));
+      }
+      await new Promise(r => setTimeout(r, 20));
+      await el.updateComplete;
 
-    expect(modalEl.dismiss).toHaveBeenCalledWith({ recipeId: 1 }, 'save');
+      let toggleBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-list-header ion-button');
+      expect(toggleBtn?.textContent?.trim()).toBe('Include Archived');
+
+      toggleBtn?.click();
+      await new Promise(r => setTimeout(r, 20));
+      await el.updateComplete;
+
+      toggleBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-list-header ion-button');
+      expect(toggleBtn?.textContent?.trim()).toBe('Exclude Archived');
+      expect(lastUrl).toContain(RecipeState.Archived);
+
+      // Toggle back to exclude
+      toggleBtn?.click();
+      await new Promise(r => setTimeout(r, 20));
+      await el.updateComplete;
+
+      toggleBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-list-header ion-button');
+      expect(toggleBtn?.textContent?.trim()).toBe('Include Archived');
+    });
   });
 
-  it('dismisses modal on cancel', async () => {
-    const el = await fixture<RecipeLinkEditor>(html`<recipe-link-editor></recipe-link-editor>`);
-    modalEl.appendChild(el);
-    await el.updateComplete;
+  describe('recipe selection', () => {
+    it('updates selected recipe on radio group ionChange', async () => {
+      const { el } = await createRecipeLinkEditor();
+      const searchInput = el.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
+      if (searchInput) {
+        searchInput.value = 'pasta';
+        searchInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'pasta' } }));
+      }
+      await new Promise(r => setTimeout(r, 20));
+      await el.updateComplete;
 
-    const cancelBtn = el.shadowRoot?.querySelector('ion-buttons[slot="secondary"] ion-button') as HTMLElement;
-    cancelBtn.click();
+      const radioGroup = el.shadowRoot?.querySelector('ion-radio-group');
+      radioGroup?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 1 } }));
+      await el.updateComplete;
 
-    expect(modalEl.dismiss).toHaveBeenCalledWith(undefined, 'cancel');
+      expect((el as any).selectedRecipeId).toBe(1);
+    });
+  });
+
+  describe('save and cancel actions', () => {
+    it('does not dismiss on save if no recipe is selected', async () => {
+      const { modal, el } = await createRecipeLinkEditor();
+
+      const saveBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      saveBtn?.click();
+      await el.updateComplete;
+
+      expect(modal.dismiss).not.toHaveBeenCalled();
+    });
+
+    it('dismisses modal with selected recipeId when valid', async () => {
+      const { modal, el } = await createRecipeLinkEditor();
+
+      const searchInput = el.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
+      if (searchInput) {
+        searchInput.value = 'pasta';
+        searchInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'pasta' } }));
+      }
+      await new Promise(r => setTimeout(r, 20));
+      await el.updateComplete;
+
+      const radioGroup = el.shadowRoot?.querySelector('ion-radio-group');
+      radioGroup?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 3 } }));
+      await el.updateComplete;
+
+      const saveBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      saveBtn?.click();
+      await el.updateComplete;
+
+      expect(modal.dismiss).toHaveBeenCalledWith({ recipeId: 3 }, 'save');
+    });
+
+    it('dismisses modal with cancel role when Cancel is clicked', async () => {
+      const { modal, el } = await createRecipeLinkEditor();
+
+      const cancelBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
+      cancelBtn?.click();
+      await el.updateComplete;
+
+      expect(modal.dismiss).toHaveBeenCalledWith(undefined, 'cancel');
+    });
   });
 });

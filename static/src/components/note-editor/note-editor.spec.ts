@@ -1,13 +1,12 @@
 import { fixture, html } from '@open-wc/testing';
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { alertController } from '@ionic/core';
 import { Note } from '../../helpers/schema.gen';
 import './note-editor';
 import { NoteEditor } from './note-editor';
+import { HTMLEditor } from '../html-editor/html-editor';
 
 describe('note-editor', () => {
-  let modalEl: HTMLIonModalElement;
-
   function mockAlert(role = 'destructive'): HTMLIonAlertElement {
     return {
       present: vi.fn().mockResolvedValue(undefined),
@@ -22,73 +21,150 @@ describe('note-editor', () => {
     return modal.canDismiss;
   }
 
-  beforeEach(() => {
-    modalEl = document.createElement('ion-modal');
-    modalEl.dismiss = vi.fn().mockResolvedValue(true);
-    document.body.appendChild(modalEl);
-  });
+  async function createNoteEditor(template = html`<note-editor></note-editor>`) {
+    const modal = await fixture<HTMLIonModalElement>(html`
+      <ion-modal>
+        ${template}
+      </ion-modal>
+    `);
+    modal.dismiss = vi.fn().mockResolvedValue(true);
+    const el = modal.querySelector<NoteEditor>('note-editor')!;
+    await el.updateComplete;
+    return { modal, el };
+  }
 
   afterEach(() => {
-    modalEl.remove();
     vi.restoreAllMocks();
   });
 
   it('renders default state as New Note', async () => {
-    const el = await fixture<NoteEditor>(html`<note-editor></note-editor>`);
+    const { el } = await createNoteEditor();
 
     const title = el.shadowRoot?.querySelector('ion-title');
     expect(title?.textContent?.trim()).toBe('New Note');
 
-    const editor = el.shadowRoot?.querySelector('html-editor');
-    expect(editor).not.toBeNull();
+    const textArea = el.shadowRoot?.querySelector<HTMLEditor>('html-editor');
+    expect(textArea).not.toBeNull();
+    expect(textArea?.value).toBe('');
   });
 
   it('renders Edit Note when note has an id', async () => {
     const note: Note = { id: 10, text: 'Existing text' };
-    const el = await fixture<NoteEditor>(html`<note-editor .note=${note}></note-editor>`);
+    const { el } = await createNoteEditor(html`<note-editor .note=${note}></note-editor>`);
 
     const title = el.shadowRoot?.querySelector('ion-title');
     expect(title?.textContent?.trim()).toBe('Edit Note');
+
+    const textArea = el.shadowRoot?.querySelector<HTMLEditor>('html-editor');
+    expect(textArea?.value).toBe(note.text);
   });
 
-  it('dismisses modal with updated note on save', async () => {
-    const note: Note = { id: 10, text: 'Existing text' };
-    const el = await fixture<NoteEditor>(html`<note-editor .note=${note}></note-editor>`);
-    modalEl.appendChild(el);
-    await el.updateComplete;
+  describe('canDismiss guard', () => {
+    it('allows dismissal without prompt when role is save', async () => {
+      const { modal } = await createNoteEditor();
 
-    const saveBtn = el.shadowRoot?.querySelector('ion-buttons[slot="primary"] ion-button') as HTMLElement;
-    saveBtn.click();
+      const canDismiss = await callCanDismiss(modal, undefined, 'save');
+      expect(canDismiss).toBe(true);
+    });
 
-    expect(modalEl.dismiss).toHaveBeenCalledWith({ note }, 'save');
+    it('allows dismissal when text is unchanged', async () => {
+      const note: Note = { id: 1, text: 'Original text' };
+      const { modal, el } = await createNoteEditor(html`<note-editor .note=${note}></note-editor>`);
+
+      const editor = el.shadowRoot?.querySelector<HTMLEditor>('html-editor');
+      if (editor) {
+        editor.getValue = vi.fn().mockResolvedValue('Original text');
+      }
+
+      const canDismiss = await callCanDismiss(modal, undefined, 'cancel');
+      expect(canDismiss).toBe(true);
+    });
+
+    it('prompts to discard changes when text is dirty and confirms discard', async () => {
+      const note: Note = { id: 1, text: 'Original text' };
+      const { modal, el } = await createNoteEditor(html`<note-editor .note=${note}></note-editor>`);
+
+      const editor = el.shadowRoot?.querySelector<HTMLEditor>('html-editor');
+      if (editor) {
+        editor.getValue = vi.fn().mockResolvedValue('Modified text');
+      }
+
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
+
+      const canDismiss = await callCanDismiss(modal, undefined, 'cancel');
+      expect(canDismiss).toBe(true);
+      expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Discard Changes?' }));
+    });
+
+    it('blocks dismissal when user cancels discard prompt', async () => {
+      const note: Note = { id: 1, text: 'Original text' };
+      const { modal, el } = await createNoteEditor(html`<note-editor .note=${note}></note-editor>`);
+
+      const editor = el.shadowRoot?.querySelector<HTMLEditor>('html-editor');
+      if (editor) {
+        editor.getValue = vi.fn().mockResolvedValue('Modified text');
+      }
+
+      vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
+
+      const canDismiss = await callCanDismiss(modal, undefined, 'cancel');
+      expect(canDismiss).toBe(false);
+    });
   });
 
-  it('dismisses modal on cancel', async () => {
-    const el = await fixture<NoteEditor>(html`<note-editor></note-editor>`);
-    modalEl.appendChild(el);
-    await el.updateComplete;
+  describe('user interactions and save/cancel actions', () => {
+    it('updates note text when html-editor emits valueChanged', async () => {
+      const { el } = await createNoteEditor();
+      const editor = el.shadowRoot?.querySelector('html-editor');
 
-    const cancelBtn = el.shadowRoot?.querySelector('ion-buttons[slot="secondary"] ion-button') as HTMLElement;
-    cancelBtn.click();
+      editor?.dispatchEvent(new CustomEvent('valueChanged', { detail: 'New content from editor' }));
+      await el.updateComplete;
 
-    expect(modalEl.dismiss).toHaveBeenCalledWith(undefined, 'cancel');
-  });
+      expect(el.note.text).toBe('New content from editor');
+    });
 
-  it('guards dismissal when text is modified', async () => {
-    const note: Note = { id: 1, text: 'Original text' };
-    const el = await fixture<NoteEditor>(html`<note-editor .note=${note}></note-editor>`);
-    modalEl.appendChild(el);
-    await el.updateComplete;
+    it('does not dismiss on save if form validity fails', async () => {
+      const { modal, el } = await createNoteEditor();
 
-    const editor = el.shadowRoot?.querySelector('html-editor');
-    if (editor) {
-      editor.getValue = vi.fn().mockResolvedValue('Modified text');
-    }
+      const form = el.shadowRoot?.querySelector('form');
+      if (form) {
+        vi.spyOn(form, 'reportValidity').mockReturnValue(false);
+      }
 
-    vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
+      const saveBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      saveBtn?.click();
+      await el.updateComplete;
 
-    const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
-    expect(canDismiss).toBe(true);
+      expect(modal.dismiss).not.toHaveBeenCalled();
+    });
+
+    it('dismisses modal with updated note on save', async () => {
+      const { modal, el } = await createNoteEditor();
+
+      const editor = el.shadowRoot?.querySelector('html-editor');
+      editor?.dispatchEvent(new CustomEvent('valueChanged', { detail: 'Saved note content' }));
+      await el.updateComplete;
+
+      const form = el.shadowRoot?.querySelector('form');
+      if (form) {
+        vi.spyOn(form, 'reportValidity').mockReturnValue(true);
+      }
+
+      const saveBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      saveBtn?.click();
+      await el.updateComplete;
+
+      expect(modal.dismiss).toHaveBeenCalledWith({ note: { text: 'Saved note content' } }, 'save');
+    });
+
+    it('dismisses modal with cancel role when Cancel is clicked', async () => {
+      const { modal, el } = await createNoteEditor();
+
+      const cancelBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
+      cancelBtn?.click();
+      await el.updateComplete;
+
+      expect(modal.dismiss).toHaveBeenCalledWith(undefined, 'cancel');
+    });
   });
 });
-

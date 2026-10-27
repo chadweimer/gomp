@@ -1,5 +1,6 @@
 import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { alertController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { TagSearchResult } from '../../../helpers/schema.gen';
 import { SwipeDirection } from '../../../models';
@@ -191,6 +192,50 @@ describe('page-tags', () => {
     swipeHandler?.(SwipeDirection.Right);
     await new Promise(resolve => setTimeout(resolve, 50));
     expect(pageQueried).toBe(1);
+  });
+
+  it('handles GET tags failure gracefully', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    fetchMocker.mockResponse(() => Promise.resolve({ status: 500, body: 'Server error' }));
+
+    const el = await fixture<PageTags>(html`<page-tags></page-tags>`);
+    await el.activatedCallback();
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    const items = el.querySelectorAll('ion-item');
+    expect(items).toHaveLength(0);
+  });
+
+  it('changes resultsPerPage when resultsPerPage button is clicked', async () => {
+    let capturedUrl = '';
+    fetchMocker.mockResponse((req: Request) => {
+      if (req.url.includes('/tags')) {
+        capturedUrl = req.url;
+        return {
+          status: 200,
+          body: JSON.stringify(mockTagResult),
+        };
+      }
+      return { status: 404 };
+    });
+
+    vi.spyOn(alertController, 'create').mockResolvedValue({
+      present: vi.fn().mockResolvedValue(undefined),
+      dismiss: vi.fn().mockResolvedValue(true),
+      onDidDismiss: vi.fn().mockResolvedValue({ role: 'confirm', data: { values: 60 } }),
+    } as any);
+
+    const el = await fixture<PageTags>(html`<page-tags></page-tags>`);
+    await el.activatedCallback();
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    const buttons = el.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
+    const rppButton = buttons[2];
+    rppButton.click();
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    expect(capturedUrl).toContain('count=60');
   });
 });
 

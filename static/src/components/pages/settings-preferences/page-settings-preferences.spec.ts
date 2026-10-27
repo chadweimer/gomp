@@ -1,6 +1,6 @@
 import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { loadingController } from '@ionic/core';
+import { loadingController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { UserSettings } from '../../../helpers/schema.gen';
 import { clearState } from '../../../stores/state';
@@ -16,6 +16,12 @@ describe('page-settings-preferences', () => {
     homeImageUrl: 'https://example.com/banner.jpg',
     favoriteTags: ['dinner', 'dessert'],
   };
+
+  function mockToast(): HTMLIonToastElement {
+    return {
+      present: vi.fn().mockResolvedValue(undefined),
+    } as unknown as HTMLIonToastElement;
+  }
 
   function mockLoading(): HTMLIonLoadingElement {
     return {
@@ -39,13 +45,8 @@ describe('page-settings-preferences', () => {
     vi.restoreAllMocks();
   });
 
-  it('builds and renders initial state', async () => {
-    fetchMocker.mockResponse((req: Request) => {
-      if (req.url.match(/\/users\/current\/settings$/) && req.method === 'GET') {
-        return Promise.resolve(JSON.stringify(mockSettings));
-      }
-      return Promise.resolve('{}');
-    });
+  it('builds and renders initial state before activation', async () => {
+    fetchMocker.mockResponse(() => Promise.resolve({ status: 404, body: '' }));
 
     const root = await fixture<PageSettingsPreferences>(html`<page-settings-preferences></page-settings-preferences>`);
     await root.updateComplete;
@@ -54,8 +55,13 @@ describe('page-settings-preferences', () => {
     expect(input).not.toBeNull();
     expect(input?.getAttribute('label')).toBe('Home Title');
 
+    const img = root.querySelector('ion-thumbnail img');
+    expect(img?.hasAttribute('hidden')).toBe(true);
+
     const buttons = root.querySelectorAll('ion-card ion-button');
     expect(buttons).toHaveLength(2);
+    expect(buttons[0].textContent?.trim()).toContain('Save');
+    expect(buttons[1].textContent?.trim()).toContain('Reset');
   });
 
   it('loads and renders user settings on activatedCallback', async () => {
@@ -67,11 +73,11 @@ describe('page-settings-preferences', () => {
     });
 
     const root = await fixture<PageSettingsPreferences>(html`<page-settings-preferences></page-settings-preferences>`);
-    await root.activatedCallback();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const input = root.querySelector('ion-input');
-    expect(input?.getAttribute('.value') ?? (input as any).value).toBe('My Recipe Vault');
+    const input = root.querySelector<HTMLIonInputElement>('ion-input');
+    expect(input?.value).toBe('My Recipe Vault');
 
     const img = root.querySelector('ion-thumbnail img');
     expect(img).not.toBeNull();
@@ -92,7 +98,7 @@ describe('page-settings-preferences', () => {
     });
 
     const root = await fixture<PageSettingsPreferences>(html`<page-settings-preferences></page-settings-preferences>`);
-    await root.activatedCallback();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
     expect(consoleErrorSpy).toHaveBeenCalled();
@@ -114,7 +120,7 @@ describe('page-settings-preferences', () => {
     });
 
     const root = await fixture<PageSettingsPreferences>(html`<page-settings-preferences></page-settings-preferences>`);
-    await root.activatedCallback();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
     const input = root.querySelector<HTMLIonInputElement>('ion-input');
@@ -128,7 +134,9 @@ describe('page-settings-preferences', () => {
     tagsInput?.dispatchEvent(new CustomEvent('valueChanged', { detail: ['quick', 'easy'] }));
     await root.updateComplete;
 
-    await root.onSaveSettingsClicked();
+    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    saveButton?.click();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
     const putReq = requests.find(r => r.url.match(/\/users\/current\/settings$/) && r.method === 'PUT');
@@ -149,7 +157,7 @@ describe('page-settings-preferences', () => {
     });
 
     const root = await fixture<PageSettingsPreferences>(html`<page-settings-preferences></page-settings-preferences>`);
-    await root.activatedCallback();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
     const form = root.querySelector('form');
@@ -157,7 +165,9 @@ describe('page-settings-preferences', () => {
       vi.spyOn(form, 'reportValidity').mockReturnValue(false);
     }
 
-    await root.onSaveSettingsClicked();
+    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    saveButton?.click();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
     const putRequests = requests.filter(r => r.method === 'PUT');
@@ -184,17 +194,21 @@ describe('page-settings-preferences', () => {
     });
 
     const root = await fixture<PageSettingsPreferences>(html`<page-settings-preferences></page-settings-preferences>`);
-    await root.activatedCallback();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
     const fileInput = root.querySelector<HTMLInputElement>('input[type="file"]');
     const dummyFile = new File(['image-bytes'], 'banner.jpg', { type: 'image/jpeg' });
-    Object.defineProperty(fileInput, 'files', {
-      value: [dummyFile],
-      writable: true
-    });
+    if (fileInput) {
+      Object.defineProperty(fileInput, 'files', {
+        value: [dummyFile],
+        writable: true
+      });
+    }
 
-    await root.onSaveSettingsClicked();
+    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    saveButton?.click();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
     const uploadReq = requests.find(r => r.url.match(/\/uploads$/) && r.method === 'POST');
@@ -206,24 +220,105 @@ describe('page-settings-preferences', () => {
     expect(body.homeImageUrl).toBe('https://example.com/new-banner.jpg');
   });
 
-  it('resets settings on reset button click', async () => {
-    let getCount = 0;
+  it('displays toast error when image upload fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const toast = mockToast();
+    const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
+
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current\/settings$/) && req.method === 'GET') {
-        getCount++;
         return Promise.resolve(JSON.stringify(mockSettings));
+      }
+      if (req.url.match(/\/uploads$/) && req.method === 'POST') {
+        return Promise.resolve({ status: 500, body: 'Upload error' });
+      }
+      if (req.url.match(/\/users\/current\/settings$/) && req.method === 'PUT') {
+        return Promise.resolve('{}');
       }
       return Promise.resolve('{}');
     });
 
     const root = await fixture<PageSettingsPreferences>(html`<page-settings-preferences></page-settings-preferences>`);
-    await root.activatedCallback();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
+
+    const fileInput = root.querySelector<HTMLInputElement>('input[type="file"]');
+    const mockFile = new File(['imagecontent'], 'fail.jpg', { type: 'image/jpeg' });
+    if (fileInput) {
+      Object.defineProperty(fileInput, 'files', {
+        value: [mockFile],
+        writable: true,
+      });
+    }
+
+    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    saveButton?.click();
+    await new Promise(r => setTimeout(r, 10));
+    await root.updateComplete;
+
+    expect(createToastSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Failed to upload image.' })
+    );
+    expect(toast.present).toHaveBeenCalled();
+  });
+
+  it('displays toast error when saving preferences fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const toast = mockToast();
+    const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
+
+    fetchMocker.mockResponse((req: Request) => {
+      if (req.url.match(/\/users\/current\/settings$/) && req.method === 'GET') {
+        return Promise.resolve(JSON.stringify(mockSettings));
+      }
+      if (req.url.match(/\/users\/current\/settings$/) && req.method === 'PUT') {
+        return Promise.resolve({ status: 500, body: 'Server error' });
+      }
+      return Promise.resolve('{}');
+    });
+
+    const root = await fixture<PageSettingsPreferences>(html`<page-settings-preferences></page-settings-preferences>`);
+    await new Promise(r => setTimeout(r, 10));
+    await root.updateComplete;
+
+    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    saveButton?.click();
+    await new Promise(r => setTimeout(r, 10));
+    await root.updateComplete;
+
+    expect(createToastSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'Failed to save preferences.' })
+    );
+    expect(toast.present).toHaveBeenCalled();
+  });
+
+  it('reloads user settings on reset button click', async () => {
+    let getCount = 0;
+    fetchMocker.mockResponse((req: Request) => {
+      if (req.url.match(/\/users\/current\/settings$/) && req.method === 'GET') {
+        getCount++;
+        if (getCount === 1) {
+          return Promise.resolve(JSON.stringify({ ...mockSettings, homeTitle: 'Initial Title' }));
+        }
+        return Promise.resolve(JSON.stringify({ ...mockSettings, homeTitle: 'Reset Title' }));
+      }
+      return Promise.resolve('{}');
+    });
+
+    const root = await fixture<PageSettingsPreferences>(html`<page-settings-preferences></page-settings-preferences>`);
+    await new Promise(r => setTimeout(r, 10));
+    await root.updateComplete;
+
+    let input = root.querySelector<HTMLIonInputElement>('ion-input');
+    expect(input?.value).toBe('Initial Title');
 
     const resetButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="danger"]');
     resetButton?.click();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
+    input = root.querySelector<HTMLIonInputElement>('ion-input');
+    expect(input?.value).toBe('Reset Title');
     expect(getCount).toBeGreaterThanOrEqual(2);
   });
 });

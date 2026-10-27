@@ -1,13 +1,26 @@
 import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { alertController } from '@ionic/core';
 import { fetchMocker } from '../../../vitest.setup';
-import { RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SearchField, SearchFilter, SortBy, SortDir, UserSettings } from '../../helpers/schema.gen';
+import {
+  RecipeState,
+  SavedSearchFilter,
+  SavedSearchFilterCompact,
+  SearchField,
+  SearchFilter,
+  SortBy,
+  SortDir,
+  UserSettings,
+  YesNoAny,
+} from '../../helpers/schema.gen';
 import { getDefaultSearchFilter } from '../../models';
+import { toYesNoAny } from '../../helpers/utils';
 import { clearState } from '../../stores/state';
 import './search-filter-editor';
 import { SearchFilterEditor } from './search-filter-editor';
 
 describe('search-filter-editor', () => {
+  const originalFetch = globalThis.fetch;
   let modalEl: HTMLIonModalElement;
 
   const mockSettings: UserSettings = {
@@ -34,101 +47,647 @@ describe('search-filter-editor', () => {
     tags: ['quick'],
   };
 
+  let currentSettings: UserSettings | null = mockSettings;
+  let currentFilters: SavedSearchFilterCompact[] | null = mockFilters;
+  let currentFilterDetail: SavedSearchFilter | null = mockLoadedFilter;
+
+  function mockAlert(role = 'confirm'): HTMLIonAlertElement {
+    return {
+      present: vi.fn().mockResolvedValue(undefined),
+      onDidDismiss: vi.fn().mockResolvedValue({ role }),
+    } as unknown as HTMLIonAlertElement;
+  }
+
+  function syncInputValues(root: SearchFilterEditor) {
+    const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+    if (nameInput) {
+      nameInput.value = root.name;
+    }
+    const queryInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+    if (queryInput) {
+      queryInput.value = root.searchFilter?.query ?? '';
+    }
+  }
+
+  async function callCanDismiss(
+    modal: HTMLIonModalElement,
+    data?: unknown,
+    role?: string
+  ): Promise<boolean | undefined> {
+    if (typeof modal.canDismiss === 'function') {
+      return await modal.canDismiss(data, role);
+    }
+    return modal.canDismiss;
+  }
+
   beforeEach(() => {
     fetchMocker.resetMocks();
     clearState();
-
     modalEl = document.createElement('ion-modal');
     modalEl.dismiss = vi.fn().mockResolvedValue(true);
     document.body.appendChild(modalEl);
 
+    currentSettings = mockSettings;
+    currentFilters = mockFilters;
+    currentFilterDetail = mockLoadedFilter;
+
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current\/settings$/) && req.method === 'GET') {
-        return Promise.resolve(JSON.stringify(mockSettings));
+        if (currentSettings === null) {
+          return { status: 500, body: JSON.stringify({ message: 'Error' }) };
+        }
+        return { status: 200, body: JSON.stringify(currentSettings) };
       }
       if (req.url.match(/\/users\/current\/filters\/\d+$/) && req.method === 'GET') {
-        return Promise.resolve(JSON.stringify(mockLoadedFilter));
+        if (currentFilterDetail === null) {
+          return { status: 500, body: JSON.stringify({ message: 'Error' }) };
+        }
+        return { status: 200, body: JSON.stringify(currentFilterDetail) };
       }
       if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-        return Promise.resolve(JSON.stringify({ total: mockFilters.length, filters: mockFilters }));
+        if (currentFilters === null) {
+          return { status: 500, body: JSON.stringify({ message: 'Error' }) };
+        }
+        return { status: 200, body: JSON.stringify({ total: currentFilters.length, filters: currentFilters }) };
       }
-      return Promise.resolve(JSON.stringify({}));
+      return { status: 404, body: '' };
     });
   });
 
   afterEach(() => {
+    globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
     clearState();
     modalEl.remove();
     vi.restoreAllMocks();
   });
 
-  it('renders default values', async () => {
-    const el = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+  describe('Suite 1: Initial Rendering & Default State', () => {
+    it('builds and renders default state', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
 
-    const title = el.shadowRoot?.querySelector('ion-title');
-    expect(title?.textContent?.trim()).toBe('New Search');
+      const defaultSearchFilter = getDefaultSearchFilter();
 
-    const nameInput = el.shadowRoot?.querySelector('ion-input[label="Name"]');
-    expect(nameInput).not.toBeNull();
+      const saveBtn = root.shadowRoot?.querySelector('ion-buttons[slot="primary"] ion-button');
+      expect(saveBtn).not.toBeNull();
+      expect(saveBtn?.textContent?.trim()).toBe('Save');
 
-    const tagsInput = el.shadowRoot?.querySelector('tags-input');
-    expect(tagsInput).not.toBeNull();
+      const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      expect(nameInput).not.toBeNull();
+      expect(nameInput?.value).toBe('');
+      expect(nameInput?.hasAttribute('required')).toBe(true);
+      expect(nameInput?.hasAttribute('autofocus')).toBe(true);
+
+      const queryInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+      expect(queryInput).not.toBeNull();
+      expect(queryInput?.value).toBe(defaultSearchFilter.query);
+
+      const tagsInput = root.shadowRoot?.querySelector<any>('tags-input[label="Tags"]');
+      expect(tagsInput).not.toBeNull();
+      expect(tagsInput?.value).toEqual([]);
+
+      const sortBySelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
+      expect(sortBySelect).not.toBeNull();
+      expect(sortBySelect?.value).toBe(defaultSearchFilter.sortBy);
+
+      const sortDirSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort Order"]');
+      expect(sortDirSelect).not.toBeNull();
+      expect(sortDirSelect?.value).toBe(defaultSearchFilter.sortDir);
+
+      const picturesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Pictures"]');
+      expect(picturesSelect).not.toBeNull();
+      expect(picturesSelect?.value).toBe(toYesNoAny(defaultSearchFilter.withPictures));
+
+      const statesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="States"]');
+      expect(statesSelect).not.toBeNull();
+      expect(statesSelect?.hasAttribute('multiple')).toBe(true);
+      expect(statesSelect?.value).toEqual(defaultSearchFilter.states);
+
+      const fieldsSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Fields to Search"]');
+      expect(fieldsSelect).not.toBeNull();
+      expect(fieldsSelect?.hasAttribute('multiple')).toBe(true);
+      expect(fieldsSelect?.value).toEqual(defaultSearchFilter.fields);
+
+      const loader = root.shadowRoot?.querySelector('#savedSearchLoader');
+      expect(loader).toBeNull();
+    });
+
+    it('renders with custom props', async () => {
+      const customFilter: SearchFilter = {
+        query: 'tacos',
+        tags: ['mexican'],
+        sortBy: SortBy.Rating,
+        sortDir: SortDir.Desc,
+        withPictures: true,
+        states: [RecipeState.Archived],
+        fields: [SearchField.Directions],
+      };
+
+      const root = await fixture<SearchFilterEditor>(html`
+        <search-filter-editor
+          prompt="Find Dinner"
+          saveLabel="Apply"
+          name="Taco Night"
+          .searchFilter=${customFilter}
+        ></search-filter-editor>
+      `);
+      await root.updateComplete;
+
+      const title = root.shadowRoot?.querySelector('ion-title');
+      expect(title?.textContent?.trim()).toBe('Find Dinner');
+
+      const saveBtn = root.shadowRoot?.querySelector('ion-buttons[slot="primary"] ion-button');
+      expect(saveBtn?.textContent?.trim()).toBe('Apply');
+
+      const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      expect(nameInput?.value).toBe('Taco Night');
+
+      const queryInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+      expect(queryInput?.value).toBe('tacos');
+
+      const tagsInput = root.shadowRoot?.querySelector<any>('tags-input[label="Tags"]');
+      expect(tagsInput?.value).toEqual(['mexican']);
+
+      const sortBySelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
+      expect(sortBySelect?.value).toBe(SortBy.Rating);
+
+      const sortDirSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort Order"]');
+      expect(sortDirSelect?.value).toBe(SortDir.Desc);
+
+      const picturesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Pictures"]');
+      expect(picturesSelect?.value).toBe(YesNoAny.Yes);
+
+      const statesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="States"]');
+      expect(statesSelect?.value).toEqual([RecipeState.Archived]);
+
+      const fieldsSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Fields to Search"]');
+      expect(fieldsSelect?.value).toEqual([SearchField.Directions]);
+    });
+
+    it('hides name input when showName is false', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor .showName=${false}></search-filter-editor>`);
+      await root.updateComplete;
+
+      const nameInput = root.shadowRoot?.querySelector('ion-input[label="Name"]');
+      expect(nameInput).toBeNull();
+    });
+
+    it('prevents default form submission', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
+
+      const form = root.shadowRoot?.querySelector('form');
+      expect(form).not.toBeNull();
+
+      const submitEvent = new CustomEvent('submit', { cancelable: true });
+      const wasPrevented = !form?.dispatchEvent(submitEvent);
+      expect(wasPrevented).toBe(true);
+    });
   });
 
-  it('resets searchFilter when reset button clicked', async () => {
-    const filter: SearchFilter = {
-      ...getDefaultSearchFilter(),
-      query: 'something',
-      sortBy: SortBy.Created,
-    };
-    const el = await fixture<SearchFilterEditor>(html`<search-filter-editor .searchFilter=${filter}></search-filter-editor>`);
+  describe('Suite 2: User Settings & Suggestions', () => {
+    it('populates tag suggestions from user settings', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await new Promise((r) => setTimeout(r, 10));
+      await root.updateComplete;
 
-    const resetBtn = el.shadowRoot?.querySelector('ion-buttons[slot="secondary"] ion-button') as HTMLElement;
-    resetBtn.click();
-    await el.updateComplete;
+      const tagsInput = root.shadowRoot?.querySelector<any>('tags-input[label="Tags"]');
+      expect(tagsInput?.suggestions).toEqual(['breakfast', 'quick', 'dinner']);
+    });
 
-    expect(el.searchFilter).toEqual(getDefaultSearchFilter());
+    it('falls back to empty suggestions when loadUserSettings fails', async () => {
+      currentSettings = null;
+
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await new Promise((r) => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const tagsInput = root.shadowRoot?.querySelector<any>('tags-input[label="Tags"]');
+      expect(tagsInput?.suggestions).toEqual([]);
+    });
+
+    it('handles user settings without favorite tags', async () => {
+      currentSettings = {
+        userId: 1,
+        homeTitle: 'My Home',
+        homeImageUrl: '',
+        favoriteTags: [],
+      };
+
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await new Promise((r) => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const tagsInput = root.shadowRoot?.querySelector<any>('tags-input[label="Tags"]');
+      expect(tagsInput?.suggestions).toEqual([]);
+    });
   });
 
-  it('dismisses with form data on save', async () => {
-    const el = await fixture<SearchFilterEditor>(html`<search-filter-editor name="My Search"></search-filter-editor>`);
-    modalEl.appendChild(el);
-    await el.updateComplete;
+  describe('Suite 3: Saved Search Loader', () => {
+    it('renders saved search options and open button disabled initially', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor ?showSavedLoader=${true}></search-filter-editor>`);
+      await new Promise((r) => setTimeout(r, 10));
+      await root.updateComplete;
 
-    const saveBtn = el.shadowRoot?.querySelector('ion-buttons[slot="primary"] ion-button') as HTMLElement;
-    saveBtn.click();
+      const loader = root.shadowRoot?.querySelector('#savedSearchLoader');
+      expect(loader).not.toBeNull();
 
-    expect(modalEl.dismiss).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'My Search' }),
-      'save'
-    );
+      const options = loader?.querySelectorAll('ion-select-option');
+      expect(options).toHaveLength(2);
+      expect(options?.[0]?.textContent?.trim()).toBe('Quick Dinners');
+      expect(options?.[0]?.value).toBe(1);
+      expect(options?.[1]?.textContent?.trim()).toBe('Desserts');
+      expect(options?.[1]?.value).toBe(2);
+
+      const openBtn = loader?.querySelector<HTMLIonButtonElement>('ion-button');
+      expect(openBtn?.hasAttribute('disabled')).toBe(true);
+    });
+
+    it('handles failure when loading saved search filters list', async () => {
+      currentFilters = null;
+
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor ?showSavedLoader=${true}></search-filter-editor>`);
+      await new Promise((r) => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const options = root.shadowRoot?.querySelectorAll('#savedSearchLoader ion-select-option');
+      expect(options).toHaveLength(0);
+    });
+
+    it('enables open button on select and loads filter on click', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor ?showSavedLoader=${true}></search-filter-editor>`);
+      await new Promise((r) => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const select = root.shadowRoot?.querySelector<HTMLIonSelectElement>('#savedSearchLoader ion-select');
+      select?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 1 } }));
+      await root.updateComplete;
+
+      const openBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>('#savedSearchLoader ion-button');
+      expect(openBtn?.hasAttribute('disabled')).toBe(false);
+
+      openBtn?.click();
+      await new Promise((r) => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(root.searchFilter).toEqual(mockLoadedFilter);
+      expect(openBtn?.hasAttribute('disabled')).toBe(true);
+    });
+
+    it('handles error when loading a selected filter fails', async () => {
+      currentFilterDetail = null;
+
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor ?showSavedLoader=${true}></search-filter-editor>`);
+      await new Promise((r) => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const select = root.shadowRoot?.querySelector<HTMLIonSelectElement>('#savedSearchLoader ion-select');
+      select?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 1 } }));
+      await root.updateComplete;
+
+      const openBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>('#savedSearchLoader ion-button');
+      openBtn?.click();
+      await new Promise((r) => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(consoleSpy).toHaveBeenCalled();
+      expect(root.searchFilter.query).toBe('');
+    });
+
+    it('does nothing when open button is clicked without selected filter', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor ?showSavedLoader=${true}></search-filter-editor>`);
+      await new Promise((r) => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const openBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>('#savedSearchLoader ion-button');
+      openBtn?.click();
+      await root.updateComplete;
+
+      const detailRequests = (fetchMocker.requests() as Request[]).filter((r) =>
+        r.url.match(/\/users\/current\/filters\/\d+$/)
+      );
+      expect(detailRequests).toHaveLength(0);
+    });
   });
 
-  it('dismisses modal on cancel', async () => {
-    const el = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
-    modalEl.appendChild(el);
-    await el.updateComplete;
+  describe('Suite 4: Form Input Updates & Change Events', () => {
+    it('updates name on ionChange', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
 
-    const buttons = el.shadowRoot?.querySelectorAll<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button')!;
-    const cancelBtn = buttons[1];
-    cancelBtn.click();
+      const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      nameInput?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 'Curry Dishes' } }));
+      await root.updateComplete;
 
-    expect(modalEl.dismiss).toHaveBeenCalledWith(undefined, 'cancel');
+      expect(root.name).toBe('Curry Dishes');
+    });
+
+    it('updates search terms query on ionChange', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
+
+      const queryInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+      queryInput?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 'curry' } }));
+      await root.updateComplete;
+
+      expect(root.searchFilter.query).toBe('curry');
+    });
+
+    it('updates tags on valueChanged', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
+
+      const tagsInput = root.shadowRoot?.querySelector('tags-input[label="Tags"]');
+      tagsInput?.dispatchEvent(new CustomEvent('valueChanged', { detail: ['asian', 'spicy'] }));
+      await root.updateComplete;
+
+      expect(root.searchFilter.tags).toEqual(['asian', 'spicy']);
+    });
+
+    it('updates sortBy on ionChange', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
+
+      const sortBySelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
+      sortBySelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: SortBy.Rating } }));
+      await root.updateComplete;
+
+      expect(root.searchFilter.sortBy).toBe(SortBy.Rating);
+    });
+
+    it('updates sortDir on ionChange', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
+
+      const sortDirSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort Order"]');
+      sortDirSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: SortDir.Desc } }));
+      await root.updateComplete;
+
+      expect(root.searchFilter.sortDir).toBe(SortDir.Desc);
+    });
+
+    it('updates withPictures on ionChange for Yes, No, and Any', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
+
+      const picturesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Pictures"]');
+
+      picturesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: YesNoAny.Yes } }));
+      await root.updateComplete;
+      expect(root.searchFilter.withPictures).toBe(true);
+
+      picturesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: YesNoAny.No } }));
+      await root.updateComplete;
+      expect(root.searchFilter.withPictures).toBe(false);
+
+      picturesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: YesNoAny.Any } }));
+      await root.updateComplete;
+      expect(root.searchFilter.withPictures).toBeNull();
+    });
+
+    it('updates states on ionChange', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
+
+      const statesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="States"]');
+      statesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: [RecipeState.Archived] } }));
+      await root.updateComplete;
+
+      expect(root.searchFilter.states).toEqual([RecipeState.Archived]);
+    });
+
+    it('updates fields on ionChange', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
+
+      const fieldsSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Fields to Search"]');
+      fieldsSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: [SearchField.Directions] } }));
+      await root.updateComplete;
+
+      expect(root.searchFilter.fields).toEqual([SearchField.Directions]);
+    });
   });
 
-  it('renders saved loader when showSavedLoader is true and loads filter', async () => {
-    const el = await fixture<SearchFilterEditor>(html`<search-filter-editor ?showSavedLoader=${true}></search-filter-editor>`);
-    await el.updateComplete;
+  describe('Suite 5: Actions (Reset, Cancel, and Save)', () => {
+    it('resets search filter to default values when Reset is clicked', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      await root.updateComplete;
 
-    const loaderItem = el.shadowRoot?.querySelector('#savedSearchLoader');
-    expect(loaderItem).not.toBeNull();
+      root.searchFilter = {
+        ...root.searchFilter,
+        query: 'pizza',
+        sortBy: SortBy.Created,
+        sortDir: SortDir.Desc,
+      };
+      await root.updateComplete;
 
-    (el as any).selectedFilterId = 1;
-    await (el as any).onLoadSearchClicked();
-    await el.updateComplete;
+      const resetBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>(
+        'ion-buttons[slot="secondary"] ion-button:first-of-type'
+      );
+      resetBtn?.click();
+      await root.updateComplete;
 
-    expect(el.searchFilter.query).toBe('chicken');
+      expect(root.searchFilter).toEqual(getDefaultSearchFilter());
+    });
+
+    it('dismisses modal with undefined on cancel', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+
+      const cancelBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>(
+        'ion-buttons[slot="secondary"] ion-button:last-of-type'
+      );
+      cancelBtn?.click();
+      await root.updateComplete;
+
+      expect(modalEl.dismiss).toHaveBeenCalledWith(undefined, 'cancel');
+    });
+
+    it('dismisses modal with name and searchFilter when form is valid', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+
+      root.name = 'My Filter';
+      root.searchFilter = { ...getDefaultSearchFilter(), query: 'soup' };
+      await root.updateComplete;
+
+      const saveBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>(
+        'ion-buttons[slot="primary"] ion-button'
+      );
+      saveBtn?.click();
+      await root.updateComplete;
+
+      expect(modalEl.dismiss).toHaveBeenCalledWith(
+        {
+          name: 'My Filter',
+          searchFilter: root.searchFilter,
+        },
+        'save'
+      );
+    });
+
+    it('does not dismiss modal when form validation fails', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+
+      const form = root.shadowRoot?.querySelector('form');
+      if (form) {
+        vi.spyOn(form, 'reportValidity').mockReturnValue(false);
+      }
+
+      const saveBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>(
+        'ion-buttons[slot="primary"] ion-button'
+      );
+      saveBtn?.click();
+      await root.updateComplete;
+
+      expect(modalEl.dismiss).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Suite 6: Modal canDismiss & Dirty State Detection', () => {
+    it('allows dismissal without confirmation when role is save', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+      syncInputValues(root);
+
+      root.name = 'Modified Name';
+
+      const canDismiss = await callCanDismiss(modalEl, undefined, 'save');
+      expect(canDismiss).toBe(true);
+    });
+
+    it('allows dismissal without confirmation when clean', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+      syncInputValues(root);
+
+      const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
+      expect(canDismiss).toBe(true);
+    });
+
+    it('detects dirty state when name input value changed and confirms discard', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+      syncInputValues(root);
+
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
+
+      const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      if (nameInput) {
+        nameInput.value = 'Unsaved Name';
+      }
+
+      const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
+      expect(canDismiss).toBe(true);
+      expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Discard Changes?' }));
+    });
+
+    it('blocks dismissal when user cancels discard alert', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+      syncInputValues(root);
+
+      vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
+
+      const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      if (nameInput) {
+        nameInput.value = 'Unsaved Name';
+      }
+
+      const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
+      expect(canDismiss).toBe(false);
+    });
+
+    it('detects dirty state when query input value changed', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+      syncInputValues(root);
+
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
+
+      const queryInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+      if (queryInput) {
+        queryInput.value = 'Unsaved Query';
+      }
+
+      const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
+      expect(canDismiss).toBe(true);
+      expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Discard Changes?' }));
+    });
+
+    it('detects dirty state when filter properties change', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+      syncInputValues(root);
+
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
+
+      // sortBy
+      root.searchFilter = { ...root.searchFilter, sortBy: SortBy.Rating };
+      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
+
+      // sortDir
+      root.searchFilter = { ...root.searchFilter, sortDir: SortDir.Desc };
+      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
+
+      // withPictures
+      root.searchFilter = { ...root.searchFilter, withPictures: true };
+      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
+
+      // states
+      root.searchFilter = { ...root.searchFilter, states: [RecipeState.Archived] };
+      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
+
+      // fields
+      root.searchFilter = { ...root.searchFilter, fields: [SearchField.Directions] };
+      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
+
+      // tags
+      root.searchFilter = { ...root.searchFilter, tags: ['newTag'] };
+      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
+
+      expect(createAlertSpy).toHaveBeenCalledTimes(6);
+    });
+
+    it('treats reordered tags as equal and clean', async () => {
+      const initialFilter = { ...getDefaultSearchFilter(), tags: ['beta', 'alpha'] };
+      const root = await fixture<SearchFilterEditor>(html`
+        <search-filter-editor .searchFilter=${initialFilter}></search-filter-editor>
+      `);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+      syncInputValues(root);
+
+      const createAlertSpy = vi.spyOn(alertController, 'create');
+
+      root.searchFilter = { ...root.searchFilter, tags: ['alpha', 'beta'] };
+      const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
+
+      expect(canDismiss).toBe(true);
+      expect(createAlertSpy).not.toHaveBeenCalled();
+    });
+
+    it('handles canDismiss safely when showName is false', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor .showName=${false}></search-filter-editor>`);
+      modalEl.appendChild(root);
+      await root.updateComplete;
+      syncInputValues(root);
+
+      const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
+      expect(canDismiss).toBe(true);
+    });
   });
 });
-

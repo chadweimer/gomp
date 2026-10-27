@@ -1,6 +1,6 @@
 import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { alertController, modalController } from '@ionic/core';
+import { alertController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SearchFilterSearchResult, SortBy, SortDir } from '../../../helpers/schema.gen';
 import state, { clearState } from '../../../stores/state';
@@ -36,6 +36,7 @@ describe('page-settings-searches', () => {
   function mockModal(data: unknown = null): HTMLIonModalElement {
     return {
       present: vi.fn().mockResolvedValue(undefined),
+      dismiss: vi.fn().mockResolvedValue(true),
       onDidDismiss: vi.fn().mockResolvedValue({ data }),
     } as unknown as HTMLIonModalElement;
   }
@@ -43,8 +44,15 @@ describe('page-settings-searches', () => {
   function mockAlert(role = 'confirm'): HTMLIonAlertElement {
     return {
       present: vi.fn().mockResolvedValue(undefined),
+      dismiss: vi.fn().mockResolvedValue(true),
       onDidDismiss: vi.fn().mockResolvedValue({ role }),
     } as unknown as HTMLIonAlertElement;
+  }
+
+  function mockToast(): HTMLIonToastElement {
+    return {
+      present: vi.fn().mockResolvedValue(undefined),
+    } as unknown as HTMLIonToastElement;
   }
 
   beforeEach(() => {
@@ -75,7 +83,7 @@ describe('page-settings-searches', () => {
     });
 
     const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
-    await root.activatedCallback();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
     const cards = root.querySelectorAll('ion-card');
@@ -83,13 +91,17 @@ describe('page-settings-searches', () => {
 
     const navigator = root.querySelector('page-navigator');
     expect(navigator).not.toBeNull();
+    expect(root.page).toBe(1);
+    expect(root.numPages).toBe(1);
+
+    const fab = root.querySelector('ion-fab');
+    expect(fab).not.toBeNull();
+    const fabButton = root.querySelector('ion-fab-button');
+    expect(fabButton).not.toBeNull();
   });
 
-  it('loads search filter and redirects to /recipes on Load click', async () => {
+  it('loads and renders search filters on activatedCallback', async () => {
     fetchMocker.mockResponse((req: Request) => {
-      if (req.url.match(/\/users\/current\/filters\/\d+$/) && req.method === 'GET') {
-        return Promise.resolve(JSON.stringify(mockFilter1));
-      }
       if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
         return Promise.resolve(JSON.stringify(mockFilterResult));
       }
@@ -97,124 +109,478 @@ describe('page-settings-searches', () => {
     });
 
     const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
-    await root.activatedCallback();
+    await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    await root.onLoadSearchClicked(1);
-    expect(state.searchFilter.query).toBe('dinner');
-    expect(routerEl.push).toHaveBeenCalledWith('/recipes');
+    const cards = root.querySelectorAll('ion-card');
+    expect(cards).toHaveLength(2);
+
+    const titles = root.querySelectorAll('ion-card-title');
+    expect(titles[0].textContent?.trim()).toBe('Quick Dinners');
+    expect(titles[1].textContent?.trim()).toBe('Desserts');
   });
 
-  it('opens search-filter-editor modal and saves new filter on Add click', async () => {
-    const requests: Request[] = [];
+  it('handles GET search filters failure gracefully', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     fetchMocker.mockResponse((req: Request) => {
-      requests.push(req);
       if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-        return Promise.resolve(JSON.stringify(mockFilterResult));
+        return Promise.resolve({ status: 500, body: 'Server error' });
       }
-      if (req.url.match(/\/users\/current\/filters$/) && req.method === 'POST') {
+      return Promise.resolve('{}');
+    });
+
+    const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+    await new Promise(r => setTimeout(r, 10));
+    await root.updateComplete;
+
+    const cards = root.querySelectorAll('ion-card');
+    expect(cards).toHaveLength(0);
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  describe('Pagination', () => {
+    it('changes page when page-navigator emits pageChanged', async () => {
+      let capturedUrl = '';
+      const paginatedResult: SearchFilterSearchResult = {
+        total: 100,
+        filters: mockFilterCompacts,
+      };
+
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          capturedUrl = req.url;
+          return Promise.resolve(JSON.stringify(paginatedResult));
+        }
         return Promise.resolve('{}');
-      }
-      return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const navigator = root.querySelector('page-navigator');
+      expect(navigator).not.toBeNull();
+      expect(root.numPages).toBe(5);
+
+      navigator?.dispatchEvent(new CustomEvent('pageChanged', { detail: 2 }));
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(capturedUrl).toContain('page=2');
+      expect(root.page).toBe(2);
     });
-
-    vi.spyOn(modalController, 'create').mockResolvedValue(
-      mockModal({ name: 'Brand New Search', searchFilter: { query: 'pizza' } })
-    );
-
-    const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
-    await root.activatedCallback();
-    await root.updateComplete;
-
-    await root.onAddFilterClicked();
-    await root.updateComplete;
-
-    const postReq = requests.find(r => r.url.match(/\/users\/current\/filters$/) && r.method === 'POST');
-    expect(postReq).toBeDefined();
-    const body = await postReq?.clone().json();
-    expect(body.name).toBe('Brand New Search');
-    expect(body.query).toBe('pizza');
   });
 
-  it('opens search-filter-editor modal and saves updated filter on Edit click', async () => {
-    const requests: Request[] = [];
-    fetchMocker.mockResponse((req: Request) => {
-      requests.push(req);
-      if (req.url.match(/\/users\/current\/filters\/\d+$/) && req.method === 'GET') {
-        return Promise.resolve(JSON.stringify(mockFilter1));
-      }
-      if (req.url.match(/\/users\/current\/filters\/\d+$/) && req.method === 'PUT') {
+  describe('Load Search', () => {
+    it('fetches filter details, updates state, and redirects to /recipes', async () => {
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilter1));
+        }
         return Promise.resolve('{}');
-      }
-      if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-        return Promise.resolve(JSON.stringify(mockFilterResult));
-      }
-      return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const loadBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[0];
+      loadBtn?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(state.searchFilter.query).toBe('dinner');
+      expect(state.searchFilter.tags).toEqual(['quick']);
+      expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
-    vi.spyOn(modalController, 'create').mockResolvedValue(
-      mockModal({ name: 'Updated Search', searchFilter: { query: 'pasta' } })
-    );
-
-    const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
-    await root.activatedCallback();
-    await root.updateComplete;
-
-    await root.onEditFilterClicked(1);
-    await root.updateComplete;
-
-    const putReq = requests.find(r => r.url.match(/\/users\/current\/filters\/\d+$/) && r.method === 'PUT');
-    expect(putReq).toBeDefined();
-    const body = await putReq?.clone().json();
-    expect(body.name).toBe('Updated Search');
-    expect(body.query).toBe('pasta');
-  });
-
-  it('shows alert confirm and deletes filter on Delete click', async () => {
-    const requests: Request[] = [];
-    fetchMocker.mockResponse((req: Request) => {
-      requests.push(req);
-      if (req.url.match(/\/users\/current\/filters\/\d+$/) && req.method === 'DELETE') {
+    it('handles GET filter details failure gracefully', async () => {
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
+          return Promise.resolve({ status: 500, body: 'Server error' });
+        }
         return Promise.resolve('{}');
-      }
-      if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-        return Promise.resolve(JSON.stringify(mockFilterResult));
-      }
-      return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const loadBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[0];
+      loadBtn?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      expect(routerEl.push).not.toHaveBeenCalled();
     });
-
-    vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('confirm'));
-
-    const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
-    await root.activatedCallback();
-    await root.updateComplete;
-
-    await root.onDeleteFilterClicked(mockFilterCompacts[0]);
-    await root.updateComplete;
-
-    const deleteReq = requests.find(r => r.url.match(/\/users\/current\/filters\/\d+$/) && r.method === 'DELETE');
-    expect(deleteReq).toBeDefined();
   });
 
-  it('changes page on page navigator change', async () => {
-    let requestedPage = 1;
-    fetchMocker.mockResponse((req: Request) => {
-      if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-        const url = new URL(req.url);
-        requestedPage = parseInt(url.searchParams.get('page') ?? '1', 10);
-        return Promise.resolve(JSON.stringify({ total: 100, filters: mockFilterCompacts }));
-      }
-      return Promise.resolve('{}');
+  describe('Add Filter', () => {
+    it('opens search-filter-editor modal and creates filter on confirm', async () => {
+      const modal = mockModal({
+        name: 'New Healthy Search',
+        searchFilter: {
+          query: 'healthy',
+          withPictures: null,
+          sortBy: SortBy.Name,
+          sortDir: SortDir.Asc,
+          fields: [],
+          states: [RecipeState.Active],
+          tags: ['healthy'],
+        },
+      });
+      const createModalSpy = vi.spyOn(modalController, 'create').mockResolvedValue(modal);
+
+      const requests: Request[] = [];
+      fetchMocker.mockResponse((req: Request) => {
+        requests.push(req);
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'POST') {
+          return Promise.resolve(JSON.stringify({ id: 3, name: 'New Healthy Search' }));
+        }
+        return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const fabButton = root.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      fabButton?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(createModalSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          component: 'search-filter-editor',
+          componentProps: { prompt: 'New Search' },
+          backdropDismiss: false,
+        })
+      );
+      expect(modal.present).toHaveBeenCalled();
+
+      const postReq = requests.find(r => r.url.match(/\/users\/current\/filters$/) && r.method === 'POST');
+      expect(postReq).toBeDefined();
+      const body = (await postReq?.clone().json()) as SavedSearchFilter;
+      expect(body.name).toBe('New Healthy Search');
+      expect(body.query).toBe('healthy');
     });
 
-    const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
-    await root.activatedCallback();
-    await root.updateComplete;
+    it('does not create filter when modal is dismissed without data', async () => {
+      const modal = mockModal(null);
+      vi.spyOn(modalController, 'create').mockResolvedValue(modal);
 
-    root.setPage(3);
-    await root.updateComplete;
+      const requests: Request[] = [];
+      fetchMocker.mockResponse((req: Request) => {
+        requests.push(req);
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        return Promise.resolve('{}');
+      });
 
-    expect(requestedPage).toBe(3);
-    expect(root.page).toBe(3);
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const fabButton = root.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      fabButton?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const postRequests = requests.filter(r => r.method === 'POST');
+      expect(postRequests).toHaveLength(0);
+    });
+
+    it('displays toast error when creating filter fails', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const toast = mockToast();
+      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
+
+      const modal = mockModal({
+        name: 'Fail Search',
+        searchFilter: { query: 'fail' },
+      });
+      vi.spyOn(modalController, 'create').mockResolvedValue(modal);
+
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'POST') {
+          return Promise.resolve({ status: 500, body: 'Server error' });
+        }
+        return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const fabButton = root.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      fabButton?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(createToastSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Failed to create search filter.' })
+      );
+      expect(toast.present).toHaveBeenCalled();
+    });
+  });
+
+  describe('Edit Filter', () => {
+    it('loads filter details, opens modal with props, and updates filter on confirm', async () => {
+      const modal = mockModal({
+        name: 'Updated Dinners',
+        searchFilter: {
+          ...mockFilter1,
+          query: 'quick dinner',
+        },
+      });
+      const createModalSpy = vi.spyOn(modalController, 'create').mockResolvedValue(modal);
+
+      const requests: Request[] = [];
+      fetchMocker.mockResponse((req: Request) => {
+        requests.push(req);
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilter1));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'PUT') {
+          return Promise.resolve('{}');
+        }
+        return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const editBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
+      editBtn?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(createModalSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          component: 'search-filter-editor',
+          componentProps: {
+            prompt: 'Edit Search',
+            name: 'Quick Dinners',
+            searchFilter: mockFilter1,
+          },
+          backdropDismiss: false,
+        })
+      );
+
+      const putReq = requests.find(r => r.url.match(/\/users\/current\/filters\/1$/) && r.method === 'PUT');
+      expect(putReq).toBeDefined();
+      const body = (await putReq?.clone().json()) as SavedSearchFilter;
+      expect(body.name).toBe('Updated Dinners');
+      expect(body.query).toBe('quick dinner');
+    });
+
+    it('does not open modal when GET filter details fails during edit', async () => {
+      const createModalSpy = vi.spyOn(modalController, 'create');
+
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
+          return Promise.resolve({ status: 500, body: 'Server error' });
+        }
+        return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const editBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
+      editBtn?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(createModalSpy).not.toHaveBeenCalled();
+    });
+
+    it('does not save when edit modal is dismissed without data', async () => {
+      const modal = mockModal(null);
+      vi.spyOn(modalController, 'create').mockResolvedValue(modal);
+
+      const requests: Request[] = [];
+      fetchMocker.mockResponse((req: Request) => {
+        requests.push(req);
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilter1));
+        }
+        return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const editBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
+      editBtn?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const putRequests = requests.filter(r => r.method === 'PUT');
+      expect(putRequests).toHaveLength(0);
+    });
+
+    it('displays toast error when updating filter fails', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const toast = mockToast();
+      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
+
+      const modal = mockModal({
+        name: 'Fail Search',
+        searchFilter: { query: 'fail' },
+      });
+      vi.spyOn(modalController, 'create').mockResolvedValue(modal);
+
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilter1));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'PUT') {
+          return Promise.resolve({ status: 500, body: 'Server error' });
+        }
+        return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const editBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
+      editBtn?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(createToastSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Failed to save search filter.' })
+      );
+      expect(toast.present).toHaveBeenCalled();
+    });
+  });
+
+  describe('Delete Filter', () => {
+    it('prompts confirmation and deletes filter when confirmed', async () => {
+      const alert = mockAlert('confirm');
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
+
+      const requests: Request[] = [];
+      fetchMocker.mockResponse((req: Request) => {
+        requests.push(req);
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'DELETE') {
+          return Promise.resolve('{}');
+        }
+        return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const deleteBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
+      deleteBtn?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(createAlertSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          header: 'Delete Search Filter?',
+          message: 'Are you sure you want to delete Quick Dinners?',
+        })
+      );
+      expect(alert.present).toHaveBeenCalled();
+
+      const deleteReq = requests.find(r => r.url.match(/\/users\/current\/filters\/1$/) && r.method === 'DELETE');
+      expect(deleteReq).toBeDefined();
+    });
+
+    it('does not delete filter when alert is cancelled', async () => {
+      const alert = mockAlert('cancel');
+      vi.spyOn(alertController, 'create').mockResolvedValue(alert);
+
+      const requests: Request[] = [];
+      fetchMocker.mockResponse((req: Request) => {
+        requests.push(req);
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const deleteBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
+      deleteBtn?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const deleteRequests = requests.filter(r => r.method === 'DELETE');
+      expect(deleteRequests).toHaveLength(0);
+    });
+
+    it('displays toast error when deleting filter fails', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+      const toast = mockToast();
+      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
+      const alert = mockAlert('confirm');
+      vi.spyOn(alertController, 'create').mockResolvedValue(alert);
+
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'DELETE') {
+          return Promise.resolve({ status: 500, body: 'Server error' });
+        }
+        return Promise.resolve('{}');
+      });
+
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      const deleteBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
+      deleteBtn?.click();
+      await new Promise(r => setTimeout(r, 10));
+      await root.updateComplete;
+
+      expect(createToastSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Failed to delete search filter.' })
+      );
+      expect(toast.present).toHaveBeenCalled();
+    });
   });
 });

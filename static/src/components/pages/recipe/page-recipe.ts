@@ -494,8 +494,22 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
   }
 
   private async onSetMainImageClicked(image: string) {
-    await this.setMainImage(image);
-    await this.loadRecipe();
+    const { role } = await showAlert({
+      header: 'Set Main Picture?',
+      message: 'Are you sure you want to this as the main picture for the recipe?',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' },
+      ],
+    });
+
+    if (role === 'confirm') {
+      await this.setMainImage(image);
+      await this.loadRecipe();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
   }
 
   private async onDeleteImageClicked(image: string) {
@@ -637,37 +651,47 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
     const isArchived = this.recipe?.state === RecipeState.Archived;
     const action = isArchived ? 'Unarchive' : 'Archive';
 
-    await showActionSheet({
-      header: this.recipe?.name ?? '',
+    const { role } = await showActionSheet({
+      header: 'Menu',
       buttons: [
-        {
-          text: 'Upload picture',
-          icon: 'camera',
-          handler: () => void this.onUploadImageClicked(),
-        },
-        {
-          text: 'Add link',
-          icon: 'link',
-          handler: () => void this.onAddLinkClicked(),
-        },
-        {
-          text: action,
-          icon: 'archive',
-          handler: () => void this.onArchiveClicked(),
-        },
-        {
-          text: 'Delete',
-          icon: 'trash',
-          role: 'destructive',
-          handler: () => void this.onDeleteClicked(),
-        },
-        {
-          text: 'Cancel',
-          icon: 'close',
-          role: 'cancel',
-        },
+        { text: 'Print', icon: 'print', role: 'print' },
+        ...(isAuthorized(appState.currentUser, AccessLevel.Editor)
+          ? [
+              { text: 'Delete', icon: 'trash', role: 'destructive' },
+              { text: action, icon: 'archive', role: 'archive' },
+              { text: 'Add Link', icon: 'link', role: 'add-link' },
+              { text: 'Upload Picture', icon: 'camera', role: 'upload-image' },
+              { text: 'Add Note', icon: 'chatbox', role: 'add-note' },
+              { text: 'Edit', icon: 'create', role: 'edit' },
+            ]
+          : []),
+        { text: 'Cancel', icon: 'close', role: 'cancel' },
       ],
     });
+
+    switch (role) {
+      case 'print':
+        this.onPrintClicked();
+        break;
+      case 'destructive':
+        await this.onDeleteClicked();
+        break;
+      case 'archive':
+        await this.onArchiveClicked();
+        break;
+      case 'add-link':
+        await this.onAddLinkClicked();
+        break;
+      case 'upload-image':
+        await this.onUploadImageClicked();
+        break;
+      case 'add-note':
+        await this.onAddNoteClicked();
+        break;
+      case 'edit':
+        await this.onEditClicked();
+        break;
+    }
   }
 }
 

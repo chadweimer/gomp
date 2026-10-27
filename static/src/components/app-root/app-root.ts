@@ -1,5 +1,5 @@
 import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { customElement, state as litState, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Subscription } from 'rxjs';
@@ -131,15 +131,15 @@ export class AppRoot extends LitElement {
           return html`
                     <ion-item
                       href=${url}
-                      color=${isActive && !isParentOfActive ? 'secondary' : undefined}
-                      .detail=${isActive && !isParentOfActive}
+                      color=${isActive && !isParentOfActive ? 'secondary' : nothing}
+                      ?detail=${isActive && !isParentOfActive}
                       class=${classMap({
             'active': isActive,
             'child-link': !isNullOrEmpty(link.parentUrl),
           })}
                     >
-                      <ion-icon name=${link.icon} slot="start" color=${isParentOfActive ? 'secondary' : undefined}></ion-icon>
-                      <ion-label color=${isParentOfActive ? 'secondary' : undefined}>${link.title}</ion-label>
+                      <ion-icon name=${link.icon} slot="start" color=${isParentOfActive ? 'secondary' : nothing}></ion-icon>
+                      <ion-label color=${isParentOfActive ? 'secondary' : nothing}>${link.title}</ion-label>
                       ${!isNull(link.detail) ? html`<ion-label slot="end">${link.detail()}</ion-label>` : ''}
                     </ion-item>
                   `;
