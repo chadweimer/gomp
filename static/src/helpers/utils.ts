@@ -1,6 +1,6 @@
 import { createGesture, GestureDetail } from '@ionic/core';
 import DOMPurify from 'dompurify';
-import { AccessLevel, User, YesNoAny } from '../helpers/schema.gen';
+import { AccessLevel, User, YesNoAny } from './schema.gen';
 import { SwipeDirection } from '../models';
 
 export interface ComponentWithActivatedCallback {
@@ -54,7 +54,7 @@ export function isAuthorized(user: User | null | undefined, accessLevel: AccessL
 }
 
 export async function redirect(route: string) {
-  const router = document.querySelector('ion-router');
+  const router = document.querySelector<HTMLIonRouterElement>('ion-router');
   await router?.push(route);
 }
 
@@ -63,7 +63,7 @@ export function insertSpacesBetweenWords(val: string | null | undefined) {
     return '';
   }
 
-  return val.replace(/([A-Z])/g, ' $1').trim()
+  return val.replace(/([A-Z])/g, ' $1').trim();
 }
 
 export function enumKeyFromValue(keys: Record<string, string>, val: string | null | undefined) {
@@ -134,7 +134,7 @@ export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirect
 
 function getSwipe(e: GestureDetail): SwipeDirection | undefined {
   if (Math.abs(e.velocityX) < 0.1) {
-    return undefined
+    return undefined;
   }
 
   if (e.deltaX < 0) {
@@ -172,27 +172,17 @@ export async function sendActivatedCallback(router: HTMLIonRouterOutletElement |
 }
 
 export function preProcessMultilineText(text: string | null | undefined) {
-  // This function exists to handle backward compatibility with older versions.
-  // Before the introduction of the WYSIWYG edtior,
-  // all text was rendered as the original text with whitespace preserved.
-
   if (isNull(text)) {
     return '';
   }
 
-  // Return early if there are no newlines in the text.
   if (!text.includes('\n') && !text.includes('\r')) {
     return text;
   }
 
-  // Convert all newlines to <br> tags.
   text = text.replace(/(\r\n|\r|\n)/g, '<br>');
 
-  // Preserve all consecutive spaces.
   text = text.replace(/\s{2,}/gm, match => {
-    // Replace multiple spaces with alternating &nbsp; and space characters.
-    // This is to ensure that the text is rendered with the same whitespace as before,
-    // while maintaining the ability for the text to be wrapped.
     return match.split('').map((char, index) => {
       return index % 2 === 0 ? '&nbsp;' : char;
     }).join('');
@@ -224,7 +214,6 @@ DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
 });
 
 export function sanitizeHTML(html: string) {
-  // Sanitize the HTML using DOMPurify to prevent XSS attacks while allowing safe formatting.
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ['b', 'i', 'u', 's', 'strong', 'em', 'p', 'ul', 'ol', 'li', 'br', 'span', 'a', 'img', 'div'],
     ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'data-image', 'data-width', 'data-height', 'class', 'style', 'loading'],

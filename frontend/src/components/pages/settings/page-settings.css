@@ -1,8 +1,0 @@
-page-settings {
-  display: block;
-}
-
-page-settings ion-tab-button {
-  --color-selected: var(--ion-color-secondary);
-}
-

@@ -1,31 +1,18 @@
-import { defineVitestConfig } from '@stencil/vitest/config';
-import { stencilVitestPlugin } from '@stencil/vitest/plugin';
+import { defineConfig } from 'vitest/config';
 
-export default defineVitestConfig({
-  stencilConfig: './stencil.config.ts',
+export default defineConfig({
   test: {
-    projects: [
-      {
-        plugins: [stencilVitestPlugin({ css: true })],
-        test: {
-          name: 'spec',
-          include: ['src/**/*.spec.{ts,tsx}'],
-          environment: 'stencil',
-          environmentOptions: {
-            stencil: {
-              domEnvironment: 'jsdom'
-            },
-          },
-          setupFiles: ['./vitest.setup.ts'],
-          testTimeout: 10000,
-        },
-      },
-    ],
+    environment: 'jsdom',
+    css: true,
+    setupFiles: ['./vitest.setup.ts'],
+    include: ['src/**/*.spec.ts'],
+    testTimeout: 10000,
     coverage: {
       reportOnFailure: true,
       reporter: ['lcov', 'text'],
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.spec.{ts,tsx}', 'src/**/*.d.ts', 'src/generated/**/*.ts'],
-    }
+      include: ['src/**/*.ts'],
+      exclude: ['src/**/*.spec.ts', 'src/**/*.d.ts', 'src/helpers/schema.gen.ts'],
+    },
   },
 });
+

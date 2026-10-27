@@ -24,7 +24,7 @@ class Api {
 
   constructor() {
     this.client = createClient<paths>({
-      baseUrl: `${globalThis.location.origin}/api/v1`,
+      baseUrl: `${globalThis.location?.origin ?? ''}/api/v1`,
       fetch: this.fetch
     });
     this.responses = new Subject<{ request: Request, response: Response }>();
@@ -41,7 +41,7 @@ class Api {
         state.loadingCount--;
       }
     }
-  }
+  };
 
   readonly loadUserSettings = async (): Promise<UserSettings | null> => {
     const { data: settings, error } = await api.client.GET('/users/current/settings');
@@ -51,7 +51,7 @@ class Api {
     }
 
     return settings ?? null;
-  }
+  };
 
   readonly loadSearchFilters = async (page = 1, count = -1): Promise<SavedSearchFilterCompact[]> => {
     const { data, error } = await api.client.GET('/users/current/filters', {
@@ -63,10 +63,9 @@ class Api {
     }
 
     return data?.filters ?? [];
-  }
+  };
 
   readonly performRecipeSearch = async (filter: SearchFilter, page: number, count: number): Promise<SearchResult> => {
-    // Make sure to fill in any missing fields
     const defaultFilter = getDefaultSearchFilter();
     filter = { ...defaultFilter, ...filter };
 
@@ -91,7 +90,7 @@ class Api {
     }
 
     return recipes;
-  }
+  };
 }
 
 export const api = new Api();
@@ -117,7 +116,7 @@ export async function refreshSearchResults() {
 
   // Also populate total recipe and tag counts
   try {
-    const { data: results, error } = await api.client.GET('/recipes', { params: { query: { count: 0, } } });
+    const { data: results, error } = await api.client.GET('/recipes', { params: { query: { count: 0 } } });
 
     if (error) {
       throw new Error('Failed to fetch total recipe count.', { cause: error });
@@ -144,12 +143,10 @@ export async function refreshSearchResults() {
 }
 
 export function fileContentSerializer(_body: { file_content?: string } | undefined, file?: File) {
-  // The unused _body parameter is required to match the expected signature for bodySerializer,
-  // so that we know we're using the right part name in the form data
-
   const fd = new FormData();
   if (file) {
     fd.append('file_content', file);
   }
   return fd;
 }
+

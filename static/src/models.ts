@@ -31,3 +31,4 @@ export function getDefaultSearchSettings(): SearchSettings {
     viewMode: SearchViewMode.Card
   };
 }
+

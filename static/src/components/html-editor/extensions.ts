@@ -44,3 +44,4 @@ export const GompImage = Image.extend({
     ];
   },
 });
+

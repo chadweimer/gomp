@@ -34,7 +34,6 @@ async function present<T = unknown>(
 }
 
 export async function showModal<T = unknown>(options: ModalOptions<ComponentRef>, cancelRole = 'cancel') {
-  // Default to not allowing backdrop dismiss if not specified.
   options.backdropDismiss ??= false;
 
   const modal = await modalController.create(options);
@@ -51,7 +50,7 @@ export function configureModalCanDismiss(
   isDirty: (data?: unknown, role?: string) => boolean | Promise<boolean>
 ) {
   if (!modal) {
-    return
+    return;
   }
 
   modal.canDismiss = async (data?: unknown, role?: string) => {
@@ -82,10 +81,9 @@ export function configureModalCanDismiss(
 }
 
 export function configureModalSelectsWorkaround(el: HTMLElement) {
-  // WORKAROUND: Fix for Ionic popover interface not receiving the correct event target in shadow DOM
   const selects = el.shadowRoot?.querySelectorAll('ion-select');
   selects?.forEach(s => {
-    s.interfaceOptions = {
+    (s as unknown as { interfaceOptions: unknown }).interfaceOptions = {
       event: { target: s, detail: { ionShadowTarget: s } }
     };
   });
@@ -96,7 +94,6 @@ export function getContainingModal(el: HTMLElement) {
 }
 
 export function performAutofocus(this: HTMLIonModalElement) {
-  // Get the component displayed on the modal.
   let component: Element | null = null;
   if (typeof this.component === 'string') {
     component = this.querySelector(this.component);
@@ -104,10 +101,9 @@ export function performAutofocus(this: HTMLIonModalElement) {
     component = this.component;
   }
 
-  // Check the shadow DOM first, then the light DOM, and finally the component itself.
-  const focusEl = component?.shadowRoot?.querySelector('[autofocus]')
-    || component?.querySelector('[autofocus]')
-    || component;
+  const focusEl = component?.shadowRoot?.querySelector<HTMLElement>('[autofocus]')
+    || component?.querySelector<HTMLElement>('[autofocus]')
+    || (component as HTMLElement | null);
 
   if (focusEl instanceof HTMLElement) {
     focusEl.focus();
@@ -165,6 +161,7 @@ export async function showResultsPerPageAlert<T extends number = ResultsPerPage>
   });
 
   if (role === 'confirm') {
-    onSelect(data?.values ?? currentValue)
+    onSelect(data?.values ?? currentValue);
   }
 }
+

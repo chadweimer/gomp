@@ -20,21 +20,26 @@ COPYRIGHT:=Copyright © 2016-$(shell date +%Y) Chad Weimer
 ROOT_BUILD_DIR:=build
 BUILD_DIR=$(ROOT_BUILD_DIR)/$(TARGETOS)/$(TARGETARCH)
 
-# Frontend selection: stencil (default) or lit
-FRONTEND?=stencil
+# Frontend selection: lit (default) or legacy/stencil
+FRONTEND?=lit
 
-ifeq ($(FRONTEND),lit)
-CLIENT_INSTALL_DIR:=frontend/node_modules
-CLIENT_BUILD_DIR:=frontend/dist
-CLIENT_BUILD_CMD=npm --prefix frontend run build
+ifeq ($(FRONTEND),$(filter $(FRONTEND),legacy stencil))
+CLIENT_DIR:=static-old
+CLIENT_INSTALL_DIR:=static-old/node_modules
+CLIENT_BUILD_DIR:=static-old/www/static
+CLIENT_INSTALL_CMD=npm --prefix static-old ci --silent
+CLIENT_BUILD_CMD=npm --prefix static-old run build $(CLIENT_EXTRA_BUILD_ARGS)
+CLIENT_CODEGEN_DIR:=static-old/src/generated
 else
+CLIENT_DIR:=static
 CLIENT_INSTALL_DIR:=static/node_modules
-CLIENT_BUILD_DIR:=static/www/static
-CLIENT_BUILD_CMD=npm --prefix static run build $(CLIENT_EXTRA_BUILD_ARGS)
+CLIENT_BUILD_DIR:=static/dist
+CLIENT_INSTALL_CMD=npm --prefix static ci --silent
+CLIENT_BUILD_CMD=npm --prefix static run build
+CLIENT_CODEGEN_DIR:=static/src/helpers/schema.gen.ts
 endif
 
 # Codegen-related files and directories
-CLIENT_CODEGEN_DIR:=static/src/generated
 MODELS_CODEGEN_FILE:=models/models.gen.go
 API_CODEGEN_FILE:=api/routes.gen.go
 MOCKS_CODEGEN_DIR:=mocks
@@ -43,7 +48,7 @@ CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE) $(MOCKS_CODEGEN_DIR)/db
 # Source files
 GO_FILES:=$(shell find . -type f -name "*.go" ! -name "*.gen.go")
 DB_MIGRATION_FILES:=$(shell find db/migrations -type f -name "*.*")
-CLIENT_FILES:=$(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLIENT_CODEGEN_DIR) -name "*"), $(shell find static -maxdepth 1 -type f -name "*") $(shell find static/src -type f -name "*"))
+CLIENT_FILES:=$(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLIENT_CODEGEN_DIR) -name "*"), $(shell find $(CLIENT_DIR) -maxdepth 1 -type f -name "*") $(shell find $(CLIENT_DIR)/src -type f -name "*"))
 
 # Go command arguments
 GO_ENV=GOOS=$(TARGETOS) GOARCH=$(TARGETARCH) CGO_ENABLED=0
@@ -65,28 +70,21 @@ docs:
 install: $(CLIENT_INSTALL_DIR)
 	go get ./...
 
-$(CLIENT_INSTALL_DIR): static/package.json
-	npm --prefix static ci --silent
-
-frontend/node_modules: frontend/package.json
-	npm --prefix frontend install --silent
+$(CLIENT_INSTALL_DIR): $(CLIENT_DIR)/package.json
+	$(CLIENT_INSTALL_CMD)
 
 .PHONY: uninstall
 uninstall:
-	npm --prefix static run clear
+	npm --prefix $(CLIENT_DIR) run clear
 
 
 # ---- CODEGEN ----
 
 .PHONY: codegen
-codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_DIR) codegen-lit
+codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_DIR)
 
-.PHONY: codegen-lit
-codegen-lit: openapi.yaml
-	npm --prefix frontend run codegen
-
-$(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
-	npm --prefix static run codegen
+$(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml
+	npm --prefix $(CLIENT_DIR) run codegen
 
 $(API_CODEGEN_FILE): $(MODELS_CODEGEN_FILE) openapi.yaml api/cfg.yaml
 	go generate $(GO_MODULE_NAME)/api
@@ -105,13 +103,13 @@ lint: lint-client lint-server
 
 .PHONY: lint-client
 lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
-	npm --prefix static run lint
+	npm --prefix $(CLIENT_DIR) run lint
 
 .PHONY: lint-server
 lint-server: $(CODEGEN_FILES)
 	mkdir -p $(ROOT_BUILD_DIR)
 	go vet ./...
-	go tool revive -exclude static/... -config=revive.toml ./... > $(ROOT_BUILD_DIR)/revive.golint
+	go tool revive -exclude static/... -exclude static-old/... -config=revive.toml ./... > $(ROOT_BUILD_DIR)/revive.golint
 	go tool gosec -no-fail -fmt=sonarqube -out=$(ROOT_BUILD_DIR)/gosec.json -stdout ./...
 
 
@@ -121,7 +119,7 @@ lint-server: $(CODEGEN_FILES)
 clean:
 	rm -rf $(ROOT_BUILD_DIR)
 	find . -type f -name "*.gen.go" -delete
-	npm --prefix static run clean
+	rm -rf static/dist
 	$(GO_ENV) go clean -i ./...
 
 
@@ -156,17 +154,33 @@ run: go.mod $(CODEGEN_FILES) $(GO_FILES) $(CLIENT_BUILD_DIR)
 run-lit:
 	$(MAKE) run FRONTEND=lit
 
+.PHONY: run-legacy
+run-legacy:
+	$(MAKE) run FRONTEND=legacy
+
 .PHONY: run-stencil
 run-stencil:
 	$(MAKE) run FRONTEND=stencil
 
+.PHONY: test-client
+test-client:
+	npm --prefix $(CLIENT_DIR) run test
+
 .PHONY: test-lit
 test-lit:
-	npm --prefix frontend run test
+	npm --prefix static run test
+
+.PHONY: test-legacy
+test-legacy:
+	npm --prefix static-old run test
 
 .PHONY: build-lit
-build-lit: frontend/node_modules
-	npm --prefix frontend run build
+build-lit: static/node_modules
+	npm --prefix static run build
+
+.PHONY: build-legacy
+build-legacy: static-old/node_modules
+	npm --prefix static-old run build
 
 
 # ---- TEST ----
@@ -184,10 +198,9 @@ $(ROOT_BUILD_DIR)/coverage/server: go.mod $(CODEGEN_FILES) $(GO_FILES)
 $(ROOT_BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
 	rm -rf $@
 	mkdir -p $@
-	npm --prefix static run cover
-	cp -r static/coverage/* $@
-	# Use sed to add static/ prefix to all file paths in the lcov.info file
-	sed -i 's/^SF:\(.*\)/SF:static\/\1/' $@/lcov.info
+	npm --prefix $(CLIENT_DIR) run cover
+	if [ -d $(CLIENT_DIR)/coverage ]; then cp -r $(CLIENT_DIR)/coverage/* $@; fi
+	if [ -f $@/lcov.info ]; then sed -i 's/^SF:\(.*\)/SF:$(CLIENT_DIR)\/\1/' $@/lcov.info; fi
 
 
 # ---- ARCHIVE ----

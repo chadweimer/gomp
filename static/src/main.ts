@@ -1,0 +1,19 @@
+import { initialize } from '@ionic/core';
+import { defineCustomElements } from '@ionic/core/loader';
+import { setAssetPath } from 'ionicons';
+
+import './global/app.css';
+
+// Configure asset path for Ionicons SVGs
+setAssetPath('/static/');
+
+// Initialize Ionic Framework
+initialize({
+  mode: 'md',
+});
+void defineCustomElements(window, {
+  resourcesUrl: '/static/',
+});
+
+// Register the root element
+import './components/app-root/app-root';

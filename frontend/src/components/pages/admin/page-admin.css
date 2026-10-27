@@ -1,8 +1,0 @@
-page-admin {
-  display: block;
-}
-
-page-admin ion-tab-button {
-  --color-selected: var(--ion-color-secondary);
-}
-

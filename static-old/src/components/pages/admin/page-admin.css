@@ -1,0 +1,7 @@
+:host {
+  display: block;
+}
+
+ion-tab-button {
+  --color-selected: var(--ion-color-secondary);
+}
