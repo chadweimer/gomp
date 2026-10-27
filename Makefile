@@ -29,14 +29,14 @@ CLIENT_INSTALL_DIR:=static-old/node_modules
 CLIENT_BUILD_DIR:=static-old/www/static
 CLIENT_INSTALL_CMD=npm --prefix static-old ci --silent
 CLIENT_BUILD_CMD=npm --prefix static-old run build $(CLIENT_EXTRA_BUILD_ARGS)
-CLIENT_CODEGEN_DIR:=static-old/src/generated
+CLIENT_CODEGEN_API:=static-old/src/helpers/schema.gen.ts
 else
 CLIENT_DIR:=static
 CLIENT_INSTALL_DIR:=static/node_modules
 CLIENT_BUILD_DIR:=static/dist
 CLIENT_INSTALL_CMD=npm --prefix static ci --silent
 CLIENT_BUILD_CMD=npm --prefix static run build
-CLIENT_CODEGEN_DIR:=static/src/helpers/schema.gen.ts
+CLIENT_CODEGEN_API:=static/src/helpers/schema.gen.ts
 endif
 
 # Codegen-related files and directories
@@ -48,7 +48,7 @@ CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE) $(MOCKS_CODEGEN_DIR)/db
 # Source files
 GO_FILES:=$(shell find . -type f -name "*.go" ! -name "*.gen.go")
 DB_MIGRATION_FILES:=$(shell find db/migrations -type f -name "*.*")
-CLIENT_FILES:=$(filter-out $(shell test -d $(CLIENT_CODEGEN_DIR) && find $(CLIENT_CODEGEN_DIR) -name "*"), $(shell find $(CLIENT_DIR) -maxdepth 1 -type f -name "*") $(shell find $(CLIENT_DIR)/src -type f -name "*"))
+CLIENT_FILES:=$(shell find $(CLIENT_DIR) -maxdepth 1 -type f -name "*") $(shell find $(CLIENT_DIR)/src -type f -name "*")
 
 # Go command arguments
 GO_ENV=GOOS=$(TARGETOS) GOARCH=$(TARGETARCH) CGO_ENABLED=0
@@ -81,9 +81,9 @@ uninstall:
 # ---- CODEGEN ----
 
 .PHONY: codegen
-codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_DIR)
+codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_API)
 
-$(CLIENT_CODEGEN_DIR): $(CLIENT_INSTALL_DIR) openapi.yaml
+$(CLIENT_CODEGEN_API): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
 	npm --prefix $(CLIENT_DIR) run codegen
 
 $(API_CODEGEN_FILE): $(MODELS_CODEGEN_FILE) openapi.yaml api/cfg.yaml
@@ -102,7 +102,7 @@ $(MOCKS_CODEGEN_DIR)/%/mocks.gen.go: $(GO_FILES) $(MODELS_CODEGEN_FILE)
 lint: lint-client lint-server
 
 .PHONY: lint-client
-lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_DIR)
+lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_API)
 	npm --prefix $(CLIENT_DIR) run lint
 
 .PHONY: lint-server
@@ -119,7 +119,7 @@ lint-server: $(CODEGEN_FILES)
 clean:
 	rm -rf $(ROOT_BUILD_DIR)
 	find . -type f -name "*.gen.go" -delete
-	rm -rf static/dist
+	npm --prefix $(CLIENT_DIR) run clean
 	$(GO_ENV) go clean -i ./...
 
 
@@ -127,7 +127,7 @@ clean:
 
 $(ROOT_BUILD_DIR): $(BUILD_DIR)
 
-$(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR)
+$(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR) $(CLIENT_FILES) $(CLIENT_CODEGEN_API)
 	rm -rf $@ && $(CLIENT_BUILD_CMD)
 
 $(BUILD_DIR): $(BUILD_DIR)/gomp $(BUILD_DIR)/db/migrations $(BUILD_DIR)/static
@@ -195,7 +195,7 @@ $(ROOT_BUILD_DIR)/coverage/server: go.mod $(CODEGEN_FILES) $(GO_FILES)
 	sed -i '/^.\+\.gen\.go.\+$$/d' $@/coverage.out
 	go tool cover -html=$@/coverage.out -o $@/coverage.html
 
-$(ROOT_BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_DIR)
+$(ROOT_BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_API)
 	rm -rf $@
 	mkdir -p $@
 	npm --prefix $(CLIENT_DIR) run cover

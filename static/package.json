@@ -7,6 +7,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "clear": "rm -fr ./node_modules",
+    "clean": "rm -fr ./dist && rm -f src/helpers/schema.gen.ts",
     "preview": "vite preview",
     "codegen": "openapi-typescript ../openapi.yaml -o ./src/helpers/schema.gen.ts --root-types --root-types-no-schema-prefix --enum",
     "lint": "eslint .",
