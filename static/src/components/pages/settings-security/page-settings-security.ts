@@ -13,8 +13,8 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
   @litState() newPassword = '';
   @litState() repeatPassword = '';
 
-  @query('form') private form?: HTMLFormElement;
-  @query('#repeat-password') private repeatPasswordInput?: HTMLIonInputElement;
+  @query('form') private readonly form?: HTMLFormElement;
+  @query('#repeat-password') private readonly repeatPasswordInput?: HTMLIonInputElement;
 
   protected createRenderRoot() {
     return this;

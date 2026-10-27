@@ -35,12 +35,12 @@ export class RecipeLinkEditor extends LitElement {
     this.parentModal = getContainingModal(this);
   }
 
-  async updated(changedProperties: PropertyValues) {
+  updated(changedProperties: PropertyValues) {
     if (
       (changedProperties.has('query') && changedProperties.get('query') !== undefined) ||
       (changedProperties.has('includeArchived') && changedProperties.get('includeArchived') !== undefined)
     ) {
-      await this.onSearchInputChanged();
+      this.onSearchInputChanged().catch(console.error);
     }
   }
 

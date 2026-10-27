@@ -39,18 +39,18 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
     return this;
   }
 
-  async connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
-    await this.load();
+    this.load().catch(console.error);
   }
 
   async activatedCallback() {
     await this.load();
   }
 
-  async updated(changedProperties: PropertyValues<this>) {
+  updated(changedProperties: PropertyValues<this>) {
     if (changedProperties.has('recipeId') && changedProperties.get('recipeId') !== undefined) {
-      await this.load();
+      this.load().catch(console.error);
     }
   }
 
@@ -79,7 +79,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
               <ion-grid class="no-pad">
                 <ion-row class="ion-justify-content-evenly">
                   ${this.images?.map(
-                    (image) => html`
+      (image) => html`
                       <ion-col size="4">
                         <ion-card class="image">
                           <a href=${ifDefined(getRecipeImageUrl(this.recipeId, image))} target="_blank" rel="noopener noreferrer">
@@ -93,7 +93,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
                             </ion-thumbnail>
                           </a>
                           ${isAuthorized(appState.currentUser, AccessLevel.Editor)
-                            ? html`
+          ? html`
                                 <ion-button
                                   size="small"
                                   fill="clear"
@@ -113,11 +113,11 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
                                   <ion-icon slot="icon-only" icon="trash"></ion-icon>
                                 </ion-button>
                               `
-                            : ''}
+          : ''}
                         </ion-card>
                       </ion-col>
                     `
-                  )}
+    )}
                 </ion-row>
               </ion-grid>
             </ion-col>
@@ -127,7 +127,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
               </h4>
               <ion-grid>
                 ${this.notes?.map(
-                  (note) => html`
+      (note) => html`
                     <ion-row>
                       <ion-col>
                         <note-card
@@ -139,7 +139,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
                       </ion-col>
                     </ion-row>
                   `
-                )}
+    )}
               </ion-grid>
             </ion-col>
           </ion-row>
@@ -152,7 +152,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
           </ion-buttons>
           <ion-buttons slot="primary">
             ${isAuthorized(appState.currentUser, AccessLevel.Editor)
-              ? html`
+        ? html`
                   <ion-button @click=${() => this.onEditClicked()}>
                     <ion-icon slot="start" icon="create"></ion-icon>
                     Edit
@@ -178,7 +178,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
                     Delete
                   </ion-button>
                 `
-              : ''}
+        : ''}
             <ion-button class="ion-display-none ion-display-md-flex" @click=${() => this.onPrintClicked()}>
               <ion-icon slot="start" icon="print"></ion-icon>
               Print
@@ -657,13 +657,13 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         { text: 'Print', icon: 'print', role: 'print' },
         ...(isAuthorized(appState.currentUser, AccessLevel.Editor)
           ? [
-              { text: 'Delete', icon: 'trash', role: 'destructive' },
-              { text: action, icon: 'archive', role: 'archive' },
-              { text: 'Add Link', icon: 'link', role: 'add-link' },
-              { text: 'Upload Picture', icon: 'camera', role: 'upload-image' },
-              { text: 'Add Note', icon: 'chatbox', role: 'add-note' },
-              { text: 'Edit', icon: 'create', role: 'edit' },
-            ]
+            { text: 'Delete', icon: 'trash', role: 'destructive' },
+            { text: action, icon: 'archive', role: 'archive' },
+            { text: 'Add Link', icon: 'link', role: 'add-link' },
+            { text: 'Upload Picture', icon: 'camera', role: 'upload-image' },
+            { text: 'Add Note', icon: 'chatbox', role: 'add-note' },
+            { text: 'Edit', icon: 'create', role: 'edit' },
+          ]
           : []),
         { text: 'Cancel', icon: 'close', role: 'cancel' },
       ],

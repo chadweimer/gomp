@@ -18,8 +18,8 @@ export class FileUploadBrowser extends LitElement {
   @property({ type: String }) label = 'File';
   @property({ type: String }) accept = '*/*';
 
-  @query('form') private inputForm!: HTMLFormElement;
-  @query('input[type="file"]') private fileInput!: HTMLInputElement;
+  @query('form') private readonly inputForm!: HTMLFormElement;
+  @query('input[type="file"]') private readonly fileInput!: HTMLInputElement;
 
   private parentModal?: HTMLIonModalElement | null;
 

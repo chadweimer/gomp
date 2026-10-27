@@ -101,8 +101,8 @@ export class RecipeCard extends LitElement {
 
   @state() private visibleCount?: number;
 
-  @query('.tags') private tagsContainer?: HTMLElement;
-  @query('.probe-badge') private probeBadgeElement?: HTMLElement;
+  @query('.tags') private readonly tagsContainer?: HTMLElement;
+  @query('.probe-badge') private readonly probeBadgeElement?: HTMLElement;
 
   private resizeObserver?: ResizeObserver;
   private readonly tagWidths: Map<string, number> = new Map();

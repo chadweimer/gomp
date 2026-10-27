@@ -11,8 +11,8 @@ import './page-settings-preferences.css';
 export class PageSettingsPreferences extends LitElement implements ComponentWithActivatedCallback {
   @litState() settings: UserSettings | null = null;
 
-  @query('form') private form?: HTMLFormElement;
-  @query('#image-input') private imageInput?: HTMLInputElement;
+  @query('form') private readonly form?: HTMLFormElement;
+  @query('#image-input') private readonly imageInput?: HTMLInputElement;
 
   protected createRenderRoot() {
     return this;

@@ -27,7 +27,7 @@ import './page-search.css';
 export class PageSearch extends LitElement {
   protected stateController = new StoreController(this, appStateStore);
 
-  @query('ion-content') private content!: HTMLIonContentElement;
+  @query('ion-content') private readonly content!: HTMLIonContentElement;
   private gesture: Gesture | null = null;
 
   createRenderRoot() {
@@ -87,7 +87,7 @@ export class PageSearch extends LitElement {
             <ion-button
               color="secondary"
               @click=${() =>
-                this.setSortDir(state.searchFilter.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}
+        this.setSortDir(state.searchFilter.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}
             >
               <ion-icon
                 slot="icon-only"
@@ -97,11 +97,11 @@ export class PageSearch extends LitElement {
             <ion-button
               color="secondary"
               @click=${() =>
-                this.setViewMode(
-                  state.searchSettings.viewMode === SearchViewMode.Card
-                    ? SearchViewMode.List
-                    : SearchViewMode.Card
-                )}
+        this.setViewMode(
+          state.searchSettings.viewMode === SearchViewMode.Card
+            ? SearchViewMode.List
+            : SearchViewMode.Card
+        )}
             >
               <ion-icon
                 slot="icon-only"
@@ -123,40 +123,40 @@ export class PageSearch extends LitElement {
         <ion-grid class="no-pad">
           <ion-row>
             ${state.searchResults?.map((recipe) =>
-              state.searchSettings?.viewMode === SearchViewMode.Card
-                ? html`
+          state.searchSettings?.viewMode === SearchViewMode.Card
+            ? html`
                     <ion-col size="6" size-md="4" size-lg="3" size-xl="2">
                       <recipe-card .recipe=${recipe} class="zoom"></recipe-card>
                     </ion-col>
                   `
-                : html`
+            : html`
                     <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
                       <ion-item href=${`/recipes/${recipe.id}`} title=${ifDefined(recipe.name)}>
                         <ion-thumbnail slot="start" class="preview">
                           ${!isNullOrEmpty(recipe.mainImageName)
-                            ? html`<img loading="lazy" alt="" src=${ifDefined(getRecipeThumbnailUrl(recipe.id, recipe.mainImageName))} />`
-                            : ''}
+                ? html`<img loading="lazy" alt="" src=${ifDefined(getRecipeThumbnailUrl(recipe.id, recipe.mainImageName))} />`
+                : ''}
                         </ion-thumbnail>
                         <ion-label class="single-line">${recipe.name}</ion-label>
                         ${recipe.state === RecipeState.Archived
-                          ? html`<ion-badge color="medium" slot="end">Archived</ion-badge>`
-                          : ''}
+                ? html`<ion-badge color="medium" slot="end">Archived</ion-badge>`
+                : ''}
                       </ion-item>
                     </ion-col>
                   `
-            )}
+        )}
           </ion-row>
         </ion-grid>
 
         ${isAuthorized(state.currentUser, AccessLevel.Editor)
-          ? html`
+        ? html`
               <ion-fab horizontal="end" vertical="bottom" slot="fixed">
                 <ion-fab-button color="secondary" @click=${() => this.onNewRecipeClicked()}>
                   <ion-icon icon="add"></ion-icon>
                 </ion-fab-button>
               </ion-fab>
             `
-          : ''}
+        : ''}
       </ion-content>
 
       <ion-footer>

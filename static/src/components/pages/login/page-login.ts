@@ -10,8 +10,8 @@ export class PageLogin extends LitElement {
   @litState() private errorMessage = '';
   @litState() private rememberMe = false;
 
-  @query('#username-input') private usernameInput?: HTMLIonInputElement;
-  @query('#password-input') private passwordInput?: HTMLIonInputElement;
+  @query('#username-input') private readonly usernameInput?: HTMLIonInputElement;
+  @query('#password-input') private readonly passwordInput?: HTMLIonInputElement;
 
   protected createRenderRoot() {
     return this;

@@ -12,7 +12,7 @@ import './page-admin.css';
 export class PageAdmin extends LitElement {
   private gesture: Gesture | null = null;
 
-  @query('ion-tabs') private tabs?: HTMLIonTabsElement;
+  @query('ion-tabs') private readonly tabs?: HTMLIonTabsElement;
 
   protected createRenderRoot() {
     return this;

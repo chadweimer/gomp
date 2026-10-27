@@ -13,7 +13,7 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
     title: 'GOMP: Go Meal Planner'
   };
 
-  @query('form') private form?: HTMLFormElement;
+  @query('form') private readonly form?: HTMLFormElement;
 
   protected createRenderRoot() {
     return this;

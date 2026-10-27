@@ -3,9 +3,10 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
 import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
-import { getRecipeImageUrl, getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml, trap } from '../../helpers/utils';
+import { getRecipeImageUrl, getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import { HTMLEditor } from '../html-editor/html-editor';
+
 import '../html-editor/html-editor';
 import '../tags-input/tags-input';
 
@@ -39,20 +40,20 @@ export class RecipeEditor extends LitElement {
 
   @state() private currentUserSettings: UserSettings | null = null;
 
-  @query('form') private form!: HTMLFormElement;
-  @query('input[type="file"]') private imageInput?: HTMLInputElement;
-  @query('ion-input[label="Name"]') private nameInput?: HTMLIonInputElement;
-  @query('ion-input[label="Serving Size"]') private servingSizeInput?: HTMLIonInputElement;
-  @query('ion-input[label="Time"]') private timeInput?: HTMLIonInputElement;
-  @query('ion-input[label="Source"]') private sourceUrlInput?: HTMLIonInputElement;
-  @query('html-editor[id="ingredients"]') private ingredientsInput?: HTMLEditor;
-  @query('html-editor[id="directions"]') private directionsInput?: HTMLEditor;
-  @query('html-editor[id="storage-instructions"]') private storageInput?: HTMLEditor;
-  @query('html-editor[id="nutrition"]') private nutritionInput?: HTMLEditor;
+  @query('form') private readonly form!: HTMLFormElement;
+  @query('input[type="file"]') private readonly imageInput?: HTMLInputElement;
+  @query('ion-input[label="Name"]') private readonly nameInput?: HTMLIonInputElement;
+  @query('ion-input[label="Serving Size"]') private readonly servingSizeInput?: HTMLIonInputElement;
+  @query('ion-input[label="Time"]') private readonly timeInput?: HTMLIonInputElement;
+  @query('ion-input[label="Source"]') private readonly sourceUrlInput?: HTMLIonInputElement;
+  @query('html-editor[id="ingredients"]') private readonly ingredientsInput?: HTMLEditor;
+  @query('html-editor[id="directions"]') private readonly directionsInput?: HTMLEditor;
+  @query('html-editor[id="storage-instructions"]') private readonly storageInput?: HTMLEditor;
+  @query('html-editor[id="nutrition"]') private readonly nutritionInput?: HTMLEditor;
 
   private parentModal?: HTMLIonModalElement | null;
 
-  async connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     const initialRecipe = { ...this.recipe };
 
@@ -77,7 +78,7 @@ export class RecipeEditor extends LitElement {
       return !this.areEqual(initialRecipe, this.recipe) || (this.imageInput?.files?.length ?? 0) > 0;
     });
 
-    this.currentUserSettings = await trap(api.loadUserSettings, null);
+    api.loadUserSettings().then(res => this.currentUserSettings = res, console.error);
   }
 
   render() {

@@ -271,7 +271,7 @@ export class HTMLEditor extends LitElement {
   @state() private activePanel: Panel | null = null;
   @state() private linkUrl = '';
 
-  @query('.editor-content') private editorContentRef!: HTMLElement;
+  @query('.editor-content') private readonly editorContentRef!: HTMLElement;
   private editor: Editor | null = null;
 
   constructor() {

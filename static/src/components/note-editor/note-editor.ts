@@ -20,8 +20,8 @@ export class NoteEditor extends LitElement {
 
   @property({ type: Object }) note: Note = { text: '' };
 
-  @query('form') private form!: HTMLFormElement;
-  @query('html-editor') private textInput!: HTMLEditor;
+  @query('form') private readonly form!: HTMLFormElement;
+  @query('html-editor') private readonly textInput!: HTMLEditor;
 
   private parentModal?: HTMLIonModalElement | null;
 

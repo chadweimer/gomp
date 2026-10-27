@@ -56,8 +56,8 @@ export class AppRoot extends LitElement {
   @litState() pageTitle = '';
   @litState() childPageTitle = '';
 
-  @query('ion-router-outlet') private routerOutlet?: HTMLIonRouterOutletElement;
-  @query('ion-menu') private menu?: HTMLIonMenuElement;
+  @query('ion-router-outlet') private readonly routerOutlet?: HTMLIonRouterOutletElement;
+  @query('ion-menu') private readonly menu?: HTMLIonMenuElement;
 
   createRenderRoot() {
     return this;

@@ -12,7 +12,7 @@ import {
 } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
 import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
-import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull, trap } from '../../helpers/utils';
+import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import { globalStyles } from '../../global/shared-styles';
 import '../tags-input/tags-input';
@@ -39,13 +39,13 @@ export class SearchFilterEditor extends LitElement {
   @state() private selectedFilterId: number | null = null;
   @state() private filters: SavedSearchFilterCompact[] = [];
 
-  @query('form') private form!: HTMLFormElement;
-  @query('ion-input[label="Name"]') private nameInput?: HTMLIonInputElement;
-  @query('ion-input[label="Search Terms"]') private queryInput?: HTMLIonInputElement;
+  @query('form') private readonly form!: HTMLFormElement;
+  @query('ion-input[label="Name"]') private readonly nameInput?: HTMLIonInputElement;
+  @query('ion-input[label="Search Terms"]') private readonly queryInput?: HTMLIonInputElement;
 
   private parentModal?: HTMLIonModalElement | null;
 
-  async connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     const initialName = this.name;
     const initialFilter = { ...this.searchFilter };
@@ -69,9 +69,9 @@ export class SearchFilterEditor extends LitElement {
       return !this.areEqual(initialFilter, this.searchFilter) || this.name !== initialName;
     });
 
-    this.currentUserSettings = await trap(api.loadUserSettings, null);
+    api.loadUserSettings().then(res => this.currentUserSettings = res, console.error);
     if (this.showSavedLoader) {
-      this.filters = await trap(api.loadSearchFilters, []);
+      api.loadSearchFilters().then(res => this.filters = res, console.error);
     }
   }
 
