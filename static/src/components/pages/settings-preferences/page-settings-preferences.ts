@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, state as litState } from 'lit/decorators.js';
+import { customElement, state as litState, query } from 'lit/decorators.js';
 import { UserSettings } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showLoading, showToast } from '../../../helpers/modals';
@@ -10,6 +10,9 @@ import './page-settings-preferences.css';
 @customElement('page-settings-preferences')
 export class PageSettingsPreferences extends LitElement implements ComponentWithActivatedCallback {
   @litState() settings: UserSettings | null = null;
+
+  @query('form') private form?: HTMLFormElement;
+  @query('#image-input') private imageInput?: HTMLInputElement;
 
   protected createRenderRoot() {
     return this;
@@ -42,19 +45,19 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
                         spellcheck
                         required
                         @ionBlur=${(e: Event) => {
-                          const val = (e.currentTarget as HTMLIonInputElement).value as string;
-                          this.settings = {
-                            ...this.settings,
-                            homeTitle: val,
-                            favoriteTags: this.settings?.favoriteTags ?? []
-                          };
-                        }}
+        const val = (e.currentTarget as HTMLIonInputElement).value as string;
+        this.settings = {
+          ...this.settings,
+          homeTitle: val,
+          favoriteTags: this.settings?.favoriteTags ?? []
+        };
+      }}
                       ></ion-input>
                     </ion-item>
                     <ion-item lines="full">
                       <form enctype="multipart/form-data">
                         <ion-label position="stacked">Home Image</ion-label>
-                        <input name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" />
+                        <input id="image-input" name="file_content" type="file" accept=".jpg,.jpeg,.png" class="ion-padding-vertical" />
                       </form>
                       <ion-thumbnail>
                         <img alt="Home" src=${this.settings?.homeImageUrl ?? ''} ?hidden=${isNullOrEmpty(this.settings?.homeImageUrl)} />
@@ -66,11 +69,11 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
                         label-placement="stacked"
                         .value=${this.settings?.favoriteTags ?? []}
                         @valueChanged=${(e: CustomEvent<string[]>) => {
-                          this.settings = {
-                            ...this.settings,
-                            favoriteTags: e.detail
-                          };
-                        }}
+        this.settings = {
+          ...this.settings,
+          favoriteTags: e.detail
+        };
+      }}
                       >
                         <ion-input enterkeyhint="enter"></ion-input>
                       </tags-input>
@@ -114,15 +117,13 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
   }
 
   async onSaveSettingsClicked() {
-    const form = this.querySelector('form');
-    if (form && !form.reportValidity()) {
+    if (this.form && !this.form.reportValidity()) {
       return;
     }
 
-    const imageInput = this.querySelector<HTMLInputElement>('input[type="file"]');
-    if ((imageInput?.files?.length ?? 0) > 0) {
+    if ((this.imageInput?.files?.length ?? 0) > 0) {
       try {
-        const file = imageInput!.files![0];
+        const file = this.imageInput!.files![0];
         await showLoading(
           async () => {
             const { error, response: resp } = await api.client.POST('/uploads', {
@@ -145,7 +146,7 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
           'Uploading image...'
         );
 
-        imageInput!.value = '';
+        this.imageInput!.value = '';
       } catch (ex) {
         console.error(ex);
         await showToast('Failed to upload image.');

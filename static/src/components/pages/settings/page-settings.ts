@@ -1,6 +1,6 @@
 import { Gesture } from '@ionic/core';
 import { LitElement, html } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { createSwipeGesture, sendActivatedCallback } from '../../../helpers/utils';
 import { SwipeDirection } from '../../../models';
 import '../settings-preferences/page-settings-preferences';
@@ -12,12 +12,10 @@ import './page-settings.css';
 export class PageSettings extends LitElement {
   private gesture: Gesture | null = null;
 
+  @query('ion-tabs') private tabs?: HTMLIonTabsElement;
+
   protected createRenderRoot() {
     return this;
-  }
-
-  private get tabs(): HTMLIonTabsElement | null {
-    return this.querySelector('ion-tabs');
   }
 
   override connectedCallback() {

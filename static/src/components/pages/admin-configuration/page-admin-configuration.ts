@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, state as litState } from 'lit/decorators.js';
+import { customElement, state as litState, query } from 'lit/decorators.js';
 import { AppConfiguration } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showToast } from '../../../helpers/modals';
@@ -12,6 +12,8 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
   @litState() appConfiguration: AppConfiguration = {
     title: 'GOMP: Go Meal Planner'
   };
+
+  @query('form') private form?: HTMLFormElement;
 
   protected createRenderRoot() {
     return this;
@@ -44,9 +46,9 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
                         spellcheck
                         required
                         @ionBlur=${(e: Event) => {
-                          const val = (e.currentTarget as HTMLIonInputElement).value as string;
-                          this.appConfiguration = { ...this.appConfiguration, title: val };
-                        }}
+        const val = (e.currentTarget as HTMLIonInputElement).value as string;
+        this.appConfiguration = { ...this.appConfiguration, title: val };
+      }}
                       ></ion-input>
                     </ion-item>
                   </ion-card-content>
@@ -82,8 +84,7 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
   }
 
   async onSaveConfigurationClicked() {
-    const form = this.querySelector('form');
-    if (form && !form.reportValidity()) {
+    if (this.form && !this.form.reportValidity()) {
       return;
     }
 
@@ -103,4 +104,3 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
     }
   }
 }
-

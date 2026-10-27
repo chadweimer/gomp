@@ -1,6 +1,6 @@
 import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
 import { LitElement, html } from 'lit';
-import { customElement, state as litState } from 'lit/decorators.js';
+import { customElement, state as litState, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Subscription } from 'rxjs';
 import { api, refreshSearchResults } from '../../helpers/api';
@@ -56,6 +56,9 @@ export class AppRoot extends LitElement {
   @litState() pageTitle = '';
   @litState() childPageTitle = '';
 
+  @query('ion-router-outlet') private routerOutlet?: HTMLIonRouterOutletElement;
+  @query('ion-menu') private menu?: HTMLIonMenuElement;
+
   createRenderRoot() {
     return this;
   }
@@ -79,14 +82,6 @@ export class AppRoot extends LitElement {
     super.disconnectedCallback();
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.subscriptions.length = 0;
-  }
-
-  private get routerOutlet(): HTMLIonRouterOutletElement | null {
-    return this.querySelector('ion-router-outlet');
-  }
-
-  private get menu(): HTMLIonMenuElement | null {
-    return this.querySelector('ion-menu');
   }
 
   render() {

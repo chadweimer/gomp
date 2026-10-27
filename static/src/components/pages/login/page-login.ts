@@ -70,22 +70,11 @@ export class PageLogin extends LitElement {
     `;
   }
 
-  private getUsernameInputElement(): HTMLIonInputElement | null {
-    return this.usernameInput || this.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
-  }
-
-  private getPasswordInputElement(): HTMLIonInputElement | null {
-    return this.passwordInput || this.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
-  }
-
   private async onLoginClicked() {
-    const usernameEl = this.getUsernameInputElement();
-    const passwordEl = this.getPasswordInputElement();
-
     try {
       this.errorMessage = '';
-      const username = (usernameEl?.value as string) ?? '';
-      const password = (passwordEl?.value as string) ?? '';
+      const username = (this.usernameInput?.value as string) ?? '';
+      const password = (this.passwordInput?.value as string) ?? '';
 
       const { data: user, error, response } = await api.client.POST('/auth', {
         body: { username, password, rememberMe: this.rememberMe }
@@ -103,8 +92,8 @@ export class PageLogin extends LitElement {
       state.currentUser = user;
 
       // Clear the username so it's not left around when the next login is needed
-      if (usernameEl) {
-        usernameEl.value = '';
+      if (this.usernameInput) {
+        this.usernameInput.value = '';
       }
 
       await redirect('/');
@@ -113,8 +102,8 @@ export class PageLogin extends LitElement {
       console.error(ex);
     } finally {
       // Clear password no matter what, success or failure
-      if (passwordEl) {
-        passwordEl.value = '';
+      if (this.passwordInput) {
+        this.passwordInput.value = '';
       }
     }
   }
@@ -125,4 +114,3 @@ export class PageLogin extends LitElement {
     }
   }
 }
-

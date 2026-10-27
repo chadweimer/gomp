@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, state as litState } from 'lit/decorators.js';
+import { customElement, state as litState, query } from 'lit/decorators.js';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showToast } from '../../../helpers/modals';
@@ -12,6 +12,9 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
   @litState() currentPassword = '';
   @litState() newPassword = '';
   @litState() repeatPassword = '';
+
+  @query('form') private form?: HTMLFormElement;
+  @query('#repeat-password') private repeatPasswordInput?: HTMLIonInputElement;
 
   protected createRenderRoot() {
     return this;
@@ -78,6 +81,7 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
                       <ion-input
                         label="Confirm Password"
                         label-placement="stacked"
+                        id="repeat-password"
                         type="password"
                         .value=${this.repeatPassword}
                         autocomplete="new-password"
@@ -129,12 +133,10 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
   }
 
   async onUpdatePasswordClicked() {
-    const repeatPasswordInput = this.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
-    const native = await repeatPasswordInput?.getInputElement();
+    const native = await this.repeatPasswordInput?.getInputElement();
     native?.setCustomValidity(this.newPassword === this.repeatPassword ? '' : 'Passwords must match');
 
-    const form = this.querySelector('form');
-    if (form && !form.reportValidity()) {
+    if (this.form && !this.form.reportValidity()) {
       return;
     }
 
@@ -145,4 +147,3 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
     this.repeatPassword = '';
   }
 }
-
