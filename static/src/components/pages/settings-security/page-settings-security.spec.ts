@@ -91,7 +91,7 @@ describe('page-settings-security', () => {
     const nativeInput = document.createElement('input');
     const setCustomValiditySpy = vi.spyOn(nativeInput, 'setCustomValidity');
 
-    const repeatPasswordInput = root.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
+    const repeatPasswordInput = root.querySelector<HTMLIonInputElement>('#repeat-password');
     if (repeatPasswordInput) {
       repeatPasswordInput.getInputElement = vi.fn().mockResolvedValue(nativeInput);
     }
@@ -132,7 +132,7 @@ describe('page-settings-security', () => {
     const nativeInput = document.createElement('input');
     const setCustomValiditySpy = vi.spyOn(nativeInput, 'setCustomValidity');
 
-    const repeatPasswordInput = root.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
+    const repeatPasswordInput = root.querySelector<HTMLIonInputElement>('#repeat-password');
     if (repeatPasswordInput) {
       repeatPasswordInput.getInputElement = vi.fn().mockResolvedValue(nativeInput);
     }
@@ -153,4 +153,3 @@ describe('page-settings-security', () => {
     expect(setCustomValiditySpy).toHaveBeenCalledWith('Passwords must match');
   });
 });
-
