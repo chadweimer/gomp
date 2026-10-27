@@ -48,7 +48,7 @@ CODEGEN_FILES=$(API_CODEGEN_FILE) $(MODELS_CODEGEN_FILE) $(MOCKS_CODEGEN_DIR)/db
 # Source files
 GO_FILES:=$(shell find . -type f -name "*.go" ! -name "*.gen.go")
 DB_MIGRATION_FILES:=$(shell find db/migrations -type f -name "*.*")
-CLIENT_FILES:=$(shell find $(CLIENT_DIR) -maxdepth 1 -type f -name "*") $(shell find $(CLIENT_DIR)/src -type f -name "*")
+CLIENT_FILES:=$(shell find $(CLIENT_DIR) -maxdepth 1 -type f -name "*") $(shell find $(CLIENT_DIR)/public -type f -name "*") $(shell find $(CLIENT_DIR)/src -type f ! -name "*.gen.*")
 
 # Go command arguments
 GO_ENV=GOOS=$(TARGETOS) GOARCH=$(TARGETARCH) CGO_ENABLED=0
