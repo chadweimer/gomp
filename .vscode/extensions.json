@@ -17,6 +17,7 @@
     "redhat.vscode-yaml",
     "SonarSource.sonarlint-vscode",
     "tamasfe.even-better-toml",
-    "vitest.explorer"
+    "vitest.explorer",
+    "runem.lit-plugin"
   ]
 }

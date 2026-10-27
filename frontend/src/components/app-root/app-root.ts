@@ -12,12 +12,12 @@ import appConfig, { appConfigStore } from '../../stores/config';
 import state, { appStateStore, clearState } from '../../stores/state';
 import { StoreController } from '../../stores/store';
 
-// Import placeholders so customElements are registered
-import '../pages/page-home.placeholder';
-import '../pages/page-login.placeholder';
+// Import page components and placeholders
+import '../pages/home/page-home';
+import '../pages/login/page-login';
 import '../pages/page-search.placeholder';
 import '../pages/page-recipe.placeholder';
-import '../pages/page-tags.placeholder';
+import '../pages/tags/page-tags';
 import '../pages/page-settings.placeholder';
 import '../pages/page-admin.placeholder';
 
@@ -137,13 +137,13 @@ export class AppRoot extends LitElement {
                       color=${isActive && !isParentOfActive ? 'secondary' : undefined}
                       .detail=${isActive && !isParentOfActive}
                       class=${classMap({
-                        'active': isActive,
-                        'child-link': !isNullOrEmpty(link.parentUrl),
-                      })}
+            'active': isActive,
+            'child-link': !isNullOrEmpty(link.parentUrl),
+          })}
                     >
                       <ion-icon name=${link.icon} slot="start" color=${isParentOfActive ? 'secondary' : undefined}></ion-icon>
                       <ion-label color=${isParentOfActive ? 'secondary' : undefined}>${link.title}</ion-label>
-                      ${!isNull(link.detail) ? html`<ion-label slot="end">${link.detail()}</ion-label>` : ''}
+                      ${!isNull(link.detail) && html`<ion-label slot="end">${link.detail()}</ion-label>`}
                     </ion-item>
                   `;
         })}
@@ -170,7 +170,7 @@ export class AppRoot extends LitElement {
 
               <ion-title slot="start">
                 <ion-router-link color="light" href="/">${appConfig.config.title}</ion-router-link>
-                ${!isNullOrEmpty(this.pageTitle) ? html`<ion-text color="light" class="ion-display-md-none"> | ${this.pageTitle}</ion-text>` : ''}
+                ${!isNullOrEmpty(this.pageTitle) && html`<ion-text color="light" class="ion-display-md-none"> | ${this.pageTitle}</ion-text>`}
               </ion-title>
 
               <ion-buttons id="toolbar-menu" slot="end" class="ion-display-none ion-display-sm-flex">
@@ -182,10 +182,10 @@ export class AppRoot extends LitElement {
                         size="small"
                         fill=${this.pageTitle === link.title ? 'solid' : 'clear'}
                         class=${classMap({
-                          'active': this.pageTitle === link.title,
-                          'ion-display-none': true,
-                          'ion-display-md-flex': true,
-                        })}
+            'active': this.pageTitle === link.title,
+            'ion-display-none': true,
+            'ion-display-md-flex': true,
+          })}
                         href=${url}
                         title=${link.title}
                       >
@@ -198,9 +198,9 @@ export class AppRoot extends LitElement {
                         size="small"
                         fill=${this.pageTitle === link.title ? 'solid' : 'clear'}
                         class=${classMap({
-                          'active': this.pageTitle === link.title,
-                          'ion-display-md-none': true,
-                        })}
+            'active': this.pageTitle === link.title,
+            'ion-display-md-none': true,
+          })}
                         href=${url}
                         title=${link.title}
                       >
