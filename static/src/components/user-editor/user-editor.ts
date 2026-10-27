@@ -1,4 +1,4 @@
-import { LitElement, html, css, PropertyValues } from 'lit';
+import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state as litState } from 'lit/decorators.js';
 import { AccessLevel, User } from '../../helpers/schema.gen';
 import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
@@ -130,7 +130,7 @@ export class UserEditor extends LitElement {
                 required
               ></ion-input>
             </ion-item>
-          ` : ''}
+          ` : nothing}
         </form>
       </ion-content>
     `;

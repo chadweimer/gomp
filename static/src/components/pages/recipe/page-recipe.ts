@@ -1,4 +1,4 @@
-import { LitElement, html, PropertyValues } from 'lit';
+import { LitElement, html, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../helpers/schema.gen';
@@ -113,7 +113,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
                                   <ion-icon slot="icon-only" icon="trash"></ion-icon>
                                 </ion-button>
                               `
-          : ''}
+          : nothing}
                         </ion-card>
                       </ion-col>
                     `
@@ -178,7 +178,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
                     Delete
                   </ion-button>
                 `
-        : ''}
+        : nothing}
             <ion-button class="ion-display-none ion-display-md-flex" @click=${() => this.onPrintClicked()}>
               <ion-icon slot="start" icon="print"></ion-icon>
               Print

@@ -1,4 +1,4 @@
-import { LitElement, html, css, PropertyValues } from 'lit';
+import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { isNullOrEmpty } from '../../helpers/utils';
@@ -92,7 +92,7 @@ export class TagsInput extends LitElement {
     return html`
       ${!isNullOrEmpty(this.label)
         ? html`<ion-label position=${ifDefined(this.labelPlacement)}>${this.label}</ion-label>`
-        : ''}
+        : nothing}
       ${this.internalValue.length > 0
         ? html`
             <div class="ion-padding-top">
@@ -106,7 +106,7 @@ export class TagsInput extends LitElement {
         )}
             </div>
           `
-        : ''}
+        : nothing}
       <slot></slot>
       <div class="ion-padding-bottom">
         ${this.filteredSuggestions.map(

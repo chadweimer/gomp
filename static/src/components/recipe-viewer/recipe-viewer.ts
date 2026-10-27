@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Recipe, RecipeCompact, RecipeState } from '../../helpers/schema.gen';
@@ -90,7 +90,7 @@ export class RecipeViewer extends LitElement {
                 />
               </a>
             `
-        : ''}
+        : nothing}
         <ion-card-header>
           <ion-card-title>${this.recipe?.name}</ion-card-title>
           ${(this.recipe?.tags?.length ?? 0) > 0
@@ -111,7 +111,7 @@ export class RecipeViewer extends LitElement {
         )}
                 </ion-card-subtitle>
               `
-        : ''}
+        : nothing}
           <ion-card-subtitle class="details">
             <five-star-rating
               .value=${this.recipe?.rating ?? 0}
@@ -121,8 +121,8 @@ export class RecipeViewer extends LitElement {
           new CustomEvent('ratingSelected', { detail: e.detail, bubbles: true, composed: true })
         )}
             ></five-star-rating>
-            ${!isNullOrEmpty(this.recipe?.servingSize) ? html`<div>Servings: ${this.recipe?.servingSize}</div>` : ''}
-            ${!isNullOrEmpty(this.recipe?.time) ? html`<div>Time: ${this.recipe?.time}</div>` : ''}
+            ${!isNullOrEmpty(this.recipe?.servingSize) ? html`<div>Servings: ${this.recipe?.servingSize}</div>` : nothing}
+            ${!isNullOrEmpty(this.recipe?.time) ? html`<div>Time: ${this.recipe?.time}</div>` : nothing}
             ${!isNullOrEmpty(this.recipe?.sourceUrl)
         ? html`
                   <div>
@@ -132,7 +132,7 @@ export class RecipeViewer extends LitElement {
             : this.recipe?.sourceUrl}
                   </div>
                 `
-        : ''}
+        : nothing}
             <div>${this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</div>
           </ion-card-subtitle>
         </ion-card-header>
@@ -146,7 +146,7 @@ export class RecipeViewer extends LitElement {
                   <html-viewer .value=${toPresentationHtml(this, this.recipe?.ingredients, this.recipe?.id)}></html-viewer>
                 </ion-item>
               `
-        : ''}
+        : nothing}
           ${!isNullOrEmpty(this.recipe?.directions)
         ? html`
                 <ion-list-header class="section" lines="full">
@@ -156,7 +156,7 @@ export class RecipeViewer extends LitElement {
                   <html-viewer .value=${toPresentationHtml(this, this.recipe?.directions, this.recipe?.id)}></html-viewer>
                 </ion-item>
               `
-        : ''}
+        : nothing}
           ${!isNullOrEmpty(this.recipe?.storageInstructions)
         ? html`
                 <ion-list-header class="section" lines="full">
@@ -166,7 +166,7 @@ export class RecipeViewer extends LitElement {
                   <html-viewer .value=${toPresentationHtml(this, this.recipe?.storageInstructions, this.recipe?.id)}></html-viewer>
                 </ion-item>
               `
-        : ''}
+        : nothing}
           ${!isNullOrEmpty(this.recipe?.nutritionInfo)
         ? html`
                 <ion-list-header class="section" lines="full">
@@ -176,7 +176,7 @@ export class RecipeViewer extends LitElement {
                   <html-viewer .value=${toPresentationHtml(this, this.recipe?.nutritionInfo, this.recipe?.id)}></html-viewer>
                 </ion-item>
               `
-        : ''}
+        : nothing}
           ${(this.links?.length ?? 0) > 0
         ? html`
                 <ion-list class="links">
@@ -190,7 +190,7 @@ export class RecipeViewer extends LitElement {
                           <ion-thumbnail slot="start" class="preview">
                             ${!isNullOrEmpty(link.mainImageName)
               ? html`<img loading="lazy" alt="" src=${ifDefined(getRecipeThumbnailUrl(link.id, link.mainImageName))} />`
-              : ''}
+              : nothing}
                           </ion-thumbnail>
                           <ion-label>
                             <ion-router-link href=${`/recipes/${link.id}`} color="dark">
@@ -217,17 +217,17 @@ export class RecipeViewer extends LitElement {
                                 </ion-item-option>
                               </ion-item-options>
                             `
-              : ''}
+              : nothing}
                       </ion-item-sliding>
                     `
         )}
                 </ion-list>
               `
-        : ''}
+        : nothing}
         </ion-card-content>
         ${this.recipe?.state === RecipeState.Archived
         ? html`<ion-badge class="top-right-padded translucent" color="dark">Archived</ion-badge>`
-        : ''}
+        : nothing}
       </ion-card>
     `;
   }

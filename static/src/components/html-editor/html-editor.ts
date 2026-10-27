@@ -3,7 +3,7 @@ import { ChainedCommands, Editor } from '@tiptap/core';
 import { Selection } from '@tiptap/extensions';
 import InvisibleCharacters, { HardBreakNode, ParagraphNode } from '@tiptap/extension-invisible-characters';
 import StarterKit from '@tiptap/starter-kit';
-import { LitElement, html, css, PropertyValues } from 'lit';
+import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
@@ -619,10 +619,10 @@ export class HTMLEditor extends LitElement {
                         Remove
                       </ion-button>
                     `
-            : ''}
+            : nothing}
               </ion-item>
             `
-        : ''}
+        : nothing}
         ${this.activePanel === 'imagePicker'
         ? html`
               <ion-grid class="toolbar-panel image-picker-panel">
@@ -639,7 +639,7 @@ export class HTMLEditor extends LitElement {
                 </ion-row>
               </ion-grid>
             `
-        : ''}
+        : nothing}
         ${this.activePanel === 'helpPanel'
         ? html`
               <ion-grid class="toolbar-panel help-panel">
@@ -657,7 +657,7 @@ export class HTMLEditor extends LitElement {
                 </ion-row>
               </ion-grid>
             `
-        : ''}
+        : nothing}
       </div>
 
       <div class="editor-content"></div>

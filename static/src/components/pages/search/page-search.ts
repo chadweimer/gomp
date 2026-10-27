@@ -1,5 +1,5 @@
 import { Gesture, ScrollBaseDetail } from '@ionic/core';
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
@@ -135,12 +135,12 @@ export class PageSearch extends LitElement {
                         <ion-thumbnail slot="start" class="preview">
                           ${!isNullOrEmpty(recipe.mainImageName)
                 ? html`<img loading="lazy" alt="" src=${ifDefined(getRecipeThumbnailUrl(recipe.id, recipe.mainImageName))} />`
-                : ''}
+                : nothing}
                         </ion-thumbnail>
                         <ion-label class="single-line">${recipe.name}</ion-label>
                         ${recipe.state === RecipeState.Archived
                 ? html`<ion-badge color="medium" slot="end">Archived</ion-badge>`
-                : ''}
+                : nothing}
                       </ion-item>
                     </ion-col>
                   `
@@ -156,7 +156,7 @@ export class PageSearch extends LitElement {
                 </ion-fab-button>
               </ion-fab>
             `
-        : ''}
+        : nothing}
       </ion-content>
 
       <ion-footer>

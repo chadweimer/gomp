@@ -1,4 +1,4 @@
-import { LitElement, html, css, PropertyValues } from 'lit';
+import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -177,7 +177,7 @@ export class RecipeCard extends LitElement {
                           +${hiddenTags.length}
                         </ion-badge>
                       `
-            : ''}
+            : nothing}
                   <ion-badge
                     class="probe-badge translucent"
                     color="light"
@@ -185,7 +185,7 @@ export class RecipeCard extends LitElement {
                   ></ion-badge>
                 </div>
               `
-        : ''}
+        : nothing}
         </div>
         <ion-card-header class="header">
           <ion-card-title class="single-line title" title=${ifDefined(this.recipe?.name)}>
@@ -197,7 +197,7 @@ export class RecipeCard extends LitElement {
         </ion-card-content>
         ${this.recipe?.state === RecipeState.Archived
         ? html`<ion-badge class="top-right-padded translucent" color="light">Archived</ion-badge>`
-        : ''}
+        : nothing}
       </ion-card>
     `;
   }

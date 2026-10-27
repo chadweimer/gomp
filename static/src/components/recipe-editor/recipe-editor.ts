@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
@@ -121,7 +121,7 @@ export class RecipeEditor extends LitElement {
                   </form>
                 </ion-item>
               `
-        : ''}
+        : nothing}
           <ion-item lines="full">
             <ion-input
               label="Serving Size"

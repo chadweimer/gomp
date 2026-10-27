@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { customElement, state as litState } from 'lit/decorators.js';
 import { getDefaultSearchFilter } from '../../../models';
 import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
@@ -79,7 +79,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
             <ion-icon icon="add"></ion-icon>
           </ion-fab-button>
         </ion-fab>
-      ` : ''}
+      ` : nothing}
     `;
   }
 

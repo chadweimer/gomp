@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import {
   RecipeState,
@@ -121,7 +121,7 @@ export class SearchFilterEditor extends LitElement {
                   </ion-select>
                 </ion-item>
               `
-        : ''}
+        : nothing}
           ${this.showName
         ? html`
                 <ion-item lines="full">
@@ -135,7 +135,7 @@ export class SearchFilterEditor extends LitElement {
                   ></ion-input>
                 </ion-item>
               `
-        : ''}
+        : nothing}
           <ion-item lines="full">
             <ion-input
               label="Search Terms"

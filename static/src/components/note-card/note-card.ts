@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { Note } from '../../helpers/schema.gen';
 import { formatDate, toPresentationHtml } from '../../helpers/utils';
@@ -35,7 +35,7 @@ export class NoteCard extends LitElement {
           </ion-card-title>
           ${this.note?.createdAt !== this.note?.modifiedAt
         ? html`<ion-card-subtitle>Last Modified: ${formatDate(this.note?.modifiedAt)}</ion-card-subtitle>`
-        : ''}
+        : nothing}
         </ion-card-header>
         <ion-card-content>
           <html-viewer .value=${toPresentationHtml(this, this.note?.text, this.note?.recipeId)}></html-viewer>
@@ -74,7 +74,7 @@ export class NoteCard extends LitElement {
                 Delete
               </ion-button>
             `
-        : ''}
+        : nothing}
       </ion-card>
     `;
   }

@@ -1,4 +1,4 @@
-import { LitElement, html, css, PropertyValues } from 'lit';
+import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
@@ -90,7 +90,7 @@ export class RecipeLinkEditor extends LitElement {
                       <ion-thumbnail slot="start" class="preview">
                         ${!isNullOrEmpty(recipe.mainImageName)
               ? html`<img alt="" src=${getRecipeThumbnailUrl(recipe.id, recipe.mainImageName)} />`
-              : ''}
+              : nothing}
                       </ion-thumbnail>
                       <ion-radio .value=${recipe.id}>${recipe.name}</ion-radio>
                     </ion-item>

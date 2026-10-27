@@ -140,7 +140,7 @@ export class AppRoot extends LitElement {
                     >
                       <ion-icon name=${link.icon} slot="start" color=${isParentOfActive ? 'secondary' : nothing}></ion-icon>
                       <ion-label color=${isParentOfActive ? 'secondary' : nothing}>${link.title}</ion-label>
-                      ${!isNull(link.detail) ? html`<ion-label slot="end">${link.detail()}</ion-label>` : ''}
+                      ${!isNull(link.detail) ? html`<ion-label slot="end">${link.detail()}</ion-label>` : nothing}
                     </ion-item>
                   `;
         })}
@@ -167,7 +167,7 @@ export class AppRoot extends LitElement {
 
               <ion-title slot="start">
                 <ion-router-link color="light" href="/">${appConfig.config.title}</ion-router-link>
-                ${!isNullOrEmpty(this.pageTitle) ? html`<ion-text color="light" class="ion-display-md-none"> | ${this.pageTitle}</ion-text>` : ''}
+                ${!isNullOrEmpty(this.pageTitle) ? html`<ion-text color="light" class="ion-display-md-none"> | ${this.pageTitle}</ion-text>` : nothing}
               </ion-title>
 
               <ion-buttons id="toolbar-menu" slot="end" class="ion-display-none ion-display-sm-flex">

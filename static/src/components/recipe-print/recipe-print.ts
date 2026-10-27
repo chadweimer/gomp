@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { Recipe } from '../../helpers/schema.gen';
 import { getRecipeThumbnailUrl, isNullOrEmpty, toPresentationHtml } from '../../helpers/utils';
@@ -74,11 +74,11 @@ export class RecipePrint extends LitElement {
         <div class="meta">
           ${!isNullOrEmpty(this.recipe?.servingSize)
         ? html`<span>Servings: ${this.recipe?.servingSize}</span>`
-        : ''}
-          ${!isNullOrEmpty(this.recipe?.servingSize) && !isNullOrEmpty(this.recipe?.time) ? html`&nbsp;` : ''}
+        : nothing}
+          ${!isNullOrEmpty(this.recipe?.servingSize) && !isNullOrEmpty(this.recipe?.time) ? html`&nbsp;` : nothing}
           ${!isNullOrEmpty(this.recipe?.time)
         ? html`<span>Time: ${this.recipe?.time}</span>`
-        : ''}
+        : nothing}
         </div>
       </div>
       ${!isNullOrEmpty(this.recipe?.mainImageName)
@@ -90,7 +90,7 @@ export class RecipePrint extends LitElement {
               />
             </div>
           `
-        : ''}
+        : nothing}
       <div class="print-section">
         ${!isNullOrEmpty(this.recipe?.ingredients)
         ? html`
@@ -99,7 +99,7 @@ export class RecipePrint extends LitElement {
                 <html-viewer .value=${toPresentationHtml(this, this.recipe?.ingredients, this.recipe?.id, false)}></html-viewer>
               </section>
             `
-        : ''}
+        : nothing}
         ${!isNullOrEmpty(this.recipe?.directions)
         ? html`
               <section>
@@ -107,7 +107,7 @@ export class RecipePrint extends LitElement {
                 <html-viewer .value=${toPresentationHtml(this, this.recipe?.directions, this.recipe?.id, false)}></html-viewer>
               </section>
             `
-        : ''}
+        : nothing}
         ${!isNullOrEmpty(this.recipe?.storageInstructions)
         ? html`
               <section>
@@ -115,7 +115,7 @@ export class RecipePrint extends LitElement {
                 <html-viewer .value=${toPresentationHtml(this, this.recipe?.storageInstructions, this.recipe?.id, false)}></html-viewer>
               </section>
             `
-        : ''}
+        : nothing}
         ${!isNullOrEmpty(this.recipe?.sourceUrl)
         ? html`
               <section>
@@ -123,7 +123,7 @@ export class RecipePrint extends LitElement {
                 <div class="plain">${this.recipe?.sourceUrl}</div>
               </section>
             `
-        : ''}
+        : nothing}
       </div>
     `;
   }
