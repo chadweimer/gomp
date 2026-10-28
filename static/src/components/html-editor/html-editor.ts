@@ -289,13 +289,6 @@ export class HTMLEditor extends LitElement {
     });
   }
 
-  override focus(options?: FocusOptions) {
-    super.focus(options);
-    const tiptapEl = this.shadowRoot?.querySelector('.tiptap') as HTMLElement | null;
-    tiptapEl?.focus();
-    this.editor?.commands.focus();
-  }
-
   firstUpdated() {
     this.initEditor();
   }
@@ -375,14 +368,14 @@ export class HTMLEditor extends LitElement {
 
   private handleFocus(e: FocusEvent) {
     if (e.target === this) {
-      const tiptapEl = this.shadowRoot?.querySelector('.tiptap') as HTMLElement | null;
+      const tiptapEl = this.renderRoot.querySelector('.tiptap') as HTMLElement | null;
       tiptapEl?.focus();
       this.editor?.commands.focus();
     }
   }
 
   private handleBlur(e: FocusEvent) {
-    if (this.contains(e.relatedTarget as Node) || this.shadowRoot?.contains(e.relatedTarget as Node)) {
+    if (this.contains(e.relatedTarget as Node) || this.renderRoot.contains(e.relatedTarget as Node)) {
       return;
     }
 
