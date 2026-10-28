@@ -48,7 +48,7 @@ describe('tags-input', () => {
     const el = await fixture<TagsInput>(html`<tags-input .suggestions=${['sug1']}></tags-input>`);
     el.addEventListener('valueChanged', (e: Event) => onValueChanged((e as CustomEvent).detail));
 
-    await el.addTag('new-tag');
+    el.addTag('new-tag');
     expect(onValueChanged).toHaveBeenCalledWith(['new-tag']);
 
     const sugChip = el.renderRoot.querySelector('ion-chip.suggested') as HTMLElement;

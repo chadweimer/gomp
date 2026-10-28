@@ -22,7 +22,7 @@ export function createStore<T extends object>(initialState: T): Store<T> {
     return currentData[key];
   };
 
-  const set = <K extends keyof T>(key: K, value: T[K]): void => {
+  const set = <K extends keyof T>(key: K, value: T[K]) => {
     const prev = currentData[key];
     if (Object.is(prev, value)) {
       return;
@@ -41,7 +41,7 @@ export function createStore<T extends object>(initialState: T): Store<T> {
     }
   };
 
-  const reset = (): void => {
+  const reset = () => {
     for (const k of Object.keys(currentData) as (keyof T)[]) {
       if (k in initialCopy) {
         set(k, initialCopy[k]);
@@ -98,13 +98,13 @@ export class StoreController<T extends object> implements ReactiveController {
     this.host.addController(this);
   }
 
-  hostConnected(): void {
+  hostConnected() {
     this.unsubscribe = this.store.subscribe(() => {
       this.host.requestUpdate();
     });
   }
 
-  hostDisconnected(): void {
+  hostDisconnected() {
     this.unsubscribe?.();
   }
 }

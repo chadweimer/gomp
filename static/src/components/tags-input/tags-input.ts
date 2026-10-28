@@ -1,7 +1,7 @@
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { isNullOrEmpty } from '../../helpers/utils';
+import { emit, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 
 @customElement('tags-input')
@@ -43,49 +43,19 @@ export class TagsInput extends LitElement {
     }
   }
 
-  private handleKeyDown(e: KeyboardEvent) {
-    const target = e.target as HTMLElement | null;
-    if (!target) return;
-
-    const tagName = target.tagName.toLowerCase();
-    if (tagName !== 'input' && tagName !== 'ion-input') {
-      return;
-    }
-
-    if (e.key === 'Enter') {
-      const input = target as HTMLInputElement | HTMLIonInputElement;
-      const val = typeof input.value === 'string' ? input.value.trim() : '';
-      if (!isNullOrEmpty(val)) {
-        e.preventDefault();
-        e.stopPropagation();
-        void this.addTag(val);
-        input.value = '';
-      }
-    }
-  }
-
-  async addTag(tag: string): Promise<void> {
+  addTag(tag: string) {
     this.internalValue = [
       ...this.internalValue,
       tag.toLowerCase()
     ].filter((value, index, self) => self.indexOf(value) === index);
     this.filterSuggestedTags(this.suggestions);
-    this.dispatchEvent(new CustomEvent('valueChanged', {
-      detail: this.internalValue,
-      bubbles: true,
-      composed: true,
-    }));
-    await this.updateComplete;
+    emit(this, 'valueChanged', this.internalValue);
   }
 
   removeTag(tag: string) {
     this.internalValue = this.internalValue.filter(value => value !== tag);
     this.filterSuggestedTags(this.suggestions);
-    this.dispatchEvent(new CustomEvent('valueChanged', {
-      detail: this.internalValue,
-      bubbles: true,
-      composed: true,
-    }));
+    emit(this, 'valueChanged', this.internalValue);
   }
 
   render() {
@@ -119,6 +89,27 @@ export class TagsInput extends LitElement {
         )}
       </div>
     `;
+  }
+
+  private handleKeyDown(e: KeyboardEvent) {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+
+    const tagName = target.tagName.toLowerCase();
+    if (tagName !== 'input' && tagName !== 'ion-input') {
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      const input = target as HTMLInputElement | HTMLIonInputElement;
+      const val = typeof input.value === 'string' ? input.value.trim() : '';
+      if (!isNullOrEmpty(val)) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.addTag(val);
+        input.value = '';
+      }
+    }
   }
 
   private filterSuggestedTags(suggestions: string[] | null) {

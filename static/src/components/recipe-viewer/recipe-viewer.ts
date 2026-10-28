@@ -2,7 +2,7 @@ import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { Recipe, RecipeCompact, RecipeState } from '../../helpers/schema.gen';
-import { formatDate, getRecipeImageUrl, getRecipeThumbnailUrl, isNullOrEmpty, toPresentationHtml } from '../../helpers/utils';
+import { emit, formatDate, getRecipeImageUrl, getRecipeThumbnailUrl, isNullOrEmpty, toPresentationHtml } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import '../five-star-rating/five-star-rating';
 import '../html-viewer/html-viewer';
@@ -100,10 +100,7 @@ export class RecipeViewer extends LitElement {
           (tag) => html`
                       <ion-badge
                         color="medium"
-                        @click=${() =>
-              this.dispatchEvent(
-                new CustomEvent('tagClicked', { detail: tag, bubbles: true, composed: true })
-              )}
+                        @click=${() => emit(this, 'tagClicked', tag)}
                       >
                         ${tag}
                       </ion-badge>
@@ -116,10 +113,7 @@ export class RecipeViewer extends LitElement {
             <five-star-rating
               .value=${this.recipe?.rating ?? 0}
               ?disabled=${this.readonly}
-              @valueSelected=${(e: CustomEvent<number>) =>
-        this.dispatchEvent(
-          new CustomEvent('ratingSelected', { detail: e.detail, bubbles: true, composed: true })
-        )}
+              @valueSelected=${(e: CustomEvent<number>) => emit(this, 'ratingSelected', e.detail)}
             ></five-star-rating>
             ${!isNullOrEmpty(this.recipe?.servingSize) ? html`<div>Servings: ${this.recipe?.servingSize}</div>` : nothing}
             ${!isNullOrEmpty(this.recipe?.time) ? html`<div>Time: ${this.recipe?.time}</div>` : nothing}
@@ -203,14 +197,7 @@ export class RecipeViewer extends LitElement {
                               <ion-item-options side="start">
                                 <ion-item-option
                                   color="danger"
-                                  @click=${() =>
-                  this.dispatchEvent(
-                    new CustomEvent('deleteLinkClicked', {
-                      detail: link,
-                      bubbles: true,
-                      composed: true,
-                    })
-                  )}
+                                  @click=${() => emit(this, 'deleteLinkClicked', link)}
                                 >
                                   <ion-icon slot="start" icon="close"></ion-icon>
                                   Remove

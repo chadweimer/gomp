@@ -5,7 +5,7 @@ import InvisibleCharacters, { HardBreakNode, ParagraphNode } from '@tiptap/exten
 import StarterKit from '@tiptap/starter-kit';
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
-import { isNullOrEmpty } from '../../helpers/utils';
+import { emit, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import { GompImage } from './extensions';
 
@@ -380,11 +380,7 @@ export class HTMLEditor extends LitElement {
     }
 
     this.activePanel = null;
-    this.dispatchEvent(new CustomEvent('valueChanged', {
-      detail: this.getCleanHTML(),
-      bubbles: true,
-      composed: true,
-    }));
+    emit(this, 'valueChanged', this.getCleanHTML());
   }
 
   private getCleanHTML(): string {

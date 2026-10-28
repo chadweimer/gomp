@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { globalStyles } from '../../global/shared-styles';
+import { emit } from '../../helpers/utils';
 
 @customElement('five-star-rating')
 export class FiveStarRating extends LitElement {
@@ -53,25 +54,9 @@ export class FiveStarRating extends LitElement {
           <ion-icon
             name=${iconName}
             size=${ifDefined(this.size)}
-            class=${classMap({
-        hover: isHovering,
-        disabled: this.disabled,
-      })}
-            @mousemove=${(e: MouseEvent) => {
-          if (!this.disabled) {
-            this.hoverValue = this.getRatingFromEvent(e, star);
-          }
-        }}
-            @click=${(e: MouseEvent) => {
-          if (!this.disabled) {
-            const selected = this.hoverValue ?? this.getRatingFromEvent(e, star);
-            this.dispatchEvent(new CustomEvent('valueSelected', {
-              detail: selected,
-              bubbles: true,
-              composed: true,
-            }));
-          }
-        }}
+            class=${classMap({ hover: isHovering, disabled: this.disabled, })}
+            @mousemove=${(e: MouseEvent) => this.onMouseMove(e, star)}
+            @click=${(e: MouseEvent) => this.onClick(e, star)}
           ></ion-icon>
         `;
     })}
@@ -97,6 +82,18 @@ export class FiveStarRating extends LitElement {
       }
     }
     return star;
+  }
+
+  private onMouseMove(e: MouseEvent, star: number) {
+    if (!this.disabled) {
+      this.hoverValue = this.getRatingFromEvent(e, star);
+    }
+  }
+
+  private onClick(e: MouseEvent, star: number) {
+    if (!this.disabled) {
+      emit(this, 'valueSelected', this.hoverValue ?? this.getRatingFromEvent(e, star));
+    }
   }
 }
 

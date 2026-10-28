@@ -62,12 +62,7 @@ export class PageAdmin extends LitElement {
 
   render() {
     return html`
-      <ion-tabs @ionTabsDidChange=${() => {
-        const tabs = this.tabs;
-        if (tabs) {
-          void sendActivatedCallback(tabs);
-        }
-      }}>
+      <ion-tabs @ionTabsDidChange=${() => void this.onTabsDidChange()}>
         <ion-tab tab="tab-admin-configuration" component="page-admin-configuration"></ion-tab>
         <ion-tab tab="tab-admin-users" component="page-admin-users"></ion-tab>
         <ion-tab tab="tab-admin-maintenance" component="page-admin-maintenance"></ion-tab>
@@ -88,5 +83,12 @@ export class PageAdmin extends LitElement {
         </ion-tab-bar>
       </ion-tabs>
     `;
+  }
+
+  private async onTabsDidChange() {
+    const tabs = this.tabs;
+    if (tabs) {
+      await sendActivatedCallback(tabs);
+    }
   }
 }

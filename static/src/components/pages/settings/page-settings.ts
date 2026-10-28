@@ -62,12 +62,7 @@ export class PageSettings extends LitElement {
 
   render() {
     return html`
-      <ion-tabs @ionTabsDidChange=${() => {
-        const tabs = this.tabs;
-        if (tabs) {
-          void sendActivatedCallback(tabs);
-        }
-      }}>
+      <ion-tabs @ionTabsDidChange=${() => void this.onTabsDidChange()}>
         <ion-tab tab="tab-settings-preferences" component="page-settings-preferences"></ion-tab>
         <ion-tab tab="tab-settings-searches" component="page-settings-searches"></ion-tab>
         <ion-tab tab="tab-settings-security" component="page-settings-security"></ion-tab>
@@ -88,5 +83,12 @@ export class PageSettings extends LitElement {
         </ion-tab-bar>
       </ion-tabs>
     `;
+  }
+
+  private async onTabsDidChange() {
+    const tabs = this.tabs;
+    if (tabs) {
+      await sendActivatedCallback(tabs);
+    }
   }
 }

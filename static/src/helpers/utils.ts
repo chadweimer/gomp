@@ -374,3 +374,11 @@ export function getAllShadowParents(el: Element): ShadowRoot[] {
   }
   return shadows;
 }
+
+export function emit<T>(el: HTMLElement, type: string, detail: T) {
+  el.dispatchEvent(new CustomEvent(type, {
+    detail: detail,
+    bubbles: true,
+    composed: true,
+  }));
+}

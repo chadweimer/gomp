@@ -134,10 +134,7 @@ export class AppRoot extends LitElement {
                       href=${url}
                       color=${isActive && !isParentOfActive ? 'secondary' : nothing}
                       ?detail=${isActive && !isParentOfActive}
-                      class=${classMap({
-            'active': isActive,
-            'child-link': !isNullOrEmpty(link.parentUrl),
-          })}
+                      class=${classMap({ 'active': isActive, 'child-link': !isNullOrEmpty(link.parentUrl), })}
                     >
                       <ion-icon name=${link.icon} slot="start" color=${isParentOfActive ? 'secondary' : nothing}></ion-icon>
                       <ion-label color=${isParentOfActive ? 'secondary' : nothing}>${link.title}</ion-label>
@@ -179,11 +176,7 @@ export class AppRoot extends LitElement {
                       <ion-button
                         size="small"
                         fill=${this.pageTitle === link.title ? 'solid' : 'clear'}
-                        class=${classMap({
-            'active': this.pageTitle === link.title,
-            'ion-display-none': true,
-            'ion-display-md-flex': true,
-          })}
+                        class=${classMap({ 'active': this.pageTitle === link.title, 'ion-display-none': true, 'ion-display-md-flex': true, })}
                         href=${url}
                         title=${link.title}
                       >
@@ -195,10 +188,7 @@ export class AppRoot extends LitElement {
                       <ion-button
                         size="small"
                         fill=${this.pageTitle === link.title ? 'solid' : 'clear'}
-                        class=${classMap({
-            'active': this.pageTitle === link.title,
-            'ion-display-md-none': true,
-          })}
+                        class=${classMap({ 'active': this.pageTitle === link.title, 'ion-display-md-none': true, })}
                         href=${url}
                         title=${link.title}
                       >

@@ -1,7 +1,7 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { Note } from '../../helpers/schema.gen';
-import { formatDate, toPresentationHtml } from '../../helpers/utils';
+import { emit, formatDate, toPresentationHtml } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import '../html-viewer/html-viewer';
 
@@ -42,38 +42,24 @@ export class NoteCard extends LitElement {
         </ion-card-content>
         ${!this.readonly
         ? html`
-              <ion-button
-                size="small"
-                fill="clear"
-                @click=${() =>
-            this.dispatchEvent(
-              new CustomEvent('editClicked', {
-                detail: this.note ?? undefined,
-                bubbles: true,
-                composed: true,
-              })
-            )}
-              >
-                <ion-icon slot="start" icon="create"></ion-icon>
-                Edit
-              </ion-button>
-              <ion-button
-                size="small"
-                fill="clear"
-                color="danger"
-                @click=${() =>
-            this.dispatchEvent(
-              new CustomEvent('deleteClicked', {
-                detail: this.note ?? undefined,
-                bubbles: true,
-                composed: true,
-              })
-            )}
-              >
-                <ion-icon slot="start" icon="trash"></ion-icon>
-                Delete
-              </ion-button>
-            `
+          <ion-button
+            size="small"
+            fill="clear"
+            @click=${() => emit(this, 'editClicked', this.note)}
+          >
+            <ion-icon slot="start" icon="create"></ion-icon>
+            Edit
+          </ion-button>
+          <ion-button
+            size="small"
+            fill="clear"
+            color="danger"
+            @click=${() => emit(this, 'deleteClicked', this.note)}
+          >
+            <ion-icon slot="start" icon="trash"></ion-icon>
+            Delete
+          </ion-button>
+        `
         : nothing}
       </ion-card>
     `;

@@ -154,11 +154,7 @@ export class RecipeCard extends LitElement {
                   ${visibleTags.map(
           (tag) => html`
                       <ion-badge
-                        class=${classMap({
-            'tag-badge': true,
-            translucent: true,
-            'truncate-single': tags.length === 1 || (visibleTags.length === 1 && hiddenTags.length > 0),
-          })}
+                        class=${classMap({ 'tag-badge': true, translucent: true, 'truncate-single': tags.length === 1 || (visibleTags.length === 1 && hiddenTags.length > 0), })}
                         color="light"
                         title=${tag}
                         data-tag=${tag}
