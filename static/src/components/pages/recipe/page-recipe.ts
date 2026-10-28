@@ -535,7 +535,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async onDeleteClicked() {
     const { role } = await showAlert({
-      header: 'Delete Recipe',
+      header: 'Delete Recipe?',
       message: 'Are you sure you want to delete this recipe?',
       buttons: [
         { text: 'Cancel', role: 'cancel' },
@@ -555,7 +555,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
     const isArchived = this.recipe?.state === RecipeState.Archived;
     const action = isArchived ? 'unarchive' : 'archive';
     const { role } = await showAlert({
-      header: `${isArchived ? 'Unarchive' : 'Archive'} Recipe`,
+      header: `${isArchived ? 'Unarchive' : 'Archive'} Recipe?`,
       message: `Are you sure you want to ${action} this recipe?`,
       buttons: [
         { text: 'Cancel', role: 'cancel' },
@@ -587,7 +587,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async onDeleteLinkClicked(link: RecipeCompact) {
     const { role } = await showAlert({
-      header: 'Remove Link',
+      header: 'Remove Link?',
       message: `Are you sure you want to remove the link to ${link.name}?`,
       buttons: [
         { text: 'Cancel', role: 'cancel' },
@@ -628,7 +628,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async onDeleteNoteClicked(note: Note) {
     const { role } = await showAlert({
-      header: 'Delete Note',
+      header: 'Delete Note?',
       message: 'Are you sure you want to delete this note?',
       buttons: [
         { text: 'Cancel', role: 'cancel' },
@@ -676,7 +676,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
   private async onSetMainImageClicked(image: string) {
     const { role } = await showAlert({
       header: 'Set Main Picture?',
-      message: 'Are you sure you want to this as the main picture for the recipe?',
+      message: 'Are you sure you want to use this as the main picture for the recipe?',
       buttons: [
         { text: 'No', role: 'cancel' },
         { text: 'Yes', role: 'confirm' },
@@ -694,7 +694,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async onDeleteImageClicked(image: string) {
     const { role } = await showAlert({
-      header: 'Delete Picture',
+      header: 'Delete Picture?',
       message: 'Are you sure you want to delete this picture?',
       buttons: [
         { text: 'Cancel', role: 'cancel' },

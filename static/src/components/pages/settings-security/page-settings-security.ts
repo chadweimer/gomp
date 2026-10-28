@@ -103,7 +103,7 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
     `;
   }
 
-  async loadUser() {
+  private async loadUser() {
     try {
       const { data: user, error } = await api.client.GET('/users/current');
 
@@ -132,7 +132,7 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
     }
   }
 
-  async onUpdatePasswordClicked() {
+  private async onUpdatePasswordClicked() {
     const native = await this.repeatPasswordInput?.getInputElement();
     native?.setCustomValidity(this.newPassword === this.repeatPassword ? '' : 'Passwords must match');
 

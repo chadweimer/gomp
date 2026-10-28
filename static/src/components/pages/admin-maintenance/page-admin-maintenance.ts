@@ -91,7 +91,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     `;
   }
 
-  async loadBackups() {
+  private async loadBackups() {
     try {
       const { data: backups, error } = await api.client.GET('/backups');
 
@@ -129,13 +129,13 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     }
   }
 
-  async createBackupClicked() {
+  private async createBackupClicked() {
     const { role } = await showAlert({
       header: 'Create Backup?',
       message: 'Are you sure you want to create a backup? This operation may take a while depending on the amount of data.',
       buttons: [
-        { text: 'No', role: 'cancel' },
-        { text: 'Yes', role: 'confirm' }
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Create', role: 'confirm' }
       ],
     });
 
@@ -165,17 +165,17 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     }
   }
 
-  async onDeleteBackupClicked(backup: Backup) {
+  private async onDeleteBackupClicked(backup: Backup) {
     const { role } = await showAlert({
       header: 'Delete Backup?',
       message: 'Are you sure you want to delete this backup? This operation cannot be undone.',
       buttons: [
-        { text: 'No', role: 'cancel' },
-        { text: 'Yes', role: 'confirm' }
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Delete', role: 'destructive' }
       ],
     });
 
-    if (role === 'confirm') {
+    if (role === 'destructive') {
       await this.deleteBackup(backup);
       await this.loadBackups();
     }
@@ -201,17 +201,17 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     }
   }
 
-  async onRestoreBackupClicked(backup: Backup) {
+  private async onRestoreBackupClicked(backup: Backup) {
     const { role } = await showAlert({
       header: 'Restore Backup?',
       message: 'Are you sure you want to restore this backup? This operation cannot be undone.',
       buttons: [
-        { text: 'No', role: 'cancel' },
-        { text: 'Yes', role: 'confirm' }
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Restore', role: 'destructive' }
       ],
     });
 
-    if (role === 'confirm') {
+    if (role === 'destructive') {
       await this.restoreBackup(backup.fileName);
       await this.loadBackups();
     }
@@ -240,7 +240,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     }
   }
 
-  async onUploadClicked() {
+  private async onUploadClicked() {
     const { data } = await showModal<{ file: File }>({
       presentingElement: this,
       component: 'file-upload-browser',
@@ -256,7 +256,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     }
   }
 
-  onDownloadBackupClicked(backup: Backup) {
+  private onDownloadBackupClicked(backup: Backup) {
     const link = document.createElement('a');
     link.href = backup.fileUrl;
     link.download = backup.fileName;

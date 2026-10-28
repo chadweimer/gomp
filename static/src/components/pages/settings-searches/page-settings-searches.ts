@@ -80,7 +80,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
     `;
   }
 
-  async loadFilters() {
+  private async loadFilters() {
     try {
       const { data, error } = await api.client.GET('/users/current/filters', {
         params: { query: { page: this.page, count: this.resultsPerPage } }
@@ -99,7 +99,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
     }
   }
 
-  setPage(page: number) {
+  private setPage(page: number) {
     this.page = page;
     this.loadFilters().catch(console.error);
   }
@@ -157,7 +157,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
     }
   }
 
-  async onAddFilterClicked() {
+  private async onAddFilterClicked() {
     const { data } = await showModal<{ name: string, searchFilter: SearchFilter }>({
       presentingElement: this,
       component: 'search-filter-editor',
@@ -174,7 +174,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
     }
   }
 
-  async onEditFilterClicked(id: number | null | undefined) {
+  private async onEditFilterClicked(id: number | null | undefined) {
     if (isNull(id)) {
       return;
     }
@@ -206,23 +206,23 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
     }
   }
 
-  async onDeleteFilterClicked(searchFilter: SavedSearchFilterCompact) {
+  private async onDeleteFilterClicked(searchFilter: SavedSearchFilterCompact) {
     const { role } = await showAlert({
       header: 'Delete Search Filter?',
       message: `Are you sure you want to delete ${searchFilter.name}?`,
       buttons: [
-        { text: 'No', role: 'cancel' },
-        { text: 'Yes', role: 'confirm' }
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Delete', role: 'destructive' }
       ],
     });
 
-    if (role === 'confirm') {
+    if (role === 'destructive') {
       await this.deleteSearchFilter(searchFilter.id);
       await this.loadFilters();
     }
   }
 
-  async onLoadSearchClicked(id: number | null | undefined) {
+  private async onLoadSearchClicked(id: number | null | undefined) {
     if (isNull(id)) {
       return;
     }

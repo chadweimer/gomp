@@ -489,7 +489,7 @@ describe('page-settings-searches', () => {
 
   describe('Delete Filter', () => {
     it('prompts confirmation and deletes filter when confirmed', async () => {
-      const alert = mockAlert('confirm');
+      const alert = mockAlert('destructive');
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
       const requests: Request[] = [];
@@ -555,7 +555,7 @@ describe('page-settings-searches', () => {
       vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
-      const alert = mockAlert('confirm');
+      const alert = mockAlert('destructive');
       vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
       fetchMocker.mockResponse((req: Request) => {

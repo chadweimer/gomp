@@ -405,7 +405,7 @@ describe('page-recipe', () => {
       await new Promise((r) => setTimeout(r, 10));
 
       expect(createAlertSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ header: 'Delete Recipe' })
+        expect.objectContaining({ header: 'Delete Recipe?' })
       );
 
       const deleteReq = requests.find((r) => r.url.match(/\/recipes\/1$/) && r.method === 'DELETE');
@@ -477,7 +477,7 @@ describe('page-recipe', () => {
       await new Promise((r) => setTimeout(r, 10));
 
       expect(createAlertSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ header: 'Archive Recipe' })
+        expect.objectContaining({ header: 'Archive Recipe?' })
       );
 
       const patchReq = requests.find((r) => r.url.match(/\/recipes\/1$/) && r.method === 'PATCH');
@@ -516,7 +516,7 @@ describe('page-recipe', () => {
       await new Promise((r) => setTimeout(r, 10));
 
       expect(createAlertSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ header: 'Unarchive Recipe' })
+        expect.objectContaining({ header: 'Unarchive Recipe?' })
       );
 
       const patchReq = requests.find((r) => r.url.match(/\/recipes\/1$/) && r.method === 'PATCH');
@@ -720,7 +720,7 @@ describe('page-recipe', () => {
 
       expect(createAlertSpy).toHaveBeenCalled();
       const alertOptions = createAlertSpy.mock.calls[0][0];
-      expect(alertOptions.header).toBe('Remove Link');
+      expect(alertOptions.header).toBe('Remove Link?');
       expect(alertOptions.message as string).toContain('Waffles');
 
       const deleteReq = requests.find((r) => r.url.match(/\/recipes\/1\/links\/2$/) && r.method === 'DELETE');
@@ -950,7 +950,7 @@ describe('page-recipe', () => {
       await new Promise((r) => setTimeout(r, 10));
 
       expect(createAlertSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ header: 'Delete Note' })
+        expect.objectContaining({ header: 'Delete Note?' })
       );
 
       const deleteReq = requests.find((r) => r.url.match(/\/recipes\/1\/notes\/10$/) && r.method === 'DELETE');
@@ -1181,7 +1181,7 @@ describe('page-recipe', () => {
       await new Promise((r) => setTimeout(r, 10));
 
       expect(createAlertSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ header: 'Delete Picture' })
+        expect.objectContaining({ header: 'Delete Picture?' })
       );
 
       const deleteReq = requests.find((r) => r.url.match(/\/recipes\/1\/images\/pancakes\.jpg$/) && r.method === 'DELETE');
@@ -1321,10 +1321,10 @@ describe('page-recipe', () => {
             expect(printSpy).toHaveBeenCalled();
             break;
           case 'destructive':
-            expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Delete Recipe' }));
+            expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Delete Recipe?' }));
             break;
           case 'archive':
-            expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Archive Recipe' }));
+            expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Archive Recipe?' }));
             break;
           case 'add-link':
             expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: 'recipe-link-editor' }));
@@ -1359,7 +1359,7 @@ describe('page-recipe', () => {
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
 
-      expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Unarchive Recipe' }));
+      expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Unarchive Recipe?' }));
     });
   });
 });

@@ -63,7 +63,7 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
     `;
   }
 
-  async loadAppConfiguration() {
+  private async loadAppConfiguration() {
     try {
       const { data: config, error } = await api.client.GET('/app/configuration');
 
@@ -77,7 +77,7 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
     }
   }
 
-  async onSaveConfigurationClicked() {
+  private async onSaveConfigurationClicked() {
     if (this.form && !this.form.reportValidity()) {
       return;
     }

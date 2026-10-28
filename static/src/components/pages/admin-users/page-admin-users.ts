@@ -76,7 +76,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
     `;
   }
 
-  async loadUsers() {
+  private async loadUsers() {
     try {
       const { data, error } = await api.client.GET('/users', {
         params: { query: { page: this.page, count: this.resultsPerPage } }
@@ -95,7 +95,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
     }
   }
 
-  setPage(page: number) {
+  private setPage(page: number) {
     this.page = page;
     this.loadUsers().catch(console.error);
   }
@@ -154,7 +154,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
     }
   }
 
-  async onAddUserClicked() {
+  private async onAddUserClicked() {
     const { data } = await showModal<{ user: User, password: string }>({
       presentingElement: this,
       component: 'user-editor',
@@ -165,7 +165,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
     }
   }
 
-  async onEditUserClicked(user: User) {
+  private async onEditUserClicked(user: User) {
     const { data } = await showModal<{ user: User }>({
       presentingElement: this,
       component: 'user-editor',
@@ -182,17 +182,17 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
     }
   }
 
-  async onDeleteUserClicked(user: User) {
+  private async onDeleteUserClicked(user: User) {
     const { role } = await showAlert({
       header: 'Delete User?',
       message: `Are you sure you want to delete ${user.username}?`,
       buttons: [
-        { text: 'No', role: 'cancel' },
-        { text: 'Yes', role: 'confirm' }
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Delete', role: 'destructive' }
       ],
     });
 
-    if (role === 'confirm') {
+    if (role === 'destructive') {
       await this.deleteUser(user);
       await this.loadUsers();
     }

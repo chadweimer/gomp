@@ -260,7 +260,7 @@ describe('page-admin-maintenance', () => {
 
   describe('Delete Backup', () => {
     it('deletes backup when confirmed in alert dialog', async () => {
-      const alert = mockAlert('confirm');
+      const alert = mockAlert('destructive');
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
       const loading = mockLoading();
       const createLoadingSpy = vi.spyOn(loadingController, 'create').mockResolvedValue(loading);
@@ -298,7 +298,7 @@ describe('page-admin-maintenance', () => {
     });
 
     it('deletes backup when start options are swiped', async () => {
-      const alert = mockAlert('confirm');
+      const alert = mockAlert('destructive');
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
       const loading = mockLoading();
       const createLoadingSpy = vi.spyOn(loadingController, 'create').mockResolvedValue(loading);
@@ -365,7 +365,7 @@ describe('page-admin-maintenance', () => {
       vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
-      const alert = mockAlert('confirm');
+      const alert = mockAlert('destructive');
       vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
       fetchMocker.mockResponse((req: Request) => {
@@ -396,7 +396,7 @@ describe('page-admin-maintenance', () => {
 
   describe('Restore Backup', () => {
     it('restores backup when confirmed in alert dialog', async () => {
-      const alert = mockAlert('confirm');
+      const alert = mockAlert('destructive');
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
       const loading = mockLoading();
       const createLoadingSpy = vi.spyOn(loadingController, 'create').mockResolvedValue(loading);
@@ -463,7 +463,7 @@ describe('page-admin-maintenance', () => {
       vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
-      const alert = mockAlert('confirm');
+      const alert = mockAlert('destructive');
       vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
       fetchMocker.mockResponse((req: Request) => {

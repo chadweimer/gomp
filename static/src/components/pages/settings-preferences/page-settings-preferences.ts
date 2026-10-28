@@ -111,7 +111,7 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
     }
   }
 
-  async onSaveSettingsClicked() {
+  private async onSaveSettingsClicked() {
     if (this.form && !this.form.reportValidity()) {
       return;
     }
