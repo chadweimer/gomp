@@ -51,5 +51,30 @@ describe('recipe-print', () => {
     const titles = Array.from(headers ?? []).map(h => h.textContent?.trim());
     expect(titles).toEqual(['Ingredients', 'Directions', 'Storage Instructions', 'Source']);
   });
+
+  it('bind to main image', async () => {
+    const recipe: Recipe = {
+      ...baseRecipe,
+      id: 1,
+      mainImageName: 'image.jpg',
+    };
+    const el = await fixture<RecipePrint>(html`<recipe-print .recipe=${recipe}></recipe-print>`);
+    const img = el.shadowRoot?.querySelector(`img[src='/uploads/recipes/${recipe.id}/thumbs/${recipe.mainImageName}']`);
+    expect(img).not.toBeNull();
+  });
+
+  it('renders directions with unclickable inline image thumbnails when sentinels are present', async () => {
+    const recipe: Recipe = {
+      ...baseRecipe,
+      id: 9,
+      directions: '<p>Pour mix {{image:waffle.jpg}}</p>',
+    };
+    const el = await fixture<RecipePrint>(html`<recipe-print .recipe=${recipe}></recipe-print>`);
+    const htmlViewer = el.shadowRoot?.querySelector('html-viewer');
+    expect(htmlViewer).not.toBeNull();
+    expect((htmlViewer as any).value).toBe(
+      '<p>Pour mix <img src="/uploads/recipes/9/images/waffle.jpg" alt="waffle.jpg" data-image="waffle.jpg"></p>'
+    );
+  });
 });
 

@@ -157,6 +157,15 @@ describe('page-home', () => {
   });
 
   describe('Suite 1: Initialization & Rendering', () => {
+    it('builds and renders initial empty state before activation', async () => {
+      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const title = el.querySelector('header h1');
+      expect(title?.textContent?.trim()).toBe('');
+
+      const items = el.querySelectorAll('ion-item');
+      expect(items).toHaveLength(0);
+    });
+
     it('loads and renders user settings and search filters on activatedCallback', async () => {
       const el = await fixture<PageHome>(html`<page-home></page-home>`);
       await el.activatedCallback();

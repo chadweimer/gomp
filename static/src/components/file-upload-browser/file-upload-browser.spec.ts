@@ -92,6 +92,30 @@ describe('file-upload-browser', () => {
     expect(modalEl.dismiss).toHaveBeenCalledWith({ file }, 'save');
   });
 
+  it('dismisses with null file when files list is empty', async () => {
+    const el = await fixture<FileUploadBrowser>(html`<file-upload-browser></file-upload-browser>`);
+    modalEl.appendChild(el);
+    await el.updateComplete;
+
+    const fileInput = el.shadowRoot?.querySelector<HTMLInputElement>('input[type="file"]');
+    if (fileInput) {
+      Object.defineProperty(fileInput, 'files', {
+        value: [],
+        configurable: true,
+      });
+    }
+
+    const form = el.shadowRoot?.querySelector('form');
+    if (form) {
+      vi.spyOn(form, 'reportValidity').mockReturnValue(true);
+    }
+
+    const uploadBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+    uploadBtn?.click();
+
+    expect(modalEl.dismiss).toHaveBeenCalledWith({ file: null }, 'save');
+  });
+
   it('dismisses modal on cancel', async () => {
     const el = await fixture<FileUploadBrowser>(html`<file-upload-browser></file-upload-browser>`);
     modalEl.appendChild(el);

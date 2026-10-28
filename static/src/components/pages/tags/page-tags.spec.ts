@@ -140,6 +140,32 @@ describe('page-tags', () => {
     expect(capturedUrl).toContain('dir=asc');
   });
 
+  it('updates page when page-navigator emits pageChanged event', async () => {
+    let requestedPage = '';
+    fetchMocker.mockResponse((req: Request) => {
+      if (req.url.includes('/tags')) {
+        const url = new URL(req.url);
+        requestedPage = url.searchParams.get('page') ?? '';
+        return {
+          status: 200,
+          body: JSON.stringify({ total: 100, tags: mockTagResult.tags }),
+        };
+      }
+      return { status: 404 };
+    });
+
+    const el = await fixture<PageTags>(html`<page-tags></page-tags>`);
+    await el.activatedCallback();
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(requestedPage).toBe('1');
+
+    const navigator = el.querySelector('page-navigator');
+    navigator?.dispatchEvent(new CustomEvent('pageChanged', { detail: 2 }));
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    expect(requestedPage).toBe('2');
+  });
+
   it('sets state.searchFilter and redirects to /recipes when a tag is clicked', async () => {
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.includes('/tags')) {
