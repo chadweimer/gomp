@@ -346,63 +346,6 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
     }
   }
 
-  private async setMainImage(image: string) {
-    try {
-      const { error } = await api.client.PATCH('/recipes/{recipeId}', {
-        params: { path: { recipeId: this.recipeId } },
-        body: { mainImageName: image },
-      });
-
-      if (error) {
-        throw new Error('Failed to save main image for recipe.', { cause: error });
-      }
-    } catch (ex) {
-      console.error(ex);
-      await showToast('Failed to save main image for recipe.');
-    }
-  }
-
-  private async uploadImage(file: File) {
-    await showLoading(async () => {
-      try {
-        const { error } = await api.client.POST('/recipes/{recipeId}/images', {
-          params: { path: { recipeId: this.recipeId } },
-          body: file,
-          bodySerializer(body) {
-            return fileContentSerializer(body, file);
-          },
-        });
-
-        if (error) {
-          throw new Error('Failed to upload picture.', { cause: error });
-        }
-      } catch (ex) {
-        console.error(ex);
-        await showToast('Failed to upload picture.');
-      }
-    }, 'Uploading picture...');
-  }
-
-  private async deleteImage(image: string) {
-    try {
-      const { error, response } = await api.client.DELETE('/recipes/{recipeId}/images/{name}', {
-        params: { path: { recipeId: this.recipeId, name: image } },
-      });
-
-      if (response?.status === 409) {
-        await showToast('Cannot delete this image because it is referenced in the recipe directions.');
-        return;
-      }
-
-      if (error) {
-        throw new Error('Failed to delete picture.', { cause: error });
-      }
-    } catch (ex) {
-      console.error(ex);
-      await showToast('Failed to delete picture.');
-    }
-  }
-
   private async saveNote(note: Note) {
     try {
       if (isNull(note.id)) {
@@ -449,6 +392,47 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
     }
   }
 
+  private async uploadImage(file: File) {
+    await showLoading(async () => {
+      try {
+        const { error } = await api.client.POST('/recipes/{recipeId}/images', {
+          params: { path: { recipeId: this.recipeId } },
+          body: file,
+          bodySerializer(body) {
+            return fileContentSerializer(body, file);
+          },
+        });
+
+        if (error) {
+          throw new Error('Failed to upload picture.', { cause: error });
+        }
+      } catch (ex) {
+        console.error(ex);
+        await showToast('Failed to upload picture.');
+      }
+    }, 'Uploading picture...');
+  }
+
+  private async deleteImage(image: string) {
+    try {
+      const { error, response } = await api.client.DELETE('/recipes/{recipeId}/images/{name}', {
+        params: { path: { recipeId: this.recipeId, name: image } },
+      });
+
+      if (response?.status === 409) {
+        await showToast('Cannot delete this image because it is referenced in the recipe directions.');
+        return;
+      }
+
+      if (error) {
+        throw new Error('Failed to delete picture.', { cause: error });
+      }
+    } catch (ex) {
+      console.error(ex);
+      await showToast('Failed to delete picture.');
+    }
+  }
+
   private async setRating(rating: number) {
     try {
       const { error } = await api.client.PATCH('/recipes/{recipeId}', {
@@ -465,186 +449,20 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
     }
   }
 
-  private async onRatingSelected(rating: number) {
-    await this.setRating(rating);
-    await this.loadRecipe();
-  }
+  private async setMainImage(image: string) {
+    try {
+      const { error } = await api.client.PATCH('/recipes/{recipeId}', {
+        params: { path: { recipeId: this.recipeId } },
+        body: { mainImageName: image },
+      });
 
-  private async onDeleteLinkClicked(link: RecipeCompact) {
-    const { role } = await showAlert({
-      header: 'Delete Link',
-      message: `Are you sure you want to delete the link to ${link.name}?`,
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Delete', role: 'destructive' },
-      ],
-    });
-    if (role === 'destructive') {
-      await this.deleteLink(link);
-      await this.loadLinks();
+      if (error) {
+        throw new Error('Failed to save main image for recipe.', { cause: error });
+      }
+    } catch (ex) {
+      console.error(ex);
+      await showToast('Failed to save main image for recipe.');
     }
-  }
-
-  private async onTagClicked(tag: string) {
-    appState.searchFilter = {
-      ...getDefaultSearchFilter(),
-      tags: [tag],
-    };
-    await redirect('/recipes');
-  }
-
-  private async onSetMainImageClicked(image: string) {
-    const { role } = await showAlert({
-      header: 'Set Main Picture?',
-      message: 'Are you sure you want to this as the main picture for the recipe?',
-      buttons: [
-        { text: 'No', role: 'cancel' },
-        { text: 'Yes', role: 'confirm' },
-      ],
-    });
-
-    if (role === 'confirm') {
-      await this.setMainImage(image);
-      await this.loadRecipe();
-
-      // Update the search results since the modified recipe may be in them
-      await refreshSearchResults();
-    }
-  }
-
-  private async onDeleteImageClicked(image: string) {
-    const { role } = await showAlert({
-      header: 'Delete Picture',
-      message: 'Are you sure you want to delete this picture?',
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Delete', role: 'destructive' },
-      ],
-    });
-    if (role === 'destructive') {
-      await this.deleteImage(image);
-      await this.loadImages();
-    }
-  }
-
-  private async onEditNoteClicked(note: Note) {
-    const { data } = await showModal<{ note: Note }>({
-      presentingElement: this,
-      component: 'note-editor',
-      componentProps: { note },
-    });
-    if (!isNull(data)) {
-      await this.saveNote(data.note);
-      await this.loadNotes();
-    }
-  }
-
-  private async onDeleteNoteClicked(note: Note) {
-    const { role } = await showAlert({
-      header: 'Delete Note',
-      message: 'Are you sure you want to delete this note?',
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Delete', role: 'destructive' },
-      ],
-    });
-    if (role === 'destructive') {
-      await this.deleteNote(note);
-      await this.loadNotes();
-    }
-  }
-
-  private async onEditClicked() {
-    const { data } = await showModal<{ recipe: Recipe }>({
-      presentingElement: this,
-      component: 'recipe-editor',
-      componentProps: {
-        recipe: this.recipe,
-        recipeImages: this.images,
-      },
-    });
-    if (!isNull(data)) {
-      await this.saveRecipe(data.recipe);
-      await this.load();
-    }
-  }
-
-  private async onAddNoteClicked() {
-    const { data } = await showModal<{ note: Note }>({
-      presentingElement: this,
-      component: 'note-editor',
-    });
-    if (!isNull(data)) {
-      await this.saveNote(data.note);
-      await this.loadNotes();
-    }
-  }
-
-  private async onUploadImageClicked() {
-    const { data } = await showModal<{ file: File }>({
-      presentingElement: this,
-      component: 'file-upload-browser',
-      componentProps: {
-        heading: 'Upload Picture',
-        label: 'Picture',
-        accept: '.jpg,.jpeg,.png',
-      },
-    });
-    if (!isNull(data)) {
-      await this.uploadImage(data.file);
-      await this.loadImages();
-    }
-  }
-
-  private async onAddLinkClicked() {
-    const { data } = await showModal<{ recipeId: number }>({
-      presentingElement: this,
-      component: 'recipe-link-editor',
-      componentProps: {
-        parentRecipeId: this.recipeId,
-      },
-    });
-    if (!isNull(data)) {
-      await this.addLink(data.recipeId);
-      await this.loadLinks();
-    }
-  }
-
-  private async onArchiveClicked() {
-    const isArchived = this.recipe?.state === RecipeState.Archived;
-    const action = isArchived ? 'unarchive' : 'archive';
-    const { role } = await showAlert({
-      header: `${isArchived ? 'Unarchive' : 'Archive'} Recipe`,
-      message: `Are you sure you want to ${action} this recipe?`,
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: isArchived ? 'Unarchive' : 'Archive', role: 'confirm' },
-      ],
-    });
-    if (role === 'confirm') {
-      await this.setRecipeState(isArchived ? RecipeState.Active : RecipeState.Archived);
-      await this.loadRecipe();
-    }
-  }
-
-  private async onDeleteClicked() {
-    const { role } = await showAlert({
-      header: 'Delete Recipe',
-      message: 'Are you sure you want to delete this recipe?',
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'Delete', role: 'destructive' },
-      ],
-    });
-    if (role === 'destructive') {
-      await this.deleteRecipe();
-      await refreshSearchResults();
-      await redirect('/recipes');
-    }
-  }
-
-  private onPrintClicked() {
-    window.print();
   }
 
   private async onRecipeMenuClicked() {
@@ -692,6 +510,213 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         await this.onEditClicked();
         break;
     }
+  }
+
+  private async onEditClicked() {
+    const { data } = await showModal<{ recipe: Recipe }>({
+      presentingElement: this,
+      component: 'recipe-editor',
+      componentProps: {
+        recipe: this.recipe,
+        recipeImages: this.images,
+      },
+    });
+    if (!isNull(data)) {
+      await this.saveRecipe({
+        ...this.recipe,
+        ...data.recipe
+      });
+      await this.loadRecipe();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
+  }
+
+  private async onDeleteClicked() {
+    const { role } = await showAlert({
+      header: 'Delete Recipe',
+      message: 'Are you sure you want to delete this recipe?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Delete', role: 'destructive' },
+      ],
+    });
+    if (role === 'destructive') {
+      await this.deleteRecipe();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+      await redirect('/recipes');
+    }
+  }
+
+  private async onArchiveClicked() {
+    const isArchived = this.recipe?.state === RecipeState.Archived;
+    const action = isArchived ? 'unarchive' : 'archive';
+    const { role } = await showAlert({
+      header: `${isArchived ? 'Unarchive' : 'Archive'} Recipe`,
+      message: `Are you sure you want to ${action} this recipe?`,
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { text: isArchived ? 'Unarchive' : 'Archive', role: 'confirm' },
+      ],
+    });
+    if (role === 'confirm') {
+      await this.setRecipeState(isArchived ? RecipeState.Active : RecipeState.Archived);
+      await this.loadRecipe();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
+  }
+
+  private async onAddLinkClicked() {
+    const { data } = await showModal<{ recipeId: number }>({
+      presentingElement: this,
+      component: 'recipe-link-editor',
+      componentProps: {
+        parentRecipeId: this.recipeId,
+      },
+    });
+    if (!isNull(data)) {
+      await this.addLink(data.recipeId);
+      await this.loadLinks();
+    }
+  }
+
+  private async onDeleteLinkClicked(link: RecipeCompact) {
+    const { role } = await showAlert({
+      header: 'Delete Link',
+      message: `Are you sure you want to delete the link to ${link.name}?`,
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Delete', role: 'destructive' },
+      ],
+    });
+    if (role === 'destructive') {
+      await this.deleteLink(link);
+      await this.loadLinks();
+    }
+  }
+
+  private async onAddNoteClicked() {
+    const { data } = await showModal<{ note: Note }>({
+      presentingElement: this,
+      component: 'note-editor',
+    });
+    if (!isNull(data)) {
+      await this.saveNote(data.note);
+      await this.loadNotes();
+    }
+  }
+
+  private async onEditNoteClicked(note: Note) {
+    const { data } = await showModal<{ note: Note }>({
+      presentingElement: this,
+      component: 'note-editor',
+      componentProps: { note },
+    });
+    if (!isNull(data)) {
+      await this.saveNote({
+        ...note,
+        ...data.note
+      });
+      await this.loadNotes();
+    }
+  }
+
+  private async onDeleteNoteClicked(note: Note) {
+    const { role } = await showAlert({
+      header: 'Delete Note',
+      message: 'Are you sure you want to delete this note?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Delete', role: 'destructive' },
+      ],
+    });
+    if (role === 'destructive') {
+      await this.deleteNote(note);
+      await this.loadNotes();
+    }
+  }
+
+  private async onUploadImageClicked() {
+    const { data } = await showModal<{ file: File }>({
+      presentingElement: this,
+      component: 'file-upload-browser',
+      componentProps: {
+        heading: 'Upload Picture',
+        label: 'Picture',
+        accept: '.jpg,.jpeg,.png',
+      },
+    });
+    if (!isNull(data)) {
+      await this.uploadImage(data.file);
+      await this.loadRecipe();
+      await this.loadImages();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
+  }
+
+  private onPrintClicked() {
+    window.print();
+  }
+
+  private async onRatingSelected(rating: number) {
+    await this.setRating(rating);
+    await this.loadRecipe();
+
+    // Update the search results since the modified recipe may be in them
+    await refreshSearchResults();
+  }
+
+  private async onSetMainImageClicked(image: string) {
+    const { role } = await showAlert({
+      header: 'Set Main Picture?',
+      message: 'Are you sure you want to this as the main picture for the recipe?',
+      buttons: [
+        { text: 'No', role: 'cancel' },
+        { text: 'Yes', role: 'confirm' },
+      ],
+    });
+
+    if (role === 'confirm') {
+      await this.setMainImage(image);
+      await this.loadRecipe();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
+  }
+
+  private async onDeleteImageClicked(image: string) {
+    const { role } = await showAlert({
+      header: 'Delete Picture',
+      message: 'Are you sure you want to delete this picture?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Delete', role: 'destructive' },
+      ],
+    });
+    if (role === 'destructive') {
+      await this.deleteImage(image);
+      await this.loadRecipe();
+      await this.loadImages();
+
+      // Update the search results since the modified recipe may be in them
+      await refreshSearchResults();
+    }
+  }
+
+  private async onTagClicked(tag: string) {
+    appState.searchFilter = {
+      ...getDefaultSearchFilter(),
+      tags: [tag],
+    };
+    await redirect('/recipes');
   }
 }
 
