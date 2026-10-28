@@ -24,9 +24,9 @@ BUILD_DIR=$(ROOT_BUILD_DIR)/$(TARGETOS)/$(TARGETARCH)
 CLIENT_DIR:=static
 CLIENT_INSTALL_DIR:=$(CLIENT_DIR)/node_modules
 CLIENT_BUILD_DIR:=$(CLIENT_DIR)/dist
-CLIENT_CODEGEN_API:=$(CLIENT_DIR)/src/helpers/schema.gen.ts
 
 # Codegen-related files and directories
+CLIENT_CODEGEN_API:=$(CLIENT_DIR)/src/helpers/schema.gen.ts
 MODELS_CODEGEN_FILE:=models/models.gen.go
 API_CODEGEN_FILE:=api/routes.gen.go
 MOCKS_CODEGEN_DIR:=mocks
@@ -155,6 +155,7 @@ $(ROOT_BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_API)
 	mkdir -p $@
 	npm --prefix $(CLIENT_DIR) run cover
 	if [ -d $(CLIENT_DIR)/coverage ]; then cp -r $(CLIENT_DIR)/coverage/* $@; fi
+	# Use sed to add static/ prefix to all file paths in the lcov.info file
 	if [ -f $@/lcov.info ]; then sed -i 's/^SF:\(.*\)/SF:$(CLIENT_DIR)\/\1/' $@/lcov.info; fi
 
 
