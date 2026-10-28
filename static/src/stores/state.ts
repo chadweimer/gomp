@@ -27,7 +27,7 @@ export const appStateStore = createStore<AppState>({
   loadingCount: 0
 });
 
-export const appState = appStateStore.state;
+const appState = appStateStore.state;
 export const clearState = () => appStateStore.reset();
 export const onStateChange = <K extends keyof AppState>(key: K, listener: (value: AppState[K]) => void) =>
   appStateStore.onChange(key, listener);

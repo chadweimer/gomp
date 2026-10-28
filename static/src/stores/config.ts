@@ -1,7 +1,7 @@
 import { AppConfiguration, AppInfo } from '../helpers/schema.gen';
 import { createStore } from './store';
 
-export interface AppConfig {
+interface AppConfig {
   info: AppInfo;
   config: AppConfiguration;
 }
@@ -15,6 +15,7 @@ export const appConfigStore = createStore<AppConfig>({
     title: 'GOMP: Go Meal Planner'
   }
 });
+const appConfig = appConfigStore.state;
 
-export default appConfigStore.state;
+export default appConfig;
 
