@@ -15,9 +15,9 @@ ion-thumbnail.upload {
   --size: 100%;
 }
 
+/* Add what is essentially an xxl breakpoint for very large screens */
 @media only screen and (min-width: 1440px) {
   ion-grid {
     --ion-grid-width-xl: 1400px;
   }
 }
-
