@@ -15,10 +15,10 @@ describe('note-card', () => {
 
   it('toggles edit/delete buttons based on readonly prop', async () => {
     const elReadonly = await fixture<NoteCard>(html`<note-card ?readonly=${true}></note-card>`);
-    expect(elReadonly.shadowRoot?.querySelectorAll('ion-button')).toHaveLength(0);
+    expect(elReadonly.renderRoot.querySelectorAll('ion-button')).toHaveLength(0);
 
     const elEditable = await fixture<NoteCard>(html`<note-card ?readonly=${false}></note-card>`);
-    expect(elEditable.shadowRoot?.querySelectorAll('ion-button')).toHaveLength(2);
+    expect(elEditable.renderRoot.querySelectorAll('ion-button')).toHaveLength(2);
   });
 
   it('renders modified date when createdAt differs from modifiedAt', async () => {
@@ -27,11 +27,11 @@ describe('note-card', () => {
 
     const noteSame: Note = { text: 'Same', createdAt: createdAt.toISOString(), modifiedAt: createdAt.toISOString() };
     const elSame = await fixture<NoteCard>(html`<note-card .note=${noteSame}></note-card>`);
-    expect(elSame.shadowRoot?.querySelector('ion-card-subtitle')).toBeNull();
+    expect(elSame.renderRoot.querySelector('ion-card-subtitle')).toBeNull();
 
     const noteDiff: Note = { text: 'Diff', createdAt: createdAt.toISOString(), modifiedAt: modifiedAt.toISOString() };
     const elDiff = await fixture<NoteCard>(html`<note-card .note=${noteDiff}></note-card>`);
-    const subtitle = elDiff.shadowRoot?.querySelector('ion-card-subtitle');
+    const subtitle = elDiff.renderRoot.querySelector('ion-card-subtitle');
     expect(subtitle).not.toBeNull();
     expect(subtitle?.textContent).toContain('Last Modified');
   });
