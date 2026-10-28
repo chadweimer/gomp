@@ -9,7 +9,7 @@ import { PageHome } from './page-home';
 
 describe('page-home', () => {
   const originalFetch = globalThis.fetch;
-  let routerEl: HTMLElement & { push?: ReturnType<typeof vi.fn> };
+  let routerEl: HTMLIonRouterElement;
 
   const mockUserSettings: UserSettings = {
     userId: 1,
@@ -141,7 +141,7 @@ describe('page-home', () => {
     fetchMocker.resetMocks();
     clearState();
 
-    routerEl = document.createElement('ion-router') as any;
+    routerEl = document.createElement('ion-router');
     routerEl.push = vi.fn().mockResolvedValue(true);
     document.body.appendChild(routerEl);
 

@@ -28,7 +28,7 @@ vi.mock('../../../helpers/utils', async (importOriginal) => {
 
 describe('page-tags', () => {
   const originalFetch = globalThis.fetch;
-  let routerEl: HTMLElement & { push?: ReturnType<typeof vi.fn> };
+  let routerEl: HTMLIonRouterElement;
 
   const mockTagResult: TagSearchResult = {
     total: 3,
@@ -46,7 +46,7 @@ describe('page-tags', () => {
     mockGestureDestroy.mockClear();
     swipeHandler = undefined;
 
-    routerEl = document.createElement('ion-router') as any;
+    routerEl = document.createElement('ion-router');
     routerEl.push = vi.fn().mockResolvedValue(true);
     document.body.appendChild(routerEl);
   });

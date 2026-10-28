@@ -167,11 +167,11 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipePrint = root.renderRoot.querySelector('recipe-print') as any;
+      const recipePrint = root.renderRoot.querySelector('recipe-print');
       expect(recipePrint).not.toBeNull();
       expect(recipePrint?.recipe).toEqual(mockRecipe);
 
-      const recipeViewer = root.renderRoot.querySelector('recipe-viewer') as any;
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       expect(recipeViewer).not.toBeNull();
       expect(recipeViewer?.recipe).toEqual(mockRecipe);
       expect(recipeViewer?.links).toEqual(mockLinks);
@@ -198,7 +198,7 @@ describe('page-recipe', () => {
       await root.updateComplete;
 
       expect(root).not.toBeNull();
-      const recipeViewer = root.renderRoot.querySelector('recipe-viewer') as any;
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       expect(recipeViewer?.recipe).toBeFalsy();
       expect(recipeViewer?.links?.length ?? 0).toBe(0);
 
@@ -233,7 +233,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipeViewer = root.renderRoot.querySelector('recipe-viewer') as any;
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       expect(recipeViewer?.hasAttribute('readonly') || recipeViewer?.readonly === true).toBe(true);
 
       const noteCards = root.renderRoot.querySelectorAll('note-card') as NodeListOf<any>;
@@ -263,7 +263,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipeViewer = root.renderRoot.querySelector('recipe-viewer') as any;
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       expect(recipeViewer?.hasAttribute('readonly') ?? false).toBe(false);
 
       const noteCards = root.renderRoot.querySelectorAll('note-card') as NodeListOf<any>;
@@ -720,7 +720,7 @@ describe('page-recipe', () => {
 
       expect(createAlertSpy).toHaveBeenCalled();
       const alertOptions = createAlertSpy.mock.calls[0][0];
-      expect(alertOptions.header).toBe('Delete Link');
+      expect(alertOptions.header).toBe('Remove Link');
       expect(alertOptions.message as string).toContain('Waffles');
 
       const deleteReq = requests.find((r) => r.url.match(/\/recipes\/1\/links\/2$/) && r.method === 'DELETE');

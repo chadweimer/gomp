@@ -7,6 +7,7 @@ import { SearchViewMode, SwipeDirection } from '../../../models';
 import state, { clearState } from '../../../stores/state';
 import './page-search';
 import { PageSearch } from './page-search';
+import { PageNavigator } from '../../page-navigator/page-navigator';
 
 let swipeHandler: ((swipe: SwipeDirection) => void) | undefined;
 const mockGestureDestroy = vi.fn();
@@ -704,10 +705,10 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const navigator = root.renderRoot.querySelector('page-navigator') as any;
+      const navigator = root.renderRoot.querySelector<PageNavigator>('page-navigator');
       expect(navigator).not.toBeNull();
-      expect(navigator.page).toBe(1);
-      expect(navigator.numPages).toBe(5);
+      expect(navigator?.page).toBe(1);
+      expect(navigator?.numPages).toBe(5);
 
       navigator?.dispatchEvent(new CustomEvent('pageChanged', { detail: 3, bubbles: true }));
       expect(state.searchPage).toBe(3);

@@ -6,6 +6,7 @@ import { AccessLevel, User, UserSearchResult } from '../../../helpers/schema.gen
 import { clearState } from '../../../stores/state';
 import './page-admin-users';
 import { PageAdminUsers } from './page-admin-users';
+import { PageNavigator } from '../../page-navigator/page-navigator';
 
 describe('page-admin-users', () => {
   const originalFetch = globalThis.fetch;
@@ -70,10 +71,10 @@ describe('page-admin-users', () => {
     const cards = root.renderRoot.querySelectorAll('ion-card');
     expect(cards).toHaveLength(3);
 
-    const navigator = root.renderRoot.querySelector('page-navigator') as any;
+    const navigator = root.renderRoot.querySelector<PageNavigator>('page-navigator');
     expect(navigator).not.toBeNull();
-    expect(navigator.page).toBe(1);
-    expect(navigator.numPages).toBe(1);
+    expect(navigator?.page).toBe(1);
+    expect(navigator?.numPages).toBe(1);
 
     const fab = root.renderRoot.querySelector('ion-fab');
     expect(fab).not.toBeNull();
@@ -145,9 +146,9 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const navigator = root.renderRoot.querySelector('page-navigator') as any;
+      const navigator = root.renderRoot.querySelector<PageNavigator>('page-navigator');
       expect(navigator).not.toBeNull();
-      expect(navigator.numPages).toBe(5);
+      expect(navigator?.numPages).toBe(5);
 
       navigator?.dispatchEvent(new CustomEvent('pageChanged', { detail: 2 }));
       await new Promise((r) => setTimeout(r, 10));
