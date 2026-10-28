@@ -1,6 +1,0 @@
-@import '../../global/app.css';
-
-:host {
-  display: flex;
-  contain: content;
-}

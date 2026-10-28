@@ -1,7 +1,7 @@
 # Copilot Instructions for GOMP
 
 ## Project Overview
-GOMP is a recipe book and meal planning application. The backend is Go, the frontend is a StencilJS app, and the project is built and deployed as a single binary that serves both API and static assets.
+GOMP is a recipe book and meal planning application. The backend is Go, the frontend is a Lit app (using Lit 3, Vite 6, and @ionic/core 9), and the project is built and deployed as a single binary that serves both API and static assets.
 
 ## Architecture and Flow
 - HTTP requests enter through middleware in the main server setup.

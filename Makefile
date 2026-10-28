@@ -20,24 +20,11 @@ COPYRIGHT:=Copyright © 2016-$(shell date +%Y) Chad Weimer
 ROOT_BUILD_DIR:=build
 BUILD_DIR=$(ROOT_BUILD_DIR)/$(TARGETOS)/$(TARGETARCH)
 
-# Frontend selection: lit (default) or legacy/stencil
-FRONTEND?=lit
-
-ifeq ($(FRONTEND),$(filter $(FRONTEND),legacy stencil))
-CLIENT_DIR:=static-old
-CLIENT_INSTALL_DIR:=static-old/node_modules
-CLIENT_BUILD_DIR:=static-old/www/static
-CLIENT_INSTALL_CMD=npm --prefix static-old ci --silent
-CLIENT_BUILD_CMD=npm --prefix static-old run build $(CLIENT_EXTRA_BUILD_ARGS)
-CLIENT_CODEGEN_API:=static-old/src/helpers/schema.gen.ts
-else
+# Client configuration
 CLIENT_DIR:=static
-CLIENT_INSTALL_DIR:=static/node_modules
-CLIENT_BUILD_DIR:=static/dist
-CLIENT_INSTALL_CMD=npm --prefix static ci --silent
-CLIENT_BUILD_CMD=npm --prefix static run build
-CLIENT_CODEGEN_API:=static/src/helpers/schema.gen.ts
-endif
+CLIENT_INSTALL_DIR:=$(CLIENT_DIR)/node_modules
+CLIENT_BUILD_DIR:=$(CLIENT_DIR)/dist
+CLIENT_CODEGEN_API:=$(CLIENT_DIR)/src/helpers/schema.gen.ts
 
 # Codegen-related files and directories
 MODELS_CODEGEN_FILE:=models/models.gen.go
@@ -71,7 +58,7 @@ install: $(CLIENT_INSTALL_DIR)
 	go get ./...
 
 $(CLIENT_INSTALL_DIR): $(CLIENT_DIR)/package.json
-	$(CLIENT_INSTALL_CMD)
+	npm --prefix $(CLIENT_DIR) ci --silent
 
 .PHONY: uninstall
 uninstall:
@@ -109,7 +96,7 @@ lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_API)
 lint-server: $(CODEGEN_FILES)
 	mkdir -p $(ROOT_BUILD_DIR)
 	go vet ./...
-	go tool revive -exclude static/... -exclude static-old/... -config=revive.toml ./... > $(ROOT_BUILD_DIR)/revive.golint
+	go tool revive -exclude static/... -config=revive.toml ./... > $(ROOT_BUILD_DIR)/revive.golint
 	go tool gosec -no-fail -fmt=sonarqube -out=$(ROOT_BUILD_DIR)/gosec.json -stdout ./...
 
 
@@ -128,7 +115,7 @@ clean:
 $(ROOT_BUILD_DIR): $(BUILD_DIR)
 
 $(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR) $(CLIENT_FILES) $(CLIENT_CODEGEN_API)
-	rm -rf $@ && $(CLIENT_BUILD_CMD)
+	rm -rf $@ && npm --prefix $(CLIENT_DIR) run build
 
 $(BUILD_DIR): $(BUILD_DIR)/gomp $(BUILD_DIR)/db/migrations $(BUILD_DIR)/static
 
@@ -149,38 +136,6 @@ run: LOG_LEVEL?=debug
 run: PORT?=5678
 run: go.mod $(CODEGEN_FILES) $(GO_FILES) $(CLIENT_BUILD_DIR)
 	LOG_LEVEL=$(LOG_LEVEL) PORT=$(PORT) BASE_ASSETS_PATH=$(CLIENT_BUILD_DIR) go run .
-
-.PHONY: run-lit
-run-lit:
-	$(MAKE) run FRONTEND=lit
-
-.PHONY: run-legacy
-run-legacy:
-	$(MAKE) run FRONTEND=legacy
-
-.PHONY: run-stencil
-run-stencil:
-	$(MAKE) run FRONTEND=stencil
-
-.PHONY: test-client
-test-client:
-	npm --prefix $(CLIENT_DIR) run test
-
-.PHONY: test-lit
-test-lit:
-	npm --prefix static run test
-
-.PHONY: test-legacy
-test-legacy:
-	npm --prefix static-old run test
-
-.PHONY: build-lit
-build-lit: static/node_modules
-	npm --prefix static run build
-
-.PHONY: build-legacy
-build-legacy: static-old/node_modules
-	npm --prefix static-old run build
 
 
 # ---- TEST ----
