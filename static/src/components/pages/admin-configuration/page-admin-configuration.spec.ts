@@ -22,8 +22,8 @@ describe('page-admin-configuration', () => {
   }
 
   beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage?.clear();
+    sessionStorage?.clear();
     fetchMocker.resetMocks();
     clearState();
     appConfig.config = { title: 'GOMP: Go Meal Planner' };
@@ -70,7 +70,7 @@ describe('page-admin-configuration', () => {
   });
 
   it('handles GET configuration failure gracefully', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/app\/configuration$/) && req.method === 'GET') {
         return Promise.resolve({ status: 500, body: 'Server error' });
@@ -154,7 +154,7 @@ describe('page-admin-configuration', () => {
   });
 
   it('displays toast error when saving configuration fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => { });
     const toast = mockToast();
     const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
 

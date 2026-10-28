@@ -33,7 +33,7 @@ export const onStateChange = <K extends keyof AppState>(key: K, listener: (value
   appStateStore.onChange(key, listener);
 
 // Sync certain properties from browser storage
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && localStorage && sessionStorage) {
   const propsToSync: { storage: Storage; key: keyof AppState }[] = [
     { storage: localStorage, key: 'currentUser' },
     { storage: sessionStorage, key: 'searchFilter' },

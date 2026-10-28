@@ -56,8 +56,8 @@ describe('page-settings-searches', () => {
   }
 
   beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage?.clear();
+    sessionStorage?.clear();
     fetchMocker.resetMocks();
     clearState();
 
@@ -121,7 +121,7 @@ describe('page-settings-searches', () => {
   });
 
   it('handles GET search filters failure gracefully', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
         return Promise.resolve({ status: 500, body: 'Server error' });
@@ -198,7 +198,7 @@ describe('page-settings-searches', () => {
     });
 
     it('handles GET filter details failure gracefully', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
       fetchMocker.mockResponse((req: Request) => {
         if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
           return Promise.resolve(JSON.stringify(mockFilterResult));
@@ -303,7 +303,7 @@ describe('page-settings-searches', () => {
     });
 
     it('displays toast error when creating filter fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
 
@@ -448,7 +448,7 @@ describe('page-settings-searches', () => {
     });
 
     it('displays toast error when updating filter fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
 
@@ -552,7 +552,7 @@ describe('page-settings-searches', () => {
     });
 
     it('displays toast error when deleting filter fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
       const alert = mockAlert('confirm');

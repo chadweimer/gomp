@@ -59,11 +59,11 @@ describe('search-filter-editor', () => {
   }
 
   function syncInputValues(root: SearchFilterEditor) {
-    const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+    const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
     if (nameInput) {
       nameInput.value = root.name;
     }
-    const queryInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+    const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
     if (queryInput) {
       queryInput.value = root.searchFilter?.query ?? '';
     }
@@ -129,47 +129,47 @@ describe('search-filter-editor', () => {
 
       const defaultSearchFilter = getDefaultSearchFilter();
 
-      const saveBtn = root.shadowRoot?.querySelector('ion-buttons[slot="primary"] ion-button');
+      const saveBtn = root.renderRoot.querySelector('ion-buttons[slot="primary"] ion-button');
       expect(saveBtn).not.toBeNull();
       expect(saveBtn?.textContent?.trim()).toBe('Save');
 
-      const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
       expect(nameInput).not.toBeNull();
       expect(nameInput?.value).toBe('');
       expect(nameInput?.hasAttribute('required')).toBe(true);
       expect(nameInput?.hasAttribute('autofocus')).toBe(true);
 
-      const queryInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+      const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
       expect(queryInput).not.toBeNull();
       expect(queryInput?.value).toBe(defaultSearchFilter.query);
 
-      const tagsInput = root.shadowRoot?.querySelector<any>('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector<any>('tags-input[label="Tags"]');
       expect(tagsInput).not.toBeNull();
       expect(tagsInput?.value).toEqual([]);
 
-      const sortBySelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
+      const sortBySelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
       expect(sortBySelect).not.toBeNull();
       expect(sortBySelect?.value).toBe(defaultSearchFilter.sortBy);
 
-      const sortDirSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort Order"]');
+      const sortDirSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Sort Order"]');
       expect(sortDirSelect).not.toBeNull();
       expect(sortDirSelect?.value).toBe(defaultSearchFilter.sortDir);
 
-      const picturesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Pictures"]');
+      const picturesSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Pictures"]');
       expect(picturesSelect).not.toBeNull();
       expect(picturesSelect?.value).toBe(toYesNoAny(defaultSearchFilter.withPictures));
 
-      const statesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="States"]');
+      const statesSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="States"]');
       expect(statesSelect).not.toBeNull();
       expect(statesSelect?.hasAttribute('multiple')).toBe(true);
       expect(statesSelect?.value).toEqual(defaultSearchFilter.states);
 
-      const fieldsSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Fields to Search"]');
+      const fieldsSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Fields to Search"]');
       expect(fieldsSelect).not.toBeNull();
       expect(fieldsSelect?.hasAttribute('multiple')).toBe(true);
       expect(fieldsSelect?.value).toEqual(defaultSearchFilter.fields);
 
-      const loader = root.shadowRoot?.querySelector('#savedSearchLoader');
+      const loader = root.renderRoot.querySelector('#savedSearchLoader');
       expect(loader).toBeNull();
     });
 
@@ -194,34 +194,34 @@ describe('search-filter-editor', () => {
       `);
       await root.updateComplete;
 
-      const title = root.shadowRoot?.querySelector('ion-title');
+      const title = root.renderRoot.querySelector('ion-title');
       expect(title?.textContent?.trim()).toBe('Find Dinner');
 
-      const saveBtn = root.shadowRoot?.querySelector('ion-buttons[slot="primary"] ion-button');
+      const saveBtn = root.renderRoot.querySelector('ion-buttons[slot="primary"] ion-button');
       expect(saveBtn?.textContent?.trim()).toBe('Apply');
 
-      const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
       expect(nameInput?.value).toBe('Taco Night');
 
-      const queryInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+      const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
       expect(queryInput?.value).toBe('tacos');
 
-      const tagsInput = root.shadowRoot?.querySelector<any>('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector<any>('tags-input[label="Tags"]');
       expect(tagsInput?.value).toEqual(['mexican']);
 
-      const sortBySelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
+      const sortBySelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
       expect(sortBySelect?.value).toBe(SortBy.Rating);
 
-      const sortDirSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort Order"]');
+      const sortDirSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Sort Order"]');
       expect(sortDirSelect?.value).toBe(SortDir.Desc);
 
-      const picturesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Pictures"]');
+      const picturesSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Pictures"]');
       expect(picturesSelect?.value).toBe(YesNoAny.Yes);
 
-      const statesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="States"]');
+      const statesSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="States"]');
       expect(statesSelect?.value).toEqual([RecipeState.Archived]);
 
-      const fieldsSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Fields to Search"]');
+      const fieldsSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Fields to Search"]');
       expect(fieldsSelect?.value).toEqual([SearchField.Directions]);
     });
 
@@ -229,7 +229,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor .showName=${false}></search-filter-editor>`);
       await root.updateComplete;
 
-      const nameInput = root.shadowRoot?.querySelector('ion-input[label="Name"]');
+      const nameInput = root.renderRoot.querySelector('ion-input[label="Name"]');
       expect(nameInput).toBeNull();
     });
 
@@ -237,7 +237,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const form = root.shadowRoot?.querySelector('form');
+      const form = root.renderRoot.querySelector('form');
       expect(form).not.toBeNull();
 
       const submitEvent = new CustomEvent('submit', { cancelable: true });
@@ -252,7 +252,7 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const tagsInput = root.shadowRoot?.querySelector<any>('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector<any>('tags-input[label="Tags"]');
       expect(tagsInput?.suggestions).toEqual(['breakfast', 'quick', 'dinner']);
     });
 
@@ -263,7 +263,7 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const tagsInput = root.shadowRoot?.querySelector<any>('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector<any>('tags-input[label="Tags"]');
       expect(tagsInput?.suggestions).toEqual([]);
     });
 
@@ -279,7 +279,7 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const tagsInput = root.shadowRoot?.querySelector<any>('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector<any>('tags-input[label="Tags"]');
       expect(tagsInput?.suggestions).toEqual([]);
     });
   });
@@ -290,7 +290,7 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const loader = root.shadowRoot?.querySelector('#savedSearchLoader');
+      const loader = root.renderRoot.querySelector('#savedSearchLoader');
       expect(loader).not.toBeNull();
 
       const options = loader?.querySelectorAll('ion-select-option');
@@ -311,7 +311,7 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const options = root.shadowRoot?.querySelectorAll('#savedSearchLoader ion-select-option');
+      const options = root.renderRoot.querySelectorAll('#savedSearchLoader ion-select-option');
       expect(options).toHaveLength(0);
     });
 
@@ -320,11 +320,11 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const select = root.shadowRoot?.querySelector<HTMLIonSelectElement>('#savedSearchLoader ion-select');
+      const select = root.renderRoot.querySelector<HTMLIonSelectElement>('#savedSearchLoader ion-select');
       select?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 1 } }));
       await root.updateComplete;
 
-      const openBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>('#savedSearchLoader ion-button');
+      const openBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('#savedSearchLoader ion-button');
       expect(openBtn?.hasAttribute('disabled')).toBe(false);
 
       openBtn?.click();
@@ -342,13 +342,13 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
-      const select = root.shadowRoot?.querySelector<HTMLIonSelectElement>('#savedSearchLoader ion-select');
+      const select = root.renderRoot.querySelector<HTMLIonSelectElement>('#savedSearchLoader ion-select');
       select?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 1 } }));
       await root.updateComplete;
 
-      const openBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>('#savedSearchLoader ion-button');
+      const openBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('#savedSearchLoader ion-button');
       openBtn?.click();
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
@@ -362,7 +362,7 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const openBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>('#savedSearchLoader ion-button');
+      const openBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('#savedSearchLoader ion-button');
       openBtn?.click();
       await root.updateComplete;
 
@@ -378,7 +378,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
       nameInput?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 'Curry Dishes' } }));
       await root.updateComplete;
 
@@ -389,7 +389,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const queryInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+      const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
       queryInput?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 'curry' } }));
       await root.updateComplete;
 
@@ -400,7 +400,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const tagsInput = root.shadowRoot?.querySelector('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector('tags-input[label="Tags"]');
       tagsInput?.dispatchEvent(new CustomEvent('valueChanged', { detail: ['asian', 'spicy'] }));
       await root.updateComplete;
 
@@ -411,7 +411,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const sortBySelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
+      const sortBySelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
       sortBySelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: SortBy.Rating } }));
       await root.updateComplete;
 
@@ -422,7 +422,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const sortDirSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Sort Order"]');
+      const sortDirSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Sort Order"]');
       sortDirSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: SortDir.Desc } }));
       await root.updateComplete;
 
@@ -433,7 +433,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const picturesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Pictures"]');
+      const picturesSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Pictures"]');
 
       picturesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: YesNoAny.Yes } }));
       await root.updateComplete;
@@ -452,7 +452,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const statesSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="States"]');
+      const statesSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="States"]');
       statesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: [RecipeState.Archived] } }));
       await root.updateComplete;
 
@@ -463,7 +463,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const fieldsSelect = root.shadowRoot?.querySelector<HTMLIonSelectElement>('ion-select[label="Fields to Search"]');
+      const fieldsSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Fields to Search"]');
       fieldsSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: [SearchField.Directions] } }));
       await root.updateComplete;
 
@@ -484,7 +484,7 @@ describe('search-filter-editor', () => {
       };
       await root.updateComplete;
 
-      const resetBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>(
+      const resetBtn = root.renderRoot.querySelector<HTMLIonButtonElement>(
         'ion-buttons[slot="secondary"] ion-button:first-of-type'
       );
       resetBtn?.click();
@@ -498,7 +498,7 @@ describe('search-filter-editor', () => {
       modalEl.appendChild(root);
       await root.updateComplete;
 
-      const cancelBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>(
+      const cancelBtn = root.renderRoot.querySelector<HTMLIonButtonElement>(
         'ion-buttons[slot="secondary"] ion-button:last-of-type'
       );
       cancelBtn?.click();
@@ -516,7 +516,7 @@ describe('search-filter-editor', () => {
       root.searchFilter = { ...getDefaultSearchFilter(), query: 'soup' };
       await root.updateComplete;
 
-      const saveBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>(
+      const saveBtn = root.renderRoot.querySelector<HTMLIonButtonElement>(
         'ion-buttons[slot="primary"] ion-button'
       );
       saveBtn?.click();
@@ -536,12 +536,12 @@ describe('search-filter-editor', () => {
       modalEl.appendChild(root);
       await root.updateComplete;
 
-      const form = root.shadowRoot?.querySelector('form');
+      const form = root.renderRoot.querySelector('form');
       if (form) {
         vi.spyOn(form, 'reportValidity').mockReturnValue(false);
       }
 
-      const saveBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>(
+      const saveBtn = root.renderRoot.querySelector<HTMLIonButtonElement>(
         'ion-buttons[slot="primary"] ion-button'
       );
       saveBtn?.click();
@@ -582,7 +582,7 @@ describe('search-filter-editor', () => {
 
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
 
-      const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
       if (nameInput) {
         nameInput.value = 'Unsaved Name';
       }
@@ -600,7 +600,7 @@ describe('search-filter-editor', () => {
 
       vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
 
-      const nameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
       if (nameInput) {
         nameInput.value = 'Unsaved Name';
       }
@@ -617,7 +617,7 @@ describe('search-filter-editor', () => {
 
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
 
-      const queryInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+      const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
       if (queryInput) {
         queryInput.value = 'Unsaved Query';
       }

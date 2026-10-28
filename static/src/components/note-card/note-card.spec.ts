@@ -8,7 +8,7 @@ describe('note-card', () => {
   it('renders and binds to note', async () => {
     const note: Note = { text: 'Some text', createdAt: new Date().toISOString() };
     const el = await fixture<NoteCard>(html`<note-card .note=${note}></note-card>`);
-    const viewer = el.shadowRoot?.querySelector('html-viewer');
+    const viewer = el.renderRoot.querySelector('html-viewer');
     expect(viewer).not.toBeNull();
     expect((viewer as any).value).toBe(note.text);
   });
@@ -45,7 +45,7 @@ describe('note-card', () => {
     el.addEventListener('editClicked', (e: Event) => onEdit((e as CustomEvent).detail));
     el.addEventListener('deleteClicked', (e: Event) => onDelete((e as CustomEvent).detail));
 
-    const buttons = el.shadowRoot?.querySelectorAll<HTMLIonButtonElement>('ion-button')!;
+    const buttons = el.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-button')!;
     expect(buttons).toHaveLength(2);
 
     buttons[0].click();

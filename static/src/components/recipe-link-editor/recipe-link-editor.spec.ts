@@ -75,21 +75,21 @@ describe('recipe-link-editor', () => {
   it('builds and renders default state', async () => {
     const { el } = await createRecipeLinkEditor();
 
-    const title = el.shadowRoot?.querySelector('ion-title');
+    const title = el.renderRoot.querySelector('ion-title');
     expect(title?.textContent?.trim()).toBe('Add Link');
 
-    const input = el.shadowRoot?.querySelector('ion-input[type="search"]');
+    const input = el.renderRoot.querySelector('ion-input[type="search"]');
     expect(input).not.toBeNull();
     expect(input?.getAttribute('.value') ?? (input as any).value).toBe('');
 
-    const toggleBtn = el.shadowRoot?.querySelector('ion-list-header ion-button');
+    const toggleBtn = el.renderRoot.querySelector('ion-list-header ion-button');
     expect(toggleBtn?.textContent?.trim()).toBe('Include Archived');
   });
 
   describe('search query input', () => {
     it('does not search and clears results when query has fewer than 2 characters', async () => {
       const { el } = await createRecipeLinkEditor();
-      const searchInput = el.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
+      const searchInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
 
       if (searchInput) {
         searchInput.value = 'a';
@@ -98,7 +98,7 @@ describe('recipe-link-editor', () => {
       await new Promise(r => setTimeout(r, 20));
       await el.updateComplete;
 
-      const items = el.shadowRoot?.querySelectorAll('ion-radio-group ion-item');
+      const items = el.renderRoot.querySelectorAll('ion-radio-group ion-item');
       expect(items).toHaveLength(0);
     });
 
@@ -120,7 +120,7 @@ describe('recipe-link-editor', () => {
       const { el } = await createRecipeLinkEditor(
         html`<recipe-link-editor .parentRecipeId=${2}></recipe-link-editor>`
       );
-      const searchInput = el.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
+      const searchInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
 
       if (searchInput) {
         searchInput.value = 'pasta';
@@ -132,11 +132,11 @@ describe('recipe-link-editor', () => {
       expect(capturedUrl).toContain('q=pasta');
 
       // Parent recipe (id: 2) should be excluded, leaving 2 recipes
-      const items = el.shadowRoot?.querySelectorAll('ion-radio-group ion-item');
+      const items = el.renderRoot.querySelectorAll('ion-radio-group ion-item');
       expect(items).toHaveLength(2);
 
       // Verify recipe names
-      const radios = el.shadowRoot?.querySelectorAll('ion-radio');
+      const radios = el.renderRoot.querySelectorAll('ion-radio');
       expect(radios?.[0].textContent?.trim()).toBe('Spaghetti Carbonara');
       expect(radios?.[1].textContent?.trim()).toBe('Chicken Alfredo');
 
@@ -164,7 +164,7 @@ describe('recipe-link-editor', () => {
       });
 
       const { el } = await createRecipeLinkEditor();
-      const searchInput = el.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
+      const searchInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
       if (searchInput) {
         searchInput.value = 'pasta';
         searchInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'pasta' } }));
@@ -172,14 +172,14 @@ describe('recipe-link-editor', () => {
       await new Promise(r => setTimeout(r, 20));
       await el.updateComplete;
 
-      let toggleBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-list-header ion-button');
+      let toggleBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-list-header ion-button');
       expect(toggleBtn?.textContent?.trim()).toBe('Include Archived');
 
       toggleBtn?.click();
       await new Promise(r => setTimeout(r, 20));
       await el.updateComplete;
 
-      toggleBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-list-header ion-button');
+      toggleBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-list-header ion-button');
       expect(toggleBtn?.textContent?.trim()).toBe('Exclude Archived');
       expect(lastUrl).toContain(RecipeState.Archived);
 
@@ -188,7 +188,7 @@ describe('recipe-link-editor', () => {
       await new Promise(r => setTimeout(r, 20));
       await el.updateComplete;
 
-      toggleBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-list-header ion-button');
+      toggleBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-list-header ion-button');
       expect(toggleBtn?.textContent?.trim()).toBe('Include Archived');
     });
   });
@@ -196,7 +196,7 @@ describe('recipe-link-editor', () => {
   describe('recipe selection', () => {
     it('updates selected recipe on radio group ionChange', async () => {
       const { el } = await createRecipeLinkEditor();
-      const searchInput = el.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
+      const searchInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
       if (searchInput) {
         searchInput.value = 'pasta';
         searchInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'pasta' } }));
@@ -204,7 +204,7 @@ describe('recipe-link-editor', () => {
       await new Promise(r => setTimeout(r, 20));
       await el.updateComplete;
 
-      const radioGroup = el.shadowRoot?.querySelector('ion-radio-group');
+      const radioGroup = el.renderRoot.querySelector('ion-radio-group');
       radioGroup?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 1 } }));
       await el.updateComplete;
 
@@ -216,7 +216,7 @@ describe('recipe-link-editor', () => {
     it('does not dismiss on save if no recipe is selected', async () => {
       const { modal, el } = await createRecipeLinkEditor();
 
-      const saveBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      const saveBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
       saveBtn?.click();
       await el.updateComplete;
 
@@ -226,7 +226,7 @@ describe('recipe-link-editor', () => {
     it('dismisses modal with selected recipeId when valid', async () => {
       const { modal, el } = await createRecipeLinkEditor();
 
-      const searchInput = el.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
+      const searchInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
       if (searchInput) {
         searchInput.value = 'pasta';
         searchInput.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'pasta' } }));
@@ -234,11 +234,11 @@ describe('recipe-link-editor', () => {
       await new Promise(r => setTimeout(r, 20));
       await el.updateComplete;
 
-      const radioGroup = el.shadowRoot?.querySelector('ion-radio-group');
+      const radioGroup = el.renderRoot.querySelector('ion-radio-group');
       radioGroup?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 3 } }));
       await el.updateComplete;
 
-      const saveBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      const saveBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
       saveBtn?.click();
       await el.updateComplete;
 
@@ -248,7 +248,7 @@ describe('recipe-link-editor', () => {
     it('dismisses modal with cancel role when Cancel is clicked', async () => {
       const { modal, el } = await createRecipeLinkEditor();
 
-      const cancelBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
+      const cancelBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
       cancelBtn?.click();
       await el.updateComplete;
 

@@ -31,8 +31,8 @@ describe('page-settings-preferences', () => {
   }
 
   beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage?.clear();
+    sessionStorage?.clear();
     fetchMocker.resetMocks();
     clearState();
     vi.spyOn(loadingController, 'create').mockResolvedValue(mockLoading());
@@ -89,7 +89,7 @@ describe('page-settings-preferences', () => {
   });
 
   it('handles GET user settings failure gracefully', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current\/settings$/) && req.method === 'GET') {
         return Promise.reject(new Error('Server error'));
@@ -221,7 +221,7 @@ describe('page-settings-preferences', () => {
   });
 
   it('displays toast error when image upload fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => { });
     const toast = mockToast();
     const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
 
@@ -263,7 +263,7 @@ describe('page-settings-preferences', () => {
   });
 
   it('displays toast error when saving preferences fails', async () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => { });
     const toast = mockToast();
     const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
 

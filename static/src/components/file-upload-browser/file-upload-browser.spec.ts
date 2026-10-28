@@ -20,13 +20,13 @@ describe('file-upload-browser', () => {
   it('renders default values', async () => {
     const el = await fixture<FileUploadBrowser>(html`<file-upload-browser></file-upload-browser>`);
 
-    const title = el.shadowRoot?.querySelector('ion-title');
+    const title = el.renderRoot.querySelector('ion-title');
     expect(title?.textContent?.trim()).toBe('Select File');
 
-    const label = el.shadowRoot?.querySelector('ion-label');
+    const label = el.renderRoot.querySelector('ion-label');
     expect(label?.textContent?.trim()).toBe('File');
 
-    const fileInput = el.shadowRoot?.querySelector<HTMLInputElement>('input[type="file"]');
+    const fileInput = el.renderRoot.querySelector<HTMLInputElement>('input[type="file"]');
     expect(fileInput).not.toBeNull();
     expect(fileInput?.getAttribute('accept')).toBe('*/*');
     expect(fileInput?.hasAttribute('required')).toBe(true);
@@ -41,13 +41,13 @@ describe('file-upload-browser', () => {
       ></file-upload-browser>
     `);
 
-    const title = el.shadowRoot?.querySelector('ion-title');
+    const title = el.renderRoot.querySelector('ion-title');
     expect(title?.textContent?.trim()).toBe('Upload Recipe Image');
 
-    const label = el.shadowRoot?.querySelector('ion-label');
+    const label = el.renderRoot.querySelector('ion-label');
     expect(label?.textContent?.trim()).toBe('Recipe Image');
 
-    const fileInput = el.shadowRoot?.querySelector<HTMLInputElement>('input[type="file"]');
+    const fileInput = el.renderRoot.querySelector<HTMLInputElement>('input[type="file"]');
     expect(fileInput?.getAttribute('accept')).toBe('image/*');
   });
 
@@ -56,12 +56,12 @@ describe('file-upload-browser', () => {
     modalEl.appendChild(el);
     await el.updateComplete;
 
-    const form = el.shadowRoot?.querySelector('form');
+    const form = el.renderRoot.querySelector('form');
     if (form) {
       vi.spyOn(form, 'reportValidity').mockReturnValue(false);
     }
 
-    const uploadBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+    const uploadBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
     uploadBtn?.click();
 
     expect(modalEl.dismiss).not.toHaveBeenCalled();
@@ -73,7 +73,7 @@ describe('file-upload-browser', () => {
     await el.updateComplete;
 
     const file = new File(['mock content'], 'recipe.jpg', { type: 'image/jpeg' });
-    const fileInput = el.shadowRoot?.querySelector<HTMLInputElement>('input[type="file"]');
+    const fileInput = el.renderRoot.querySelector<HTMLInputElement>('input[type="file"]');
     if (fileInput) {
       Object.defineProperty(fileInput, 'files', {
         value: [file],
@@ -81,12 +81,12 @@ describe('file-upload-browser', () => {
       });
     }
 
-    const form = el.shadowRoot?.querySelector('form');
+    const form = el.renderRoot.querySelector('form');
     if (form) {
       vi.spyOn(form, 'reportValidity').mockReturnValue(true);
     }
 
-    const uploadBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+    const uploadBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
     uploadBtn?.click();
 
     expect(modalEl.dismiss).toHaveBeenCalledWith({ file }, 'save');
@@ -97,7 +97,7 @@ describe('file-upload-browser', () => {
     modalEl.appendChild(el);
     await el.updateComplete;
 
-    const fileInput = el.shadowRoot?.querySelector<HTMLInputElement>('input[type="file"]');
+    const fileInput = el.renderRoot.querySelector<HTMLInputElement>('input[type="file"]');
     if (fileInput) {
       Object.defineProperty(fileInput, 'files', {
         value: [],
@@ -105,12 +105,12 @@ describe('file-upload-browser', () => {
       });
     }
 
-    const form = el.shadowRoot?.querySelector('form');
+    const form = el.renderRoot.querySelector('form');
     if (form) {
       vi.spyOn(form, 'reportValidity').mockReturnValue(true);
     }
 
-    const uploadBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+    const uploadBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
     uploadBtn?.click();
 
     expect(modalEl.dismiss).toHaveBeenCalledWith({ file: null }, 'save');
@@ -121,7 +121,7 @@ describe('file-upload-browser', () => {
     modalEl.appendChild(el);
     await el.updateComplete;
 
-    const cancelBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
+    const cancelBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
     cancelBtn?.click();
 
     expect(modalEl.dismiss).toHaveBeenCalledWith(undefined, 'cancel');

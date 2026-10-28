@@ -42,8 +42,8 @@ describe('page-admin-users', () => {
   }
 
   beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage?.clear();
+    sessionStorage?.clear();
     fetchMocker.resetMocks();
     clearState();
   });
@@ -108,7 +108,7 @@ describe('page-admin-users', () => {
   });
 
   it('handles GET users failure gracefully', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users(\?.*)?$/) && req.method === 'GET') {
         return { status: 500, body: 'Server error' };
@@ -227,7 +227,7 @@ describe('page-admin-users', () => {
     });
 
     it('displays toast error when creating user fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
 
@@ -331,7 +331,7 @@ describe('page-admin-users', () => {
     });
 
     it('displays toast error when updating user fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
 
@@ -430,7 +430,7 @@ describe('page-admin-users', () => {
     });
 
     it('displays toast error when deleting user fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
 

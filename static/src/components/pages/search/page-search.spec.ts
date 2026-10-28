@@ -94,8 +94,8 @@ describe('page-search', () => {
   }
 
   beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage?.clear();
+    sessionStorage?.clear();
     fetchMocker.resetMocks();
     clearState();
 
@@ -128,8 +128,8 @@ describe('page-search', () => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
     clearState();
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage?.clear();
+    sessionStorage?.clear();
     routerEl?.remove();
     vi.restoreAllMocks();
   });
@@ -284,7 +284,7 @@ describe('page-search', () => {
       expect(content).not.toBeNull();
 
       content!.scrollToPoint = vi.fn().mockRejectedValue(new Error('Scroll failure'));
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
       (root as any).updated();
       await Promise.resolve();
@@ -501,7 +501,7 @@ describe('page-search', () => {
         })
       );
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(mockToast());
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
 
       fetchMocker.mockResponse((req: Request) => {
         if (req.url.match(/\/recipes$/) && req.method === 'POST') {
@@ -537,7 +537,7 @@ describe('page-search', () => {
       );
       vi.spyOn(loadingController, 'create').mockResolvedValue(mockLoading());
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(mockToast());
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
 
       fetchMocker.mockResponse((req: Request) => {
         if (req.url.match(/\/recipes$/) && req.method === 'POST') {

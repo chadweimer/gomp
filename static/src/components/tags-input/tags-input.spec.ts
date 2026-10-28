@@ -6,26 +6,26 @@ import { TagsInput } from './tags-input';
 describe('tags-input', () => {
   it('renders default with no label', async () => {
     const el = await fixture<TagsInput>(html`<tags-input></tags-input>`);
-    const label = el.shadowRoot?.querySelector('ion-label');
+    const label = el.renderRoot.querySelector('ion-label');
     expect(label).toBeNull();
   });
 
   it('renders label and label placement', async () => {
     const el = await fixture<TagsInput>(html`<tags-input label="My Label" label-placement="fixed"></tags-input>`);
-    const label = el.shadowRoot?.querySelector('ion-label');
+    const label = el.renderRoot.querySelector('ion-label');
     expect(label?.textContent?.trim()).toBe('My Label');
     expect(label?.getAttribute('position')).toBe('fixed');
   });
 
   it('renders initial tags', async () => {
     const el = await fixture<TagsInput>(html`<tags-input .value=${['tag1', 'tag2']}></tags-input>`);
-    const chips = el.shadowRoot?.querySelectorAll('ion-chip:not(.suggested)');
+    const chips = el.renderRoot.querySelectorAll('ion-chip:not(.suggested)');
     expect(chips).toHaveLength(2);
   });
 
   it('renders suggestions excluding active tags', async () => {
     const el = await fixture<TagsInput>(html`<tags-input .value=${['tag1']} .suggestions=${['tag1', 'tag2', 'tag3']}></tags-input>`);
-    const suggestedChips = el.shadowRoot?.querySelectorAll('ion-chip.suggested');
+    const suggestedChips = el.renderRoot.querySelectorAll('ion-chip.suggested');
     expect(suggestedChips).toHaveLength(2);
   });
 
@@ -34,12 +34,12 @@ describe('tags-input', () => {
     const el = await fixture<TagsInput>(html`<tags-input .value=${['tag1', 'tag2']}></tags-input>`);
     el.addEventListener('valueChanged', (e: Event) => onValueChanged((e as CustomEvent).detail));
 
-    const firstChip = el.shadowRoot?.querySelector('ion-chip:not(.suggested)') as HTMLElement;
+    const firstChip = el.renderRoot.querySelector('ion-chip:not(.suggested)') as HTMLElement;
     firstChip.click();
     await el.updateComplete;
 
     expect(onValueChanged).toHaveBeenCalledWith(['tag2']);
-    const chips = el.shadowRoot?.querySelectorAll('ion-chip:not(.suggested)');
+    const chips = el.renderRoot.querySelectorAll('ion-chip:not(.suggested)');
     expect(chips).toHaveLength(1);
   });
 
@@ -51,7 +51,7 @@ describe('tags-input', () => {
     await el.addTag('new-tag');
     expect(onValueChanged).toHaveBeenCalledWith(['new-tag']);
 
-    const sugChip = el.shadowRoot?.querySelector('ion-chip.suggested') as HTMLElement;
+    const sugChip = el.renderRoot.querySelector('ion-chip.suggested') as HTMLElement;
     sugChip.click();
     await el.updateComplete;
 

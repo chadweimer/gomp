@@ -6,7 +6,7 @@ import { FiveStarRating } from './five-star-rating';
 describe('five-star-rating', () => {
   it('renders empty stars by default', async () => {
     const el = await fixture<FiveStarRating>(html`<five-star-rating></five-star-rating>`);
-    const icons = el.shadowRoot?.querySelectorAll('ion-icon');
+    const icons = el.renderRoot.querySelectorAll('ion-icon');
     expect(icons).not.toBeNull();
     expect(icons).toHaveLength(5);
     icons?.forEach(icon => {
@@ -17,7 +17,7 @@ describe('five-star-rating', () => {
 
   it('renders value with whole, half, and outline stars', async () => {
     const el = await fixture<FiveStarRating>(html`<five-star-rating .value=${3.5}></five-star-rating>`);
-    const icons = el.shadowRoot?.querySelectorAll('ion-icon');
+    const icons = el.renderRoot.querySelectorAll('ion-icon');
     expect(icons).toHaveLength(5);
 
     icons?.forEach((icon, i) => {
@@ -33,7 +33,7 @@ describe('five-star-rating', () => {
 
   it('previews half and whole star ratings on hover and resets on mouse leave', async () => {
     const el = await fixture<FiveStarRating>(html`<five-star-rating .value=${4}></five-star-rating>`);
-    const icons = el.shadowRoot?.querySelectorAll('ion-icon');
+    const icons = el.renderRoot.querySelectorAll('ion-icon');
     expect(icons).not.toBeNull();
 
     vi.spyOn(icons![2], 'getBoundingClientRect').mockReturnValue({
@@ -88,7 +88,7 @@ describe('five-star-rating', () => {
     const onValueSelected = vi.fn();
     const el = await fixture<FiveStarRating>(html`<five-star-rating></five-star-rating>`);
     el.addEventListener('valueSelected', (e: Event) => onValueSelected((e as CustomEvent).detail));
-    const icons = el.shadowRoot?.querySelectorAll('ion-icon');
+    const icons = el.renderRoot.querySelectorAll('ion-icon');
 
     vi.spyOn(icons![1], 'getBoundingClientRect').mockReturnValue({
       left: 20,
@@ -111,7 +111,7 @@ describe('five-star-rating', () => {
     const onValueSelected = vi.fn();
     const el = await fixture<FiveStarRating>(html`<five-star-rating disabled .value=${3}></five-star-rating>`);
     el.addEventListener('valueSelected', (e: Event) => onValueSelected((e as CustomEvent).detail));
-    const icons = el.shadowRoot?.querySelectorAll('ion-icon');
+    const icons = el.renderRoot.querySelectorAll('ion-icon');
 
     icons?.item(0).dispatchEvent(new MouseEvent('mousemove', { clientX: 10, bubbles: true }));
     await el.updateComplete;

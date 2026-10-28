@@ -22,13 +22,13 @@ describe('recipe-print', () => {
 
   it('binds to recipe and renders heading', async () => {
     const el = await fixture<RecipePrint>(html`<recipe-print .recipe=${baseRecipe}></recipe-print>`);
-    const heading = el.shadowRoot?.querySelector('h1');
+    const heading = el.renderRoot.querySelector('h1');
     expect(heading?.textContent?.trim()).toBe('Some Recipe');
   });
 
   it('renders conditional fields when provided', async () => {
     const el = await fixture<RecipePrint>(html`<recipe-print .recipe=${baseRecipe}></recipe-print>`);
-    let headers = el.shadowRoot?.querySelectorAll('h2');
+    let headers = el.renderRoot.querySelectorAll('h2');
     expect(headers).toHaveLength(0);
 
     el.recipe = {
@@ -42,11 +42,11 @@ describe('recipe-print', () => {
     };
     await el.updateComplete;
 
-    const meta = el.shadowRoot?.querySelector('.meta');
+    const meta = el.renderRoot.querySelector('.meta');
     expect(meta?.textContent).toContain('Servings: 4 servings');
     expect(meta?.textContent).toContain('Time: 30 mins');
 
-    headers = el.shadowRoot?.querySelectorAll('h2');
+    headers = el.renderRoot.querySelectorAll('h2');
     expect(headers).toHaveLength(4);
     const titles = Array.from(headers ?? []).map(h => h.textContent?.trim());
     expect(titles).toEqual(['Ingredients', 'Directions', 'Storage Instructions', 'Source']);
@@ -59,7 +59,7 @@ describe('recipe-print', () => {
       mainImageName: 'image.jpg',
     };
     const el = await fixture<RecipePrint>(html`<recipe-print .recipe=${recipe}></recipe-print>`);
-    const img = el.shadowRoot?.querySelector(`img[src='/uploads/recipes/${recipe.id}/thumbs/${recipe.mainImageName}']`);
+    const img = el.renderRoot.querySelector(`img[src='/uploads/recipes/${recipe.id}/thumbs/${recipe.mainImageName}']`);
     expect(img).not.toBeNull();
   });
 
@@ -70,7 +70,7 @@ describe('recipe-print', () => {
       directions: '<p>Pour mix {{image:waffle.jpg}}</p>',
     };
     const el = await fixture<RecipePrint>(html`<recipe-print .recipe=${recipe}></recipe-print>`);
-    const htmlViewer = el.shadowRoot?.querySelector('html-viewer');
+    const htmlViewer = el.renderRoot.querySelector('html-viewer');
     expect(htmlViewer).not.toBeNull();
     expect((htmlViewer as any).value).toBe(
       '<p>Pour mix <img src="/uploads/recipes/9/images/waffle.jpg" alt="waffle.jpg" data-image="waffle.jpg"></p>'

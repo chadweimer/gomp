@@ -23,19 +23,19 @@ describe('recipe-viewer', () => {
 
   it('renders and binds to recipe title', async () => {
     const el = await fixture<RecipeViewer>(html`<recipe-viewer .recipe=${baseRecipe}></recipe-viewer>`);
-    const title = el.shadowRoot?.querySelector('ion-card-title');
+    const title = el.renderRoot.querySelector('ion-card-title');
     expect(title?.textContent?.trim()).toBe('Some Recipe');
   });
 
   it('hide and show fields step by step', async () => {
     const el = await fixture<RecipeViewer>(html`<recipe-viewer .recipe=${baseRecipe}></recipe-viewer>`);
-    let items = el.shadowRoot?.querySelectorAll('ion-item');
+    let items = el.renderRoot.querySelectorAll('ion-item');
     expect(items).toHaveLength(0);
 
-    const heading = el.shadowRoot?.querySelector('ion-card-title');
+    const heading = el.renderRoot.querySelector('ion-card-title');
     expect(heading?.textContent?.trim()).toBe(baseRecipe.name);
 
-    let subtitle = el.shadowRoot?.querySelector('ion-card-subtitle.details');
+    let subtitle = el.renderRoot.querySelector('ion-card-subtitle.details');
     expect(subtitle?.textContent).not.toContain('Servings:');
     expect(subtitle?.textContent).not.toContain('Time:');
     expect(subtitle?.textContent).not.toContain('Source:');
@@ -43,26 +43,26 @@ describe('recipe-viewer', () => {
     // Serving Size
     el.recipe = { ...baseRecipe, servingSize: 'serving size' };
     await el.updateComplete;
-    subtitle = el.shadowRoot?.querySelector('ion-card-subtitle.details');
+    subtitle = el.renderRoot.querySelector('ion-card-subtitle.details');
     expect(subtitle?.textContent).toContain('Servings: serving size');
 
     // Time
     el.recipe = { ...baseRecipe, time: 'time' };
     await el.updateComplete;
-    subtitle = el.shadowRoot?.querySelector('ion-card-subtitle.details');
+    subtitle = el.renderRoot.querySelector('ion-card-subtitle.details');
     expect(subtitle?.textContent).toContain('Time: time');
 
     // Source URL
     el.recipe = { ...baseRecipe, sourceUrl: 'http://some.recipe/' };
     await el.updateComplete;
-    subtitle = el.shadowRoot?.querySelector('ion-card-subtitle.details');
+    subtitle = el.renderRoot.querySelector('ion-card-subtitle.details');
     expect(subtitle?.textContent).toContain('Source:');
     expect(subtitle?.textContent).toContain('http://some.recipe/');
 
     // Ingredients
     el.recipe = { ...baseRecipe, ingredients: 'ingredients' };
     await el.updateComplete;
-    items = el.shadowRoot?.querySelectorAll('ion-item');
+    items = el.renderRoot.querySelectorAll('ion-item');
     expect(items).toHaveLength(1);
     let viewer = items?.[0].querySelector<HTMLViewer>('html-viewer');
     expect(viewer?.value).toBe(el.recipe?.ingredients);
@@ -70,7 +70,7 @@ describe('recipe-viewer', () => {
     // Directions
     el.recipe = { ...baseRecipe, directions: 'directions' };
     await el.updateComplete;
-    items = el.shadowRoot?.querySelectorAll('ion-item');
+    items = el.renderRoot.querySelectorAll('ion-item');
     expect(items).toHaveLength(1);
     viewer = items?.[0].querySelector<HTMLViewer>('html-viewer');
     expect(viewer?.value).toBe(el.recipe?.directions);
@@ -78,7 +78,7 @@ describe('recipe-viewer', () => {
     // Nutrition Info
     el.recipe = { ...baseRecipe, nutritionInfo: 'nutrition' };
     await el.updateComplete;
-    items = el.shadowRoot?.querySelectorAll('ion-item');
+    items = el.renderRoot.querySelectorAll('ion-item');
     expect(items).toHaveLength(1);
     viewer = items?.[0].querySelector<HTMLViewer>('html-viewer');
     expect(viewer?.value).toBe(el.recipe?.nutritionInfo);
@@ -86,17 +86,17 @@ describe('recipe-viewer', () => {
     // Storage Instructions
     el.recipe = { ...baseRecipe, storageInstructions: 'storage' };
     await el.updateComplete;
-    items = el.shadowRoot?.querySelectorAll('ion-item');
+    items = el.renderRoot.querySelectorAll('ion-item');
     expect(items).toHaveLength(1);
     viewer = items?.[0].querySelector<HTMLViewer>('html-viewer');
     expect(viewer?.value).toBe(el.recipe?.storageInstructions);
 
     // Tags
-    let badges = el.shadowRoot?.querySelectorAll('.tags ion-badge');
+    let badges = el.renderRoot.querySelectorAll('.tags ion-badge');
     expect(badges).toHaveLength(0);
     el.recipe = { ...baseRecipe, tags: ['a', 'b'] };
     await el.updateComplete;
-    badges = el.shadowRoot?.querySelectorAll('.tags ion-badge');
+    badges = el.renderRoot.querySelectorAll('.tags ion-badge');
     expect(badges).toHaveLength(2);
   });
 
@@ -124,7 +124,7 @@ describe('recipe-viewer', () => {
         modifiedAt: modifiedAt.toISOString()
       };
       const el = await fixture<RecipeViewer>(html`<recipe-viewer .recipe=${recipe}></recipe-viewer>`);
-      const label = el.shadowRoot?.querySelector('ion-card-subtitle.details');
+      const label = el.renderRoot.querySelector('ion-card-subtitle.details');
       expect(label).not.toBeNull();
       if (modified) {
         expect(label?.textContent).toContain('Last Modified');
@@ -151,7 +151,7 @@ describe('recipe-viewer', () => {
       tags: []
     };
     const el = await fixture<RecipeViewer>(html`<recipe-viewer .recipe=${recipe}></recipe-viewer>`);
-    const img = el.shadowRoot?.querySelector<HTMLImageElement>(`img[src='/uploads/recipes/${recipe.id}/thumbs/${recipe.mainImageName}']`);
+    const img = el.renderRoot.querySelector<HTMLImageElement>(`img[src='/uploads/recipes/${recipe.id}/thumbs/${recipe.mainImageName}']`);
     expect(img).not.toBeNull();
     img?.dispatchEvent(new Event('load'));
   });
@@ -171,7 +171,7 @@ describe('recipe-viewer', () => {
     }
     const el = await fixture<RecipeViewer>(html`<recipe-viewer .links=${links}></recipe-viewer>`);
 
-    const linksList = el.shadowRoot?.querySelector<HTMLIonListElement>('ion-list.links');
+    const linksList = el.renderRoot.querySelector<HTMLIonListElement>('ion-list.links');
     expect(linksList).not.toBeNull();
 
     const linkItems = linksList?.querySelectorAll('ion-item-sliding');
@@ -200,7 +200,7 @@ describe('recipe-viewer', () => {
       tags: [],
     };
     const el = await fixture<RecipeViewer>(html`<recipe-viewer .recipe=${recipe}></recipe-viewer>`);
-    const htmlViewer = el.shadowRoot?.querySelector<HTMLViewer>('html-viewer');
+    const htmlViewer = el.renderRoot.querySelector<HTMLViewer>('html-viewer');
     expect(htmlViewer).not.toBeNull();
     expect(htmlViewer?.value).toBe(
       '<p>Step 1: Mix <a href="/uploads/recipes/7/images/batter.jpg" target="_blank" rel="noopener noreferrer"><img src="/uploads/recipes/7/images/batter.jpg" alt="batter.jpg" data-image="batter.jpg"></a></p>'
@@ -218,10 +218,10 @@ describe('recipe-viewer', () => {
     `);
     el.addEventListener('deleteLinkClicked', (e: Event) => onDelete((e as CustomEvent).detail));
 
-    const linkEl = el.shadowRoot?.querySelector('ion-list.links ion-router-link');
+    const linkEl = el.renderRoot.querySelector('ion-list.links ion-router-link');
     expect(linkEl?.textContent?.trim()).toBe('Side Salad');
 
-    const removeBtn = el.shadowRoot?.querySelector('ion-item-option[color="danger"]') as HTMLElement;
+    const removeBtn = el.renderRoot.querySelector('ion-item-option[color="danger"]') as HTMLElement;
     removeBtn.click();
     expect(onDelete).toHaveBeenCalledWith(mockLinks[0]);
   });
@@ -238,11 +238,11 @@ describe('recipe-viewer', () => {
     el.addEventListener('tagClicked', (e: Event) => onTag((e as CustomEvent).detail));
     el.addEventListener('ratingSelected', (e: Event) => onRating((e as CustomEvent).detail));
 
-    const tagBadge = el.shadowRoot?.querySelector('ion-card-subtitle.tags ion-badge') as HTMLElement;
+    const tagBadge = el.renderRoot.querySelector('ion-card-subtitle.tags ion-badge') as HTMLElement;
     tagBadge.click();
     expect(onTag).toHaveBeenCalledWith('quick');
 
-    const ratingEl = el.shadowRoot?.querySelector('five-star-rating') as HTMLElement;
+    const ratingEl = el.renderRoot.querySelector('five-star-rating') as HTMLElement;
     ratingEl.dispatchEvent(new CustomEvent('valueSelected', { detail: 5, bubbles: true, composed: true }));
     expect(onRating).toHaveBeenCalledWith(5);
   });

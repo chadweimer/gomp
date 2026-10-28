@@ -40,10 +40,10 @@ describe('note-editor', () => {
   it('renders default state as New Note', async () => {
     const { el } = await createNoteEditor();
 
-    const title = el.shadowRoot?.querySelector('ion-title');
+    const title = el.renderRoot.querySelector('ion-title');
     expect(title?.textContent?.trim()).toBe('New Note');
 
-    const textArea = el.shadowRoot?.querySelector<HTMLEditor>('html-editor');
+    const textArea = el.renderRoot.querySelector<HTMLEditor>('html-editor');
     expect(textArea).not.toBeNull();
     expect(textArea?.value).toBe('');
   });
@@ -52,10 +52,10 @@ describe('note-editor', () => {
     const note: Note = { id: 10, text: 'Existing text' };
     const { el } = await createNoteEditor(html`<note-editor .note=${note}></note-editor>`);
 
-    const title = el.shadowRoot?.querySelector('ion-title');
+    const title = el.renderRoot.querySelector('ion-title');
     expect(title?.textContent?.trim()).toBe('Edit Note');
 
-    const textArea = el.shadowRoot?.querySelector<HTMLEditor>('html-editor');
+    const textArea = el.renderRoot.querySelector<HTMLEditor>('html-editor');
     expect(textArea?.value).toBe(note.text);
   });
 
@@ -71,7 +71,7 @@ describe('note-editor', () => {
       const note: Note = { id: 1, text: 'Original text' };
       const { modal, el } = await createNoteEditor(html`<note-editor .note=${note}></note-editor>`);
 
-      const editor = el.shadowRoot?.querySelector<HTMLEditor>('html-editor');
+      const editor = el.renderRoot.querySelector<HTMLEditor>('html-editor');
       if (editor) {
         editor.getValue = vi.fn().mockResolvedValue('Original text');
       }
@@ -84,7 +84,7 @@ describe('note-editor', () => {
       const note: Note = { id: 1, text: 'Original text' };
       const { modal, el } = await createNoteEditor(html`<note-editor .note=${note}></note-editor>`);
 
-      const editor = el.shadowRoot?.querySelector<HTMLEditor>('html-editor');
+      const editor = el.renderRoot.querySelector<HTMLEditor>('html-editor');
       if (editor) {
         editor.getValue = vi.fn().mockResolvedValue('Modified text');
       }
@@ -100,7 +100,7 @@ describe('note-editor', () => {
       const note: Note = { id: 1, text: 'Original text' };
       const { modal, el } = await createNoteEditor(html`<note-editor .note=${note}></note-editor>`);
 
-      const editor = el.shadowRoot?.querySelector<HTMLEditor>('html-editor');
+      const editor = el.renderRoot.querySelector<HTMLEditor>('html-editor');
       if (editor) {
         editor.getValue = vi.fn().mockResolvedValue('Modified text');
       }
@@ -115,7 +115,7 @@ describe('note-editor', () => {
   describe('user interactions and save/cancel actions', () => {
     it('updates note text when html-editor emits valueChanged', async () => {
       const { el } = await createNoteEditor();
-      const editor = el.shadowRoot?.querySelector('html-editor');
+      const editor = el.renderRoot.querySelector('html-editor');
 
       editor?.dispatchEvent(new CustomEvent('valueChanged', { detail: 'New content from editor' }));
       await el.updateComplete;
@@ -126,12 +126,12 @@ describe('note-editor', () => {
     it('does not dismiss on save if form validity fails', async () => {
       const { modal, el } = await createNoteEditor();
 
-      const form = el.shadowRoot?.querySelector('form');
+      const form = el.renderRoot.querySelector('form');
       if (form) {
         vi.spyOn(form, 'reportValidity').mockReturnValue(false);
       }
 
-      const saveBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      const saveBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
       saveBtn?.click();
       await el.updateComplete;
 
@@ -141,16 +141,16 @@ describe('note-editor', () => {
     it('dismisses modal with updated note on save', async () => {
       const { modal, el } = await createNoteEditor();
 
-      const editor = el.shadowRoot?.querySelector('html-editor');
+      const editor = el.renderRoot.querySelector('html-editor');
       editor?.dispatchEvent(new CustomEvent('valueChanged', { detail: 'Saved note content' }));
       await el.updateComplete;
 
-      const form = el.shadowRoot?.querySelector('form');
+      const form = el.renderRoot.querySelector('form');
       if (form) {
         vi.spyOn(form, 'reportValidity').mockReturnValue(true);
       }
 
-      const saveBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      const saveBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
       saveBtn?.click();
       await el.updateComplete;
 
@@ -160,7 +160,7 @@ describe('note-editor', () => {
     it('dismisses modal with cancel role when Cancel is clicked', async () => {
       const { modal, el } = await createNoteEditor();
 
-      const cancelBtn = el.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
+      const cancelBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
       cancelBtn?.click();
       await el.updateComplete;
 

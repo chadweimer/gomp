@@ -136,8 +136,8 @@ describe('page-home', () => {
   }
 
   beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage?.clear();
+    sessionStorage?.clear();
     fetchMocker.resetMocks();
     clearState();
 
@@ -427,7 +427,7 @@ describe('page-home', () => {
     });
 
     it('displays toast error when recipe creation fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const modal = mockModal({ recipe: mockNewRecipe, file: null });
       vi.spyOn(modalController, 'create').mockResolvedValue(modal);
       const toast = mockToast();
@@ -458,7 +458,7 @@ describe('page-home', () => {
 
   describe('Suite 5: Error Handling during Data Fetching', () => {
     it('gracefully handles user settings failure', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       setupDefaultFetchMock(null);
 
       const el = await fixture<PageHome>(html`<page-home></page-home>`);
@@ -473,7 +473,7 @@ describe('page-home', () => {
     });
 
     it('gracefully handles search filters fetch failure', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
       fetchMocker.mockResponse((req: Request) => {
         const url = req.url;
         if (url.match(/\/users\/current\/settings$/)) {
@@ -498,7 +498,7 @@ describe('page-home', () => {
     });
 
     it('shows toast and returns empty results when performRecipeSearch fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
 

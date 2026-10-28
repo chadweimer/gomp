@@ -16,15 +16,15 @@ describe('user-editor', () => {
   }
 
   function syncInputs(root: UserEditor) {
-    const usernameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
+    const usernameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
     if (usernameInput) {
       usernameInput.value = root.user?.username ?? '';
     }
-    const passwordInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Password"]');
+    const passwordInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Password"]');
     if (passwordInput) {
       passwordInput.value = '';
     }
-    const repeatPasswordInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
+    const repeatPasswordInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
     if (repeatPasswordInput) {
       repeatPasswordInput.value = '';
     }
@@ -65,21 +65,21 @@ describe('user-editor', () => {
     const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
     expect(root.user).toEqual(expectedUser);
 
-    const title = root.shadowRoot?.querySelector('ion-title');
+    const title = root.renderRoot.querySelector('ion-title');
     expect(title?.textContent).toBe('New User');
 
-    const usernameInput = root.shadowRoot?.querySelector('ion-input[type="email"]');
+    const usernameInput = root.renderRoot.querySelector('ion-input[type="email"]');
     expect(usernameInput).not.toBeNull();
     expect(usernameInput?.getAttribute('type')).toBe('email');
 
-    const accessLevelSelect = root.shadowRoot?.querySelector('ion-select');
+    const accessLevelSelect = root.renderRoot.querySelector('ion-select');
     expect(accessLevelSelect).not.toBeNull();
     expect(accessLevelSelect?.getAttribute('label')).toBe('Access Level');
 
-    const passwordInput = root.shadowRoot?.querySelector('ion-input[label="Password"]');
+    const passwordInput = root.renderRoot.querySelector('ion-input[label="Password"]');
     expect(passwordInput).not.toBeNull();
 
-    const repeatPasswordInput = root.shadowRoot?.querySelector('ion-input[label="Confirm Password"]');
+    const repeatPasswordInput = root.renderRoot.querySelector('ion-input[label="Confirm Password"]');
     expect(repeatPasswordInput).not.toBeNull();
   });
 
@@ -92,14 +92,14 @@ describe('user-editor', () => {
     const root = await fixture<UserEditor>(html`<user-editor .user=${user}></user-editor>`);
     expect(root.user).toEqual(user);
 
-    const title = root.shadowRoot?.querySelector('ion-title');
+    const title = root.renderRoot.querySelector('ion-title');
     expect(title?.textContent).toBe('Edit User');
 
-    const usernameInput = root.shadowRoot?.querySelector('ion-input[type="email"]');
+    const usernameInput = root.renderRoot.querySelector('ion-input[type="email"]');
     expect(usernameInput).not.toBeNull();
     expect(usernameInput?.hasAttribute('disabled')).toBe(true);
 
-    const passwordInput = root.shadowRoot?.querySelector('ion-input[type="password"]');
+    const passwordInput = root.renderRoot.querySelector('ion-input[type="password"]');
     expect(passwordInput).toBeNull();
   });
 
@@ -132,7 +132,7 @@ describe('user-editor', () => {
       root.connectedCallback();
       syncInputs(root);
 
-      const usernameInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
+      const usernameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
       if (usernameInput) {
         usernameInput.value = 'changed@example.com';
       }
@@ -150,7 +150,7 @@ describe('user-editor', () => {
       root.connectedCallback();
       syncInputs(root);
 
-      const passwordInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Password"]');
+      const passwordInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Password"]');
       if (passwordInput) {
         passwordInput.value = 'secret123';
       }
@@ -168,7 +168,7 @@ describe('user-editor', () => {
       root.connectedCallback();
       syncInputs(root);
 
-      const passwordInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Password"]');
+      const passwordInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Password"]');
       if (passwordInput) {
         passwordInput.value = 'secret123';
       }
@@ -183,7 +183,7 @@ describe('user-editor', () => {
   describe('input events and user modifications', () => {
     it('updates user username on ionChange', async () => {
       const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
-      const usernameInput = root.shadowRoot?.querySelector('ion-input[type="email"]');
+      const usernameInput = root.renderRoot.querySelector('ion-input[type="email"]');
 
       usernameInput?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 'user@example.com' } }));
       await root.updateComplete;
@@ -193,7 +193,7 @@ describe('user-editor', () => {
 
     it('updates user accessLevel on ionChange', async () => {
       const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
-      const select = root.shadowRoot?.querySelector('ion-select');
+      const select = root.renderRoot.querySelector('ion-select');
 
       select?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: AccessLevel.Admin } }));
       await root.updateComplete;
@@ -212,22 +212,22 @@ describe('user-editor', () => {
       const nativeInput = document.createElement('input');
       const setCustomValiditySpy = vi.spyOn(nativeInput, 'setCustomValidity');
 
-      const repeatInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
+      const repeatInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
       if (repeatInput) {
         repeatInput.getInputElement = vi.fn().mockResolvedValue(nativeInput);
       }
 
-      const passwordInput = root.shadowRoot?.querySelector('ion-input[label="Password"]');
+      const passwordInput = root.renderRoot.querySelector('ion-input[label="Password"]');
       passwordInput?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 'pass123' } }));
       repeatInput?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 'pass456' } }));
       await root.updateComplete;
 
-      const form = root.shadowRoot?.querySelector('form');
+      const form = root.renderRoot.querySelector('form');
       if (form) {
         vi.spyOn(form, 'reportValidity').mockReturnValue(false);
       }
 
-      const saveBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      const saveBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
       saveBtn?.click();
       await root.updateComplete;
 
@@ -244,11 +244,11 @@ describe('user-editor', () => {
       const nativeInput = document.createElement('input');
       const setCustomValiditySpy = vi.spyOn(nativeInput, 'setCustomValidity');
 
-      const usernameInput = root.shadowRoot?.querySelector('ion-input[type="email"]');
+      const usernameInput = root.renderRoot.querySelector('ion-input[type="email"]');
       usernameInput?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 'newuser@example.com' } }));
 
-      const passwordInput = root.shadowRoot?.querySelector('ion-input[label="Password"]');
-      const repeatInput = root.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
+      const passwordInput = root.renderRoot.querySelector('ion-input[label="Password"]');
+      const repeatInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
       if (repeatInput) {
         repeatInput.getInputElement = vi.fn().mockResolvedValue(nativeInput);
       }
@@ -257,12 +257,12 @@ describe('user-editor', () => {
       repeatInput?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 'password123' } }));
       await root.updateComplete;
 
-      const form = root.shadowRoot?.querySelector('form');
+      const form = root.renderRoot.querySelector('form');
       if (form) {
         vi.spyOn(form, 'reportValidity').mockReturnValue(true);
       }
 
-      const saveBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      const saveBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
       saveBtn?.click();
       await root.updateComplete;
 
@@ -284,11 +284,11 @@ describe('user-editor', () => {
       root.connectedCallback();
       await root.updateComplete;
 
-      const select = root.shadowRoot?.querySelector('ion-select');
+      const select = root.renderRoot.querySelector('ion-select');
       select?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: AccessLevel.Editor } }));
       await root.updateComplete;
 
-      const saveBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
+      const saveBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
       saveBtn?.click();
       await root.updateComplete;
 
@@ -303,7 +303,7 @@ describe('user-editor', () => {
       root.connectedCallback();
       await root.updateComplete;
 
-      const cancelBtn = root.shadowRoot?.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
+      const cancelBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
       cancelBtn?.click();
       await root.updateComplete;
 

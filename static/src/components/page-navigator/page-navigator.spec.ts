@@ -6,7 +6,7 @@ import { PageNavigator } from './page-navigator';
 describe('page-navigator', () => {
   it('renders default values', async () => {
     const el = await fixture<PageNavigator>(html`<page-navigator></page-navigator>`);
-    const buttons = el.shadowRoot?.querySelectorAll('ion-button');
+    const buttons = el.renderRoot.querySelectorAll('ion-button');
 
     expect(buttons).toHaveLength(5);
     expect(buttons?.[0].hasAttribute('disabled')).toBe(true);
@@ -20,7 +20,7 @@ describe('page-navigator', () => {
   describe('button disabled states', () => {
     it('disables back buttons when on the first page', async () => {
       const el = await fixture<PageNavigator>(html`<page-navigator .page=${1} .numPages=${5}></page-navigator>`);
-      const buttons = el.shadowRoot?.querySelectorAll('ion-button');
+      const buttons = el.renderRoot.querySelectorAll('ion-button');
 
       expect(buttons?.[0].hasAttribute('disabled')).toBe(true);
       expect(buttons?.[1].hasAttribute('disabled')).toBe(true);
@@ -31,7 +31,7 @@ describe('page-navigator', () => {
 
     it('disables forward buttons when on the last page', async () => {
       const el = await fixture<PageNavigator>(html`<page-navigator .page=${5} .numPages=${5}></page-navigator>`);
-      const buttons = el.shadowRoot?.querySelectorAll('ion-button');
+      const buttons = el.renderRoot.querySelectorAll('ion-button');
 
       expect(buttons?.[0].hasAttribute('disabled')).toBe(false);
       expect(buttons?.[1].hasAttribute('disabled')).toBe(false);
@@ -42,7 +42,7 @@ describe('page-navigator', () => {
 
     it('enables all navigation buttons on middle pages', async () => {
       const el = await fixture<PageNavigator>(html`<page-navigator .page=${3} .numPages=${5}></page-navigator>`);
-      const buttons = el.shadowRoot?.querySelectorAll('ion-button');
+      const buttons = el.renderRoot.querySelectorAll('ion-button');
 
       expect(buttons?.[0].hasAttribute('disabled')).toBe(false);
       expect(buttons?.[1].hasAttribute('disabled')).toBe(false);
@@ -58,7 +58,7 @@ describe('page-navigator', () => {
       const spy = vi.fn();
       el.addEventListener('pageChanged', spy);
 
-      const buttons = el.shadowRoot?.querySelectorAll('ion-button');
+      const buttons = el.renderRoot.querySelectorAll('ion-button');
       buttons?.[0].click();
 
       expect(spy).toHaveBeenCalledTimes(1);
@@ -70,7 +70,7 @@ describe('page-navigator', () => {
       const spy = vi.fn();
       el.addEventListener('pageChanged', spy);
 
-      const buttons = el.shadowRoot?.querySelectorAll('ion-button');
+      const buttons = el.renderRoot.querySelectorAll('ion-button');
       buttons?.[1].click();
 
       expect(spy).toHaveBeenCalledTimes(1);
@@ -82,7 +82,7 @@ describe('page-navigator', () => {
       const spy = vi.fn();
       el.addEventListener('pageChanged', spy);
 
-      const buttons = el.shadowRoot?.querySelectorAll('ion-button');
+      const buttons = el.renderRoot.querySelectorAll('ion-button');
       buttons?.[3].click();
 
       expect(spy).toHaveBeenCalledTimes(1);
@@ -94,7 +94,7 @@ describe('page-navigator', () => {
       const spy = vi.fn();
       el.addEventListener('pageChanged', spy);
 
-      const buttons = el.shadowRoot?.querySelectorAll('ion-button');
+      const buttons = el.renderRoot.querySelectorAll('ion-button');
       buttons?.[4].click();
 
       expect(spy).toHaveBeenCalledTimes(1);
@@ -107,7 +107,7 @@ describe('page-navigator', () => {
       const el = await fixture<PageNavigator>(
         html`<page-navigator .page=${2} .numPages=${5} fill="outline" color="secondary"></page-navigator>`
       );
-      const buttons = el.shadowRoot?.querySelectorAll('ion-button');
+      const buttons = el.renderRoot.querySelectorAll('ion-button');
       expect(buttons?.[0].getAttribute('fill')).toBe('outline');
       expect(buttons?.[0].getAttribute('color')).toBe('secondary');
       expect(buttons?.[2].getAttribute('fill')).toBe('outline');

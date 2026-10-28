@@ -135,8 +135,8 @@ describe('page-recipe', () => {
   }
 
   beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage?.clear();
+    sessionStorage?.clear();
     fetchMocker.resetMocks();
     clearState();
 
@@ -187,7 +187,7 @@ describe('page-recipe', () => {
     });
 
     it('handles API errors during initial load gracefully', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
       fetchMocker.mockResponse(() => ({
         status: 500,
         body: 'Internal Server Error',
@@ -608,7 +608,7 @@ describe('page-recipe', () => {
     });
 
     it('triggers window.print when print button is clicked', async () => {
-      const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
+      const printSpy = vi.spyOn(window, 'print').mockImplementation(() => { });
 
       const root = await createRecipePage(1);
       await root.updateComplete;
@@ -1307,7 +1307,7 @@ describe('page-recipe', () => {
         vi.spyOn(actionSheetController, 'create').mockResolvedValue(mockActionSheet(role));
         const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
         const createModalSpy = vi.spyOn(modalController, 'create').mockResolvedValue(mockModal(null));
-        const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
+        const printSpy = vi.spyOn(window, 'print').mockImplementation(() => { });
 
         const root = await createRecipePage(1);
 

@@ -7,13 +7,13 @@ import { RecipeCard } from './recipe-card';
 describe('recipe-card', () => {
   it('renders defaults', async () => {
     const el = await fixture<RecipeCard>(html`<recipe-card></recipe-card>`);
-    const img = el.shadowRoot?.querySelector('img.hidden');
+    const img = el.renderRoot.querySelector('img.hidden');
     expect(img).not.toBeNull();
 
-    const title = el.shadowRoot?.querySelector('ion-card-title');
+    const title = el.renderRoot.querySelector('ion-card-title');
     expect(title?.textContent?.trim()).toBe('');
 
-    const rating = el.shadowRoot?.querySelector('five-star-rating');
+    const rating = el.renderRoot.querySelector('five-star-rating');
     expect(rating).not.toBeNull();
     expect((rating as any).value).toBe(0);
   });
@@ -29,13 +29,13 @@ describe('recipe-card', () => {
     };
 
     const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
-    const title = el.shadowRoot?.querySelector('ion-card-title');
+    const title = el.renderRoot.querySelector('ion-card-title');
     expect(title?.textContent?.trim()).toBe('Delicious Soup');
 
-    const card = el.shadowRoot?.querySelector('ion-card');
+    const card = el.renderRoot.querySelector('ion-card');
     expect(card?.getAttribute('href')).toBe('/recipes/42');
 
-    const tagBadges = el.shadowRoot?.querySelectorAll('.tags ion-badge:not(.probe-badge)');
+    const tagBadges = el.renderRoot.querySelectorAll('.tags ion-badge:not(.probe-badge)');
     expect(tagBadges).toHaveLength(2);
   });
 
@@ -48,13 +48,13 @@ describe('recipe-card', () => {
       tags: ['dinner', 'chicken'],
     };
     const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
-    const tagBadges = el.shadowRoot?.querySelectorAll('.tags ion-badge:not(.probe-badge)');
+    const tagBadges = el.renderRoot.querySelectorAll('.tags ion-badge:not(.probe-badge)');
     expect(tagBadges).toHaveLength(2);
     expect(tagBadges?.[0].textContent?.trim()).toBe('dinner');
     expect(tagBadges?.[0].getAttribute('title')).toBe('dinner');
     expect(tagBadges?.[1].textContent?.trim()).toBe('chicken');
     expect(tagBadges?.[1].getAttribute('title')).toBe('chicken');
-    const moreBadge = el.shadowRoot?.querySelector('.more-badge');
+    const moreBadge = el.renderRoot.querySelector('.more-badge');
     expect(moreBadge).toBeNull();
   });
 
@@ -69,7 +69,7 @@ describe('recipe-card', () => {
     };
 
     const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
-    const badge = el.shadowRoot?.querySelector('ion-badge.top-right-padded');
+    const badge = el.renderRoot.querySelector('ion-badge.top-right-padded');
     expect(badge).not.toBeNull();
     expect(badge?.textContent?.trim()).toBe('Archived');
   });
@@ -84,12 +84,12 @@ describe('recipe-card', () => {
     };
 
     const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
-    const container = el.shadowRoot?.querySelector('.tags') as HTMLElement;
+    const container = el.renderRoot.querySelector('.tags') as HTMLElement;
     expect(container).not.toBeNull();
 
     Object.defineProperty(container, 'clientWidth', { value: 100, configurable: true });
 
-    const probe = el.shadowRoot?.querySelector('.probe-badge') as HTMLElement;
+    const probe = el.renderRoot.querySelector('.probe-badge') as HTMLElement;
     vi.spyOn(probe, 'getBoundingClientRect').mockReturnValue({
       width: 30,
       height: 20,
@@ -99,10 +99,10 @@ describe('recipe-card', () => {
       right: 30,
       x: 0,
       y: 0,
-      toJSON: () => {},
+      toJSON: () => { },
     });
 
-    const badges = el.shadowRoot?.querySelectorAll('.tags ion-badge:not(.probe-badge)');
+    const badges = el.renderRoot.querySelectorAll('.tags ion-badge:not(.probe-badge)');
     badges?.forEach((b) => {
       vi.spyOn(b, 'getBoundingClientRect').mockReturnValue({
         width: 40,
@@ -113,17 +113,17 @@ describe('recipe-card', () => {
         right: 40,
         x: 0,
         y: 0,
-        toJSON: () => {},
+        toJSON: () => { },
       });
     });
 
     el.calculateVisibleTags();
     await el.updateComplete;
 
-    const visibleBadges = el.shadowRoot?.querySelectorAll('.tags ion-badge.tag-badge');
+    const visibleBadges = el.renderRoot.querySelectorAll('.tags ion-badge.tag-badge');
     expect(visibleBadges?.length).toBe(1);
 
-    const moreBadge = el.shadowRoot?.querySelector('.tags .more-badge');
+    const moreBadge = el.renderRoot.querySelector('.tags .more-badge');
     expect(moreBadge).not.toBeNull();
     expect(moreBadge?.textContent?.trim()).toBe('+2');
   });
@@ -137,11 +137,11 @@ describe('recipe-card', () => {
       tags: ['very-long-tag-name', 'tag2'],
     };
     const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
-    const container = el.shadowRoot?.querySelector('.tags') as HTMLElement;
+    const container = el.renderRoot.querySelector('.tags') as HTMLElement;
 
     Object.defineProperty(container, 'clientWidth', { value: 100, configurable: true });
 
-    const probe = el.shadowRoot?.querySelector('.probe-badge') as HTMLElement;
+    const probe = el.renderRoot.querySelector('.probe-badge') as HTMLElement;
     vi.spyOn(probe, 'getBoundingClientRect').mockReturnValue({
       width: 30,
       height: 20,
@@ -151,10 +151,10 @@ describe('recipe-card', () => {
       right: 30,
       x: 0,
       y: 0,
-      toJSON: () => {},
+      toJSON: () => { },
     });
 
-    const badges = el.shadowRoot?.querySelectorAll('.tags ion-badge:not(.probe-badge)');
+    const badges = el.renderRoot.querySelectorAll('.tags ion-badge:not(.probe-badge)');
     badges?.forEach((b, idx) => {
       vi.spyOn(b, 'getBoundingClientRect').mockReturnValue({
         width: idx === 0 ? 120 : 40,
@@ -165,19 +165,19 @@ describe('recipe-card', () => {
         right: idx === 0 ? 120 : 40,
         x: 0,
         y: 0,
-        toJSON: () => {},
+        toJSON: () => { },
       });
     });
 
     el.calculateVisibleTags();
     await el.updateComplete;
 
-    const visibleBadges = el.shadowRoot?.querySelectorAll('.tags ion-badge:not(.probe-badge):not(.more-badge)');
+    const visibleBadges = el.renderRoot.querySelectorAll('.tags ion-badge:not(.probe-badge):not(.more-badge)');
     expect(visibleBadges).toHaveLength(1);
     expect(visibleBadges?.[0].classList.contains('truncate-single')).toBe(true);
     expect(visibleBadges?.[0].textContent?.trim()).toBe('very-long-tag-name');
 
-    const moreBadge = el.shadowRoot?.querySelector('.more-badge');
+    const moreBadge = el.renderRoot.querySelector('.more-badge');
     expect(moreBadge).not.toBeNull();
     expect(moreBadge?.textContent?.trim()).toBe('+1');
     expect(moreBadge?.getAttribute('title')).toBe('tag2');

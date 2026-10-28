@@ -59,8 +59,8 @@ describe('page-admin-maintenance', () => {
   }
 
   beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage?.clear();
+    sessionStorage?.clear();
     fetchMocker.resetMocks();
     clearState();
     vi.spyOn(loadingController, 'create').mockResolvedValue(mockLoading());
@@ -141,7 +141,7 @@ describe('page-admin-maintenance', () => {
   });
 
   it('handles GET backups failure gracefully', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/backups$/) && req.method === 'GET') {
         return { status: 500, body: 'Server error' };
@@ -226,7 +226,7 @@ describe('page-admin-maintenance', () => {
     });
 
     it('displays toast error when backup creation fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
       const alert = mockAlert('confirm');
@@ -362,7 +362,7 @@ describe('page-admin-maintenance', () => {
     });
 
     it('displays toast error when backup deletion fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
       const alert = mockAlert('confirm');
@@ -460,7 +460,7 @@ describe('page-admin-maintenance', () => {
     });
 
     it('displays toast error when backup restore fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
       const alert = mockAlert('confirm');
@@ -562,7 +562,7 @@ describe('page-admin-maintenance', () => {
     });
 
     it('displays toast error when backup upload fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
       const mockFile = new File(['dummy backup'], 'backup.zip', { type: 'application/zip' });
@@ -608,7 +608,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+      const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => { });
 
       const downloadOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="medium"]');
       downloadOption?.click();

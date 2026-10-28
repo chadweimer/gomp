@@ -23,8 +23,8 @@ describe('page-settings-security', () => {
   }
 
   beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+    localStorage?.clear();
+    sessionStorage?.clear();
     fetchMocker.resetMocks();
     clearState();
   });
@@ -76,7 +76,7 @@ describe('page-settings-security', () => {
   });
 
   it('handles GET current user failure gracefully', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current$/) && req.method === 'GET') {
         return Promise.resolve({ status: 500, body: 'Server error' });
@@ -199,7 +199,7 @@ describe('page-settings-security', () => {
     });
 
     it('displays toast error when password update fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
+      vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
 
