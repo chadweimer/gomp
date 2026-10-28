@@ -41,8 +41,8 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
                         label="Home Title"
                         label-placement="stacked"
                         .value=${this.settings?.homeTitle ?? ''}
-                        autocorrect="on"
-                        spellcheck
+                        .autocorrect=${true}
+                        .spellcheck=${true}
                         required
                         @ionBlur=${(e: Event) => {
         const val = (e.currentTarget as HTMLIonInputElement).value as string;
@@ -68,12 +68,7 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
                         label="Favorite Tags"
                         label-placement="stacked"
                         .value=${this.settings?.favoriteTags ?? []}
-                        @valueChanged=${(e: CustomEvent<string[]>) => {
-        this.settings = {
-          ...this.settings,
-          favoriteTags: e.detail
-        };
-      }}
+                        @valueChanged=${(e: CustomEvent<string[]>) => { this.settings = { ...this.settings, favoriteTags: e.detail }; }}
                       >
                         <ion-input enterkeyhint="enter"></ion-input>
                       </tags-input>

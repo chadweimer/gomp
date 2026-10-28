@@ -69,6 +69,7 @@ export class AppRoot extends LitElement {
     // Automatically trigger a logout if an API returns a 401
     this.subscriptions.push(api.responses.subscribe(async ({ request, response }) => {
       if (response.status === 401) {
+        // Make sure we don't recursively call ourselves if the logout also triggers a 401
         if (!request.url.endsWith('/auth') || request.method.toLowerCase() !== 'delete') {
           await this.logout();
         }
@@ -210,6 +211,8 @@ export class AppRoot extends LitElement {
               <ion-searchbar
                 slot="end"
                 class="end ion-display-none ion-display-lg-flex"
+                .autocorrect=${true}
+                .spellcheck=${true}
                 .disabled=${!this.isLoggedIn()}
                 show-cancel-button=${this.isDefaultSearch() ? 'never' : 'always'}
                 cancel-button-text="Reset"
@@ -230,6 +233,8 @@ export class AppRoot extends LitElement {
 
             <ion-toolbar color="primary" class="ion-display-lg-none">
               <ion-searchbar
+                .autocorrect=${true}
+                .spellcheck=${true}
                 .disabled=${!this.isLoggedIn()}
                 show-cancel-button=${this.isDefaultSearch() ? 'never' : 'always'}
                 cancel-button-text="Reset"
@@ -336,6 +341,8 @@ export class AppRoot extends LitElement {
   }
 
   private async onPageChanged(e: CustomEvent<RouterEventDetail>) {
+    // Where the route contains dynamic segments (e.g., /recipes/:id),
+    // we need to get the base route without the dynamic segment.
     let route = e.detail.to;
     const idRouteMatcher = /^(?<base>\/[\w-]+)\/\d+\/?$/;
     const match = idRouteMatcher.exec(e.detail.to);
@@ -343,6 +350,7 @@ export class AppRoot extends LitElement {
       route = match.groups?.base ?? route;
     }
 
+    // Set the page title based on the active page
     const link = this.appLinks.get(route);
     if (!isNull(link)) {
       if (!isNullOrEmpty(link.parentUrl)) {
@@ -359,11 +367,13 @@ export class AppRoot extends LitElement {
     }
 
     if (this.isLoggedIn()) {
+      // Make sure there are search results on initial load
       if (isNull(state.searchResults)) {
         await refreshSearchResults().catch(console.error);
       }
     }
 
+    // Let the new page know it's been activated
     if (this.routerOutlet) {
       await sendActivatedCallback(this.routerOutlet);
     }

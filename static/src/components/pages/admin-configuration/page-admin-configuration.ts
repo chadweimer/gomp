@@ -42,8 +42,8 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
                         label="Application Title"
                         label-placement="stacked"
                         .value=${this.appConfiguration?.title ?? ''}
-                        autocorrect="on"
-                        spellcheck
+                        .autocorrect=${true}
+                        .spellcheck=${true}
                         required
                         @ionBlur=${(e: Event) => {
         const val = (e.currentTarget as HTMLIonInputElement).value as string;
