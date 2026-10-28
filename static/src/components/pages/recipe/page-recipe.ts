@@ -587,11 +587,11 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async onDeleteLinkClicked(link: RecipeCompact) {
     const { role } = await showAlert({
-      header: 'Delete Link',
-      message: `Are you sure you want to delete the link to ${link.name}?`,
+      header: 'Remove Link',
+      message: `Are you sure you want to remove the link to ${link.name}?`,
       buttons: [
         { text: 'Cancel', role: 'cancel' },
-        { text: 'Delete', role: 'destructive' },
+        { text: 'Remove', role: 'destructive' },
       ],
     });
     if (role === 'destructive') {
@@ -648,7 +648,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       componentProps: {
         heading: 'Upload Picture',
         label: 'Picture',
-        accept: '.jpg,.jpeg,.png',
+        accept: 'image/*',
       },
     });
     if (!isNull(data)) {
