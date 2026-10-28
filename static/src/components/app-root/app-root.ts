@@ -1,4 +1,4 @@
-import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
+import { actionSheetController, alertController, modalController, popoverController, RouterCustomEvent } from '@ionic/core';
 import { LitElement, html, nothing } from 'lit';
 import { customElement, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -91,7 +91,7 @@ export class AppRoot extends LitElement {
         <ion-router
           .useHash=${false}
           @ionRouteWillChange=${() => this.onPageChanging()}
-          @ionRouteDidChange=${(e: CustomEvent<RouterEventDetail>) => this.onPageChanged(e)}
+          @ionRouteDidChange=${(e: RouterCustomEvent) => this.onPageChanged(e)}
         >
           <ion-route url="/login" component="page-login"></ion-route>
 
@@ -330,7 +330,7 @@ export class AppRoot extends LitElement {
     await this.menu?.close();
   }
 
-  private async onPageChanged(e: CustomEvent<RouterEventDetail>) {
+  private async onPageChanged(e: RouterCustomEvent) {
     // Where the route contains dynamic segments (e.g., /recipes/:id),
     // we need to get the base route without the dynamic segment.
     let route = e.detail.to;

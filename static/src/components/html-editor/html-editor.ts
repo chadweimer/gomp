@@ -1,4 +1,4 @@
-import { isPlatform } from '@ionic/core';
+import { InputCustomEvent, isPlatform } from '@ionic/core';
 import { ChainedCommands, Editor } from '@tiptap/core';
 import { Selection } from '@tiptap/extensions';
 import InvisibleCharacters, { HardBreakNode, ParagraphNode } from '@tiptap/extension-invisible-characters';
@@ -591,7 +591,7 @@ export class HTMLEditor extends LitElement {
                   class="link-input"
                   placeholder="https://example.com"
                   .value=${this.linkUrl}
-                  @ionInput=${(e: CustomEvent<{ value?: string | null }>) => (this.linkUrl = e.detail.value ?? '')}
+                  @ionInput=${(e: InputCustomEvent) => this.linkUrl = e.detail.value ?? ''}
                   @keydown=${(e: KeyboardEvent) => {
             if (e.key === 'Enter') {
               e.preventDefault();

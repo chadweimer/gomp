@@ -5,6 +5,7 @@ import { api } from '../../helpers/api';
 import { getContainingModal } from '../../helpers/modals';
 import { getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
+import { InputCustomEvent, RadioGroupCustomEvent } from '@ionic/core';
 
 @customElement('recipe-link-editor')
 export class RecipeLinkEditor extends LitElement {
@@ -68,7 +69,7 @@ export class RecipeLinkEditor extends LitElement {
               type="search"
               autofocus
               .debounce=${500}
-              @ionInput=${(e: CustomEvent) => (this.query = (e.detail.value ?? '') as string)}
+              @ionInput=${(e: InputCustomEvent) => this.query = e.detail.value ?? ''}
             ></ion-input>
           </ion-item>
           <ion-content>
@@ -81,7 +82,7 @@ export class RecipeLinkEditor extends LitElement {
               </ion-list-header>
               <ion-radio-group
                 .value=${this.selectedRecipeId}
-                @ionChange=${(e: CustomEvent<{ value: number }>) => (this.selectedRecipeId = e.detail.value)}
+                @ionChange=${(e: RadioGroupCustomEvent<number>) => this.selectedRecipeId = e.detail.value}
                 allow-empty-selection
               >
                 ${this.matchingRecipes?.map(

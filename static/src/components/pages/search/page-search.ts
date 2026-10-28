@@ -1,4 +1,4 @@
-import { Gesture, ScrollBaseDetail } from '@ionic/core';
+import { Gesture, ScrollBaseCustomEvent } from '@ionic/core';
 import { LitElement, html, nothing } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -18,6 +18,7 @@ import {
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state, { appStateStore } from '../../../stores/state';
 import { StoreController } from '../../../stores/store';
+
 import '../../recipe-card/recipe-card';
 import '../../page-navigator/page-navigator';
 import '../../recipe-editor/recipe-editor';
@@ -118,7 +119,7 @@ export class PageSearch extends LitElement {
 
       <ion-content
         scroll-events
-        @ionScrollEnd=${(e: CustomEvent<ScrollBaseDetail>) => this.onContentScrolled(e)}
+        @ionScrollEnd=${(e: ScrollBaseCustomEvent) => this.onContentScrolled(e)}
       >
         <ion-grid class="no-pad">
           <ion-row>
@@ -254,7 +255,7 @@ export class PageSearch extends LitElement {
     }
   }
 
-  private async onContentScrolled(e: CustomEvent<ScrollBaseDetail>) {
+  private async onContentScrolled(e: ScrollBaseCustomEvent) {
     if (!e.detail.isScrolling) {
       state.searchScrollPosition = (await this.content?.getScrollElement())?.scrollTop;
     }

@@ -5,6 +5,7 @@ import { configureModalCanDismiss, getContainingModal } from '../../helpers/moda
 import { isNull, toStorageHtml } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import { HTMLEditor } from '../html-editor/html-editor';
+
 import '../html-editor/html-editor';
 
 @customElement('note-editor')

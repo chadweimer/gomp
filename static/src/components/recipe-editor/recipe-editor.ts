@@ -6,6 +6,7 @@ import { configureModalCanDismiss, getContainingModal } from '../../helpers/moda
 import { getRecipeImageUrl, getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import { HTMLEditor } from '../html-editor/html-editor';
+import { InputCustomEvent } from '@ionic/core';
 
 import '../html-editor/html-editor';
 import '../tags-input/tags-input';
@@ -104,7 +105,7 @@ export class RecipeEditor extends LitElement {
               .value=${this.recipe?.name}
               required
               autofocus
-              @ionChange=${(e: CustomEvent) => (this.recipe = { ...this.recipe, name: (e.detail.value ?? '') as string })}
+              @ionChange=${(e: InputCustomEvent) => this.recipe = { ...this.recipe, name: e.detail.value ?? '' }}
             ></ion-input>
           </ion-item>
           ${isNull(this.recipe?.id)
@@ -127,8 +128,7 @@ export class RecipeEditor extends LitElement {
               label="Serving Size"
               label-placement="stacked"
               .value=${this.recipe?.servingSize}
-              @ionChange=${(e: CustomEvent) =>
-        (this.recipe = { ...this.recipe, servingSize: (e.detail.value ?? '') as string })}
+              @ionChange=${(e: InputCustomEvent) => this.recipe = { ...this.recipe, servingSize: e.detail.value ?? '' }}
             ></ion-input>
           </ion-item>
           <ion-item lines="full">
@@ -136,8 +136,7 @@ export class RecipeEditor extends LitElement {
               label="Time"
               label-placement="stacked"
               .value=${this.recipe?.time}
-              @ionChange=${(e: CustomEvent) =>
-        (this.recipe = { ...this.recipe, time: (e.detail.value ?? '') as string })}
+              @ionChange=${(e: InputCustomEvent) => this.recipe = { ...this.recipe, time: e.detail.value ?? '' }}
             ></ion-input>
           </ion-item>
           <ion-item class="force-overflow" lines="full">
@@ -145,8 +144,7 @@ export class RecipeEditor extends LitElement {
             <html-editor
               id="ingredients"
               .value=${toPresentationHtml(this, this.recipe?.ingredients, this.recipe?.id, false)}
-              @valueChanged=${(e: CustomEvent<string>) =>
-        (this.recipe = { ...this.recipe, ingredients: toStorageHtml(this, e.detail) })}
+              @valueChanged=${(e: CustomEvent<string>) => this.recipe = { ...this.recipe, ingredients: toStorageHtml(this, e.detail) }}
             ></html-editor>
           </ion-item>
           <ion-item class="force-overflow" lines="full">
@@ -159,8 +157,7 @@ export class RecipeEditor extends LitElement {
           url: getRecipeImageUrl(this.recipe?.id, name) ?? '',
           thumbUrl: getRecipeThumbnailUrl(this.recipe?.id, name) ?? '',
         }))}
-              @valueChanged=${(e: CustomEvent<string>) =>
-        (this.recipe = { ...this.recipe, directions: toStorageHtml(this, e.detail) })}
+              @valueChanged=${(e: CustomEvent<string>) => this.recipe = { ...this.recipe, directions: toStorageHtml(this, e.detail) }}
             ></html-editor>
           </ion-item>
           <ion-item lines="full">
@@ -168,8 +165,7 @@ export class RecipeEditor extends LitElement {
             <html-editor
               id="storage-instructions"
               .value=${toPresentationHtml(this, this.recipe?.storageInstructions, this.recipe?.id, false)}
-              @valueChanged=${(e: CustomEvent<string>) =>
-        (this.recipe = { ...this.recipe, storageInstructions: toStorageHtml(this, e.detail) })}
+              @valueChanged=${(e: CustomEvent<string>) => this.recipe = { ...this.recipe, storageInstructions: toStorageHtml(this, e.detail) }}
             ></html-editor>
           </ion-item>
           <ion-item lines="full">
@@ -177,8 +173,7 @@ export class RecipeEditor extends LitElement {
             <html-editor
               id="nutrition"
               .value=${toPresentationHtml(this, this.recipe?.nutritionInfo, this.recipe?.id, false)}
-              @valueChanged=${(e: CustomEvent<string>) =>
-        (this.recipe = { ...this.recipe, nutritionInfo: toStorageHtml(this, e.detail) })}
+              @valueChanged=${(e: CustomEvent<string>) => this.recipe = { ...this.recipe, nutritionInfo: toStorageHtml(this, e.detail) }}
             ></html-editor>
           </ion-item>
           <ion-item lines="full">
@@ -187,8 +182,7 @@ export class RecipeEditor extends LitElement {
               label-placement="stacked"
               .value=${this.recipe?.sourceUrl}
               inputmode="url"
-              @ionChange=${(e: CustomEvent) =>
-        (this.recipe = { ...this.recipe, sourceUrl: (e.detail.value ?? '') as string })}
+              @ionChange=${(e: InputCustomEvent) => this.recipe = { ...this.recipe, sourceUrl: e.detail.value ?? '' }}
             ></ion-input>
           </ion-item>
           <ion-item lines="full">

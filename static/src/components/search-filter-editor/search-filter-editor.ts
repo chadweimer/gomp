@@ -15,6 +15,8 @@ import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainin
 import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import { globalStyles } from '../../global/shared-styles';
+import { InputCustomEvent, SelectCustomEvent } from '@ionic/core';
+
 import '../tags-input/tags-input';
 
 @customElement('search-filter-editor')
@@ -104,7 +106,7 @@ export class SearchFilterEditor extends LitElement {
                     label-placement="floating"
                     interface="popover"
                     .value=${this.selectedFilterId}
-                    @ionChange=${(e: CustomEvent<{ value: number }>) => (this.selectedFilterId = e.detail.value)}
+                    @ionChange=${(e: SelectCustomEvent<number>) => this.selectedFilterId = e.detail.value}
                   >
                     ${this.filters?.map(
           (item) => html`<ion-select-option .value=${item.id}>${item.name}</ion-select-option>`
@@ -131,7 +133,7 @@ export class SearchFilterEditor extends LitElement {
                     .value=${this.name}
                     required
                     autofocus
-                    @ionChange=${(e: CustomEvent) => (this.name = (e.detail.value ?? '') as string)}
+                    @ionChange=${(e: InputCustomEvent) => this.name = e.detail.value ?? ''}
                   ></ion-input>
                 </ion-item>
               `
@@ -141,8 +143,7 @@ export class SearchFilterEditor extends LitElement {
               label="Search Terms"
               label-placement="stacked"
               .value=${this.searchFilter?.query}
-              @ionChange=${(e: CustomEvent) =>
-        (this.searchFilter = { ...this.searchFilter, query: (e.detail.value ?? '') as string })}
+              @ionChange=${(e: InputCustomEvent) => this.searchFilter = { ...this.searchFilter, query: e.detail.value ?? '' }}
             ></ion-input>
           </ion-item>
           <ion-item lines="full">
@@ -151,8 +152,7 @@ export class SearchFilterEditor extends LitElement {
               label-placement="stacked"
               .value=${this.searchFilter?.tags ?? []}
               .suggestions=${this.currentUserSettings?.favoriteTags ?? []}
-              @valueChanged=${(e: CustomEvent<string[]>) =>
-        (this.searchFilter = { ...this.searchFilter, tags: e.detail })}
+              @valueChanged=${(e: CustomEvent<string[]>) => this.searchFilter = { ...this.searchFilter, tags: e.detail }}
             >
               <ion-input enterkeyhint="enter"></ion-input>
             </tags-input>
@@ -163,8 +163,7 @@ export class SearchFilterEditor extends LitElement {
               label-placement="stacked"
               interface="popover"
               .value=${this.searchFilter?.sortBy}
-              @ionChange=${(e: CustomEvent<{ value: SortBy }>) =>
-        (this.searchFilter = { ...this.searchFilter, sortBy: e.detail.value })}
+              @ionChange=${(e: SelectCustomEvent<SortBy>) => this.searchFilter = { ...this.searchFilter, sortBy: e.detail.value }}
             >
               ${Object.keys(SortBy).map(
           (item) => html`
@@ -181,8 +180,7 @@ export class SearchFilterEditor extends LitElement {
               label-placement="stacked"
               interface="popover"
               .value=${this.searchFilter?.sortDir}
-              @ionChange=${(e: CustomEvent<{ value: SortDir }>) =>
-        (this.searchFilter = { ...this.searchFilter, sortDir: e.detail.value })}
+              @ionChange=${(e: SelectCustomEvent<SortDir>) => this.searchFilter = { ...this.searchFilter, sortDir: e.detail.value }}
             >
               ${Object.keys(SortDir).map(
           (item) => html`
@@ -199,8 +197,7 @@ export class SearchFilterEditor extends LitElement {
               label-placement="stacked"
               interface="popover"
               .value=${toYesNoAny(this.searchFilter?.withPictures)}
-              @ionChange=${(e: CustomEvent<{ value: YesNoAny }>) =>
-        (this.searchFilter = { ...this.searchFilter, withPictures: fromYesNoAny(e.detail.value) })}
+              @ionChange=${(e: SelectCustomEvent<YesNoAny>) => this.searchFilter = { ...this.searchFilter, withPictures: fromYesNoAny(e.detail.value) }}
             >
               ${Object.keys(YesNoAny).map(
           (item) => html`
@@ -218,8 +215,7 @@ export class SearchFilterEditor extends LitElement {
               interface="popover"
               multiple
               .value=${this.searchFilter?.states}
-              @ionChange=${(e: CustomEvent<{ value: RecipeState[] }>) =>
-        (this.searchFilter = { ...this.searchFilter, states: e.detail.value })}
+              @ionChange=${(e: SelectCustomEvent<RecipeState[]>) => this.searchFilter = { ...this.searchFilter, states: e.detail.value }}
             >
               ${Object.keys(RecipeState).map(
           (item) => html`
@@ -237,8 +233,7 @@ export class SearchFilterEditor extends LitElement {
               interface="popover"
               multiple
               .value=${this.searchFilter?.fields}
-              @ionChange=${(e: CustomEvent<{ value: SearchField[] }>) =>
-        (this.searchFilter = { ...this.searchFilter, fields: e.detail.value })}
+              @ionChange=${(e: SelectCustomEvent<SearchField[]>) => this.searchFilter = { ...this.searchFilter, fields: e.detail.value }}
             >
               ${Object.keys(SearchField).map(
           (item) => html`

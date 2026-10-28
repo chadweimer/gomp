@@ -3,6 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { Note } from '../../helpers/schema.gen';
 import { emit, formatDate, toPresentationHtml } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
+
 import '../html-viewer/html-viewer';
 
 @customElement('note-card')

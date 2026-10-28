@@ -4,6 +4,7 @@ import { AccessLevel, User } from '../../helpers/schema.gen';
 import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
 import { insertSpacesBetweenWords, isNull } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
+import { InputCustomEvent, SelectCustomEvent } from '@ionic/core';
 
 @customElement('user-editor')
 export class UserEditor extends LitElement {
@@ -45,16 +46,12 @@ export class UserEditor extends LitElement {
       if (this.usernameInput) {
         this.user = {
           ...this.user,
-          username: (this.usernameInput.value as string) ?? this.user.username
+          username: this.usernameInput.value as string
         };
       }
 
-      return (
-        this.user.username !== initialUser.username ||
-        this.user.accessLevel !== initialUser.accessLevel ||
-        ((this.passwordInput?.value as string ?? '') !== '') ||
-        ((this.repeatPasswordInput?.value as string ?? '') !== '')
-      );
+      return this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel ||
+        this.passwordInput?.value !== '' || this.repeatPasswordInput?.value !== '';
     });
   }
 
@@ -89,7 +86,7 @@ export class UserEditor extends LitElement {
               type="email"
               .value=${this.user?.username ?? ''}
               ?disabled=${!isNew}
-              @ionChange=${(e: CustomEvent) => this.user = { ...this.user, username: (e.detail.value as string) ?? '' }}
+              @ionChange=${(e: InputCustomEvent) => this.user = { ...this.user, username: e.detail.value ?? '' }}
               required
               autofocus
             ></ion-input>
@@ -100,7 +97,7 @@ export class UserEditor extends LitElement {
               label-placement="stacked"
               interface="popover"
               .value=${this.user?.accessLevel ?? AccessLevel.Editor}
-              @ionChange=${(e: CustomEvent<{ value: AccessLevel }>) => this.user = { ...this.user, accessLevel: e.detail.value }}
+              @ionChange=${(e: SelectCustomEvent<AccessLevel>) => this.user = { ...this.user, accessLevel: e.detail.value }}
             >
               ${Object.keys(AccessLevel).map(item => html`
                 <ion-select-option .value=${AccessLevel[item as keyof typeof AccessLevel]}>
@@ -118,7 +115,7 @@ export class UserEditor extends LitElement {
                 type="password"
                 autocomplete="new-password"
                 .value=${this.password}
-                @ionChange=${(e: CustomEvent) => this.password = (e.detail.value as string) ?? ''}
+                @ionChange=${(e: InputCustomEvent) => this.password = e.detail.value ?? ''}
                 required
               ></ion-input>
             </ion-item>
@@ -130,7 +127,7 @@ export class UserEditor extends LitElement {
                 type="password"
                 autocomplete="new-password"
                 .value=${this.repeatPassword}
-                @ionChange=${(e: CustomEvent) => this.repeatPassword = (e.detail.value as string) ?? ''}
+                @ionChange=${(e: InputCustomEvent) => this.repeatPassword = e.detail.value ?? ''}
                 required
               ></ion-input>
             </ion-item>

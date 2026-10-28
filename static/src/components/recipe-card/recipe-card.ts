@@ -5,6 +5,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { RecipeCompact, RecipeState } from '../../helpers/schema.gen';
 import { getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
+
 import '../five-star-rating/five-star-rating';
 
 const TAG_GAP = 8;

@@ -3,6 +3,8 @@ import { customElement, state, query } from 'lit/decorators.js';
 import { api } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
 import appState from '../../../stores/state';
+import { ToggleCustomEvent } from '@ionic/core';
+
 import './page-login.css';
 
 @customElement('page-login')
@@ -54,7 +56,7 @@ export class PageLogin extends LitElement {
                     <ion-toggle
                       justify="start"
                       .checked=${this.rememberMe}
-                      @ionChange=${(e: CustomEvent<{ checked: boolean }>) => this.rememberMe = e.detail.checked}
+                      @ionChange=${(e: ToggleCustomEvent<boolean>) => this.rememberMe = e.detail.checked}
                     >
                       Remember Me
                     </ion-toggle>
