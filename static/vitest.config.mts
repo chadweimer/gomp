@@ -5,13 +5,13 @@ export default defineConfig({
     environment: 'jsdom',
     css: true,
     setupFiles: ['./vitest.setup.ts'],
-    include: ['src/**/*.spec.ts'],
+    include: ['src/**/*.spec.{ts,tsx}'],
     testTimeout: 10000,
     coverage: {
       reportOnFailure: true,
       reporter: ['lcov', 'text'],
-      include: ['src/**/*.ts'],
-      exclude: ['src/**/*.spec.ts', 'src/**/*.d.ts', 'src/helpers/schema.gen.ts'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.spec.{ts,tsx}', 'src/**/*.d.ts', 'src/**/*.gen.ts'],
     },
   },
 });
