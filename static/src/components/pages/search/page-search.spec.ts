@@ -147,12 +147,12 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const cards = root.querySelectorAll('recipe-card');
+      const cards = root.renderRoot.querySelectorAll('recipe-card');
       expect(cards).toHaveLength(2);
       expect((cards[0] as unknown as { recipe: RecipeCompact }).recipe).toEqual(mockRecipes[0]);
       expect((cards[1] as unknown as { recipe: RecipeCompact }).recipe).toEqual(mockRecipes[1]);
 
-      const items = root.querySelectorAll('ion-item');
+      const items = root.renderRoot.querySelectorAll('ion-item');
       expect(items).toHaveLength(0);
     });
 
@@ -163,10 +163,10 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const cards = root.querySelectorAll('recipe-card');
+      const cards = root.renderRoot.querySelectorAll('recipe-card');
       expect(cards).toHaveLength(0);
 
-      const items = root.querySelectorAll('ion-item');
+      const items = root.renderRoot.querySelectorAll('ion-item');
       expect(items).toHaveLength(2);
 
       // First item has mainImageName -> renders img
@@ -211,7 +211,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const items = root.querySelectorAll('ion-item');
+      const items = root.renderRoot.querySelectorAll('ion-item');
       expect(items).toHaveLength(2);
 
       // Active recipe: no archived badge
@@ -246,7 +246,7 @@ describe('page-search', () => {
       await root.updateComplete;
 
       // The 4th header button is viewMode toggle
-      const buttons = root.querySelectorAll('ion-header ion-button');
+      const buttons = root.renderRoot.querySelectorAll('ion-header ion-button');
       const viewModeBtn = buttons[3] as HTMLIonButtonElement;
       const icon = viewModeBtn.querySelector('ion-icon');
       expect(icon?.getAttribute('icon')).toBe('grid');
@@ -265,7 +265,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const content = root.querySelector('ion-content');
+      const content = root.renderRoot.querySelector('ion-content');
       expect(content).not.toBeNull();
 
       const scrollToPointSpy = vi.fn().mockResolvedValue(undefined);
@@ -280,7 +280,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const content = root.querySelector('ion-content');
+      const content = root.renderRoot.querySelector('ion-content');
       expect(content).not.toBeNull();
 
       content!.scrollToPoint = vi.fn().mockRejectedValue(new Error('Scroll failure'));
@@ -297,7 +297,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const content = root.querySelector('ion-content');
+      const content = root.renderRoot.querySelector('ion-content');
       expect(content).not.toBeNull();
 
       const scrollToPointSpy = vi.fn().mockResolvedValue(undefined);
@@ -312,7 +312,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const content = root.querySelector('ion-content');
+      const content = root.renderRoot.querySelector('ion-content');
       expect(content).not.toBeNull();
 
       delete (content as unknown as { scrollToPoint?: unknown }).scrollToPoint;
@@ -386,7 +386,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const fabBtn = root.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
+      const fabBtn = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
       expect(fabBtn).not.toBeNull();
       fabBtn!.click();
       await root.updateComplete;
@@ -448,7 +448,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const fabBtn = root.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
+      const fabBtn = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
       expect(fabBtn).not.toBeNull();
       fabBtn!.click();
       await root.updateComplete;
@@ -479,7 +479,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const fabBtn = root.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
+      const fabBtn = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
       expect(fabBtn).not.toBeNull();
       fabBtn!.click();
       await root.updateComplete;
@@ -513,7 +513,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const fabBtn = root.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
+      const fabBtn = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
       expect(fabBtn).not.toBeNull();
       fabBtn!.click();
       await root.updateComplete;
@@ -552,7 +552,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const fabBtn = root.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
+      const fabBtn = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
       expect(fabBtn).not.toBeNull();
       fabBtn!.click();
       await root.updateComplete;
@@ -604,7 +604,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const statesBtn = root.querySelectorAll('ion-header ion-button')[0] as HTMLIonButtonElement;
+      const statesBtn = root.renderRoot.querySelectorAll('ion-header ion-button')[0] as HTMLIonButtonElement;
       statesBtn.click();
       await root.updateComplete;
 
@@ -631,7 +631,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const sortByBtn = root.querySelectorAll('ion-header ion-button')[1] as HTMLIonButtonElement;
+      const sortByBtn = root.renderRoot.querySelectorAll('ion-header ion-button')[1] as HTMLIonButtonElement;
       expect(sortByBtn?.textContent?.trim()).toBe('Name');
 
       sortByBtn.click();
@@ -655,7 +655,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const sortDirBtn = root.querySelectorAll('ion-header ion-button')[2] as HTMLIonButtonElement;
+      const sortDirBtn = root.renderRoot.querySelectorAll('ion-header ion-button')[2] as HTMLIonButtonElement;
       const icon = sortDirBtn.querySelector('ion-icon');
       expect(icon?.getAttribute('icon')).toBe('arrow-up');
 
@@ -675,7 +675,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const resultsPerPageBtn = root.querySelectorAll('ion-header ion-button')[4] as HTMLIonButtonElement;
+      const resultsPerPageBtn = root.renderRoot.querySelectorAll('ion-header ion-button')[4] as HTMLIonButtonElement;
       expect(resultsPerPageBtn?.textContent?.trim()).toBe('36');
 
       resultsPerPageBtn.click();
@@ -704,7 +704,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const navigator = root.querySelector('page-navigator') as any;
+      const navigator = root.renderRoot.querySelector('page-navigator') as any;
       expect(navigator).not.toBeNull();
       expect(navigator.page).toBe(1);
       expect(navigator.numPages).toBe(5);
@@ -778,7 +778,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const content = root.querySelector('ion-content');
+      const content = root.renderRoot.querySelector('ion-content');
       expect(content).not.toBeNull();
 
       content!.getScrollElement = vi.fn().mockResolvedValue({ scrollTop: 420 } as HTMLElement);
@@ -799,7 +799,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const content = root.querySelector('ion-content');
+      const content = root.renderRoot.querySelector('ion-content');
       expect(content).not.toBeNull();
 
       content!.getScrollElement = vi.fn().mockResolvedValue({ scrollTop: 500 } as HTMLElement);
@@ -819,7 +819,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const content = root.querySelector('ion-content');
+      const content = root.renderRoot.querySelector('ion-content');
       expect(content).not.toBeNull();
 
       content!.getScrollElement = vi.fn().mockResolvedValue(null as unknown as HTMLElement);

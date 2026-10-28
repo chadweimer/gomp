@@ -84,16 +84,16 @@ describe('page-admin-maintenance', () => {
     const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
     await root.updateComplete;
 
-    const title = root.querySelector('ion-card-title');
+    const title = root.renderRoot.querySelector('ion-card-title');
     expect(title?.textContent?.trim()).toBe('Backup & Restore');
 
-    const items = root.querySelectorAll('ion-list ion-item');
+    const items = root.renderRoot.querySelectorAll('ion-list ion-item');
     expect(items).toHaveLength(0);
 
-    const slidingItems = root.querySelectorAll('ion-item-sliding');
+    const slidingItems = root.renderRoot.querySelectorAll('ion-item-sliding');
     expect(slidingItems).toHaveLength(0);
 
-    const buttons = root.querySelectorAll('ion-card > ion-button');
+    const buttons = root.renderRoot.querySelectorAll('ion-card > ion-button');
     expect(buttons).toHaveLength(2);
     expect(buttons[0]?.textContent?.trim()).toBe('Backup Now');
     expect(buttons[1]?.textContent?.trim()).toBe('Upload');
@@ -111,10 +111,10 @@ describe('page-admin-maintenance', () => {
     await root.activatedCallback();
     await root.updateComplete;
 
-    const slidingItems = root.querySelectorAll('ion-item-sliding');
+    const slidingItems = root.renderRoot.querySelectorAll('ion-item-sliding');
     expect(slidingItems).toHaveLength(2);
 
-    const items = root.querySelectorAll('ion-item-sliding ion-item');
+    const items = root.renderRoot.querySelectorAll('ion-item-sliding ion-item');
     expect(items).toHaveLength(2);
 
     const firstLabel = items[0].querySelector('ion-label');
@@ -154,7 +154,7 @@ describe('page-admin-maintenance', () => {
     await root.updateComplete;
 
     expect(consoleErrorSpy).toHaveBeenCalled();
-    const items = root.querySelectorAll('ion-item-sliding ion-item');
+    const items = root.renderRoot.querySelectorAll('ion-item-sliding ion-item');
     expect(items).toHaveLength(0);
   });
 
@@ -181,7 +181,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const backupNowBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[0];
+      const backupNowBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[0];
       backupNowBtn?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -216,7 +216,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const backupNowBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[0];
+      const backupNowBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[0];
       backupNowBtn?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -246,7 +246,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const backupNowBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[0];
+      const backupNowBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[0];
       backupNowBtn?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -281,7 +281,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const deleteOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
+      const deleteOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
       deleteOption?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -319,7 +319,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const startOptions = root.querySelector<HTMLIonItemOptionsElement>('ion-item-options[side="start"]');
+      const startOptions = root.renderRoot.querySelector<HTMLIonItemOptionsElement>('ion-item-options[side="start"]');
       startOptions?.dispatchEvent(new CustomEvent('ionSwipe'));
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -352,7 +352,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const deleteOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
+      const deleteOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
       deleteOption?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -382,7 +382,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const deleteOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
+      const deleteOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
       deleteOption?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -417,7 +417,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
+      const restoreOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
       restoreOption?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -450,7 +450,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
+      const restoreOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
       restoreOption?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -480,7 +480,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const restoreOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
+      const restoreOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
       restoreOption?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -516,7 +516,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const uploadBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[1];
+      const uploadBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[1];
       uploadBtn?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -552,7 +552,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const uploadBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[1];
+      const uploadBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[1];
       uploadBtn?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -583,7 +583,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const uploadBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[1];
+      const uploadBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[1];
       uploadBtn?.click();
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
@@ -610,7 +610,7 @@ describe('page-admin-maintenance', () => {
 
       const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => { });
 
-      const downloadOption = root.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="medium"]');
+      const downloadOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="medium"]');
       downloadOption?.click();
       await root.updateComplete;
 

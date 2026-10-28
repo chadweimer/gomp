@@ -6,6 +6,7 @@ import { AccessLevel, Note, Recipe, RecipeCompact, RecipePatch, RecipeState } fr
 import state, { clearState } from '../../../stores/state';
 import './page-recipe';
 import { PageRecipe } from './page-recipe';
+import { ReactiveElement } from 'lit';
 
 describe('page-recipe', () => {
   const originalFetch = globalThis.fetch;
@@ -37,13 +38,13 @@ describe('page-recipe', () => {
     { id: 10, recipeId: 1, text: 'Use fresh eggs' },
   ];
 
-  function getBottomToolbarItem(root: HTMLElement, text: string): HTMLIonButtonElement | undefined {
-    const items = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-footer ion-buttons[slot="primary"] ion-button'));
+  function getBottomToolbarItem(root: ReactiveElement, text: string): HTMLIonButtonElement | undefined {
+    const items = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-footer ion-buttons[slot="primary"] ion-button'));
     return items.find(item => item.textContent?.trim().includes(text));
   }
 
-  function getFooterMenuButton(root: HTMLElement): HTMLIonButtonElement | undefined {
-    const buttons = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-footer ion-buttons[slot="primary"] ion-button'));
+  function getFooterMenuButton(root: ReactiveElement): HTMLIonButtonElement | undefined {
+    const buttons = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-footer ion-buttons[slot="primary"] ion-button'));
     return buttons.find(b => b.querySelector('ion-icon[slot="icon-only"]') !== null) ?? buttons[buttons.length - 1];
   }
 
@@ -166,22 +167,22 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipePrint = root.querySelector('recipe-print') as any;
+      const recipePrint = root.renderRoot.querySelector('recipe-print') as any;
       expect(recipePrint).not.toBeNull();
       expect(recipePrint?.recipe).toEqual(mockRecipe);
 
-      const recipeViewer = root.querySelector('recipe-viewer') as any;
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer') as any;
       expect(recipeViewer).not.toBeNull();
       expect(recipeViewer?.recipe).toEqual(mockRecipe);
       expect(recipeViewer?.links).toEqual(mockLinks);
 
-      const pictureCards = root.querySelectorAll('ion-card.image');
+      const pictureCards = root.renderRoot.querySelectorAll('ion-card.image');
       expect(pictureCards).toHaveLength(mockImages.length);
 
       const firstThumb = pictureCards[0].querySelector('img');
       expect(firstThumb?.getAttribute('src')).toBe('/uploads/recipes/1/thumbs/pancakes.jpg');
 
-      const noteCards = root.querySelectorAll('note-card') as NodeListOf<any>;
+      const noteCards = root.renderRoot.querySelectorAll('note-card') as NodeListOf<any>;
       expect(noteCards).toHaveLength(mockNotes.length);
       expect(noteCards[0].note).toEqual(mockNotes[0]);
     });
@@ -197,14 +198,14 @@ describe('page-recipe', () => {
       await root.updateComplete;
 
       expect(root).not.toBeNull();
-      const recipeViewer = root.querySelector('recipe-viewer') as any;
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer') as any;
       expect(recipeViewer?.recipe).toBeFalsy();
       expect(recipeViewer?.links?.length ?? 0).toBe(0);
 
-      const pictureCards = root.querySelectorAll('ion-card.image');
+      const pictureCards = root.renderRoot.querySelectorAll('ion-card.image');
       expect(pictureCards).toHaveLength(0);
 
-      const noteCards = root.querySelectorAll('note-card');
+      const noteCards = root.renderRoot.querySelectorAll('note-card');
       expect(noteCards).toHaveLength(0);
       expect(consoleErrorSpy).toHaveBeenCalled();
     });
@@ -232,10 +233,10 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipeViewer = root.querySelector('recipe-viewer') as any;
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer') as any;
       expect(recipeViewer?.hasAttribute('readonly') || recipeViewer?.readonly === true).toBe(true);
 
-      const noteCards = root.querySelectorAll('note-card') as NodeListOf<any>;
+      const noteCards = root.renderRoot.querySelectorAll('note-card') as NodeListOf<any>;
       noteCards.forEach((card) => {
         expect(card.hasAttribute('readonly') || card.readonly === true).toBe(true);
       });
@@ -248,12 +249,12 @@ describe('page-recipe', () => {
       expect(getBottomToolbarItem(root, 'Delete')).toBeUndefined();
       expect(getBottomToolbarItem(root, 'Print')).toBeDefined();
 
-      const footerButtons = Array.from(root.querySelectorAll('ion-footer ion-button'));
+      const footerButtons = Array.from(root.renderRoot.querySelectorAll('ion-footer ion-button'));
       const footerTexts = footerButtons.map((b) => b.textContent?.trim());
       expect(footerTexts).not.toContain('Edit');
       expect(footerTexts).not.toContain('Add Note');
 
-      const pictureButtons = root.querySelectorAll('ion-card.image ion-button');
+      const pictureButtons = root.renderRoot.querySelectorAll('ion-card.image ion-button');
       expect(pictureButtons).toHaveLength(0);
     });
 
@@ -262,10 +263,10 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipeViewer = root.querySelector('recipe-viewer') as any;
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer') as any;
       expect(recipeViewer?.hasAttribute('readonly') ?? false).toBe(false);
 
-      const noteCards = root.querySelectorAll('note-card') as NodeListOf<any>;
+      const noteCards = root.renderRoot.querySelectorAll('note-card') as NodeListOf<any>;
       noteCards.forEach((card) => {
         expect(card.hasAttribute('readonly') ?? false).toBe(false);
       });
@@ -278,7 +279,7 @@ describe('page-recipe', () => {
       expect(getBottomToolbarItem(root, 'Delete')).toBeDefined();
       expect(getBottomToolbarItem(root, 'Print')).toBeDefined();
 
-      const pictureButtons = root.querySelectorAll('ion-card.image ion-button');
+      const pictureButtons = root.renderRoot.querySelectorAll('ion-card.image ion-button');
       expect(pictureButtons.length).toBeGreaterThan(0);
     });
 
@@ -560,7 +561,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipeViewer = root.querySelector('recipe-viewer');
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       recipeViewer?.dispatchEvent(new CustomEvent('ratingSelected', { detail: 5, bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -584,7 +585,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipeViewer = root.querySelector('recipe-viewer');
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       recipeViewer?.dispatchEvent(new CustomEvent('ratingSelected', { detail: 5, bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -598,7 +599,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipeViewer = root.querySelector('recipe-viewer');
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       recipeViewer?.dispatchEvent(new CustomEvent('tagClicked', { detail: 'breakfast', bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -712,7 +713,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipeViewer = root.querySelector('recipe-viewer');
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       recipeViewer?.dispatchEvent(new CustomEvent('deleteLinkClicked', { detail: mockLinks[0], bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -738,7 +739,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipeViewer = root.querySelector('recipe-viewer');
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       recipeViewer?.dispatchEvent(new CustomEvent('deleteLinkClicked', { detail: mockLinks[0], bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -761,7 +762,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const recipeViewer = root.querySelector('recipe-viewer');
+      const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       recipeViewer?.dispatchEvent(new CustomEvent('deleteLinkClicked', { detail: mockLinks[0], bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -866,7 +867,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const noteCard = root.querySelector('note-card');
+      const noteCard = root.renderRoot.querySelector('note-card');
       noteCard?.dispatchEvent(new CustomEvent('editClicked', { detail: mockNotes[0], bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -895,7 +896,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const noteCard = root.querySelector('note-card');
+      const noteCard = root.renderRoot.querySelector('note-card');
       noteCard?.dispatchEvent(new CustomEvent('editClicked', { detail: mockNotes[0], bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -918,7 +919,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const noteCard = root.querySelector('note-card');
+      const noteCard = root.renderRoot.querySelector('note-card');
       noteCard?.dispatchEvent(new CustomEvent('editClicked', { detail: mockNotes[0], bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -943,7 +944,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const noteCard = root.querySelector('note-card');
+      const noteCard = root.renderRoot.querySelector('note-card');
       noteCard?.dispatchEvent(new CustomEvent('deleteClicked', { detail: mockNotes[0], bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -968,7 +969,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const noteCard = root.querySelector('note-card');
+      const noteCard = root.renderRoot.querySelector('note-card');
       noteCard?.dispatchEvent(new CustomEvent('deleteClicked', { detail: mockNotes[0], bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -991,7 +992,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const noteCard = root.querySelector('note-card');
+      const noteCard = root.renderRoot.querySelector('note-card');
       noteCard?.dispatchEvent(new CustomEvent('deleteClicked', { detail: mockNotes[0], bubbles: true }));
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -1097,7 +1098,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const starBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button:not([color="danger"])');
+      const starBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-card.image ion-button:not([color="danger"])');
       expect(starBtn).toBeDefined();
       starBtn?.click();
       await root.updateComplete;
@@ -1125,7 +1126,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const setAsMainBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button:not([color="danger"])');
+      const setAsMainBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-card.image ion-button:not([color="danger"])');
       setAsMainBtn?.click();
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -1148,7 +1149,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const setAsMainBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button:not([color="danger"])');
+      const setAsMainBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-card.image ion-button:not([color="danger"])');
       setAsMainBtn?.click();
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -1173,7 +1174,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const deleteImgBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button[color="danger"]');
+      const deleteImgBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-card.image ion-button[color="danger"]');
       expect(deleteImgBtn).toBeDefined();
       deleteImgBtn?.click();
       await root.updateComplete;
@@ -1199,7 +1200,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const deleteImgBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button[color="danger"]');
+      const deleteImgBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-card.image ion-button[color="danger"]');
       deleteImgBtn?.click();
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
@@ -1222,7 +1223,7 @@ describe('page-recipe', () => {
       const root = await createRecipePage(1);
       await root.updateComplete;
 
-      const deleteImgBtn = root.querySelector<HTMLIonButtonElement>('ion-card.image ion-button[color="danger"]');
+      const deleteImgBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-card.image ion-button[color="danger"]');
       deleteImgBtn?.click();
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));

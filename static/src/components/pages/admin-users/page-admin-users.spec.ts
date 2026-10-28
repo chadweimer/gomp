@@ -67,17 +67,17 @@ describe('page-admin-users', () => {
     await root.activatedCallback();
     await root.updateComplete;
 
-    const cards = root.querySelectorAll('ion-card');
+    const cards = root.renderRoot.querySelectorAll('ion-card');
     expect(cards).toHaveLength(3);
 
-    const navigator = root.querySelector('page-navigator') as any;
+    const navigator = root.renderRoot.querySelector('page-navigator') as any;
     expect(navigator).not.toBeNull();
     expect(navigator.page).toBe(1);
     expect(navigator.numPages).toBe(1);
 
-    const fab = root.querySelector('ion-fab');
+    const fab = root.renderRoot.querySelector('ion-fab');
     expect(fab).not.toBeNull();
-    const fabButton = root.querySelector('ion-fab-button');
+    const fabButton = root.renderRoot.querySelector('ion-fab-button');
     expect(fabButton).not.toBeNull();
   });
 
@@ -93,15 +93,15 @@ describe('page-admin-users', () => {
     await root.activatedCallback();
     await root.updateComplete;
 
-    const cards = root.querySelectorAll('ion-card');
+    const cards = root.renderRoot.querySelectorAll('ion-card');
     expect(cards).toHaveLength(3);
 
-    const titles = root.querySelectorAll('ion-card-title');
+    const titles = root.renderRoot.querySelectorAll('ion-card-title');
     expect(titles[0]?.textContent?.trim()).toBe('admin@example.com');
     expect(titles[1]?.textContent?.trim()).toBe('editor@example.com');
     expect(titles[2]?.textContent?.trim()).toBe('viewer@example.com');
 
-    const subtitles = root.querySelectorAll('ion-card-subtitle');
+    const subtitles = root.renderRoot.querySelectorAll('ion-card-subtitle');
     expect(subtitles[0]?.textContent?.trim()).toBe('Admin');
     expect(subtitles[1]?.textContent?.trim()).toBe('Editor');
     expect(subtitles[2]?.textContent?.trim()).toBe('Viewer');
@@ -120,7 +120,7 @@ describe('page-admin-users', () => {
     await root.activatedCallback();
     await root.updateComplete;
 
-    const cards = root.querySelectorAll('ion-card');
+    const cards = root.renderRoot.querySelectorAll('ion-card');
     expect(cards).toHaveLength(0);
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
@@ -145,7 +145,7 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const navigator = root.querySelector('page-navigator') as any;
+      const navigator = root.renderRoot.querySelector('page-navigator') as any;
       expect(navigator).not.toBeNull();
       expect(navigator.numPages).toBe(5);
 
@@ -179,7 +179,7 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const fabButton = root.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      const fabButton = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
       fabButton?.click();
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
@@ -217,7 +217,7 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const fabButton = root.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      const fabButton = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
       fabButton?.click();
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
@@ -249,7 +249,7 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const fabButton = root.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      const fabButton = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
       fabButton?.click();
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
@@ -283,7 +283,7 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const cardEditButtons = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button:not([color="danger"])'));
+      const cardEditButtons = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button:not([color="danger"])'));
       expect(cardEditButtons.length).toBeGreaterThanOrEqual(2);
       cardEditButtons[1]?.click();
       await new Promise((r) => setTimeout(r, 10));
@@ -321,7 +321,7 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const cardEditButtons = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button:not([color="danger"])'));
+      const cardEditButtons = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button:not([color="danger"])'));
       cardEditButtons[0]?.click();
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
@@ -352,7 +352,7 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const cardEditButtons = Array.from(root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button:not([color="danger"])'));
+      const cardEditButtons = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button:not([color="danger"])'));
       cardEditButtons[0]?.click();
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
@@ -385,7 +385,7 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const deleteButtons = root.querySelectorAll<HTMLIonButtonElement>('ion-button[color="danger"]');
+      const deleteButtons = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-button[color="danger"]');
       expect(deleteButtons.length).toBeGreaterThanOrEqual(2);
       deleteButtons[1]?.click();
       await new Promise((r) => setTimeout(r, 10));
@@ -420,7 +420,7 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const deleteButtons = root.querySelectorAll<HTMLIonButtonElement>('ion-button[color="danger"]');
+      const deleteButtons = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-button[color="danger"]');
       deleteButtons[0]?.click();
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
@@ -451,7 +451,7 @@ describe('page-admin-users', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const deleteButtons = root.querySelectorAll<HTMLIonButtonElement>('ion-button[color="danger"]');
+      const deleteButtons = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-button[color="danger"]');
       deleteButtons[0]?.click();
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;

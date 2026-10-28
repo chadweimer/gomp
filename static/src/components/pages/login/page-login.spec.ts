@@ -38,26 +38,26 @@ describe('page-login', () => {
   it('builds and renders initial state', async () => {
     const el = await fixture<PageLogin>(html`<page-login></page-login>`);
 
-    const title = el.querySelector('ion-card-title');
+    const title = el.renderRoot.querySelector('ion-card-title');
     expect(title?.textContent?.trim()).toBe('Login');
 
-    const usernameInput = el.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
+    const usernameInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
     expect(usernameInput).not.toBeNull();
     expect(usernameInput?.getAttribute('label')).toBe('Email');
     expect(usernameInput?.getAttribute('autocomplete')).toBe('username');
     expect(usernameInput?.hasAttribute('required')).toBe(true);
 
-    const passwordInput = el.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
+    const passwordInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
     expect(passwordInput).not.toBeNull();
     expect(passwordInput?.getAttribute('label')).toBe('Password');
     expect(passwordInput?.getAttribute('autocomplete')).toBe('current-password');
     expect(passwordInput?.hasAttribute('required')).toBe(true);
 
-    const loginButton = el.querySelector('ion-button');
+    const loginButton = el.renderRoot.querySelector('ion-button');
     expect(loginButton).not.toBeNull();
     expect(loginButton?.textContent?.trim()).toBe('Login');
 
-    const errorText = el.querySelector('ion-text[color="danger"]');
+    const errorText = el.renderRoot.querySelector('ion-text[color="danger"]');
     expect(errorText?.textContent?.trim()).toBeFalsy();
   });
 
@@ -76,9 +76,9 @@ describe('page-login', () => {
       });
 
       const el = await fixture<PageLogin>(html`<page-login></page-login>`);
-      const usernameInput = el.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
-      const passwordInput = el.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
-      const loginButton = el.querySelector<HTMLIonButtonElement>('ion-button');
+      const usernameInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
+      const passwordInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
+      const loginButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button');
 
       expect(usernameInput).not.toBeNull();
       expect(passwordInput).not.toBeNull();
@@ -100,7 +100,7 @@ describe('page-login', () => {
       expect(passwordInput?.value).toBe('');
       expect(routerEl.push).toHaveBeenCalledWith('/');
 
-      const errorText = el.querySelector('ion-text[color="danger"]');
+      const errorText = el.renderRoot.querySelector('ion-text[color="danger"]');
       expect(errorText?.textContent?.trim()).toBeFalsy();
     });
 
@@ -116,8 +116,8 @@ describe('page-login', () => {
       });
 
       const el = await fixture<PageLogin>(html`<page-login></page-login>`);
-      const usernameInput = el.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
-      const passwordInput = el.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
+      const usernameInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
+      const passwordInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
 
       if (usernameInput) usernameInput.value = 'test@example.com';
       if (passwordInput) passwordInput.value = 'password123';
@@ -141,8 +141,8 @@ describe('page-login', () => {
       });
 
       const el = await fixture<PageLogin>(html`<page-login></page-login>`);
-      const usernameInput = el.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
-      const passwordInput = el.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
+      const usernameInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
+      const passwordInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
 
       if (usernameInput) usernameInput.value = 'test@example.com';
       if (passwordInput) passwordInput.value = 'password123';
@@ -166,8 +166,8 @@ describe('page-login', () => {
       });
 
       const el = await fixture<PageLogin>(html`<page-login></page-login>`);
-      const usernameInput = el.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
-      const passwordInput = el.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
+      const usernameInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
+      const passwordInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
 
       if (usernameInput) usernameInput.value = 'test@example.com';
       if (passwordInput) passwordInput.value = 'password123';
@@ -191,9 +191,9 @@ describe('page-login', () => {
       });
 
       const el = await fixture<PageLogin>(html`<page-login></page-login>`);
-      const usernameInput = el.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
-      const passwordInput = el.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
-      const loginButton = el.querySelector<HTMLIonButtonElement>('ion-button');
+      const usernameInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
+      const passwordInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
+      const loginButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button');
 
       if (usernameInput) usernameInput.value = 'wrong@example.com';
       if (passwordInput) passwordInput.value = 'badpassword';
@@ -201,7 +201,7 @@ describe('page-login', () => {
       loginButton?.click();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const errorText = el.querySelector('ion-text[color="danger"]');
+      const errorText = el.renderRoot.querySelector('ion-text[color="danger"]');
       expect(errorText?.textContent?.trim()).toBeTruthy();
       expect(usernameInput?.value).toBe('wrong@example.com');
       expect(passwordInput?.value).toBe('');
@@ -227,9 +227,9 @@ describe('page-login', () => {
       });
 
       const el = await fixture<PageLogin>(html`<page-login></page-login>`);
-      const usernameInput = el.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
-      const passwordInput = el.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
-      const loginButton = el.querySelector<HTMLIonButtonElement>('ion-button');
+      const usernameInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
+      const passwordInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
+      const loginButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button');
 
       if (usernameInput) usernameInput.value = 'test@example.com';
       if (passwordInput) passwordInput.value = 'wrongpassword';
@@ -237,7 +237,7 @@ describe('page-login', () => {
       loginButton?.click();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const errorText = el.querySelector('ion-text[color="danger"]');
+      const errorText = el.renderRoot.querySelector('ion-text[color="danger"]');
       expect(errorText?.textContent?.trim()).toBeTruthy();
 
       // Retry with correct password
@@ -245,7 +245,7 @@ describe('page-login', () => {
       loginButton?.click();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      expect(el.querySelector('ion-text[color="danger"]')?.textContent?.trim()).toBeFalsy();
+      expect(el.renderRoot.querySelector('ion-text[color="danger"]')?.textContent?.trim()).toBeFalsy();
       expect(state.currentUser).toEqual(mockUser);
       expect(routerEl.push).toHaveBeenCalledWith('/');
     });

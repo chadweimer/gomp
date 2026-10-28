@@ -42,12 +42,12 @@ describe('page-admin-configuration', () => {
     const root = await fixture<PageAdminConfiguration>(html`<page-admin-configuration></page-admin-configuration>`);
     await root.updateComplete;
 
-    const input = root.querySelector<HTMLIonInputElement>('ion-input');
+    const input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     expect(input).not.toBeNull();
     expect(input?.getAttribute('label')).toBe('Application Title');
     expect(input?.value).toBe('GOMP: Go Meal Planner');
 
-    const buttons = root.querySelectorAll('ion-button');
+    const buttons = root.renderRoot.querySelectorAll('ion-button');
     expect(buttons).toHaveLength(2);
     expect(buttons[0].textContent?.trim()).toContain('Save');
     expect(buttons[1].textContent?.trim()).toContain('Reset');
@@ -65,7 +65,7 @@ describe('page-admin-configuration', () => {
     await root.activatedCallback();
     await root.updateComplete;
 
-    const input = root.querySelector<HTMLIonInputElement>('ion-input');
+    const input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     expect(input?.value).toBe('Custom Meal Planner');
   });
 
@@ -83,7 +83,7 @@ describe('page-admin-configuration', () => {
     await root.updateComplete;
 
     expect(consoleErrorSpy).toHaveBeenCalled();
-    const input = root.querySelector<HTMLIonInputElement>('ion-input');
+    const input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     expect(input?.value).toBe('GOMP: Go Meal Planner');
   });
 
@@ -104,7 +104,7 @@ describe('page-admin-configuration', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const input = root.querySelector<HTMLIonInputElement>('ion-input');
+    const input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     expect(input).not.toBeNull();
     if (input) {
       input.value = 'Updated App Name';
@@ -112,7 +112,7 @@ describe('page-admin-configuration', () => {
     }
     await root.updateComplete;
 
-    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    const saveButton = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
     saveButton?.click();
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
@@ -138,13 +138,13 @@ describe('page-admin-configuration', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const form = root.querySelector('form');
+    const form = root.renderRoot.querySelector('form');
     expect(form).not.toBeNull();
     if (form) {
       vi.spyOn(form, 'reportValidity').mockReturnValue(false);
     }
 
-    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    const saveButton = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
     saveButton?.click();
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
@@ -169,7 +169,7 @@ describe('page-admin-configuration', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    const saveButton = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
     saveButton?.click();
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
@@ -197,15 +197,15 @@ describe('page-admin-configuration', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    let input = root.querySelector<HTMLIonInputElement>('ion-input');
+    let input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     expect(input?.value).toBe('First Load');
 
-    const resetButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="danger"]');
+    const resetButton = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="danger"]');
     resetButton?.click();
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    input = root.querySelector<HTMLIonInputElement>('ion-input');
+    input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     expect(input?.value).toBe('Reset Value');
     expect(getCount).toBeGreaterThanOrEqual(2);
   });

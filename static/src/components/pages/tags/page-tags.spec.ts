@@ -72,7 +72,7 @@ describe('page-tags', () => {
     await el.activatedCallback();
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    const items = el.querySelectorAll('ion-item');
+    const items = el.renderRoot.querySelectorAll('ion-item');
     expect(items).toHaveLength(mockTagResult.tags?.length ?? 0);
 
     const firstLabel = items[0].querySelector('ion-label');
@@ -80,7 +80,7 @@ describe('page-tags', () => {
     const firstNote = items[0].querySelector('ion-note');
     expect(firstNote?.textContent?.trim()).toBe('12');
 
-    const navigator = el.querySelector('page-navigator');
+    const navigator = el.renderRoot.querySelector('page-navigator');
     expect(navigator).not.toBeNull();
   });
 
@@ -104,7 +104,7 @@ describe('page-tags', () => {
     expect(capturedUrl).toContain('sort=count');
 
     // Click sortBy button (first button in toolbar)
-    const buttons = el.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
+    const buttons = el.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
     const sortButton = buttons[0];
     sortButton.click();
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -132,7 +132,7 @@ describe('page-tags', () => {
     expect(capturedUrl).toContain('dir=desc');
 
     // Click sortDir button (second button in toolbar)
-    const buttons = el.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
+    const buttons = el.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
     const dirButton = buttons[1];
     dirButton.click();
     await new Promise(resolve => setTimeout(resolve, 50));
@@ -159,7 +159,7 @@ describe('page-tags', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
     expect(requestedPage).toBe('1');
 
-    const navigator = el.querySelector('page-navigator');
+    const navigator = el.renderRoot.querySelector('page-navigator');
     navigator?.dispatchEvent(new CustomEvent('pageChanged', { detail: 2 }));
     await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -181,7 +181,7 @@ describe('page-tags', () => {
     await el.activatedCallback();
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    const items = el.querySelectorAll<HTMLIonItemElement>('ion-item');
+    const items = el.renderRoot.querySelectorAll<HTMLIonItemElement>('ion-item');
     items[0].click(); // 'dinner'
 
     expect(state.searchFilter?.tags).toEqual(['dinner']);
@@ -221,7 +221,7 @@ describe('page-tags', () => {
   });
 
   it('handles GET tags failure gracefully', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
     fetchMocker.mockResponse(() => Promise.resolve({ status: 500, body: 'Server error' }));
 
     const el = await fixture<PageTags>(html`<page-tags></page-tags>`);
@@ -229,7 +229,7 @@ describe('page-tags', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     expect(consoleErrorSpy).toHaveBeenCalled();
-    const items = el.querySelectorAll('ion-item');
+    const items = el.renderRoot.querySelectorAll('ion-item');
     expect(items).toHaveLength(0);
   });
 
@@ -256,7 +256,7 @@ describe('page-tags', () => {
     await el.activatedCallback();
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    const buttons = el.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
+    const buttons = el.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
     const rppButton = buttons[2];
     rppButton.click();
     await new Promise(resolve => setTimeout(resolve, 50));

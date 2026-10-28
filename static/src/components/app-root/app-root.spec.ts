@@ -8,6 +8,7 @@ import appConfig from '../../stores/config';
 import state, { clearState } from '../../stores/state';
 import './app-root';
 import type { AppRoot } from './app-root';
+import { ReactiveElement } from 'lit';
 
 describe('app-root', () => {
   const originalFetch = globalThis.fetch;
@@ -59,7 +60,7 @@ describe('app-root', () => {
   it('mounts and renders the component', async () => {
     const el = await fixture<AppRoot>(html`<app-root></app-root>`);
     expect(el).not.toBeNull();
-    expect(el.querySelector('ion-app')).not.toBeNull();
+    expect(el.renderRoot.querySelector('ion-app')).not.toBeNull();
   });
 
   it('loads and applies application configuration on mount', async () => {
@@ -77,17 +78,17 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      expect(el.querySelector('ion-menu-button')).not.toBeNull();
-      expect(el.querySelector('#toolbar-menu')).not.toBeNull();
-      expect(el.querySelectorAll('#toolbar-menu ion-button')).toHaveLength(0);
+      expect(el.renderRoot.querySelector('ion-menu-button')).not.toBeNull();
+      expect(el.renderRoot.querySelector('#toolbar-menu')).not.toBeNull();
+      expect(el.renderRoot.querySelectorAll('#toolbar-menu ion-button')).toHaveLength(0);
 
-      const searchbars = el.querySelectorAll('ion-searchbar');
+      const searchbars = el.renderRoot.querySelectorAll('ion-searchbar');
       expect(searchbars).toHaveLength(2);
       searchbars.forEach((searchbar: any) => {
         expect(searchbar.hasAttribute('disabled') || searchbar.disabled).toBeTruthy();
       });
 
-      const filterButtons = el.querySelectorAll('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
+      const filterButtons = el.renderRoot.querySelectorAll('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
       expect(filterButtons).toHaveLength(2);
       filterButtons.forEach((icon: any) => {
         const btn = icon.closest('ion-button');
@@ -100,21 +101,21 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const homeLink = el.querySelector('ion-item[href="/"]');
+      const homeLink = el.renderRoot.querySelector('ion-item[href="/"]');
       expect(homeLink).not.toBeNull();
 
-      expect(el.querySelector('ion-item[href="/recipes"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/tags"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/settings"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/settings/preferences"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/settings/searches"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/settings/security"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/admin"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/admin/configuration"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/admin/users"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/admin/maintenance"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/recipes"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/tags"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/settings"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/settings/preferences"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/settings/searches"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/settings/security"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/admin"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/admin/configuration"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/admin/users"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/admin/maintenance"]')).toBeNull();
 
-      const logoutItem = Array.from(el.querySelectorAll('ion-item')).find((item) =>
+      const logoutItem = Array.from(el.renderRoot.querySelectorAll('ion-item')).find((item) =>
         item.textContent?.includes('Logout')
       );
       expect(logoutItem).toBeDefined();
@@ -125,17 +126,17 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      expect(el.querySelector('ion-menu-button')).not.toBeNull();
-      expect(el.querySelector('#toolbar-menu')).not.toBeNull();
-      expect(el.querySelectorAll('#toolbar-menu ion-button').length).toBeGreaterThan(0);
+      expect(el.renderRoot.querySelector('ion-menu-button')).not.toBeNull();
+      expect(el.renderRoot.querySelector('#toolbar-menu')).not.toBeNull();
+      expect(el.renderRoot.querySelectorAll('#toolbar-menu ion-button').length).toBeGreaterThan(0);
 
-      const searchbars = el.querySelectorAll('ion-searchbar');
+      const searchbars = el.renderRoot.querySelectorAll('ion-searchbar');
       expect(searchbars).toHaveLength(2);
       searchbars.forEach((searchbar: any) => {
         expect(searchbar.hasAttribute('disabled')).toBe(false);
       });
 
-      const filterButtons = el.querySelectorAll('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
+      const filterButtons = el.renderRoot.querySelectorAll('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
       expect(filterButtons).toHaveLength(2);
       filterButtons.forEach((icon: any) => {
         const btn = icon.closest('ion-button');
@@ -150,30 +151,30 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      expect(el.querySelector('ion-menu-button')).not.toBeNull();
-      expect(el.querySelector('ion-searchbar')).not.toBeNull();
+      expect(el.renderRoot.querySelector('ion-menu-button')).not.toBeNull();
+      expect(el.renderRoot.querySelector('ion-searchbar')).not.toBeNull();
 
-      const homeLink = el.querySelector('ion-item[href="/"]');
+      const homeLink = el.renderRoot.querySelector('ion-item[href="/"]');
       expect(homeLink).not.toBeNull();
 
-      const recipesLink = el.querySelector('ion-item[href="/recipes"]');
+      const recipesLink = el.renderRoot.querySelector('ion-item[href="/recipes"]');
       expect(recipesLink).not.toBeNull();
       expect(recipesLink?.textContent).toContain('42');
 
-      const tagsLink = el.querySelector('ion-item[href="/tags"]');
+      const tagsLink = el.renderRoot.querySelector('ion-item[href="/tags"]');
       expect(tagsLink).not.toBeNull();
       expect(tagsLink?.textContent).toContain('43');
 
-      const settingsLink = el.querySelector('ion-item[href="/settings"]');
+      const settingsLink = el.renderRoot.querySelector('ion-item[href="/settings"]');
       expect(settingsLink).not.toBeNull();
 
-      const adminLink = el.querySelector('ion-item[href="/admin"]');
+      const adminLink = el.renderRoot.querySelector('ion-item[href="/admin"]');
       expect(adminLink).toBeNull();
-      expect(el.querySelector('ion-item[href="/admin/configuration"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/admin/users"]')).toBeNull();
-      expect(el.querySelector('ion-item[href="/admin/maintenance"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/admin/configuration"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/admin/users"]')).toBeNull();
+      expect(el.renderRoot.querySelector('ion-item[href="/admin/maintenance"]')).toBeNull();
 
-      const preferencesLink = el.querySelector('ion-item[href="/settings/preferences"]');
+      const preferencesLink = el.renderRoot.querySelector('ion-item[href="/settings/preferences"]');
       expect(preferencesLink).not.toBeNull();
       expect(preferencesLink?.classList.contains('child-link')).toBe(true);
       expect(settingsLink?.classList.contains('child-link')).toBe(false);
@@ -184,19 +185,19 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const adminLink = el.querySelector('ion-item[href="/admin"]');
+      const adminLink = el.renderRoot.querySelector('ion-item[href="/admin"]');
       expect(adminLink).not.toBeNull();
       expect(adminLink?.classList.contains('child-link')).toBe(false);
 
-      const adminConfigLink = el.querySelector('ion-item[href="/admin/configuration"]');
+      const adminConfigLink = el.renderRoot.querySelector('ion-item[href="/admin/configuration"]');
       expect(adminConfigLink).not.toBeNull();
       expect(adminConfigLink?.classList.contains('child-link')).toBe(true);
 
-      const adminUsersLink = el.querySelector('ion-item[href="/admin/users"]');
+      const adminUsersLink = el.renderRoot.querySelector('ion-item[href="/admin/users"]');
       expect(adminUsersLink).not.toBeNull();
       expect(adminUsersLink?.classList.contains('child-link')).toBe(true);
 
-      const adminMaintenanceLink = el.querySelector('ion-item[href="/admin/maintenance"]');
+      const adminMaintenanceLink = el.renderRoot.querySelector('ion-item[href="/admin/maintenance"]');
       expect(adminMaintenanceLink).not.toBeNull();
       expect(adminMaintenanceLink?.classList.contains('child-link')).toBe(true);
     });
@@ -209,7 +210,7 @@ describe('app-root', () => {
       };
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
 
-      const homeItem = el.querySelector<HTMLElement>('ion-item[href="/"]')!;
+      const homeItem = el.renderRoot.querySelector<HTMLElement>('ion-item[href="/"]')!;
       expect(homeItem).not.toBeNull();
 
       homeItem.classList.add('hydrated', 'item', 'md');
@@ -238,7 +239,7 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const homeRoute = el.querySelector<HTMLIonRouteElement>('ion-route[url="/"]');
+      const homeRoute = el.renderRoot.querySelector<HTMLIonRouteElement>('ion-route[url="/"]');
       expect(homeRoute).not.toBeNull();
       expect(typeof homeRoute?.beforeEnter).toBe('function');
 
@@ -251,7 +252,7 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const homeRoute = el.querySelector<HTMLIonRouteElement>('ion-route[url="/"]');
+      const homeRoute = el.renderRoot.querySelector<HTMLIonRouteElement>('ion-route[url="/"]');
       expect(homeRoute).not.toBeNull();
 
       const result = homeRoute?.beforeEnter?.();
@@ -263,7 +264,7 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const adminRoute = el.querySelector<HTMLIonRouteElement>('ion-route[url="/admin"]');
+      const adminRoute = el.renderRoot.querySelector<HTMLIonRouteElement>('ion-route[url="/admin"]');
       expect(adminRoute).not.toBeNull();
 
       const result = adminRoute?.beforeEnter?.();
@@ -275,7 +276,7 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const adminRoute = el.querySelector<HTMLIonRouteElement>('ion-route[url="/admin"]');
+      const adminRoute = el.renderRoot.querySelector<HTMLIonRouteElement>('ion-route[url="/admin"]');
       expect(adminRoute).not.toBeNull();
 
       const result = adminRoute?.beforeEnter?.();
@@ -306,7 +307,7 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       expect(el).toBeDefined();
 
-      const router = el.querySelector<HTMLIonRouterElement>('ion-router');
+      const router = el.renderRoot.querySelector<HTMLIonRouterElement>('ion-router');
       if (router) {
         router.push = vi.fn().mockResolvedValue(true);
       }
@@ -326,7 +327,7 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const spinner = el.querySelector('ion-spinner');
+      const spinner = el.renderRoot.querySelector('ion-spinner');
       expect(spinner).not.toBeNull();
       expect(spinner?.getAttribute('name')).toBe('bubbles');
     });
@@ -336,7 +337,7 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const spinner = el.querySelector('ion-spinner');
+      const spinner = el.renderRoot.querySelector('ion-spinner');
       expect(spinner).toBeNull();
     });
   });
@@ -378,12 +379,12 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const router = el.querySelector<HTMLIonRouterElement>('ion-router');
+      const router = el.renderRoot.querySelector<HTMLIonRouterElement>('ion-router');
       if (router) {
         router.push = vi.fn().mockResolvedValue(true);
       }
 
-      const searchbar = el.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
+      const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
       expect(searchbar).not.toBeNull();
       if (searchbar) {
         searchbar.value = 'pasta';
@@ -407,7 +408,7 @@ describe('app-root', () => {
         expect(router.push).not.toHaveBeenCalled();
       }
 
-      const filterButton = el.querySelector<HTMLIonButtonElement>('ion-button ion-icon[name="filter"]')?.closest('ion-button');
+      const filterButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button ion-icon[name="filter"]')?.closest('ion-button');
       expect(filterButton).not.toBeNull();
       filterButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       if (router) {
@@ -419,12 +420,12 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const router = el.querySelector<HTMLIonRouterElement>('ion-router');
+      const router = el.renderRoot.querySelector<HTMLIonRouterElement>('ion-router');
       if (router) {
         router.push = vi.fn().mockResolvedValue(true);
       }
 
-      const searchbar = el.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
+      const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
       expect(searchbar).not.toBeNull();
       if (searchbar) {
         searchbar.value = 'pasta';
@@ -440,12 +441,12 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const router = el.querySelector<HTMLIonRouterElement>('ion-router');
+      const router = el.renderRoot.querySelector<HTMLIonRouterElement>('ion-router');
       if (router) {
         router.push = vi.fn().mockResolvedValue(true);
       }
 
-      const searchbar = el.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
+      const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
       expect(searchbar).not.toBeNull();
       searchbar?.dispatchEvent(new CustomEvent('ionClear', { bubbles: true }));
 
@@ -462,12 +463,12 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const router = el.querySelector<HTMLIonRouterElement>('ion-router');
+      const router = el.renderRoot.querySelector<HTMLIonRouterElement>('ion-router');
       if (router) {
         router.push = vi.fn().mockResolvedValue(true);
       }
 
-      const searchbar = el.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
+      const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
       expect(searchbar).not.toBeNull();
       searchbar?.dispatchEvent(new CustomEvent('ionCancel', { bubbles: true }));
 
@@ -488,8 +489,8 @@ describe('app-root', () => {
   });
 
   describe('pageTitle state and active navigation highlighting', () => {
-    function setupRouterOutlet(root: HTMLElement) {
-      const routerOutlet = root.querySelector<HTMLIonRouterOutletElement>('ion-router-outlet');
+    function setupRouterOutlet(root: ReactiveElement) {
+      const routerOutlet = root.renderRoot.querySelector<HTMLIonRouterOutletElement>('ion-router-outlet');
       if (routerOutlet) {
         routerOutlet.getRouteId = vi.fn().mockResolvedValue(undefined);
       }
@@ -507,7 +508,7 @@ describe('app-root', () => {
       const router = setupRouterOutlet(el);
       expect(router).not.toBeNull();
 
-      const title = el.querySelector('ion-title');
+      const title = el.renderRoot.querySelector('ion-title');
       expect(title?.querySelector('ion-text')).toBeNull();
 
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes', from: '/' } }));
@@ -519,13 +520,13 @@ describe('app-root', () => {
 
       expect(title?.querySelector('ion-text')).toBeNull();
 
-      const toolbarButtons = el.querySelectorAll('#toolbar-menu ion-button');
+      const toolbarButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button');
       toolbarButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('clear');
         expect(btn.classList.contains('active')).toBe(false);
       });
 
-      const menuItems = el.querySelectorAll('ion-menu ion-item[href]');
+      const menuItems = el.renderRoot.querySelectorAll('ion-menu ion-item[href]');
       menuItems.forEach((item) => {
         expect(item.getAttribute('color')).toBeNull();
         expect(item.hasAttribute('detail')).toBe(false);
@@ -541,23 +542,23 @@ describe('app-root', () => {
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/', from: '' } }));
       await el.updateComplete;
 
-      const titleText = el.querySelector('ion-title ion-text');
+      const titleText = el.renderRoot.querySelector('ion-title ion-text');
       expect(titleText).not.toBeNull();
       expect(titleText?.textContent?.trim()).toBe('| Home');
 
-      const toolbarButtons = el.querySelectorAll('#toolbar-menu ion-button');
+      const toolbarButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button');
       expect(toolbarButtons.length).toBeGreaterThan(0);
       toolbarButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('clear');
         expect(btn.classList.contains('active')).toBe(false);
       });
 
-      const homeItem = el.querySelector('ion-menu ion-item[href="/"]');
+      const homeItem = el.renderRoot.querySelector('ion-menu ion-item[href="/"]');
       expect(homeItem?.getAttribute('color')).toBe('secondary');
       expect(homeItem?.hasAttribute('detail')).toBe(true);
       expect(homeItem?.classList.contains('active')).toBe(true);
 
-      const recipesItem = el.querySelector('ion-menu ion-item[href="/recipes"]');
+      const recipesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/recipes"]');
       expect(recipesItem?.getAttribute('color')).toBeNull();
       expect(recipesItem?.hasAttribute('detail')).toBe(false);
       expect(recipesItem?.classList.contains('active')).toBe(false);
@@ -571,30 +572,30 @@ describe('app-root', () => {
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes', from: '/' } }));
       await el.updateComplete;
 
-      const titleText = el.querySelector('ion-title ion-text');
+      const titleText = el.renderRoot.querySelector('ion-title ion-text');
       expect(titleText).not.toBeNull();
       expect(titleText?.textContent?.trim()).toBe('| Recipes');
 
-      const recipesButtons = el.querySelectorAll('#toolbar-menu ion-button[href="/recipes"]');
+      const recipesButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button[href="/recipes"]');
       expect(recipesButtons).toHaveLength(2);
       recipesButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('solid');
         expect(btn.classList.contains('active')).toBe(true);
       });
 
-      const otherButtons = el.querySelectorAll('#toolbar-menu ion-button:not([href="/recipes"])');
+      const otherButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button:not([href="/recipes"])');
       expect(otherButtons.length).toBeGreaterThan(0);
       otherButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('clear');
         expect(btn.classList.contains('active')).toBe(false);
       });
 
-      const recipesItem = el.querySelector('ion-menu ion-item[href="/recipes"]');
+      const recipesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/recipes"]');
       expect(recipesItem?.getAttribute('color')).toBe('secondary');
       expect(recipesItem?.hasAttribute('detail')).toBe(true);
       expect(recipesItem?.classList.contains('active')).toBe(true);
 
-      const homeItem = el.querySelector('ion-menu ion-item[href="/"]');
+      const homeItem = el.renderRoot.querySelector('ion-menu ion-item[href="/"]');
       expect(homeItem?.getAttribute('color')).toBeNull();
       expect(homeItem?.hasAttribute('detail')).toBe(false);
       expect(homeItem?.classList.contains('active')).toBe(false);
@@ -608,18 +609,18 @@ describe('app-root', () => {
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes/123', from: '/' } }));
       await el.updateComplete;
 
-      const titleText = el.querySelector('ion-title ion-text');
+      const titleText = el.renderRoot.querySelector('ion-title ion-text');
       expect(titleText).not.toBeNull();
       expect(titleText?.textContent?.trim()).toBe('| Recipes');
 
-      const recipesButtons = el.querySelectorAll('#toolbar-menu ion-button[href="/recipes"]');
+      const recipesButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button[href="/recipes"]');
       expect(recipesButtons).toHaveLength(2);
       recipesButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('solid');
         expect(btn.classList.contains('active')).toBe(true);
       });
 
-      const recipesItem = el.querySelector('ion-menu ion-item[href="/recipes"]');
+      const recipesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/recipes"]');
       expect(recipesItem?.getAttribute('color')).toBe('secondary');
       expect(recipesItem?.hasAttribute('detail')).toBe(true);
       expect(recipesItem?.classList.contains('active')).toBe(true);
@@ -627,7 +628,7 @@ describe('app-root', () => {
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes/456/', from: '/recipes/123' } }));
       await el.updateComplete;
 
-      expect(el.querySelector('ion-title ion-text')?.textContent?.trim()).toBe('| Recipes');
+      expect(el.renderRoot.querySelector('ion-title ion-text')?.textContent?.trim()).toBe('| Recipes');
       expect(recipesItem?.classList.contains('active')).toBe(true);
     });
 
@@ -639,30 +640,30 @@ describe('app-root', () => {
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/settings/preferences', from: '/' } }));
       await el.updateComplete;
 
-      const titleText = el.querySelector('ion-title ion-text');
+      const titleText = el.renderRoot.querySelector('ion-title ion-text');
       expect(titleText).not.toBeNull();
       expect(titleText?.textContent?.trim()).toBe('| Settings');
 
-      const settingsButtons = el.querySelectorAll('#toolbar-menu ion-button[href="/settings"]');
+      const settingsButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button[href="/settings"]');
       expect(settingsButtons).toHaveLength(2);
       settingsButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('solid');
         expect(btn.classList.contains('active')).toBe(true);
       });
 
-      const settingsItem = el.querySelector('ion-menu ion-item[href="/settings"]');
+      const settingsItem = el.renderRoot.querySelector('ion-menu ion-item[href="/settings"]');
       expect(settingsItem?.getAttribute('color')).toBeNull();
       expect(settingsItem?.hasAttribute('detail')).toBe(false);
       expect(settingsItem?.classList.contains('active')).toBe(true);
       expect(settingsItem?.querySelector('ion-icon')?.getAttribute('color')).toBe('secondary');
       expect(settingsItem?.querySelector('ion-label')?.getAttribute('color')).toBe('secondary');
 
-      const preferencesItem = el.querySelector('ion-menu ion-item[href="/settings/preferences"]');
+      const preferencesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/settings/preferences"]');
       expect(preferencesItem?.getAttribute('color')).toBe('secondary');
       expect(preferencesItem?.hasAttribute('detail')).toBe(true);
       expect(preferencesItem?.classList.contains('active')).toBe(true);
 
-      const searchesItem = el.querySelector('ion-menu ion-item[href="/settings/searches"]');
+      const searchesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/settings/searches"]');
       expect(searchesItem?.getAttribute('color')).toBeNull();
       expect(searchesItem?.hasAttribute('detail')).toBe(false);
       expect(searchesItem?.classList.contains('active')).toBe(false);
@@ -677,13 +678,13 @@ describe('app-root', () => {
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/login', from: '' } }));
       await el.updateComplete;
 
-      const title = el.querySelector('ion-title');
+      const title = el.renderRoot.querySelector('ion-title');
       expect(title?.querySelector('ion-text')).toBeNull();
 
-      const toolbarButtons = el.querySelectorAll('#toolbar-menu ion-button');
+      const toolbarButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button');
       expect(toolbarButtons).toHaveLength(0);
 
-      const menuItems = el.querySelectorAll('ion-menu ion-item[href]');
+      const menuItems = el.renderRoot.querySelectorAll('ion-menu ion-item[href]');
       menuItems.forEach((item) => {
         expect(item.classList.contains('active')).toBe(false);
       });
@@ -698,14 +699,14 @@ describe('app-root', () => {
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/', from: '' } }));
       await el.updateComplete;
 
-      const titleText = el.querySelector('ion-title ion-text');
+      const titleText = el.renderRoot.querySelector('ion-title ion-text');
       expect(titleText).not.toBeNull();
       expect(titleText?.textContent?.trim()).toBe('| Home');
 
-      const toolbarButtons = el.querySelectorAll('#toolbar-menu ion-button');
+      const toolbarButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button');
       expect(toolbarButtons).toHaveLength(0);
 
-      const homeItem = el.querySelector('ion-menu ion-item[href="/"]');
+      const homeItem = el.renderRoot.querySelector('ion-menu ion-item[href="/"]');
       expect(homeItem).not.toBeNull();
       expect(homeItem?.getAttribute('color')).toBe('secondary');
       expect(homeItem?.hasAttribute('detail')).toBe(true);
@@ -722,7 +723,7 @@ describe('app-root', () => {
       };
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
 
-      const logoutItem = Array.from(el.querySelectorAll('ion-item')).find((item) =>
+      const logoutItem = Array.from(el.renderRoot.querySelectorAll('ion-item')).find((item) =>
         item.textContent?.includes('Logout')
       );
       expect(logoutItem).toBeDefined();

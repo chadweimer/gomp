@@ -40,10 +40,10 @@ describe('page-settings', () => {
     const root = await fixture<PageSettings>(html`<page-settings></page-settings>`);
     await root.updateComplete;
 
-    const tabs = root.querySelector('ion-tabs');
+    const tabs = root.renderRoot.querySelector('ion-tabs');
     expect(tabs).not.toBeNull();
 
-    const tabElements = root.querySelectorAll('ion-tab');
+    const tabElements = root.renderRoot.querySelectorAll('ion-tab');
     expect(tabElements).toHaveLength(3);
     expect(tabElements[0].getAttribute('tab')).toBe('tab-settings-preferences');
     expect(tabElements[0].getAttribute('component')).toBe('page-settings-preferences');
@@ -52,7 +52,7 @@ describe('page-settings', () => {
     expect(tabElements[2].getAttribute('tab')).toBe('tab-settings-security');
     expect(tabElements[2].getAttribute('component')).toBe('page-settings-security');
 
-    const tabButtons = root.querySelectorAll('ion-tab-button');
+    const tabButtons = root.renderRoot.querySelectorAll('ion-tab-button');
     expect(tabButtons).toHaveLength(3);
 
     expect(tabButtons[0].getAttribute('tab')).toBe('tab-settings-preferences');
@@ -81,7 +81,7 @@ describe('page-settings', () => {
 
   it('triggers sendActivatedCallback when ionTabsDidChange is fired', async () => {
     const root = await fixture<PageSettings>(html`<page-settings></page-settings>`);
-    const tabs = root.querySelector('ion-tabs');
+    const tabs = root.renderRoot.querySelector('ion-tabs');
     expect(tabs).not.toBeNull();
 
     tabs?.dispatchEvent(new CustomEvent('ionTabsDidChange'));
@@ -93,7 +93,7 @@ describe('page-settings', () => {
   describe('Swipe Navigation', () => {
     it('swipes left from preferences tab to searches tab', async () => {
       const root = await fixture<PageSettings>(html`<page-settings></page-settings>`);
-      const tabs = root.querySelector('ion-tabs') as HTMLIonTabsElement;
+      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
       tabs.getSelected = vi.fn().mockResolvedValue('tab-settings-preferences');
       tabs.select = vi.fn().mockResolvedValue(true);
 
@@ -106,7 +106,7 @@ describe('page-settings', () => {
 
     it('does nothing when swiping right from preferences tab', async () => {
       const root = await fixture<PageSettings>(html`<page-settings></page-settings>`);
-      const tabs = root.querySelector('ion-tabs') as HTMLIonTabsElement;
+      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
       tabs.getSelected = vi.fn().mockResolvedValue('tab-settings-preferences');
       tabs.select = vi.fn().mockResolvedValue(true);
 
@@ -118,7 +118,7 @@ describe('page-settings', () => {
 
     it('swipes left from searches tab to security tab', async () => {
       const root = await fixture<PageSettings>(html`<page-settings></page-settings>`);
-      const tabs = root.querySelector('ion-tabs') as HTMLIonTabsElement;
+      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
       tabs.getSelected = vi.fn().mockResolvedValue('tab-settings-searches');
       tabs.select = vi.fn().mockResolvedValue(true);
 
@@ -130,7 +130,7 @@ describe('page-settings', () => {
 
     it('swipes right from searches tab to preferences tab', async () => {
       const root = await fixture<PageSettings>(html`<page-settings></page-settings>`);
-      const tabs = root.querySelector('ion-tabs') as HTMLIonTabsElement;
+      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
       tabs.getSelected = vi.fn().mockResolvedValue('tab-settings-searches');
       tabs.select = vi.fn().mockResolvedValue(true);
 
@@ -142,7 +142,7 @@ describe('page-settings', () => {
 
     it('swipes right from security tab to searches tab', async () => {
       const root = await fixture<PageSettings>(html`<page-settings></page-settings>`);
-      const tabs = root.querySelector('ion-tabs') as HTMLIonTabsElement;
+      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
       tabs.getSelected = vi.fn().mockResolvedValue('tab-settings-security');
       tabs.select = vi.fn().mockResolvedValue(true);
 
@@ -154,7 +154,7 @@ describe('page-settings', () => {
 
     it('does nothing when swiping left from security tab', async () => {
       const root = await fixture<PageSettings>(html`<page-settings></page-settings>`);
-      const tabs = root.querySelector('ion-tabs') as HTMLIonTabsElement;
+      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
       tabs.getSelected = vi.fn().mockResolvedValue('tab-settings-security');
       tabs.select = vi.fn().mockResolvedValue(true);
 

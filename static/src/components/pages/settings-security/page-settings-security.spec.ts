@@ -42,7 +42,7 @@ describe('page-settings-security', () => {
     const root = await fixture<PageSettingsSecurity>(html`<page-settings-security></page-settings-security>`);
     await root.updateComplete;
 
-    const inputs = root.querySelectorAll('ion-input');
+    const inputs = root.renderRoot.querySelectorAll('ion-input');
     expect(inputs).toHaveLength(5);
 
     const emailInput = inputs[0];
@@ -53,7 +53,7 @@ describe('page-settings-security', () => {
     expect(accessInput?.getAttribute('label')).toBe('Access Level');
     expect(accessInput?.hasAttribute('disabled')).toBe(true);
 
-    const updateButton = root.querySelector('ion-button');
+    const updateButton = root.renderRoot.querySelector('ion-button');
     expect(updateButton).not.toBeNull();
     expect(updateButton?.textContent?.trim()).toContain('Update Password');
   });
@@ -70,7 +70,7 @@ describe('page-settings-security', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const inputs = root.querySelectorAll<HTMLIonInputElement>('ion-input');
+    const inputs = root.renderRoot.querySelectorAll<HTMLIonInputElement>('ion-input');
     expect(inputs[0]?.value).toBe('alice@example.com');
     expect(inputs[1]?.value).toBe('Editor');
   });
@@ -109,7 +109,7 @@ describe('page-settings-security', () => {
       const nativeInput = document.createElement('input');
       const setCustomValiditySpy = vi.spyOn(nativeInput, 'setCustomValidity');
 
-      const inputs = root.querySelectorAll<HTMLIonInputElement>('ion-input');
+      const inputs = root.renderRoot.querySelectorAll<HTMLIonInputElement>('ion-input');
       const currentPasswordInput = inputs[2];
       const newPasswordInput = inputs[3];
       const repeatPasswordInput = inputs[4];
@@ -126,12 +126,12 @@ describe('page-settings-security', () => {
       repeatPasswordInput.dispatchEvent(new CustomEvent('ionBlur'));
       await root.updateComplete;
 
-      const form = root.querySelector('form');
+      const form = root.renderRoot.querySelector('form');
       if (form) {
         vi.spyOn(form, 'reportValidity').mockReturnValue(false);
       }
 
-      const updateBtn = root.querySelector<HTMLIonButtonElement>('ion-button');
+      const updateBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button');
       updateBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -162,7 +162,7 @@ describe('page-settings-security', () => {
       const nativeInput = document.createElement('input');
       const setCustomValiditySpy = vi.spyOn(nativeInput, 'setCustomValidity');
 
-      const inputs = root.querySelectorAll<HTMLIonInputElement>('ion-input');
+      const inputs = root.renderRoot.querySelectorAll<HTMLIonInputElement>('ion-input');
       const currentPasswordInput = inputs[2];
       const newPasswordInput = inputs[3];
       const repeatPasswordInput = inputs[4];
@@ -179,7 +179,7 @@ describe('page-settings-security', () => {
       repeatPasswordInput.dispatchEvent(new CustomEvent('ionBlur'));
       await root.updateComplete;
 
-      const updateBtn = root.querySelector<HTMLIonButtonElement>('ion-button');
+      const updateBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button');
       updateBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -218,7 +218,7 @@ describe('page-settings-security', () => {
       await root.updateComplete;
 
       const nativeInput = document.createElement('input');
-      const inputs = root.querySelectorAll<HTMLIonInputElement>('ion-input');
+      const inputs = root.renderRoot.querySelectorAll<HTMLIonInputElement>('ion-input');
       const currentPasswordInput = inputs[2];
       const newPasswordInput = inputs[3];
       const repeatPasswordInput = inputs[4];
@@ -235,7 +235,7 @@ describe('page-settings-security', () => {
       repeatPasswordInput.dispatchEvent(new CustomEvent('ionBlur'));
       await root.updateComplete;
 
-      const updateBtn = root.querySelector<HTMLIonButtonElement>('ion-button');
+      const updateBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button');
       updateBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;

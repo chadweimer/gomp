@@ -86,17 +86,17 @@ describe('page-settings-searches', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const cards = root.querySelectorAll('ion-card');
+    const cards = root.renderRoot.querySelectorAll('ion-card');
     expect(cards).toHaveLength(2);
 
-    const navigator = root.querySelector('page-navigator');
+    const navigator = root.renderRoot.querySelector('page-navigator');
     expect(navigator).not.toBeNull();
     expect(root.page).toBe(1);
     expect(root.numPages).toBe(1);
 
-    const fab = root.querySelector('ion-fab');
+    const fab = root.renderRoot.querySelector('ion-fab');
     expect(fab).not.toBeNull();
-    const fabButton = root.querySelector('ion-fab-button');
+    const fabButton = root.renderRoot.querySelector('ion-fab-button');
     expect(fabButton).not.toBeNull();
   });
 
@@ -112,10 +112,10 @@ describe('page-settings-searches', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const cards = root.querySelectorAll('ion-card');
+    const cards = root.renderRoot.querySelectorAll('ion-card');
     expect(cards).toHaveLength(2);
 
-    const titles = root.querySelectorAll('ion-card-title');
+    const titles = root.renderRoot.querySelectorAll('ion-card-title');
     expect(titles[0].textContent?.trim()).toBe('Quick Dinners');
     expect(titles[1].textContent?.trim()).toBe('Desserts');
   });
@@ -133,7 +133,7 @@ describe('page-settings-searches', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const cards = root.querySelectorAll('ion-card');
+    const cards = root.renderRoot.querySelectorAll('ion-card');
     expect(cards).toHaveLength(0);
     expect(consoleErrorSpy).toHaveBeenCalled();
   });
@@ -158,7 +158,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const navigator = root.querySelector('page-navigator');
+      const navigator = root.renderRoot.querySelector('page-navigator');
       expect(navigator).not.toBeNull();
       expect(root.numPages).toBe(5);
 
@@ -187,7 +187,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const loadBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[0];
+      const loadBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[0];
       loadBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -213,7 +213,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const loadBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[0];
+      const loadBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[0];
       loadBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -255,7 +255,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const fabButton = root.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      const fabButton = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
       fabButton?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -293,7 +293,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const fabButton = root.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      const fabButton = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
       fabButton?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -327,7 +327,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const fabButton = root.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      const fabButton = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
       fabButton?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -369,7 +369,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const editBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
+      const editBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
       editBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -410,7 +410,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const editBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
+      const editBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
       editBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -438,7 +438,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const editBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
+      const editBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
       editBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -475,7 +475,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const editBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
+      const editBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
       editBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -508,7 +508,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const deleteBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
+      const deleteBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
       deleteBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -542,7 +542,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const deleteBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
+      const deleteBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
       deleteBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
@@ -572,7 +572,7 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const deleteBtn = root.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
+      const deleteBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
       deleteBtn?.click();
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;

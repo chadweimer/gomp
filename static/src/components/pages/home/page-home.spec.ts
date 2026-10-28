@@ -159,10 +159,10 @@ describe('page-home', () => {
   describe('Suite 1: Initialization & Rendering', () => {
     it('builds and renders initial empty state before activation', async () => {
       const el = await fixture<PageHome>(html`<page-home></page-home>`);
-      const title = el.querySelector('header h1');
+      const title = el.renderRoot.querySelector('header h1');
       expect(title?.textContent?.trim()).toBe('');
 
-      const items = el.querySelectorAll('ion-item');
+      const items = el.renderRoot.querySelectorAll('ion-item');
       expect(items).toHaveLength(0);
     });
 
@@ -171,27 +171,27 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const title = el.querySelector('header h1');
+      const title = el.renderRoot.querySelector('header h1');
       expect(title?.textContent?.trim()).toBe('Welcome to GOMP');
 
-      const img = el.querySelector('header img');
+      const img = el.renderRoot.querySelector('header img');
       expect(img).not.toBeNull();
       expect(img?.getAttribute('src')).toBe('https://example.com/banner.jpg');
       expect(img?.hasAttribute('hidden')).toBe(false);
 
       // Default 'Recipes' search + 2 saved filters = 3 sections
-      const filterItems = el.querySelectorAll('ion-item');
+      const filterItems = el.renderRoot.querySelectorAll('ion-item');
       expect(filterItems).toHaveLength(3);
 
-      const labels = el.querySelectorAll('ion-item ion-label:first-child');
+      const labels = el.renderRoot.querySelectorAll('ion-item ion-label:first-child');
       const labelTexts = Array.from(labels).map(l => l.textContent?.trim());
       expect(labelTexts).toEqual(['Recipes', 'Quick Dinners', 'Desserts']);
 
-      const counts = el.querySelectorAll('ion-item ion-label[slot="end"]');
+      const counts = el.renderRoot.querySelectorAll('ion-item ion-label[slot="end"]');
       const countTexts = Array.from(counts).map(c => c.textContent?.trim());
       expect(countTexts).toEqual(['2', '2', '2']);
 
-      const recipeCards = el.querySelectorAll('recipe-card');
+      const recipeCards = el.renderRoot.querySelectorAll('recipe-card');
       expect(recipeCards).toHaveLength(6);
     });
 
@@ -205,7 +205,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const img = el.querySelector('header img');
+      const img = el.renderRoot.querySelector('header img');
       expect(img?.hasAttribute('hidden')).toBe(true);
     });
 
@@ -239,7 +239,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const filterItems = el.querySelectorAll('ion-item');
+      const filterItems = el.renderRoot.querySelectorAll('ion-item');
       expect(filterItems).toHaveLength(2); // Recipes + Quick Dinners
     });
   });
@@ -251,7 +251,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const fab = el.querySelector('ion-fab');
+      const fab = el.renderRoot.querySelector('ion-fab');
       expect(fab).toBeNull();
     });
 
@@ -261,7 +261,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const fab = el.querySelector('ion-fab');
+      const fab = el.renderRoot.querySelector('ion-fab');
       expect(fab).toBeNull();
     });
 
@@ -271,7 +271,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const fab = el.querySelector('ion-fab');
+      const fab = el.renderRoot.querySelector('ion-fab');
       expect(fab).not.toBeNull();
       const fabBtn = fab?.querySelector('ion-fab-button');
       expect(fabBtn).not.toBeNull();
@@ -283,7 +283,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const fab = el.querySelector('ion-fab');
+      const fab = el.renderRoot.querySelector('ion-fab');
       expect(fab).not.toBeNull();
     });
   });
@@ -294,7 +294,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const filterItems = el.querySelectorAll<HTMLIonItemElement>('ion-item');
+      const filterItems = el.renderRoot.querySelectorAll<HTMLIonItemElement>('ion-item');
       expect(filterItems.length).toBeGreaterThanOrEqual(2);
 
       // Click the second filter ('Quick Dinners')
@@ -311,7 +311,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const firstItem = el.querySelector<HTMLIonItemElement>('ion-item');
+      const firstItem = el.renderRoot.querySelector<HTMLIonItemElement>('ion-item');
       expect(firstItem).not.toBeNull();
       firstItem?.click();
       await new Promise(resolve => setTimeout(resolve, 20));
@@ -343,7 +343,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const fabBtn = el.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      const fabBtn = el.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
       expect(fabBtn).not.toBeNull();
       fabBtn?.click();
       await new Promise(resolve => setTimeout(resolve, 50));
@@ -387,7 +387,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const fabBtn = el.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      const fabBtn = el.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
       fabBtn?.click();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -417,7 +417,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const fabBtn = el.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      const fabBtn = el.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
       fabBtn?.click();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -444,7 +444,7 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const fabBtn = el.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
+      const fabBtn = el.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
       fabBtn?.click();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -465,10 +465,10 @@ describe('page-home', () => {
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      const title = el.querySelector('header h1');
+      const title = el.renderRoot.querySelector('header h1');
       expect(title?.textContent?.trim()).toBe('');
       // Search filters still loaded
-      const items = el.querySelectorAll('ion-item');
+      const items = el.renderRoot.querySelectorAll('ion-item');
       expect(items.length).toBeGreaterThanOrEqual(1);
     });
 
@@ -493,7 +493,7 @@ describe('page-home', () => {
       await new Promise(resolve => setTimeout(resolve, 50));
 
       expect(consoleErrorSpy).toHaveBeenCalled();
-      const items = el.querySelectorAll('ion-item');
+      const items = el.renderRoot.querySelectorAll('ion-item');
       expect(items).toHaveLength(0);
     });
 
@@ -527,11 +527,11 @@ describe('page-home', () => {
       );
       expect(toast.present).toHaveBeenCalled();
 
-      const items = el.querySelectorAll('ion-item');
+      const items = el.renderRoot.querySelectorAll('ion-item');
       expect(items).toHaveLength(1);
       const countLabel = items[0].querySelector('ion-label[slot="end"]');
       expect(countLabel?.textContent?.trim()).toBe('0');
-      const recipeCards = el.querySelectorAll('recipe-card');
+      const recipeCards = el.renderRoot.querySelectorAll('recipe-card');
       expect(recipeCards).toHaveLength(0);
     });
   });

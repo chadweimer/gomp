@@ -51,14 +51,14 @@ describe('page-settings-preferences', () => {
     const root = await fixture<PageSettingsPreferences>(html`<page-settings-preferences></page-settings-preferences>`);
     await root.updateComplete;
 
-    const input = root.querySelector('ion-input');
+    const input = root.renderRoot.querySelector('ion-input');
     expect(input).not.toBeNull();
     expect(input?.getAttribute('label')).toBe('Home Title');
 
-    const img = root.querySelector('ion-thumbnail img');
+    const img = root.renderRoot.querySelector('ion-thumbnail img');
     expect(img?.hasAttribute('hidden')).toBe(true);
 
-    const buttons = root.querySelectorAll('ion-card ion-button');
+    const buttons = root.renderRoot.querySelectorAll('ion-card ion-button');
     expect(buttons).toHaveLength(2);
     expect(buttons[0].textContent?.trim()).toContain('Save');
     expect(buttons[1].textContent?.trim()).toContain('Reset');
@@ -76,15 +76,15 @@ describe('page-settings-preferences', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const input = root.querySelector<HTMLIonInputElement>('ion-input');
+    const input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     expect(input?.value).toBe('My Recipe Vault');
 
-    const img = root.querySelector('ion-thumbnail img');
+    const img = root.renderRoot.querySelector('ion-thumbnail img');
     expect(img).not.toBeNull();
     expect(img?.getAttribute('src')).toBe('https://example.com/banner.jpg');
     expect(img?.hasAttribute('hidden')).toBe(false);
 
-    const tagsInput = root.querySelector('tags-input');
+    const tagsInput = root.renderRoot.querySelector('tags-input');
     expect(tagsInput).not.toBeNull();
   });
 
@@ -102,7 +102,7 @@ describe('page-settings-preferences', () => {
     await root.updateComplete;
 
     expect(consoleErrorSpy).toHaveBeenCalled();
-    const img = root.querySelector('ion-thumbnail img');
+    const img = root.renderRoot.querySelector('ion-thumbnail img');
     expect(img?.hasAttribute('hidden')).toBe(true);
   });
 
@@ -123,18 +123,18 @@ describe('page-settings-preferences', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const input = root.querySelector<HTMLIonInputElement>('ion-input');
+    const input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     if (input) {
       input.value = 'Updated Vault';
       input.dispatchEvent(new CustomEvent('ionBlur'));
     }
     await root.updateComplete;
 
-    const tagsInput = root.querySelector('tags-input');
+    const tagsInput = root.renderRoot.querySelector('tags-input');
     tagsInput?.dispatchEvent(new CustomEvent('valueChanged', { detail: ['quick', 'easy'] }));
     await root.updateComplete;
 
-    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    const saveButton = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
     saveButton?.click();
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
@@ -160,12 +160,12 @@ describe('page-settings-preferences', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const form = root.querySelector('form');
+    const form = root.renderRoot.querySelector('form');
     if (form) {
       vi.spyOn(form, 'reportValidity').mockReturnValue(false);
     }
 
-    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    const saveButton = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
     saveButton?.click();
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
@@ -197,7 +197,7 @@ describe('page-settings-preferences', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const fileInput = root.querySelector<HTMLInputElement>('input[type="file"]');
+    const fileInput = root.renderRoot.querySelector<HTMLInputElement>('input[type="file"]');
     const dummyFile = new File(['image-bytes'], 'banner.jpg', { type: 'image/jpeg' });
     if (fileInput) {
       Object.defineProperty(fileInput, 'files', {
@@ -206,7 +206,7 @@ describe('page-settings-preferences', () => {
       });
     }
 
-    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    const saveButton = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
     saveButton?.click();
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
@@ -242,7 +242,7 @@ describe('page-settings-preferences', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const fileInput = root.querySelector<HTMLInputElement>('input[type="file"]');
+    const fileInput = root.renderRoot.querySelector<HTMLInputElement>('input[type="file"]');
     const mockFile = new File(['imagecontent'], 'fail.jpg', { type: 'image/jpeg' });
     if (fileInput) {
       Object.defineProperty(fileInput, 'files', {
@@ -251,7 +251,7 @@ describe('page-settings-preferences', () => {
       });
     }
 
-    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    const saveButton = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
     saveButton?.click();
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
@@ -281,7 +281,7 @@ describe('page-settings-preferences', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    const saveButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
+    const saveButton = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
     saveButton?.click();
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
@@ -309,15 +309,15 @@ describe('page-settings-preferences', () => {
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    let input = root.querySelector<HTMLIonInputElement>('ion-input');
+    let input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     expect(input?.value).toBe('Initial Title');
 
-    const resetButton = root.querySelector<HTMLIonButtonElement>('ion-button[color="danger"]');
+    const resetButton = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="danger"]');
     resetButton?.click();
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
-    input = root.querySelector<HTMLIonInputElement>('ion-input');
+    input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     expect(input?.value).toBe('Reset Title');
     expect(getCount).toBeGreaterThanOrEqual(2);
   });
