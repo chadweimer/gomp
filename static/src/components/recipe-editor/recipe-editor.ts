@@ -40,7 +40,7 @@ export class RecipeEditor extends LitElement {
 
   @state() private currentUserSettings: UserSettings | null = null;
 
-  @query('form') private readonly form!: HTMLFormElement;
+  @query('form') private readonly form?: HTMLFormElement;
   @query('input[type="file"]') private readonly imageInput?: HTMLInputElement;
   @query('ion-input[label="Name"]') private readonly nameInput?: HTMLIonInputElement;
   @query('ion-input[label="Serving Size"]') private readonly servingSizeInput?: HTMLIonInputElement;
@@ -208,7 +208,7 @@ export class RecipeEditor extends LitElement {
   }
 
   private async onSaveClicked() {
-    if (!this.form?.reportValidity()) {
+    if (this.form && !this.form.reportValidity()) {
       return;
     }
 

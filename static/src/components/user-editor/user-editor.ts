@@ -1,5 +1,5 @@
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
-import { customElement, property, state as litState } from 'lit/decorators.js';
+import { customElement, property, state as litState, query } from 'lit/decorators.js';
 import { AccessLevel, User } from '../../helpers/schema.gen';
 import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
 import { insertSpacesBetweenWords, isNull } from '../../helpers/utils';
@@ -24,6 +24,11 @@ export class UserEditor extends LitElement {
   @litState() password = '';
   @litState() repeatPassword = '';
 
+  @query('form') private readonly form?: HTMLFormElement;
+  @query('#username') private readonly usernameInput?: HTMLIonInputElement;
+  @query('#password') private readonly passwordInput?: HTMLIonInputElement;
+  @query('#repeat-password') private readonly repeatPasswordInput?: HTMLIonInputElement;
+
   private parentModal?: HTMLIonModalElement | null;
 
   override connectedCallback() {
@@ -36,23 +41,19 @@ export class UserEditor extends LitElement {
         return false;
       }
 
-      const usernameInput = this.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
-      const passwordInput = this.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Password"]');
-      const repeatPasswordInput = this.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
-
       // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-      if (usernameInput) {
+      if (this.usernameInput) {
         this.user = {
           ...this.user,
-          username: (usernameInput.value as string) ?? this.user.username
+          username: (this.usernameInput.value as string) ?? this.user.username
         };
       }
 
       return (
         this.user.username !== initialUser.username ||
         this.user.accessLevel !== initialUser.accessLevel ||
-        ((passwordInput?.value as string ?? '') !== '') ||
-        ((repeatPasswordInput?.value as string ?? '') !== '')
+        ((this.passwordInput?.value as string ?? '') !== '') ||
+        ((this.repeatPasswordInput?.value as string ?? '') !== '')
       );
     });
   }
@@ -84,6 +85,7 @@ export class UserEditor extends LitElement {
             <ion-input
               label="Email"
               label-placement="stacked"
+              id="username"
               type="email"
               .value=${this.user?.username ?? ''}
               ?disabled=${!isNew}
@@ -112,6 +114,7 @@ export class UserEditor extends LitElement {
               <ion-input
                 label="Password"
                 label-placement="stacked"
+                id="password"
                 type="password"
                 autocomplete="new-password"
                 .value=${this.password}
@@ -123,6 +126,7 @@ export class UserEditor extends LitElement {
               <ion-input
                 label="Confirm Password"
                 label-placement="stacked"
+                id="repeat-password"
                 type="password"
                 autocomplete="new-password"
                 .value=${this.repeatPassword}
@@ -138,12 +142,10 @@ export class UserEditor extends LitElement {
 
   private async onSaveClicked() {
     if (isNull(this.user.id)) {
-      const repeatPasswordInput = this.shadowRoot?.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
-      const native = await repeatPasswordInput?.getInputElement();
+      const native = await this.repeatPasswordInput?.getInputElement();
       native?.setCustomValidity(this.password === this.repeatPassword ? '' : 'Passwords must match');
 
-      const form = this.shadowRoot?.querySelector('form');
-      if (!form?.reportValidity()) {
+      if (this.form && !this.form.reportValidity()) {
         return;
       }
 

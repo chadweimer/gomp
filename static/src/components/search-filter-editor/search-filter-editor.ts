@@ -39,7 +39,7 @@ export class SearchFilterEditor extends LitElement {
   @state() private selectedFilterId: number | null = null;
   @state() private filters: SavedSearchFilterCompact[] = [];
 
-  @query('form') private readonly form!: HTMLFormElement;
+  @query('form') private readonly form?: HTMLFormElement;
   @query('ion-input[label="Name"]') private readonly nameInput?: HTMLIonInputElement;
   @query('ion-input[label="Search Terms"]') private readonly queryInput?: HTMLIonInputElement;
 
@@ -255,7 +255,7 @@ export class SearchFilterEditor extends LitElement {
   }
 
   private async onSaveClicked() {
-    if (!this.form?.reportValidity()) {
+    if (this.form && !this.form.reportValidity()) {
       return;
     }
 

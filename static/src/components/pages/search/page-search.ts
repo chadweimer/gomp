@@ -27,7 +27,7 @@ import './page-search.css';
 export class PageSearch extends LitElement {
   protected stateController = new StoreController(this, appStateStore);
 
-  @query('ion-content') private readonly content!: HTMLIonContentElement;
+  @query('ion-content') private readonly content?: HTMLIonContentElement;
   private gesture: Gesture | null = null;
 
   createRenderRoot() {

@@ -18,8 +18,8 @@ export class FileUploadBrowser extends LitElement {
   @property({ type: String }) label = 'File';
   @property({ type: String }) accept = '*/*';
 
-  @query('form') private readonly inputForm!: HTMLFormElement;
-  @query('input[type="file"]') private readonly fileInput!: HTMLInputElement;
+  @query('form') private readonly inputForm?: HTMLFormElement;
+  @query('input[type="file"]') private readonly fileInput?: HTMLInputElement;
 
   private parentModal?: HTMLIonModalElement | null;
 
@@ -60,11 +60,11 @@ export class FileUploadBrowser extends LitElement {
   }
 
   private async onSaveClicked() {
-    if (!this.inputForm?.reportValidity()) {
+    if (this.inputForm && !this.inputForm.reportValidity()) {
       return;
     }
 
-    const file = (this.fileInput?.files?.length ?? 0) > 0 ? this.fileInput.files![0] : null;
+    const file = (this.fileInput?.files?.length ?? 0) > 0 ? this.fileInput?.files?.[0] : null;
     await this.parentModal?.dismiss({ file }, 'save');
   }
 

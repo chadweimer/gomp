@@ -24,7 +24,7 @@ class Api {
 
   constructor() {
     this.client = createClient<paths>({
-      baseUrl: `${globalThis.location?.origin ?? ''}/api/v1`,
+      baseUrl: `${globalThis.location.origin}/api/v1`,
       fetch: this.fetch
     });
     this.responses = new Subject<{ request: Request, response: Response }>();
@@ -66,6 +66,7 @@ class Api {
   };
 
   readonly performRecipeSearch = async (filter: SearchFilter, page: number, count: number): Promise<SearchResult> => {
+    // Make sure to fill in any missing fields
     const defaultFilter = getDefaultSearchFilter();
     filter = { ...defaultFilter, ...filter };
 
@@ -143,10 +144,12 @@ export async function refreshSearchResults() {
 }
 
 export function fileContentSerializer(_body: { file_content?: string } | undefined, file?: File) {
+  // The unused _body parameter is required to match the expected signature for bodySerializer,
+  // so that we know we're using the right part name in the form data
+
   const fd = new FormData();
   if (file) {
     fd.append('file_content', file);
   }
   return fd;
 }
-

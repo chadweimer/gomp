@@ -3,7 +3,7 @@ import { isNull } from '../helpers/utils';
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../models';
 import { createStore } from './store';
 
-export interface AppState {
+interface AppState {
   currentUser?: User;
   searchFilter: SearchFilter;
   searchSettings: SearchSettings;
@@ -54,15 +54,14 @@ if (typeof window !== 'undefined') {
         continue;
       }
     }
-    appStateStore.onChange(prop.key, ((val: unknown) => {
+    appStateStore.onChange(prop.key, (val => {
       if (isNull(val)) {
         prop.storage.removeItem(prop.key);
       } else {
         prop.storage.setItem(prop.key, JSON.stringify(val));
       }
-    }) as (val: AppState[typeof prop.key]) => void);
+    }));
   }
 }
 
 export default state;
-
