@@ -120,7 +120,7 @@ Use this guide for component tests under `static/src/components/**/*.spec.ts`.
   - `AccessLevel.Editor` / `AccessLevel.Admin`: verify full action controls visible and functional.
 
 ### Child Component Events & Queries
-- Query components using their custom element tag names and cast or type with their exported class: `el.shadowRoot?.querySelector<RecipeViewer>('recipe-viewer')`.
+- Query components using their custom element tag names and cast or type with their exported class: `el.renderRoot.querySelector<RecipeViewer>('recipe-viewer')`.
 - Trigger component custom events via `dispatchEvent`:
   ```ts
   recipeViewer?.dispatchEvent(new CustomEvent('ratingSelected', { detail: 5 }));
