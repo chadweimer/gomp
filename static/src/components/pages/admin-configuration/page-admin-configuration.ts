@@ -9,7 +9,7 @@ import './page-admin-configuration.css';
 
 @customElement('page-admin-configuration')
 export class PageAdminConfiguration extends LitElement implements ComponentWithActivatedCallback {
-  @state() appConfiguration: AppConfiguration = {
+  @state() appConfig: AppConfiguration = {
     title: 'GOMP: Go Meal Planner'
   };
 
@@ -38,17 +38,11 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
                 <ion-card>
                   <ion-card-content>
                     <ion-item lines="full">
-                      <ion-input
-                        label="Application Title"
-                        label-placement="stacked"
-                        .value=${this.appConfiguration?.title ?? ''}
+                      <ion-input label="Application Title" label-placement="stacked" .value=${this.appConfig?.title ?? ''}
                         .autocorrect=${true}
                         .spellcheck=${true}
                         required
-                        @ionBlur=${(e: Event) => {
-        const val = (e.currentTarget as HTMLIonInputElement).value as string;
-        this.appConfiguration = { ...this.appConfiguration, title: val };
-      }}
+                        @ionBlur=${(e: Event) => this.appConfig = { ...this.appConfig, title: (e.currentTarget as HTMLIonInputElement).value as string }}
                       ></ion-input>
                     </ion-item>
                   </ion-card-content>
@@ -77,7 +71,7 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
         throw new Error('Failed to load configuration.', { cause: error });
       }
 
-      this.appConfiguration = config;
+      this.appConfig = config;
     } catch (ex) {
       console.error(ex);
     }
@@ -90,14 +84,14 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
 
     try {
       const { error } = await api.client.PUT('/app/configuration', {
-        body: this.appConfiguration
+        body: this.appConfig
       });
 
       if (error) {
         throw new Error('Failed to save configuration.', { cause: error });
       }
 
-      appConfig.config = this.appConfiguration;
+      appConfig.config = this.appConfig;
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to save configuration.');
