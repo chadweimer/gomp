@@ -1,5 +1,5 @@
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
-import { customElement, property, state as litState, query } from 'lit/decorators.js';
+import { customElement, property, state, query } from 'lit/decorators.js';
 import { AccessLevel, User } from '../../helpers/schema.gen';
 import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
 import { insertSpacesBetweenWords, isNull } from '../../helpers/utils';
@@ -21,8 +21,8 @@ export class UserEditor extends LitElement {
     accessLevel: AccessLevel.Editor
   };
 
-  @litState() password = '';
-  @litState() repeatPassword = '';
+  @state() password = '';
+  @state() repeatPassword = '';
 
   @query('form') private readonly form?: HTMLFormElement;
   @query('#username') private readonly usernameInput?: HTMLIonInputElement;

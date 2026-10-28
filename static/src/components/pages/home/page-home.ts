@@ -1,10 +1,10 @@
 import { LitElement, html, nothing } from 'lit';
-import { customElement, state as litState } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { getDefaultSearchFilter } from '../../../models';
 import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
 import { showToast, showLoading, showModal } from '../../../helpers/modals';
 import { redirect, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized, trap } from '../../../helpers/utils';
-import state, { appStateStore } from '../../../stores/state';
+import appState, { appStateStore } from '../../../stores/state';
 import { StoreController } from '../../../stores/store';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../helpers/schema.gen';
 import '../../recipe-card/recipe-card';
@@ -13,8 +13,8 @@ import './page-home.css';
 
 @customElement('page-home')
 export class PageHome extends LitElement implements ComponentWithActivatedCallback {
-  @litState() private currentUserSettings: UserSettings | null = null;
-  @litState() private searches: {
+  @state() private currentUserSettings: UserSettings | null = null;
+  @state() private searches: {
     title: string;
     filter: SearchFilter;
     count: number;
@@ -73,7 +73,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
         </ion-grid>
       </ion-content>
 
-      ${isAuthorized(state.currentUser, AccessLevel.Editor) ? html`
+      ${isAuthorized(appState.currentUser, AccessLevel.Editor) ? html`
         <ion-fab horizontal="end" vertical="bottom" slot="fixed">
           <ion-fab-button color="secondary" @click=${() => this.onNewRecipeClicked()}>
             <ion-icon icon="add"></ion-icon>
@@ -210,7 +210,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
   }
 
   private async onFilterClicked(filter: SearchFilter) {
-    state.searchFilter = {
+    appState.searchFilter = {
       ...filter
     };
     await redirect('/recipes');

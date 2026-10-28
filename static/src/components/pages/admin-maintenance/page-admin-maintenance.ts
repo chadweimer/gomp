@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, state as litState } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { Backup } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
@@ -9,7 +9,7 @@ import './page-admin-maintenance.css';
 
 @customElement('page-admin-maintenance')
 export class PageAdminMaintenance extends LitElement implements ComponentWithActivatedCallback {
-  @litState() backups: Backup[] = [];
+  @state() backups: Backup[] = [];
 
   protected createRenderRoot() {
     return this;

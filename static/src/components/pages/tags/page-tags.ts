@@ -1,12 +1,12 @@
 import { Gesture } from '@ionic/core';
 import { LitElement, html } from 'lit';
-import { customElement, state as litState } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { SortDir, Tag, TagSortBy } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { ResultsPerPage, showResultsPerPageAlert } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, createSwipeGesture, isNull, redirect } from '../../../helpers/utils';
 import { getDefaultSearchFilter, SwipeDirection } from '../../../models';
-import state from '../../../stores/state';
+import appState from '../../../stores/state';
 import '../../page-navigator/page-navigator';
 import './page-tags.css';
 
@@ -14,12 +14,12 @@ import './page-tags.css';
 export class PageTags extends LitElement implements ComponentWithActivatedCallback {
   private gesture: Gesture | null = null;
 
-  @litState() private tags: Tag[] | null = null;
-  @litState() private sortBy: TagSortBy = TagSortBy.Count;
-  @litState() private sortDir: SortDir = SortDir.Desc;
-  @litState() private page = 1;
-  @litState() private numPages = 1;
-  @litState() private resultsPerPage: ResultsPerPage = 60;
+  @state() private tags: Tag[] | null = null;
+  @state() private sortBy: TagSortBy = TagSortBy.Count;
+  @state() private sortDir: SortDir = SortDir.Desc;
+  @state() private page = 1;
+  @state() private numPages = 1;
+  @state() private resultsPerPage: ResultsPerPage = 60;
 
   protected createRenderRoot() {
     return this;
@@ -164,7 +164,7 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
   private async onTagClicked(tag: string, e?: Event) {
     e?.preventDefault();
     const filter = getDefaultSearchFilter();
-    state.searchFilter = {
+    appState.searchFilter = {
       ...filter,
       states: [],
       tags: [tag]

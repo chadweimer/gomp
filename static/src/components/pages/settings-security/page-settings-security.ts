@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, state as litState, query } from 'lit/decorators.js';
+import { customElement, state, query } from 'lit/decorators.js';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showToast } from '../../../helpers/modals';
@@ -8,10 +8,10 @@ import './page-settings-security.css';
 
 @customElement('page-settings-security')
 export class PageSettingsSecurity extends LitElement implements ComponentWithActivatedCallback {
-  @litState() currentUser: User | undefined;
-  @litState() currentPassword = '';
-  @litState() newPassword = '';
-  @litState() repeatPassword = '';
+  @state() currentUser: User | undefined;
+  @state() currentPassword = '';
+  @state() newPassword = '';
+  @state() repeatPassword = '';
 
   @query('form') private readonly form?: HTMLFormElement;
   @query('#repeat-password') private readonly repeatPasswordInput?: HTMLIonInputElement;

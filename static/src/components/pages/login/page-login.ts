@@ -1,14 +1,14 @@
 import { LitElement, html } from 'lit';
-import { customElement, state as litState, query } from 'lit/decorators.js';
+import { customElement, state, query } from 'lit/decorators.js';
 import { api } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
-import state from '../../../stores/state';
+import appState from '../../../stores/state';
 import './page-login.css';
 
 @customElement('page-login')
 export class PageLogin extends LitElement {
-  @litState() private errorMessage = '';
-  @litState() private rememberMe = false;
+  @state() private errorMessage = '';
+  @state() private rememberMe = false;
 
   @query('#username-input') private readonly usernameInput?: HTMLIonInputElement;
   @query('#password-input') private readonly passwordInput?: HTMLIonInputElement;
@@ -89,7 +89,7 @@ export class PageLogin extends LitElement {
       }
 
       // Store the user so we stay logged in
-      state.currentUser = user;
+      appState.currentUser = user;
 
       // Clear the username so it's not left around when the next login is needed
       if (this.usernameInput) {

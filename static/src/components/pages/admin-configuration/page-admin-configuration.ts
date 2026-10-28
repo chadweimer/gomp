@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, state as litState, query } from 'lit/decorators.js';
+import { customElement, state, query } from 'lit/decorators.js';
 import { AppConfiguration } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showToast } from '../../../helpers/modals';
@@ -9,7 +9,7 @@ import './page-admin-configuration.css';
 
 @customElement('page-admin-configuration')
 export class PageAdminConfiguration extends LitElement implements ComponentWithActivatedCallback {
-  @litState() appConfiguration: AppConfiguration = {
+  @state() appConfiguration: AppConfiguration = {
     title: 'GOMP: Go Meal Planner'
   };
 

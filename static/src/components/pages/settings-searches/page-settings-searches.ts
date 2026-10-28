@@ -1,10 +1,10 @@
 import { LitElement, html } from 'lit';
-import { customElement, state as litState } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showAlert, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, isNull, redirect } from '../../../helpers/utils';
-import state from '../../../stores/state';
+import appState from '../../../stores/state';
 import '../../page-navigator/page-navigator';
 import '../../search-filter-editor/search-filter-editor';
 import './page-settings-searches.css';
@@ -13,9 +13,9 @@ import './page-settings-searches.css';
 export class PageSettingsSearches extends LitElement implements ComponentWithActivatedCallback {
   private readonly resultsPerPage = 24;
 
-  @litState() filters: SavedSearchFilterCompact[] = [];
-  @litState() page = 1;
-  @litState() numPages = 1;
+  @state() filters: SavedSearchFilterCompact[] = [];
+  @state() page = 1;
+  @state() numPages = 1;
 
   protected createRenderRoot() {
     return this;
@@ -237,7 +237,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
       }
 
       if (searchFilter) {
-        state.searchFilter = searchFilter;
+        appState.searchFilter = searchFilter;
       }
       await redirect('/recipes');
     } catch (ex) {

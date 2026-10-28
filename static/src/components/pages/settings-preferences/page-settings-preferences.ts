@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, state as litState, query } from 'lit/decorators.js';
+import { customElement, state, query } from 'lit/decorators.js';
 import { UserSettings } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showLoading, showToast } from '../../../helpers/modals';
@@ -9,7 +9,7 @@ import './page-settings-preferences.css';
 
 @customElement('page-settings-preferences')
 export class PageSettingsPreferences extends LitElement implements ComponentWithActivatedCallback {
-  @litState() settings: UserSettings | null = null;
+  @state() settings: UserSettings | null = null;
 
   @query('form') private readonly form?: HTMLFormElement;
   @query('#image-input') private readonly imageInput?: HTMLInputElement;

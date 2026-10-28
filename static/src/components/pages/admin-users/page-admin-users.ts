@@ -1,5 +1,5 @@
 import { LitElement, html } from 'lit';
-import { customElement, state as litState } from 'lit/decorators.js';
+import { customElement, state } from 'lit/decorators.js';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showAlert, showModal, showToast } from '../../../helpers/modals';
@@ -12,9 +12,9 @@ import './page-admin-users.css';
 export class PageAdminUsers extends LitElement implements ComponentWithActivatedCallback {
   private readonly resultsPerPage = 24;
 
-  @litState() users: User[] = [];
-  @litState() page = 1;
-  @litState() numPages = 1;
+  @state() users: User[] = [];
+  @state() page = 1;
+  @state() numPages = 1;
 
   protected createRenderRoot() {
     return this;

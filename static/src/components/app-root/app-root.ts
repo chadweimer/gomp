@@ -1,6 +1,6 @@
 import { actionSheetController, alertController, modalController, popoverController, RouterEventDetail } from '@ionic/core';
 import { LitElement, html, nothing } from 'lit';
-import { customElement, state as litState, query } from 'lit/decorators.js';
+import { customElement, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Subscription } from 'rxjs';
 import { api, refreshSearchResults } from '../../helpers/api';
@@ -9,7 +9,7 @@ import { AccessLevel, SearchFilter } from '../../helpers/schema.gen';
 import { isAuthorized, isNull, isNullOrEmpty, redirect, sendActivatedCallback } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import appConfig, { appConfigStore } from '../../stores/config';
-import state, { appStateStore, clearState } from '../../stores/state';
+import appState, { appStateStore, clearState } from '../../stores/state';
 import { StoreController } from '../../stores/store';
 
 // Import page components and placeholders
@@ -41,8 +41,8 @@ export class AppRoot extends LitElement {
 
   private readonly appLinks: Map<string, AppLink> = new Map<string, AppLink>([
     ['/', { title: 'Home', icon: 'home', showOn: (type: 'menu' | 'toolbar') => type === 'menu' }],
-    ['/recipes', { title: 'Recipes', icon: 'restaurant', showOn: () => this.isLoggedIn(), detail: () => state.totalRecipeCount ?? 0 }],
-    ['/tags', { title: 'Tags', icon: 'bookmarks', showOn: () => this.isLoggedIn(), detail: () => state.totalTagsCount ?? 0 }],
+    ['/recipes', { title: 'Recipes', icon: 'restaurant', showOn: () => this.isLoggedIn(), detail: () => appState.totalRecipeCount ?? 0 }],
+    ['/tags', { title: 'Tags', icon: 'bookmarks', showOn: () => this.isLoggedIn(), detail: () => appState.totalTagsCount ?? 0 }],
     ['/settings', { title: 'Settings', icon: 'settings', showOn: () => this.isLoggedIn() }],
     ['/settings/preferences', { title: 'Preferences', icon: 'options', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
     ['/settings/searches', { title: 'Searches', icon: 'search', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
@@ -53,8 +53,8 @@ export class AppRoot extends LitElement {
     ['/admin/maintenance', { title: 'Maintenance', icon: 'build', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
   ]);
 
-  @litState() pageTitle = '';
-  @litState() childPageTitle = '';
+  @state() pageTitle = '';
+  @state() childPageTitle = '';
 
   @query('ion-router-outlet') private readonly routerOutlet?: HTMLIonRouterOutletElement;
   @query('ion-menu') private readonly menu?: HTMLIonMenuElement;
@@ -162,7 +162,7 @@ export class AppRoot extends LitElement {
             <ion-toolbar color="primary">
               <ion-buttons slot="start">
                 <ion-menu-button>
-                  ${state.loadingCount > 0 ? html`<ion-spinner name="bubbles"></ion-spinner>` : html`<ion-icon name="menu"></ion-icon>`}
+                  ${appState.loadingCount > 0 ? html`<ion-spinner name="bubbles"></ion-spinner>` : html`<ion-icon name="menu"></ion-icon>`}
                 </ion-menu-button>
               </ion-buttons>
 
@@ -217,16 +217,16 @@ export class AppRoot extends LitElement {
                 show-cancel-button=${this.isDefaultSearch() ? 'never' : 'always'}
                 cancel-button-text="Reset"
                 cancel-button-icon="arrow-undo-outline"
-                .value=${state.searchFilter?.query ?? ''}
+                .value=${appState.searchFilter?.query ?? ''}
                 @keydown=${(e: KeyboardEvent) => this.onSearchKeyDown(e)}
-                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = state.searchFilter?.query ?? '')}
+                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = appState.searchFilter?.query ?? '')}
                 @ionClear=${() => this.onSearchClearClicked()}
                 @ionCancel=${() => this.onSearchCancelClicked()}
               ></ion-searchbar>
               <ion-buttons slot="end" class="ion-display-none ion-display-lg-flex">
                 <ion-button color="light" .disabled=${!this.isLoggedIn()} @click=${() => this.onSearchFilterClicked()}>
                   <ion-icon name="filter" slot="start"></ion-icon>
-                  <ion-badge color="secondary">${state.searchResultCount ?? 0}</ion-badge>
+                  <ion-badge color="secondary">${appState.searchResultCount ?? 0}</ion-badge>
                 </ion-button>
               </ion-buttons>
             </ion-toolbar>
@@ -239,16 +239,16 @@ export class AppRoot extends LitElement {
                 show-cancel-button=${this.isDefaultSearch() ? 'never' : 'always'}
                 cancel-button-text="Reset"
                 cancel-button-icon="arrow-undo-outline"
-                .value=${state.searchFilter?.query ?? ''}
+                .value=${appState.searchFilter?.query ?? ''}
                 @keydown=${(e: KeyboardEvent) => this.onSearchKeyDown(e)}
-                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = state.searchFilter?.query ?? '')}
+                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = appState.searchFilter?.query ?? '')}
                 @ionClear=${() => this.onSearchClearClicked()}
                 @ionCancel=${() => this.onSearchCancelClicked()}
               ></ion-searchbar>
               <ion-buttons slot="end">
                 <ion-button color="light" .disabled=${!this.isLoggedIn()} @click=${() => this.onSearchFilterClicked()}>
                   <ion-icon name="filter" slot="start"></ion-icon>
-                  <ion-badge color="secondary">${state.searchResultCount ?? 0}</ion-badge>
+                  <ion-badge color="secondary">${appState.searchResultCount ?? 0}</ion-badge>
                 </ion-button>
               </ion-buttons>
             </ion-toolbar>
@@ -305,7 +305,7 @@ export class AppRoot extends LitElement {
   }
 
   private isLoggedIn() {
-    return !isNull(state.currentUser);
+    return !isNull(appState.currentUser);
   }
 
   private requireLogin() {
@@ -316,7 +316,7 @@ export class AppRoot extends LitElement {
   }
 
   private isAdmin() {
-    return this.isLoggedIn() && isAuthorized(state.currentUser, AccessLevel.Admin);
+    return this.isLoggedIn() && isAuthorized(appState.currentUser, AccessLevel.Admin);
   }
 
   private requireAdmin() {
@@ -368,7 +368,7 @@ export class AppRoot extends LitElement {
 
     if (this.isLoggedIn()) {
       // Make sure there are search results on initial load
-      if (isNull(state.searchResults)) {
+      if (isNull(appState.searchResults)) {
         await refreshSearchResults().catch(console.error);
       }
     }
@@ -388,8 +388,8 @@ export class AppRoot extends LitElement {
 
     if (e.key === 'Enter') {
       const searchBar = e.target as HTMLIonInputElement;
-      state.searchFilter = {
-        ...state.searchFilter,
+      appState.searchFilter = {
+        ...appState.searchFilter,
         query: searchBar.value?.toString() ?? ''
       };
       await redirect('/recipes');
@@ -401,8 +401,8 @@ export class AppRoot extends LitElement {
       return;
     }
 
-    state.searchFilter = {
-      ...state.searchFilter,
+    appState.searchFilter = {
+      ...appState.searchFilter,
       query: ''
     };
     await redirect('/recipes');
@@ -413,7 +413,7 @@ export class AppRoot extends LitElement {
       return;
     }
 
-    state.searchFilter = getDefaultSearchFilter();
+    appState.searchFilter = getDefaultSearchFilter();
     await redirect('/recipes');
   }
 
@@ -430,11 +430,11 @@ export class AppRoot extends LitElement {
         prompt: 'Search',
         showName: false,
         showSavedLoader: true,
-        searchFilter: state.searchFilter
+        searchFilter: appState.searchFilter
       },
     });
     if (!isNull(data)) {
-      state.searchFilter = data.searchFilter;
+      appState.searchFilter = data.searchFilter;
       await redirect('/recipes');
     }
   }
@@ -443,7 +443,7 @@ export class AppRoot extends LitElement {
     const defaultFilter = getDefaultSearchFilter();
     const currentFilter = {
       ...defaultFilter,
-      ...state.searchFilter
+      ...appState.searchFilter
     };
     return JSON.stringify(defaultFilter) === JSON.stringify(currentFilter);
   }
