@@ -72,13 +72,9 @@ export class RecipePrint extends LitElement {
         <h1>${this.recipe?.name}</h1>
         <five-star-rating .value=${this.recipe?.rating ?? 0} ?disabled=${true}></five-star-rating>
         <div class="meta">
-          ${!isNullOrEmpty(this.recipe?.servingSize)
-        ? html`<span>Servings: ${this.recipe?.servingSize}</span>`
-        : nothing}
+          ${!isNullOrEmpty(this.recipe?.servingSize) ? html`<span>Servings: ${this.recipe?.servingSize}</span>` : nothing}
           ${!isNullOrEmpty(this.recipe?.servingSize) && !isNullOrEmpty(this.recipe?.time) ? html`&nbsp;` : nothing}
-          ${!isNullOrEmpty(this.recipe?.time)
-        ? html`<span>Time: ${this.recipe?.time}</span>`
-        : nothing}
+          ${!isNullOrEmpty(this.recipe?.time) ? html`<span>Time: ${this.recipe?.time}</span>` : nothing}
         </div>
       </div>
       ${!isNullOrEmpty(this.recipe?.mainImageName)
