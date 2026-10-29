@@ -319,6 +319,6 @@ describe('page-settings-preferences', () => {
 
     input = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input');
     expect(input?.value).toBe('Reset Title');
-    expect(getCount).toBeGreaterThanOrEqual(2);
+    expect(getCount).toBe(2);
   });
 });
