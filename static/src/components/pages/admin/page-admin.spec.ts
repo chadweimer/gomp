@@ -93,76 +93,81 @@ describe('page-admin', () => {
   describe('Swipe Navigation', () => {
     it('swipes left from configuration tab to users tab', async () => {
       const root = await fixture<PageAdmin>(html`<page-admin></page-admin>`);
-      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
-      tabs.getSelected = vi.fn().mockResolvedValue('tab-admin-configuration');
-      tabs.select = vi.fn().mockResolvedValue(true);
+      const tabs = root.renderRoot.querySelector<HTMLIonTabsElement>('ion-tabs');
+      expect(tabs).not.toBeNull();
+      tabs!.getSelected = vi.fn().mockResolvedValue('tab-admin-configuration');
+      tabs!.select = vi.fn().mockResolvedValue(true);
 
       expect(swipeHandler).toBeDefined();
       swipeHandler!(SwipeDirection.Left);
 
       await new Promise(resolve => setTimeout(resolve, 0));
-      expect(tabs.select).toHaveBeenCalledWith('tab-admin-users');
+      expect(tabs?.select).toHaveBeenCalledWith('tab-admin-users');
     });
 
     it('does nothing when swiping right from configuration tab', async () => {
       const root = await fixture<PageAdmin>(html`<page-admin></page-admin>`);
-      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
-      tabs.getSelected = vi.fn().mockResolvedValue('tab-admin-configuration');
-      tabs.select = vi.fn().mockResolvedValue(true);
+      const tabs = root.renderRoot.querySelector<HTMLIonTabsElement>('ion-tabs');
+      expect(tabs).not.toBeNull();
+      tabs!.getSelected = vi.fn().mockResolvedValue('tab-admin-configuration');
+      tabs!.select = vi.fn().mockResolvedValue(true);
 
       swipeHandler!(SwipeDirection.Right);
 
       await new Promise(resolve => setTimeout(resolve, 0));
-      expect(tabs.select).not.toHaveBeenCalled();
+      expect(tabs?.select).not.toHaveBeenCalled();
     });
 
     it('swipes left from users tab to maintenance tab', async () => {
       const root = await fixture<PageAdmin>(html`<page-admin></page-admin>`);
-      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
-      tabs.getSelected = vi.fn().mockResolvedValue('tab-admin-users');
-      tabs.select = vi.fn().mockResolvedValue(true);
+      const tabs = root.renderRoot.querySelector<HTMLIonTabsElement>('ion-tabs');
+      expect(tabs).not.toBeNull();
+      tabs!.getSelected = vi.fn().mockResolvedValue('tab-admin-users');
+      tabs!.select = vi.fn().mockResolvedValue(true);
 
       swipeHandler!(SwipeDirection.Left);
 
       await new Promise(resolve => setTimeout(resolve, 0));
-      expect(tabs.select).toHaveBeenCalledWith('tab-admin-maintenance');
+      expect(tabs?.select).toHaveBeenCalledWith('tab-admin-maintenance');
     });
 
     it('swipes right from users tab to configuration tab', async () => {
       const root = await fixture<PageAdmin>(html`<page-admin></page-admin>`);
-      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
-      tabs.getSelected = vi.fn().mockResolvedValue('tab-admin-users');
-      tabs.select = vi.fn().mockResolvedValue(true);
+      const tabs = root.renderRoot.querySelector<HTMLIonTabsElement>('ion-tabs');
+      expect(tabs).not.toBeNull();
+      tabs!.getSelected = vi.fn().mockResolvedValue('tab-admin-users');
+      tabs!.select = vi.fn().mockResolvedValue(true);
 
       swipeHandler!(SwipeDirection.Right);
 
       await new Promise(resolve => setTimeout(resolve, 0));
-      expect(tabs.select).toHaveBeenCalledWith('tab-admin-configuration');
+      expect(tabs?.select).toHaveBeenCalledWith('tab-admin-configuration');
     });
 
     it('swipes right from maintenance tab to users tab', async () => {
       const root = await fixture<PageAdmin>(html`<page-admin></page-admin>`);
-      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
-      tabs.getSelected = vi.fn().mockResolvedValue('tab-admin-maintenance');
-      tabs.select = vi.fn().mockResolvedValue(true);
+      const tabs = root.renderRoot.querySelector<HTMLIonTabsElement>('ion-tabs');
+      expect(tabs).not.toBeNull();
+      tabs!.getSelected = vi.fn().mockResolvedValue('tab-admin-maintenance');
+      tabs!.select = vi.fn().mockResolvedValue(true);
 
       swipeHandler!(SwipeDirection.Right);
 
       await new Promise(resolve => setTimeout(resolve, 0));
-      expect(tabs.select).toHaveBeenCalledWith('tab-admin-users');
+      expect(tabs?.select).toHaveBeenCalledWith('tab-admin-users');
     });
 
     it('does nothing when swiping left from maintenance tab', async () => {
       const root = await fixture<PageAdmin>(html`<page-admin></page-admin>`);
-      const tabs = root.renderRoot.querySelector('ion-tabs') as HTMLIonTabsElement;
-      tabs.getSelected = vi.fn().mockResolvedValue('tab-admin-maintenance');
-      tabs.select = vi.fn().mockResolvedValue(true);
+      const tabs = root.renderRoot.querySelector<HTMLIonTabsElement>('ion-tabs');
+      expect(tabs).not.toBeNull();
+      tabs!.getSelected = vi.fn().mockResolvedValue('tab-admin-maintenance');
+      tabs!.select = vi.fn().mockResolvedValue(true);
 
       swipeHandler!(SwipeDirection.Left);
 
       await new Promise(resolve => setTimeout(resolve, 0));
-      expect(tabs.select).not.toHaveBeenCalled();
+      expect(tabs?.select).not.toHaveBeenCalled();
     });
   });
 });
-

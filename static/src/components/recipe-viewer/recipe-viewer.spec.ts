@@ -221,8 +221,8 @@ describe('recipe-viewer', () => {
     const linkEl = el.renderRoot.querySelector('ion-list.links ion-router-link');
     expect(linkEl?.textContent?.trim()).toBe('Side Salad');
 
-    const removeBtn = el.renderRoot.querySelector('ion-item-option[color="danger"]') as HTMLElement;
-    removeBtn.click();
+    const removeBtn = el.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
+    removeBtn?.click();
     expect(onDelete).toHaveBeenCalledWith(mockLinks[0]);
   });
 
@@ -238,12 +238,12 @@ describe('recipe-viewer', () => {
     el.addEventListener('tagClicked', (e: Event) => onTag((e as CustomEvent).detail));
     el.addEventListener('ratingSelected', (e: Event) => onRating((e as CustomEvent).detail));
 
-    const tagBadge = el.renderRoot.querySelector('ion-card-subtitle.tags ion-badge') as HTMLElement;
-    tagBadge.click();
+    const tagBadge = el.renderRoot.querySelector<HTMLIonBadgeElement>('ion-card-subtitle.tags ion-badge');
+    tagBadge?.click();
     expect(onTag).toHaveBeenCalledWith('quick');
 
-    const ratingEl = el.renderRoot.querySelector('five-star-rating') as HTMLElement;
-    ratingEl.dispatchEvent(new CustomEvent('valueSelected', { detail: 5, bubbles: true, composed: true }));
+    const ratingEl = el.renderRoot.querySelector('five-star-rating');
+    ratingEl?.dispatchEvent(new CustomEvent('valueSelected', { detail: 5, bubbles: true, composed: true }));
     expect(onRating).toHaveBeenCalledWith(5);
   });
 });

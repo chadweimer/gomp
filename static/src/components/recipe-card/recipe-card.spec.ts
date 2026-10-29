@@ -84,13 +84,14 @@ describe('recipe-card', () => {
     };
 
     const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
-    const container = el.renderRoot.querySelector('.tags') as HTMLElement;
+    const container = el.renderRoot.querySelector('.tags');
     expect(container).not.toBeNull();
 
     Object.defineProperty(container, 'clientWidth', { value: 100, configurable: true });
 
-    const probe = el.renderRoot.querySelector('.probe-badge') as HTMLElement;
-    vi.spyOn(probe, 'getBoundingClientRect').mockReturnValue({
+    const probe = el.renderRoot.querySelector('.probe-badge');
+    expect(probe).not.toBeNull();
+    vi.spyOn(probe!, 'getBoundingClientRect').mockReturnValue({
       width: 30,
       height: 20,
       top: 0,
@@ -137,12 +138,13 @@ describe('recipe-card', () => {
       tags: ['very-long-tag-name', 'tag2'],
     };
     const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
-    const container = el.renderRoot.querySelector('.tags') as HTMLElement;
+    const container = el.renderRoot.querySelector('.tags');
 
     Object.defineProperty(container, 'clientWidth', { value: 100, configurable: true });
 
-    const probe = el.renderRoot.querySelector('.probe-badge') as HTMLElement;
-    vi.spyOn(probe, 'getBoundingClientRect').mockReturnValue({
+    const probe = el.renderRoot.querySelector('.probe-badge');
+    expect(probe).not.toBeNull();
+    vi.spyOn(probe!, 'getBoundingClientRect').mockReturnValue({
       width: 30,
       height: 20,
       top: 0,
@@ -183,4 +185,3 @@ describe('recipe-card', () => {
     expect(moreBadge?.getAttribute('title')).toBe('tag2');
   });
 });
-

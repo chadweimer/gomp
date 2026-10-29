@@ -46,15 +46,15 @@ describe('html-editor', () => {
     const imageIcon = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]');
     expect(imageIcon).not.toBeNull();
 
-    const imageBtn = imageIcon?.closest('ion-button') as HTMLElement;
-    imageBtn.click();
+    const imageBtn = imageIcon?.closest('ion-button');
+    imageBtn?.click();
     await el.updateComplete;
 
     const picker = el.renderRoot.querySelector('.image-picker-panel');
     expect(picker).not.toBeNull();
 
     // Clicking again closes panel
-    imageBtn.click();
+    imageBtn?.click();
     await el.updateComplete;
     expect(el.renderRoot.querySelector('.image-picker-panel')).toBeNull();
   });
@@ -84,8 +84,8 @@ describe('html-editor', () => {
     const el = await fixture<HTMLEditor>(html`<html-editor .images=${mockImages}></html-editor>`);
 
     const imageIcon = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]');
-    const imageBtn = imageIcon?.closest('ion-button') as HTMLElement;
-    imageBtn.click();
+    const imageBtn = imageIcon?.closest('ion-button');
+    imageBtn?.click();
     await el.updateComplete;
     expect(el.renderRoot.querySelector('.image-picker-panel')).not.toBeNull();
 
@@ -101,10 +101,10 @@ describe('html-editor', () => {
 
   it('delegates focus to editor content when host receives focus', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor></html-editor>`);
-    const editor = el.renderRoot.querySelector('.tiptap') as HTMLElement;
+    const editor = el.renderRoot.querySelector<HTMLElement>('.tiptap');
     expect(editor).not.toBeNull();
 
-    const focusSpy = vi.spyOn(editor, 'focus');
+    const focusSpy = vi.spyOn(editor!, 'focus');
     el.focus();
     await el.updateComplete;
 
@@ -113,14 +113,14 @@ describe('html-editor', () => {
 
   it('does not re-delegate focus when a child element receives focus', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor></html-editor>`);
-    const editorToolbar = el.renderRoot.querySelector('.editor-toolbar') as HTMLElement;
+    const editorToolbar = el.renderRoot.querySelector<HTMLElement>('.editor-toolbar');
     expect(editorToolbar).not.toBeNull();
-    const editor = el.renderRoot.querySelector('.tiptap') as HTMLElement;
+    const editor = el.renderRoot.querySelector<HTMLElement>('.tiptap');
     expect(editor).not.toBeNull();
 
-    const focusSpy = vi.spyOn(editor, 'focus');
+    const focusSpy = vi.spyOn(editor!, 'focus');
 
-    editorToolbar.dispatchEvent(new FocusEvent('focus', { bubbles: true }));
+    editorToolbar?.dispatchEvent(new FocusEvent('focus', { bubbles: true }));
     await el.updateComplete;
 
     expect(focusSpy).not.toHaveBeenCalled();
@@ -137,8 +137,8 @@ describe('html-editor', () => {
       html`<html-editor .images=${mockImages} .value=${'<p>Instructions</p>'}></html-editor>`
     );
 
-    const imageBtn = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]')?.closest('ion-button') as HTMLIonButtonElement;
-    imageBtn.click();
+    const imageBtn = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]')?.closest('ion-button');
+    imageBtn?.click();
     await el.updateComplete;
 
     let picker = el.renderRoot.querySelector('.image-picker-panel');
@@ -169,22 +169,23 @@ describe('html-editor', () => {
       html`<html-editor .value=${'<p>Click here</p>'}></html-editor>`
     );
 
-    const linkBtn = el.renderRoot.querySelector('ion-button[title="Hyperlink"]') as HTMLIonButtonElement;
+    const linkBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Hyperlink"]');
     expect(linkBtn).not.toBeNull();
 
-    linkBtn.click();
+    linkBtn?.click();
     await el.updateComplete;
 
     const panel = el.renderRoot.querySelector('.link-panel');
     expect(panel).not.toBeNull();
 
-    const input = panel?.querySelector('.link-input') as HTMLIonInputElement;
-    input.value = 'https://example.com';
-    input.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'https://example.com' } }));
+    const input = panel?.querySelector<HTMLIonInputElement>('.link-input');
+    expect(input).not.toBeNull();
+    input!.value = 'https://example.com';
+    input?.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'https://example.com' } }));
     await el.updateComplete;
 
-    const applyBtn = panel?.querySelector('ion-button') as HTMLIonButtonElement;
-    applyBtn.click();
+    const applyBtn = panel?.querySelector<HTMLIonButtonElement>('ion-button');
+    applyBtn?.click();
     await el.updateComplete;
 
     expect(el.renderRoot.querySelector('.link-panel')).toBeNull();
@@ -198,11 +199,11 @@ describe('html-editor', () => {
       ></html-editor>`
     );
 
-    const img = el.renderRoot.querySelector('.editor-content img') as HTMLImageElement;
+    const img = el.renderRoot.querySelector<HTMLImageElement>('.editor-content img');
     expect(img).not.toBeNull();
-    expect(img.dataset.image).toBe(mockImages[0].name);
-    expect(img.dataset.height).toBe('250px');
-    expect(img.style.height).toBe('250px');
+    expect(img?.dataset.image).toBe(mockImages[0].name);
+    expect(img?.dataset.height).toBe('250px');
+    expect(img?.style.height).toBe('250px');
   });
 
   it('renders formatting buttons in slot="start" and utility buttons in slot="end"', async () => {
@@ -228,12 +229,12 @@ describe('html-editor', () => {
   it('toggles help panel open and closed via help button', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor></html-editor>`);
 
-    const helpBtn = el.renderRoot.querySelector('ion-button[title="Keyboard shortcuts"]') as HTMLIonButtonElement;
+    const helpBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Keyboard shortcuts"]');
     expect(helpBtn).not.toBeNull();
 
     expect(el.renderRoot.querySelector('.help-panel')).toBeNull();
 
-    helpBtn.click();
+    helpBtn?.click();
     await el.updateComplete;
 
     let helpPanel = el.renderRoot.querySelector('.help-panel');
@@ -247,7 +248,7 @@ describe('html-editor', () => {
 
     expect(shortcutDescs?.length).toEqual(shortcutKeys?.length);
 
-    helpBtn.click();
+    helpBtn?.click();
     await el.updateComplete;
 
     helpPanel = el.renderRoot.querySelector('.help-panel');
@@ -257,8 +258,8 @@ describe('html-editor', () => {
   it('closes help panel when pressing Escape key', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor></html-editor>`);
 
-    const helpBtn = el.renderRoot.querySelector('ion-button[title="Keyboard shortcuts"]') as HTMLIonButtonElement;
-    helpBtn.click();
+    const helpBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Keyboard shortcuts"]');
+    helpBtn?.click();
     await el.updateComplete;
 
     expect(el.renderRoot.querySelector('.help-panel')).not.toBeNull();
@@ -272,23 +273,23 @@ describe('html-editor', () => {
   it('closes other panels when help panel is opened and vice versa', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor .images=${mockImages}></html-editor>`);
 
-    const helpBtn = el.renderRoot.querySelector('ion-button[title="Keyboard shortcuts"]') as HTMLIonButtonElement;
-    const imageBtn = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]')?.closest('ion-button') as HTMLIonButtonElement;
-    const linkBtn = el.renderRoot.querySelector('ion-button[title="Hyperlink"]') as HTMLIonButtonElement;
+    const helpBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Keyboard shortcuts"]');
+    const imageBtn = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]')?.closest<HTMLIonButtonElement>('ion-button');
+    const linkBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Hyperlink"]');
 
     // Open image picker
-    imageBtn.click();
+    imageBtn?.click();
     await el.updateComplete;
     expect(el.renderRoot.querySelector('.image-picker-panel')).not.toBeNull();
 
     // Open help panel -> image picker should close
-    helpBtn.click();
+    helpBtn?.click();
     await el.updateComplete;
     expect(el.renderRoot.querySelector('.help-panel')).not.toBeNull();
     expect(el.renderRoot.querySelector('.image-picker-panel')).toBeNull();
 
     // Open link panel -> help panel should close
-    linkBtn.click();
+    linkBtn?.click();
     await el.updateComplete;
     expect(el.renderRoot.querySelector('.link-panel')).not.toBeNull();
     expect(el.renderRoot.querySelector('.help-panel')).toBeNull();
@@ -297,8 +298,8 @@ describe('html-editor', () => {
   it('closes help panel on blur when focus moves outside the component', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor></html-editor>`);
 
-    const helpBtn = el.renderRoot.querySelector('ion-button[title="Keyboard shortcuts"]') as HTMLIonButtonElement;
-    helpBtn.click();
+    const helpBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Keyboard shortcuts"]');
+    helpBtn?.click();
     await el.updateComplete;
     expect(el.renderRoot.querySelector('.help-panel')).not.toBeNull();
 

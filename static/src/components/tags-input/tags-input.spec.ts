@@ -34,8 +34,8 @@ describe('tags-input', () => {
     const el = await fixture<TagsInput>(html`<tags-input .value=${['tag1', 'tag2']}></tags-input>`);
     el.addEventListener('valueChanged', (e: Event) => onValueChanged((e as CustomEvent).detail));
 
-    const firstChip = el.renderRoot.querySelector('ion-chip:not(.suggested)') as HTMLElement;
-    firstChip.click();
+    const firstChip = el.renderRoot.querySelector<HTMLIonChipElement>('ion-chip:not(.suggested)');
+    firstChip?.click();
     await el.updateComplete;
 
     expect(onValueChanged).toHaveBeenCalledWith(['tag2']);
@@ -51,8 +51,8 @@ describe('tags-input', () => {
     el.addTag('new-tag');
     expect(onValueChanged).toHaveBeenCalledWith(['new-tag']);
 
-    const sugChip = el.renderRoot.querySelector('ion-chip.suggested') as HTMLElement;
-    sugChip.click();
+    const sugChip = el.renderRoot.querySelector<HTMLIonChipElement>('ion-chip.suggested');
+    sugChip?.click();
     await el.updateComplete;
 
     expect(onValueChanged).toHaveBeenCalledWith(['new-tag', 'sug1']);
