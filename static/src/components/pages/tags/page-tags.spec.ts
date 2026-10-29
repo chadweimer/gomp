@@ -2,11 +2,12 @@ import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { alertController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
-import { TagSearchResult } from '../../../helpers/schema.gen';
+import { SortDir, TagSearchResult, TagSortBy } from '../../../helpers/schema.gen';
 import { SwipeDirection } from '../../../models';
 import state, { clearState } from '../../../stores/state';
 import './page-tags';
 import type { PageTags } from './page-tags';
+import { PageNavigator } from '../../page-navigator/page-navigator';
 
 let swipeHandler: ((swipe: SwipeDirection) => void) | undefined;
 const mockGestureDestroy = vi.fn();
@@ -80,8 +81,10 @@ describe('page-tags', () => {
     const firstNote = items[0].querySelector('ion-note');
     expect(firstNote?.textContent?.trim()).toBe('12');
 
-    const navigator = el.renderRoot.querySelector('page-navigator');
+    const navigator = el.renderRoot.querySelector<PageNavigator>('page-navigator');
     expect(navigator).not.toBeNull();
+    expect(navigator?.page).toBe(1);
+    expect(navigator?.numPages).toBe(1);
   });
 
   it('toggles sort by when sort button is clicked', async () => {
@@ -106,10 +109,12 @@ describe('page-tags', () => {
     // Click sortBy button (first button in toolbar)
     const buttons = el.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
     const sortButton = buttons[0];
+    expect(sortButton?.textContent.trim()).toBe(TagSortBy.Count);
     sortButton.click();
     await new Promise(resolve => setTimeout(resolve, 50));
 
     expect(capturedUrl).toContain('sort=tag');
+    expect(sortButton?.textContent.trim()).toBe(TagSortBy.Tag);
   });
 
   it('toggles sort direction when direction button is clicked', async () => {
@@ -134,10 +139,12 @@ describe('page-tags', () => {
     // Click sortDir button (second button in toolbar)
     const buttons = el.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
     const dirButton = buttons[1];
+    expect(dirButton?.textContent.trim()).toBe(SortDir.Desc);
     dirButton.click();
     await new Promise(resolve => setTimeout(resolve, 50));
 
     expect(capturedUrl).toContain('dir=asc');
+    expect(dirButton?.textContent.trim()).toBe(SortDir.Asc);
   });
 
   it('updates page when page-navigator emits pageChanged event', async () => {
@@ -166,7 +173,7 @@ describe('page-tags', () => {
     expect(requestedPage).toBe('2');
   });
 
-  it('sets state.searchFilter and redirects to /recipes when a tag is clicked', async () => {
+  it('sets state.searchFilter when a tag is clicked', async () => {
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.includes('/tags')) {
         return {
@@ -185,7 +192,6 @@ describe('page-tags', () => {
     items[0].click(); // 'dinner'
 
     expect(state.searchFilter?.tags).toEqual(['dinner']);
-    expect(routerEl.push).toHaveBeenCalledWith('/recipes');
   });
 
   it('handles swipe gestures to change page', async () => {
@@ -264,4 +270,3 @@ describe('page-tags', () => {
     expect(capturedUrl).toContain('count=60');
   });
 });
-

@@ -4,7 +4,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { SortDir, Tag, TagSortBy } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { ResultsPerPage, showResultsPerPageAlert } from '../../../helpers/modals';
-import { ComponentWithActivatedCallback, createSwipeGesture, isNull, redirect } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, createSwipeGesture, isNull } from '../../../helpers/utils';
 import { getDefaultSearchFilter, SwipeDirection } from '../../../models';
 import appState from '../../../stores/state';
 import '../../page-navigator/page-navigator';
@@ -81,7 +81,7 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
           <ion-row>
             ${this.tags?.map(item => html`
               <ion-col key=${item.tag} size="12" size-md="6" size-lg="4" size-xl="3">
-                <ion-item href="/recipes" @click=${(e: Event) => this.onTagClicked(item.tag, e)}>
+                <ion-item href="/recipes" @click=${() => this.onTagClicked(item.tag)}>
                   <ion-label>${item.tag}</ion-label>
                   <ion-icon slot="end" name="bookmark" size="small"></ion-icon>
                   <ion-note slot="end">${item.count}</ion-note>
@@ -124,7 +124,7 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
       }
 
       this.tags = data.tags ?? [];
-      this.numPages = Math.max(Math.ceil((data.total ?? 0) / this.resultsPerPage), 1);
+      this.numPages = Math.max(Math.ceil(data.total / this.resultsPerPage), 1);
     } catch (ex) {
       this.tags = null;
       this.numPages = 1;
@@ -157,14 +157,12 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
     });
   }
 
-  private async onTagClicked(tag: string, e?: Event) {
-    e?.preventDefault();
+  private onTagClicked(tag: string) {
     const filter = getDefaultSearchFilter();
     appState.searchFilter = {
       ...filter,
       states: [],
       tags: [tag]
     };
-    await redirect('/recipes');
   }
 }
