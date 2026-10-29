@@ -100,8 +100,8 @@ describe('page-admin', () => {
 
       expect(swipeHandler).toBeDefined();
       swipeHandler!(SwipeDirection.Left);
+      await root.updateComplete;
 
-      await new Promise(resolve => setTimeout(resolve, 0));
       expect(tabs?.select).toHaveBeenCalledWith('tab-admin-users');
     });
 
@@ -113,8 +113,8 @@ describe('page-admin', () => {
       tabs!.select = vi.fn().mockResolvedValue(true);
 
       swipeHandler!(SwipeDirection.Right);
+      await root.updateComplete;
 
-      await new Promise(resolve => setTimeout(resolve, 0));
       expect(tabs?.select).not.toHaveBeenCalled();
     });
 
@@ -126,8 +126,8 @@ describe('page-admin', () => {
       tabs!.select = vi.fn().mockResolvedValue(true);
 
       swipeHandler!(SwipeDirection.Left);
+      await root.updateComplete;
 
-      await new Promise(resolve => setTimeout(resolve, 0));
       expect(tabs?.select).toHaveBeenCalledWith('tab-admin-maintenance');
     });
 
@@ -139,8 +139,8 @@ describe('page-admin', () => {
       tabs!.select = vi.fn().mockResolvedValue(true);
 
       swipeHandler!(SwipeDirection.Right);
+      await root.updateComplete;
 
-      await new Promise(resolve => setTimeout(resolve, 0));
       expect(tabs?.select).toHaveBeenCalledWith('tab-admin-configuration');
     });
 
@@ -152,8 +152,8 @@ describe('page-admin', () => {
       tabs!.select = vi.fn().mockResolvedValue(true);
 
       swipeHandler!(SwipeDirection.Right);
+      await root.updateComplete;
 
-      await new Promise(resolve => setTimeout(resolve, 0));
       expect(tabs?.select).toHaveBeenCalledWith('tab-admin-users');
     });
 
@@ -165,8 +165,8 @@ describe('page-admin', () => {
       tabs!.select = vi.fn().mockResolvedValue(true);
 
       swipeHandler!(SwipeDirection.Left);
+      await root.updateComplete;
 
-      await new Promise(resolve => setTimeout(resolve, 0));
       expect(tabs?.select).not.toHaveBeenCalled();
     });
   });
