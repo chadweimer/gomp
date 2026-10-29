@@ -148,7 +148,9 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       <ion-footer class="hide-on-print">
         <ion-toolbar color="light">
           <ion-buttons slot="start">
-            <ion-back-button defaultHref="/recipes"></ion-back-button>
+            <ion-button href="/recipes">
+              <ion-icon slot="icon-only" icon="arrow-back"></ion-icon>
+            </ion-button>
           </ion-buttons>
           <ion-buttons slot="primary">
             ${isAuthorized(appState.currentUser, AccessLevel.Editor)
