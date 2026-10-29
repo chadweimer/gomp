@@ -74,7 +74,7 @@ describe('html-editor', () => {
     await el.updateComplete;
 
     expect(onValueChanged).toHaveBeenCalledTimes(1);
-    const detail = onValueChanged.mock.calls[0][0];
+    const detail = onValueChanged.mock.calls[0][0] as string;
     expect(detail).toContain(`src="${mockImages[0].url}"`);
     expect(detail).toContain(`data-image="${mockImages[0].name}"`);
     outsideEl.remove();

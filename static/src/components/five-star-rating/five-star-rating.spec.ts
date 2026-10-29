@@ -36,7 +36,7 @@ describe('five-star-rating', () => {
     const icons = el.renderRoot.querySelectorAll('ion-icon');
     expect(icons).not.toBeNull();
 
-    vi.spyOn(icons![2], 'getBoundingClientRect').mockReturnValue({
+    vi.spyOn(icons[2], 'getBoundingClientRect').mockReturnValue({
       left: 40,
       width: 20,
       top: 0,
@@ -49,7 +49,7 @@ describe('five-star-rating', () => {
     });
 
     // Hover left half of 3rd star -> 2.5
-    icons?.item(2).dispatchEvent(new MouseEvent('mousemove', { clientX: 45, bubbles: true }));
+    icons[2].dispatchEvent(new MouseEvent('mousemove', { clientX: 45, bubbles: true }));
     await el.updateComplete;
 
     icons?.forEach((icon, i) => {
@@ -64,17 +64,17 @@ describe('five-star-rating', () => {
     });
 
     // Hover right half of 3rd star -> 3
-    icons?.item(2).dispatchEvent(new MouseEvent('mousemove', { clientX: 55, bubbles: true }));
+    icons[2].dispatchEvent(new MouseEvent('mousemove', { clientX: 55, bubbles: true }));
     await el.updateComplete;
 
-    expect(icons?.item(2).getAttribute('name')).toBe('star');
-    expect(icons?.item(3).getAttribute('name')).toBe('star-outline');
+    expect(icons[2].getAttribute('name')).toBe('star');
+    expect(icons[3].getAttribute('name')).toBe('star-outline');
 
     // Mouse leave resets to value=4
     el.dispatchEvent(new MouseEvent('mouseleave'));
     await el.updateComplete;
 
-    icons?.forEach((icon, i) => {
+    icons.forEach((icon, i) => {
       if (i === 4) {
         expect(icon.getAttribute('name')).toBe('star-outline');
       } else {
@@ -90,7 +90,7 @@ describe('five-star-rating', () => {
     el.addEventListener('valueSelected', (e: Event) => onValueSelected((e as CustomEvent).detail));
     const icons = el.renderRoot.querySelectorAll('ion-icon');
 
-    vi.spyOn(icons![1], 'getBoundingClientRect').mockReturnValue({
+    vi.spyOn(icons[1], 'getBoundingClientRect').mockReturnValue({
       left: 20,
       width: 20,
       top: 0,
@@ -103,7 +103,7 @@ describe('five-star-rating', () => {
     });
 
     // Click left half of 2nd star -> 1.5
-    icons?.item(1).dispatchEvent(new MouseEvent('click', { clientX: 25, bubbles: true }));
+    icons[1].dispatchEvent(new MouseEvent('click', { clientX: 25, bubbles: true }));
     expect(onValueSelected).toHaveBeenCalledWith(1.5);
   });
 
@@ -113,13 +113,12 @@ describe('five-star-rating', () => {
     el.addEventListener('valueSelected', (e: Event) => onValueSelected((e as CustomEvent).detail));
     const icons = el.renderRoot.querySelectorAll('ion-icon');
 
-    icons?.item(0).dispatchEvent(new MouseEvent('mousemove', { clientX: 10, bubbles: true }));
+    icons[0].dispatchEvent(new MouseEvent('mousemove', { clientX: 10, bubbles: true }));
     await el.updateComplete;
 
-    expect(icons?.item(0).classList.contains('hover')).toBe(false);
+    expect(icons[0].classList.contains('hover')).toBe(false);
 
-    icons?.item(0).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    icons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(onValueSelected).not.toHaveBeenCalled();
   });
 });
-

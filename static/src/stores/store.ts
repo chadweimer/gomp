@@ -55,9 +55,9 @@ export function createStore<T extends object>(initialState: T): Store<T> {
     if (!propListeners.has(key)) {
       propListeners.set(key, new Set());
     }
-    propListeners.get(key)!.add(listener as unknown as Listener<never>);
+    propListeners.get(key)!.add(listener);
     return () => {
-      propListeners.get(key)?.delete(listener as unknown as Listener<never>);
+      propListeners.get(key)?.delete(listener);
     };
   };
 

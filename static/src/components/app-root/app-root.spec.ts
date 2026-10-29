@@ -84,15 +84,15 @@ describe('app-root', () => {
 
       const searchbars = el.renderRoot.querySelectorAll('ion-searchbar');
       expect(searchbars).toHaveLength(2);
-      searchbars.forEach((searchbar: any) => {
+      searchbars.forEach(searchbar => {
         expect(searchbar.hasAttribute('disabled') || searchbar.disabled).toBeTruthy();
       });
 
-      const filterButtons = el.renderRoot.querySelectorAll('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
+      const filterButtons = el.renderRoot.querySelectorAll<HTMLIonIconElement>('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
       expect(filterButtons).toHaveLength(2);
-      filterButtons.forEach((icon: any) => {
+      filterButtons.forEach(icon => {
         const btn = icon.closest('ion-button');
-        expect(btn.hasAttribute('disabled') || btn.disabled).toBeTruthy();
+        expect(btn?.hasAttribute('disabled') || btn?.disabled).toBeTruthy();
       });
     });
 
@@ -132,15 +132,15 @@ describe('app-root', () => {
 
       const searchbars = el.renderRoot.querySelectorAll('ion-searchbar');
       expect(searchbars).toHaveLength(2);
-      searchbars.forEach((searchbar: any) => {
+      searchbars.forEach(searchbar => {
         expect(searchbar.hasAttribute('disabled')).toBe(false);
       });
 
-      const filterButtons = el.renderRoot.querySelectorAll('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
+      const filterButtons = el.renderRoot.querySelectorAll<HTMLIonIconElement>('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
       expect(filterButtons).toHaveLength(2);
-      filterButtons.forEach((icon: any) => {
+      filterButtons.forEach(icon => {
         const btn = icon.closest('ion-button');
-        expect(btn.hasAttribute('disabled')).toBe(false);
+        expect(btn?.hasAttribute('disabled')).toBe(false);
       });
     });
 

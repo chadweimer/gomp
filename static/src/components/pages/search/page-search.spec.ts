@@ -2,7 +2,7 @@ import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { alertController, loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
-import { AccessLevel, Recipe, RecipeCompact, RecipeState, SearchResult, SortBy, SortDir } from '../../../helpers/schema.gen';
+import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import state, { clearState } from '../../../stores/state';
 import './page-search';
@@ -110,7 +110,7 @@ describe('page-search', () => {
       if (url.match(/\/recipes(\?.*)?$/) && req.method === 'GET') {
         return {
           status: 200,
-          body: JSON.stringify({ total: mockRecipes.length, recipes: mockRecipes } as SearchResult),
+          body: JSON.stringify({ total: mockRecipes.length, recipes: mockRecipes }),
         };
       }
       return {
@@ -294,7 +294,7 @@ describe('page-search', () => {
     });
 
     it('does not scroll if searchScrollPosition is null or undefined', async () => {
-      state.searchScrollPosition = undefined as unknown as number;
+      state.searchScrollPosition = undefined;
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
@@ -782,7 +782,7 @@ describe('page-search', () => {
       const content = root.renderRoot.querySelector('ion-content');
       expect(content).not.toBeNull();
 
-      content!.getScrollElement = vi.fn().mockResolvedValue({ scrollTop: 420 } as HTMLElement);
+      content!.getScrollElement = vi.fn().mockResolvedValue({ scrollTop: 420 });
       content!.dispatchEvent(
         new CustomEvent('ionScrollEnd', {
           detail: { isScrolling: false },
@@ -803,7 +803,7 @@ describe('page-search', () => {
       const content = root.renderRoot.querySelector('ion-content');
       expect(content).not.toBeNull();
 
-      content!.getScrollElement = vi.fn().mockResolvedValue({ scrollTop: 500 } as HTMLElement);
+      content!.getScrollElement = vi.fn().mockResolvedValue({ scrollTop: 500 });
       content!.dispatchEvent(
         new CustomEvent('ionScrollEnd', {
           detail: { isScrolling: true },
@@ -823,7 +823,7 @@ describe('page-search', () => {
       const content = root.renderRoot.querySelector('ion-content');
       expect(content).not.toBeNull();
 
-      content!.getScrollElement = vi.fn().mockResolvedValue(null as unknown as HTMLElement);
+      content!.getScrollElement = vi.fn().mockResolvedValue(null);
       content!.dispatchEvent(
         new CustomEvent('ionScrollEnd', {
           detail: { isScrolling: false },

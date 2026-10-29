@@ -1,7 +1,7 @@
 import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fetchMocker } from '../../../vitest.setup';
-import { RecipeCompact, RecipeState, SearchResult } from '../../helpers/schema.gen';
+import { RecipeCompact, RecipeState } from '../../helpers/schema.gen';
 import { clearState } from '../../stores/state';
 import './recipe-link-editor';
 import { RecipeLinkEditor } from './recipe-link-editor';
@@ -58,7 +58,7 @@ describe('recipe-link-editor', () => {
           JSON.stringify({
             total: mockRecipes.length,
             recipes: mockRecipes,
-          } as SearchResult)
+          })
         );
       }
       return Promise.resolve('{}');
@@ -111,7 +111,7 @@ describe('recipe-link-editor', () => {
             JSON.stringify({
               total: mockRecipes.length,
               recipes: mockRecipes,
-            } as SearchResult)
+            })
           );
         }
         return Promise.resolve('{}');
@@ -157,7 +157,7 @@ describe('recipe-link-editor', () => {
             JSON.stringify({
               total: mockRecipes.length,
               recipes: mockRecipes,
-            } as SearchResult)
+            })
           );
         }
         return Promise.resolve('{}');

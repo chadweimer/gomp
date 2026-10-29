@@ -76,4 +76,3 @@ describe('tags-input', () => {
     expect(input.value).toBe('');
   });
 });
-

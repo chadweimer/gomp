@@ -182,7 +182,7 @@ describe('page-recipe', () => {
       const firstThumb = pictureCards[0].querySelector('img');
       expect(firstThumb?.getAttribute('src')).toBe('/uploads/recipes/1/thumbs/pancakes.jpg');
 
-      const noteCards = root.renderRoot.querySelectorAll('note-card') as NodeListOf<any>;
+      const noteCards = root.renderRoot.querySelectorAll('note-card');
       expect(noteCards).toHaveLength(mockNotes.length);
       expect(noteCards[0].note).toEqual(mockNotes[0]);
     });
@@ -236,7 +236,7 @@ describe('page-recipe', () => {
       const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       expect(recipeViewer?.hasAttribute('readonly') || recipeViewer?.readonly === true).toBe(true);
 
-      const noteCards = root.renderRoot.querySelectorAll('note-card') as NodeListOf<any>;
+      const noteCards = root.renderRoot.querySelectorAll('note-card');
       noteCards.forEach((card) => {
         expect(card.hasAttribute('readonly') || card.readonly === true).toBe(true);
       });
@@ -266,7 +266,7 @@ describe('page-recipe', () => {
       const recipeViewer = root.renderRoot.querySelector('recipe-viewer');
       expect(recipeViewer?.hasAttribute('readonly') ?? false).toBe(false);
 
-      const noteCards = root.renderRoot.querySelectorAll('note-card') as NodeListOf<any>;
+      const noteCards = root.renderRoot.querySelectorAll('note-card');
       noteCards.forEach((card) => {
         expect(card.hasAttribute('readonly') ?? false).toBe(false);
       });

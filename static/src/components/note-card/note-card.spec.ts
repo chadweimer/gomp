@@ -45,7 +45,7 @@ describe('note-card', () => {
     el.addEventListener('editClicked', (e: Event) => onEdit((e as CustomEvent).detail));
     el.addEventListener('deleteClicked', (e: Event) => onDelete((e as CustomEvent).detail));
 
-    const buttons = el.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-button')!;
+    const buttons = el.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-button');
     expect(buttons).toHaveLength(2);
 
     buttons[0].click();
@@ -55,4 +55,3 @@ describe('note-card', () => {
     expect(onDelete).toHaveBeenCalledWith(note);
   });
 });
-

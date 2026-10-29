@@ -259,7 +259,7 @@ export class RecipeCard extends LitElement {
   }
 
   calculateVisibleTags() {
-    const container = this.renderRoot.querySelector('.tags') as HTMLElement | null;
+    const container = this.renderRoot.querySelector<HTMLElement>('.tags');
     const containerWidth = container?.clientWidth ?? 0;
     const tags = this.recipe?.tags ?? [];
 

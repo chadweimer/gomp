@@ -81,7 +81,7 @@ describe('modals', () => {
     });
 
     it('focuses element with [autofocus] in shadow DOM when component is an HTMLElement', () => {
-      const modal = document.createElement('ion-modal') as unknown as HTMLIonModalElement;
+      const modal = document.createElement('ion-modal');
       const removeEventListenerSpy = vi.spyOn(modal, 'removeEventListener');
 
       const component = document.createElement('div');
@@ -99,7 +99,7 @@ describe('modals', () => {
     });
 
     it('focuses element with [autofocus] in light DOM when component is a string selector', () => {
-      const modal = document.createElement('ion-modal') as unknown as HTMLIonModalElement;
+      const modal = document.createElement('ion-modal');
       const removeEventListenerSpy = vi.spyOn(modal, 'removeEventListener');
 
       const component = document.createElement('div');
@@ -118,7 +118,7 @@ describe('modals', () => {
     });
 
     it('falls back to focusing the component itself when no autofocus element exists', () => {
-      const modal = document.createElement('ion-modal') as unknown as HTMLIonModalElement;
+      const modal = document.createElement('ion-modal');
       const removeEventListenerSpy = vi.spyOn(modal, 'removeEventListener');
 
       const component = document.createElement('button');
@@ -132,7 +132,7 @@ describe('modals', () => {
     });
 
     it('handles missing component when string selector does not match', () => {
-      const modal = document.createElement('ion-modal') as unknown as HTMLIonModalElement;
+      const modal = document.createElement('ion-modal');
       const removeEventListenerSpy = vi.spyOn(modal, 'removeEventListener');
 
       modal.component = 'non-existent-tag';
@@ -142,10 +142,10 @@ describe('modals', () => {
     });
 
     it('handles undefined component gracefully', () => {
-      const modal = document.createElement('ion-modal') as unknown as HTMLIonModalElement;
+      const modal = document.createElement('ion-modal');
       const removeEventListenerSpy = vi.spyOn(modal, 'removeEventListener');
 
-      modal.component = undefined as unknown as string;
+      modal.component = undefined;
       performAutofocus.call(modal);
 
       expect(removeEventListenerSpy).toHaveBeenCalledWith('focus', performAutofocus);
@@ -175,7 +175,7 @@ describe('modals', () => {
     }
 
     beforeEach(() => {
-      modal = document.createElement('ion-modal') as unknown as HTMLIonModalElement;
+      modal = document.createElement('ion-modal');
     });
 
     afterEach(() => {
@@ -326,4 +326,3 @@ describe('modals', () => {
     });
   });
 });
-

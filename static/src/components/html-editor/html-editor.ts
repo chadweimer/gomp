@@ -368,7 +368,7 @@ export class HTMLEditor extends LitElement {
 
   private handleFocus(e: FocusEvent) {
     if (e.target === this) {
-      const tiptapEl = this.renderRoot.querySelector('.tiptap') as HTMLElement | null;
+      const tiptapEl = this.renderRoot.querySelector<HTMLElement>('.tiptap');
       tiptapEl?.focus();
       this.editor?.commands.focus();
     }
