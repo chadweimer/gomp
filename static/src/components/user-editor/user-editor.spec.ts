@@ -68,18 +68,18 @@ describe('user-editor', () => {
     const title = root.renderRoot.querySelector('ion-title');
     expect(title?.textContent).toBe('New User');
 
-    const usernameInput = root.renderRoot.querySelector('ion-input[type="email"]');
+    const usernameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
     expect(usernameInput).not.toBeNull();
-    expect(usernameInput?.getAttribute('type')).toBe('email');
+    expect(usernameInput?.value).toEqual('');
 
-    const accessLevelSelect = root.renderRoot.querySelector('ion-select');
+    const accessLevelSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select');
     expect(accessLevelSelect).not.toBeNull();
-    expect(accessLevelSelect?.getAttribute('label')).toBe('Access Level');
+    expect(accessLevelSelect?.value).toEqual(AccessLevel.Editor);
 
-    const passwordInput = root.renderRoot.querySelector('ion-input[label="Password"]');
+    const passwordInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Password"]');
     expect(passwordInput).not.toBeNull();
 
-    const repeatPasswordInput = root.renderRoot.querySelector('ion-input[label="Confirm Password"]');
+    const repeatPasswordInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Confirm Password"]');
     expect(repeatPasswordInput).not.toBeNull();
   });
 
@@ -95,11 +95,16 @@ describe('user-editor', () => {
     const title = root.renderRoot.querySelector('ion-title');
     expect(title?.textContent).toBe('Edit User');
 
-    const usernameInput = root.renderRoot.querySelector('ion-input[type="email"]');
+    const usernameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
     expect(usernameInput).not.toBeNull();
+    expect(usernameInput?.value).toEqual(user.username);
     expect(usernameInput?.hasAttribute('disabled')).toBe(true);
 
-    const passwordInput = root.renderRoot.querySelector('ion-input[type="password"]');
+    const accessLevelSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select');
+    expect(accessLevelSelect).not.toBeNull();
+    expect(accessLevelSelect?.value).toEqual(user.accessLevel);
+
+    const passwordInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
     expect(passwordInput).toBeNull();
   });
 
@@ -107,7 +112,6 @@ describe('user-editor', () => {
     it('allows dismissal without alert when role is save', async () => {
       const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
       modalEl.appendChild(root);
-      root.connectedCallback();
 
       const canDismiss = await callCanDismiss(modalEl, undefined, 'save');
       expect(canDismiss).toBe(true);
@@ -116,7 +120,6 @@ describe('user-editor', () => {
     it('allows dismissal when form is clean', async () => {
       const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
       modalEl.appendChild(root);
-      root.connectedCallback();
       syncInputs(root);
 
       const alertSpy = vi.spyOn(alertController, 'create');
@@ -129,7 +132,6 @@ describe('user-editor', () => {
     it('prompts to discard when username input changed', async () => {
       const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
       modalEl.appendChild(root);
-      root.connectedCallback();
       syncInputs(root);
 
       const usernameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
@@ -147,7 +149,6 @@ describe('user-editor', () => {
     it('prompts to discard when password entered', async () => {
       const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
       modalEl.appendChild(root);
-      root.connectedCallback();
       syncInputs(root);
 
       const passwordInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Password"]');
@@ -165,7 +166,6 @@ describe('user-editor', () => {
     it('blocks dismissal when user cancels discard prompt', async () => {
       const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
       modalEl.appendChild(root);
-      root.connectedCallback();
       syncInputs(root);
 
       const passwordInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Password"]');
@@ -206,7 +206,6 @@ describe('user-editor', () => {
     it('sets validation error when passwords do not match for new user', async () => {
       const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
       modalEl.appendChild(root);
-      root.connectedCallback();
       await root.updateComplete;
 
       const nativeInput = document.createElement('input');
@@ -238,7 +237,6 @@ describe('user-editor', () => {
     it('dismisses with user and password when passwords match for new user', async () => {
       const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
       modalEl.appendChild(root);
-      root.connectedCallback();
       await root.updateComplete;
 
       const nativeInput = document.createElement('input');
@@ -281,7 +279,6 @@ describe('user-editor', () => {
       };
       const root = await fixture<UserEditor>(html`<user-editor .user=${existingUser}></user-editor>`);
       modalEl.appendChild(root);
-      root.connectedCallback();
       await root.updateComplete;
 
       const select = root.renderRoot.querySelector('ion-select');
@@ -300,7 +297,6 @@ describe('user-editor', () => {
     it('dismisses with undefined and cancel role on cancel click', async () => {
       const root = await fixture<UserEditor>(html`<user-editor></user-editor>`);
       modalEl.appendChild(root);
-      root.connectedCallback();
       await root.updateComplete;
 
       const cancelBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="secondary"] ion-button');
