@@ -132,6 +132,8 @@ export class SearchFilterEditor extends LitElement {
                     label="Name"
                     label-placement="stacked"
                     .value=${this.name}
+                    .autocorrect=${true}
+                    .spellcheck=${true}
                     required
                     autofocus
                     @ionChange=${(e: InputCustomEvent) => this.name = e.detail.value ?? ''}
@@ -143,6 +145,8 @@ export class SearchFilterEditor extends LitElement {
             <ion-input
               label="Search Terms"
               label-placement="stacked"
+              .autocorrect=${true}
+              .spellcheck=${true}
               .value=${this.searchFilter?.query}
               @ionChange=${(e: InputCustomEvent) => this.searchFilter = { ...this.searchFilter, query: e.detail.value ?? '' }}
             ></ion-input>
@@ -255,13 +259,10 @@ export class SearchFilterEditor extends LitElement {
       return;
     }
 
-    await this.parentModal?.dismiss(
-      {
-        name: this.name,
-        searchFilter: this.searchFilter,
-      },
-      'save'
-    );
+    await this.parentModal?.dismiss({
+      name: this.name,
+      searchFilter: this.searchFilter,
+    }, 'save');
   }
 
   private async onCancelClicked() {
@@ -296,8 +297,8 @@ export class SearchFilterEditor extends LitElement {
   }
 
   private areEqual(a: SearchFilter, b: SearchFilter) {
-    const aTags = [...(a.tags ?? [])].sort((x, y) => x.localeCompare(y));
-    const bTags = [...(b.tags ?? [])].sort((x, y) => x.localeCompare(y));
+    const aTags = a.tags.toSorted((x, y) => x.localeCompare(y));
+    const bTags = b.tags.toSorted((x, y) => x.localeCompare(y));
     return (
       a.query === b.query &&
       a.withPictures === b.withPictures &&
