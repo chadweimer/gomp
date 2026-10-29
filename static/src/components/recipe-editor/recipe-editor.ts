@@ -59,7 +59,7 @@ export class RecipeEditor extends LitElement {
     const initialRecipe = { ...this.recipe };
 
     this.parentModal = getContainingModal(this);
-    configureModalCanDismiss(this.parentModal, async (_data?: unknown, role?: string) => {
+    configureModalCanDismiss(this.parentModal, (_data?: unknown, role?: string) => {
       if (role === 'save') {
         return false;
       }
@@ -71,10 +71,10 @@ export class RecipeEditor extends LitElement {
         servingSize: this.servingSizeInput?.value as string,
         time: this.timeInput?.value as string,
         sourceUrl: this.sourceUrlInput?.value as string,
-        ingredients: toStorageHtml(this, await this.ingredientsInput?.getValue?.()),
-        directions: toStorageHtml(this, await this.directionsInput?.getValue?.()),
-        storageInstructions: toStorageHtml(this, await this.storageInput?.getValue?.()),
-        nutritionInfo: toStorageHtml(this, await this.nutritionInput?.getValue?.()),
+        ingredients: toStorageHtml(this, this.ingredientsInput?.getCleanHTML()),
+        directions: toStorageHtml(this, this.directionsInput?.getCleanHTML()),
+        storageInstructions: toStorageHtml(this, this.storageInput?.getCleanHTML()),
+        nutritionInfo: toStorageHtml(this, this.nutritionInput?.getCleanHTML()),
       };
 
       return !this.areEqual(initialRecipe, this.recipe) || (this.imageInput?.files?.length ?? 0) > 0;
@@ -90,7 +90,7 @@ export class RecipeEditor extends LitElement {
           <ion-buttons slot="primary">
             <ion-button color="primary" @click=${() => this.onSaveClicked()}>Save</ion-button>
           </ion-buttons>
-          <ion-title>${isNull(this.recipe?.id) ? 'New Recipe' : 'Edit Recipe'}</ion-title>
+          <ion-title>${isNull(this.recipe?.id) ? 'New' : 'Edit'} Recipe</ion-title>
           <ion-buttons slot="secondary">
             <ion-button color="danger" @click=${() => this.onCancelClicked()}>Cancel</ion-button>
           </ion-buttons>
@@ -104,6 +104,8 @@ export class RecipeEditor extends LitElement {
               label="Name"
               label-placement="stacked"
               .value=${this.recipe?.name}
+              .autocorrect=${true}
+              .spellcheck=${true}
               required
               autofocus
               @ionChange=${(e: InputCustomEvent) => this.recipe = { ...this.recipe, name: e.detail.value ?? '' }}
@@ -129,6 +131,8 @@ export class RecipeEditor extends LitElement {
               label="Serving Size"
               label-placement="stacked"
               .value=${this.recipe?.servingSize}
+              .autocorrect=${true}
+              .spellcheck=${true}
               @ionChange=${(e: InputCustomEvent) => this.recipe = { ...this.recipe, servingSize: e.detail.value ?? '' }}
             ></ion-input>
           </ion-item>
@@ -137,6 +141,8 @@ export class RecipeEditor extends LitElement {
               label="Time"
               label-placement="stacked"
               .value=${this.recipe?.time}
+              .autocorrect=${true}
+              .spellcheck=${true}
               @ionChange=${(e: InputCustomEvent) => this.recipe = { ...this.recipe, time: e.detail.value ?? '' }}
             ></ion-input>
           </ion-item>
@@ -155,8 +161,8 @@ export class RecipeEditor extends LitElement {
               .value=${toPresentationHtml(this, this.recipe?.directions, this.recipe?.id, false)}
               .images=${this.recipeImages.map((name) => ({
           name,
-          url: getRecipeImageUrl(this.recipe?.id, name) ?? '',
-          thumbUrl: getRecipeThumbnailUrl(this.recipe?.id, name) ?? '',
+          url: getRecipeImageUrl(this.recipe?.id, name),
+          thumbUrl: getRecipeThumbnailUrl(this.recipe?.id, name),
         }))}
               @valueChanged=${(e: CustomEvent<string>) => this.recipe = { ...this.recipe, directions: toStorageHtml(this, e.detail) }}
             ></html-editor>
@@ -207,13 +213,10 @@ export class RecipeEditor extends LitElement {
       return;
     }
 
-    await this.parentModal?.dismiss(
-      {
-        recipe: this.recipe,
-        file: (this.imageInput?.files?.length ?? 0) > 0 ? this.imageInput?.files?.[0] : null,
-      },
-      'save'
-    );
+    await this.parentModal?.dismiss({
+      recipe: this.recipe,
+      file: (this.imageInput?.files?.length ?? 0) > 0 ? this.imageInput?.files?.[0] : null,
+    }, 'save');
   }
 
   private async onCancelClicked() {
@@ -221,8 +224,8 @@ export class RecipeEditor extends LitElement {
   }
 
   private areEqual(a: Recipe, b: Recipe) {
-    const aTags = [...(a.tags ?? [])].sort((x, y) => x.localeCompare(y));
-    const bTags = [...(b.tags ?? [])].sort((x, y) => x.localeCompare(y));
+    const aTags = a.tags.toSorted((x, y) => x.localeCompare(y));
+    const bTags = b.tags.toSorted((x, y) => x.localeCompare(y));
     return (
       a.name === b.name &&
       a.directions === b.directions &&

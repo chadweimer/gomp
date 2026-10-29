@@ -73,7 +73,7 @@ describe('note-editor', () => {
 
       const editor = el.renderRoot.querySelector<HTMLEditor>('html-editor');
       if (editor) {
-        editor.getValue = vi.fn().mockResolvedValue('Original text');
+        editor.getCleanHTML = vi.fn().mockReturnValue('Original text');
       }
 
       const canDismiss = await callCanDismiss(modal, undefined, 'cancel');
@@ -86,7 +86,7 @@ describe('note-editor', () => {
 
       const editor = el.renderRoot.querySelector<HTMLEditor>('html-editor');
       if (editor) {
-        editor.getValue = vi.fn().mockResolvedValue('Modified text');
+        editor.getCleanHTML = vi.fn().mockReturnValue('Modified text');
       }
 
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
@@ -102,7 +102,7 @@ describe('note-editor', () => {
 
       const editor = el.renderRoot.querySelector<HTMLEditor>('html-editor');
       if (editor) {
-        editor.getValue = vi.fn().mockResolvedValue('Modified text');
+        editor.getCleanHTML = vi.fn().mockReturnValue('Modified text');
       }
 
       vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));

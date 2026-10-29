@@ -31,7 +31,7 @@ export class NoteEditor extends LitElement {
     const initialNote = { ...this.note };
 
     this.parentModal = getContainingModal(this);
-    configureModalCanDismiss(this.parentModal, async (_data?: unknown, role?: string) => {
+    configureModalCanDismiss(this.parentModal, (_data?: unknown, role?: string) => {
       if (role === 'save') {
         return false;
       }
@@ -39,7 +39,7 @@ export class NoteEditor extends LitElement {
       // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
       this.note = {
         ...this.note,
-        text: toStorageHtml(this, await this.textInput?.getValue()),
+        text: toStorageHtml(this, this.textInput?.getCleanHTML()),
       };
 
       return this.note.text !== initialNote.text;

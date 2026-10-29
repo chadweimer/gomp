@@ -311,8 +311,12 @@ export class HTMLEditor extends LitElement {
     this.editor = null;
   }
 
-  getValue(): Promise<string> {
-    return Promise.resolve(this.getCleanHTML());
+  getCleanHTML() {
+    if (!this.editor || this.editor.isDestroyed) {
+      return this.value ?? '';
+    }
+    const htmlContent = this.editor.getHTML();
+    return htmlContent === '<p></p>' ? '' : htmlContent;
   }
 
   private initEditor() {
@@ -381,14 +385,6 @@ export class HTMLEditor extends LitElement {
 
     this.activePanel = null;
     emit(this, 'valueChanged', this.getCleanHTML());
-  }
-
-  private getCleanHTML(): string {
-    if (!this.editor || this.editor.isDestroyed) {
-      return this.value ?? '';
-    }
-    const htmlContent = this.editor.getHTML();
-    return htmlContent === '<p></p>' ? '' : htmlContent;
   }
 
   private updateButtonStates() {

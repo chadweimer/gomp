@@ -159,7 +159,7 @@ describe('html-editor', () => {
     expect(img?.getAttribute('data-image')).toBe(mockImages[0].name);
 
     // Event should be emitted with sentinel
-    const currentValue = await el.getValue();
+    const currentValue = el.getCleanHTML();
     expect(currentValue).toContain(`src="${mockImages[0].url}"`);
     expect(currentValue).toContain(`data-image="${mockImages[0].name}"`);
   });
@@ -315,7 +315,7 @@ describe('html-editor', () => {
 
   it('returns clean HTML from getValue()', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor .value=${'<p>Initial text</p>'}></html-editor>`);
-    const val = await el.getValue();
+    const val = el.getCleanHTML();
     expect(val).toBe('<p>Initial text</p>');
   });
 });
