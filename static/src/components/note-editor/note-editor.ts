@@ -36,9 +36,10 @@ export class NoteEditor extends LitElement {
         return false;
       }
 
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
       this.note = {
         ...this.note,
-        text: toStorageHtml(this, (await this.textInput?.getValue?.()) ?? this.note?.text ?? ''),
+        text: toStorageHtml(this, await this.textInput?.getValue()),
       };
 
       return this.note.text !== initialNote.text;
@@ -52,7 +53,7 @@ export class NoteEditor extends LitElement {
           <ion-buttons slot="primary">
             <ion-button color="primary" @click=${() => this.onSaveClicked()}>Save</ion-button>
           </ion-buttons>
-          <ion-title>${isNull(this.note?.id) ? 'New Note' : 'Edit Note'}</ion-title>
+          <ion-title>${isNull(this.note?.id) ? 'New' : 'Edit'} Note</ion-title>
           <ion-buttons slot="secondary">
             <ion-button color="danger" @click=${() => this.onCancelClicked()}>Cancel</ion-button>
           </ion-buttons>
