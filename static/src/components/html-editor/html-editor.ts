@@ -424,7 +424,9 @@ export class HTMLEditor extends LitElement {
   }
 
   private closePanel(panel: Panel) {
-    this.activePanel = this.activePanel === panel ? null : this.activePanel;
+    if (this.activePanel === panel) {
+      this.activePanel = null;
+    }
   }
 
   private applyLink(linkUrl: string) {
