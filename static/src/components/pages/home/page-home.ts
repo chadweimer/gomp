@@ -7,6 +7,7 @@ import { redirect, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuth
 import appState, { appStateStore } from '../../../stores/state';
 import { StoreController } from '../../../stores/store';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../helpers/schema.gen';
+
 import '../../recipe-card/recipe-card';
 import '../../recipe-editor/recipe-editor';
 import './page-home.css';
@@ -44,7 +45,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
           <ion-row>
             <ion-col>
               <header class="ion-text-center">
-                <h1>${this.currentUserSettings?.homeTitle ?? ''}</h1>
+                <h1>${this.currentUserSettings?.homeTitle}</h1>
                 <img
                   alt="Home"
                   src=${this.currentUserSettings?.homeImageUrl ?? ''}
@@ -134,7 +135,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
           results: filterRecipes ?? []
         };
       }));
-      searches.push(...results.filter((r): r is NonNullable<typeof r> => r !== null));
+      searches.push(...results.filter(r => r !== null));
 
       this.searches = searches;
     } catch (ex) {
