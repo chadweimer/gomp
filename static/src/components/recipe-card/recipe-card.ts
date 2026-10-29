@@ -115,10 +115,7 @@ export class RecipeCard extends LitElement {
       });
       this.resizeObserver.observe(this.tagsContainer);
     }
-    const tags = this.recipe?.tags ?? [];
-    if (tags.length > 1) {
-      this.calculateVisibleTags();
-    }
+    this.calculateVisibleTags();
   }
 
   updated(changedProperties: PropertyValues<this>) {
@@ -155,7 +152,7 @@ export class RecipeCard extends LitElement {
                   ${visibleTags.map(
           (tag) => html`
                       <ion-badge
-                        class=${classMap({ 'tag-badge': true, translucent: true, 'truncate-single': tags.length === 1 || (visibleTags.length === 1 && hiddenTags.length > 0), })}
+                        class=${classMap({ 'tag-badge': true, 'translucent': true, 'truncate-single': tags.length === 1 || (visibleTags.length === 1 && hiddenTags.length > 0), })}
                         color="light"
                         title=${tag}
                         data-tag=${tag}
@@ -259,14 +256,11 @@ export class RecipeCard extends LitElement {
   }
 
   calculateVisibleTags() {
-    const container = this.renderRoot.querySelector<HTMLElement>('.tags');
-    const containerWidth = container?.clientWidth ?? 0;
+    const containerWidth = this.tagsContainer?.clientWidth ?? 0;
     const tags = this.recipe?.tags ?? [];
 
     if (containerWidth <= 0 || tags.length <= 1) {
-      if (this.visibleCount !== undefined) {
-        this.setVisibleCount(tags.length);
-      }
+      this.setVisibleCount(tags.length);
       return;
     }
 

@@ -35,6 +35,10 @@ describe('recipe-card', () => {
     const card = el.renderRoot.querySelector('ion-card');
     expect(card?.getAttribute('href')).toBe('/recipes/42');
 
+    const rating = el.renderRoot.querySelector('five-star-rating');
+    expect(rating).not.toBeNull();
+    expect(rating?.value).toBe(4);
+
     const tagBadges = el.renderRoot.querySelectorAll('.tags ion-badge:not(.probe-badge)');
     expect(tagBadges).toHaveLength(2);
   });
@@ -127,6 +131,7 @@ describe('recipe-card', () => {
     const moreBadge = el.renderRoot.querySelector('.tags .more-badge');
     expect(moreBadge).not.toBeNull();
     expect(moreBadge?.textContent?.trim()).toBe('+2');
+    expect(moreBadge?.getAttribute('title')).toBe('tag2, tag3');
   });
 
   it('truncates first tag with ellipsis when even first tag exceeds available width', async () => {
