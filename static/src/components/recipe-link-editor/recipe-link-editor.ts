@@ -1,5 +1,5 @@
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
 import { getContainingModal } from '../../helpers/modals';
@@ -29,6 +29,9 @@ export class RecipeLinkEditor extends LitElement {
   @state() private query = '';
   @state() private includeArchived = false;
 
+  @query('form') private readonly form?: HTMLFormElement;
+  @query('ion-input[type="search"]') private readonly searchInput?: HTMLIonInputElement;
+
   private parentModal?: HTMLIonModalElement | null;
 
   connectedCallback() {
@@ -37,10 +40,7 @@ export class RecipeLinkEditor extends LitElement {
   }
 
   updated(changedProperties: PropertyValues) {
-    if (
-      (changedProperties.has('query') && changedProperties.get('query') !== undefined) ||
-      (changedProperties.has('includeArchived') && changedProperties.get('includeArchived') !== undefined)
-    ) {
+    if (changedProperties.has('query') || changedProperties.has('includeArchived')) {
       this.onSearchInputChanged().catch(console.error);
     }
   }
@@ -65,8 +65,10 @@ export class RecipeLinkEditor extends LitElement {
             <ion-input
               label="Find Recipe"
               label-placement="stacked"
-              .value=${this.query}
               type="search"
+              .autocorrect=${true}
+              .spellcheck=${true}
+              .value=${this.query}
               autofocus
               .debounce=${500}
               @ionInput=${(e: InputCustomEvent) => this.query = e.detail.value ?? ''}
@@ -124,8 +126,8 @@ export class RecipeLinkEditor extends LitElement {
         sortDir: SortDir.Desc,
         query: this.query,
         withPictures: null,
-        states,
         fields: [SearchField.Name],
+        states,
         tags: [],
       },
       1,
@@ -136,16 +138,18 @@ export class RecipeLinkEditor extends LitElement {
   }
 
   private async onSaveClicked() {
+    const native = await this.searchInput?.getInputElement();
     if (isNull(this.selectedRecipeId)) {
+      native?.setCustomValidity('A recipe must be selected');
+    } else {
+      native?.setCustomValidity('');
+    }
+
+    if (this.form && !this.form.reportValidity()) {
       return;
     }
 
-    await this.parentModal?.dismiss(
-      {
-        recipeId: this.selectedRecipeId,
-      },
-      'save'
-    );
+    await this.parentModal?.dismiss({ recipeId: this.selectedRecipeId, }, 'save');
   }
 
   private async onCancelClicked() {
