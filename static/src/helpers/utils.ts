@@ -160,7 +160,13 @@ async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTa
       }
     }
   }
-  return routeId.element;
+
+  const el = routeId.element;
+  if (el?.tagName === 'ION-ROUTER-OUTLET') {
+    return getActiveComponent(el as HTMLIonRouterOutletElement);
+  }
+
+  return el;
 }
 
 export async function sendActivatedCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {

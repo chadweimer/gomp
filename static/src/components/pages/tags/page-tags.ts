@@ -27,25 +27,21 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
 
   override connectedCallback() {
     super.connectedCallback();
-    try {
-      this.gesture = createSwipeGesture(this, swipe => {
-        switch (swipe) {
-          case SwipeDirection.Right:
-            if (this.page > 1) {
-              this.setPage(this.page - 1);
-            }
-            break;
-          case SwipeDirection.Left:
-            if (this.page < this.numPages) {
-              this.setPage(this.page + 1);
-            }
-            break;
-        }
-      });
-      this.gesture?.enable();
-    } catch {
-      // In non-DOM or testing environments createGesture may not be fully supported
-    }
+    this.gesture = createSwipeGesture(this, swipe => {
+      switch (swipe) {
+        case SwipeDirection.Right:
+          if (this.page > 1) {
+            this.setPage(this.page - 1);
+          }
+          break;
+        case SwipeDirection.Left:
+          if (this.page < this.numPages) {
+            this.setPage(this.page + 1);
+          }
+          break;
+      }
+    });
+    this.gesture?.enable();
     this.load().catch(console.error);
   }
 
@@ -172,4 +168,3 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
     await redirect('/recipes');
   }
 }
-
