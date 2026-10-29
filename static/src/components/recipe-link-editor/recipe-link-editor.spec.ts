@@ -216,10 +216,24 @@ describe('recipe-link-editor', () => {
     it('does not dismiss on save if no recipe is selected', async () => {
       const { modal, el } = await createRecipeLinkEditor();
 
+      const nativeInput = document.createElement('input');
+      const setCustomValiditySpy = vi.spyOn(nativeInput, 'setCustomValidity');
+
+      const searchInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
+      if (searchInput) {
+        searchInput.getInputElement = vi.fn().mockResolvedValue(nativeInput);
+      }
+
+      const form = el.renderRoot.querySelector('form');
+      if (form) {
+        vi.spyOn(form, 'reportValidity').mockReturnValue(false);
+      }
+
       const saveBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
       saveBtn?.click();
       await el.updateComplete;
 
+      expect(setCustomValiditySpy).toHaveBeenCalledWith('A recipe must be selected');
       expect(modal.dismiss).not.toHaveBeenCalled();
     });
 
@@ -248,30 +262,6 @@ describe('recipe-link-editor', () => {
 
       expect(setCustomValiditySpy).toHaveBeenCalledWith('');
       expect(modal.dismiss).toHaveBeenCalledWith({ recipeId: 3 }, 'save');
-    });
-
-    it('does not dismiss modal when no recipe is selected and save is clicked', async () => {
-      const { modal, el } = await createRecipeLinkEditor();
-
-      const nativeInput = document.createElement('input');
-      const setCustomValiditySpy = vi.spyOn(nativeInput, 'setCustomValidity');
-
-      const searchInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
-      if (searchInput) {
-        searchInput.getInputElement = vi.fn().mockResolvedValue(nativeInput);
-      }
-
-      const form = el.renderRoot.querySelector('form');
-      if (form) {
-        vi.spyOn(form, 'reportValidity').mockReturnValue(false);
-      }
-
-      const saveBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-buttons[slot="primary"] ion-button');
-      saveBtn?.click();
-      await el.updateComplete;
-
-      expect(setCustomValiditySpy).toHaveBeenCalledWith('A recipe must be selected');
-      expect(modal.dismiss).not.toHaveBeenCalled();
     });
 
     it('dismisses modal with cancel role when Cancel is clicked', async () => {
