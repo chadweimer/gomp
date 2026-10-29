@@ -64,16 +64,17 @@ export class RecipeEditor extends LitElement {
         return false;
       }
 
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
       this.recipe = {
         ...this.recipe,
-        name: (this.nameInput?.value ?? this.recipe?.name ?? '') as string,
-        servingSize: (this.servingSizeInput?.value ?? this.recipe?.servingSize ?? '') as string,
-        time: (this.timeInput?.value ?? this.recipe?.time ?? '') as string,
-        sourceUrl: (this.sourceUrlInput?.value ?? this.recipe?.sourceUrl ?? '') as string,
-        ingredients: toStorageHtml(this, (await this.ingredientsInput?.getValue?.()) ?? this.recipe?.ingredients ?? ''),
-        directions: toStorageHtml(this, (await this.directionsInput?.getValue?.()) ?? this.recipe?.directions ?? ''),
-        storageInstructions: toStorageHtml(this, (await this.storageInput?.getValue?.()) ?? this.recipe?.storageInstructions ?? ''),
-        nutritionInfo: toStorageHtml(this, (await this.nutritionInput?.getValue?.()) ?? this.recipe?.nutritionInfo ?? ''),
+        name: this.nameInput?.value as string,
+        servingSize: this.servingSizeInput?.value as string,
+        time: this.timeInput?.value as string,
+        sourceUrl: this.sourceUrlInput?.value as string,
+        ingredients: toStorageHtml(this, await this.ingredientsInput?.getValue?.()),
+        directions: toStorageHtml(this, await this.directionsInput?.getValue?.()),
+        storageInstructions: toStorageHtml(this, await this.storageInput?.getValue?.()),
+        nutritionInfo: toStorageHtml(this, await this.nutritionInput?.getValue?.()),
       };
 
       return !this.areEqual(initialRecipe, this.recipe) || (this.imageInput?.files?.length ?? 0) > 0;

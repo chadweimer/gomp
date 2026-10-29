@@ -58,13 +58,14 @@ export class SearchFilterEditor extends LitElement {
         return false;
       }
 
+      // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
       if (this.nameInput) {
-        this.name = (this.nameInput.value ?? '') as string;
+        this.name = this.nameInput.value as string;
       }
       if (this.queryInput) {
         this.searchFilter = {
           ...this.searchFilter,
-          query: (this.queryInput.value ?? '') as string,
+          query: this.queryInput.value as string,
         };
       }
 
