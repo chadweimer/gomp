@@ -1251,6 +1251,8 @@ describe('page-recipe', () => {
       expect(buttonTexts).toContain('Print');
       expect(buttonTexts).toContain('Cancel');
       expect(buttonTexts).not.toContain('Edit');
+      expect(buttonTexts).not.toContain('Add Note');
+      expect(buttonTexts).not.toContain('Upload Picture');
       expect(buttonTexts).not.toContain('Add Link');
       expect(buttonTexts).not.toContain('Delete');
       expect(buttonTexts).not.toContain('Archive');
