@@ -241,7 +241,9 @@ export class PageSearch extends LitElement {
         }, 'Uploading picture...');
       }
 
+      // Update the search results since the new recipe may be in them
       await refreshSearchResults();
+
       await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
       console.error(ex);

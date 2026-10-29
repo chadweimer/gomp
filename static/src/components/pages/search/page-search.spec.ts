@@ -138,7 +138,14 @@ describe('page-search', () => {
   describe('Suite 1: Initial Render, View Modes & Scroll Restoration', () => {
     it('builds and hydrates the component', async () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
-      expect(root.tagName.toLowerCase()).toBe('page-search');
+
+      // Displays the toolbar
+      const buttons = root.renderRoot.querySelectorAll('ion-header ion-button');
+      expect(buttons).toHaveLength(5);
+
+      // Displays the pager
+      const pager = root.renderRoot.querySelector('page-navigator');
+      expect(pager).not.toBeNull();
     });
 
     it('renders recipes as cards when in Card view mode', async () => {
@@ -247,8 +254,8 @@ describe('page-search', () => {
       await root.updateComplete;
 
       // The 4th header button is viewMode toggle
-      const buttons = root.renderRoot.querySelectorAll('ion-header ion-button');
-      const viewModeBtn = buttons[3] as HTMLIonButtonElement;
+      const buttons = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
+      const viewModeBtn = buttons[3];
       const icon = viewModeBtn.querySelector('ion-icon');
       expect(icon?.getAttribute('icon')).toBe('grid');
 
@@ -605,7 +612,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const statesBtn = root.renderRoot.querySelectorAll('ion-header ion-button')[0] as HTMLIonButtonElement;
+      const statesBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button')[0];
       statesBtn.click();
       await root.updateComplete;
 
@@ -632,7 +639,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const sortByBtn = root.renderRoot.querySelectorAll('ion-header ion-button')[1] as HTMLIonButtonElement;
+      const sortByBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button')[1];
       expect(sortByBtn?.textContent?.trim()).toBe('Name');
 
       sortByBtn.click();
@@ -656,7 +663,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const sortDirBtn = root.renderRoot.querySelectorAll('ion-header ion-button')[2] as HTMLIonButtonElement;
+      const sortDirBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button')[2];
       const icon = sortDirBtn.querySelector('ion-icon');
       expect(icon?.getAttribute('icon')).toBe('arrow-up');
 
@@ -676,7 +683,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const resultsPerPageBtn = root.renderRoot.querySelectorAll('ion-header ion-button')[4] as HTMLIonButtonElement;
+      const resultsPerPageBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button')[4];
       expect(resultsPerPageBtn?.textContent?.trim()).toBe('36');
 
       resultsPerPageBtn.click();
