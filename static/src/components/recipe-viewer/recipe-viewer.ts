@@ -79,10 +79,10 @@ export class RecipeViewer extends LitElement {
             const img = e.currentTarget as HTMLImageElement;
             if (
               !isNullOrEmpty(this.recipe?.mainImageName) &&
-              img.src.endsWith(getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName) ?? '')
+              img.src.endsWith(getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName))
             ) {
               const fullImg = new Image();
-              const fullUrl = getRecipeImageUrl(this.recipe?.id, this.recipe?.mainImageName) ?? '';
+              const fullUrl = getRecipeImageUrl(this.recipe?.id, this.recipe?.mainImageName);
               fullImg.src = fullUrl;
               fullImg.onload = () => (img.src = fullUrl);
             }
@@ -117,16 +117,7 @@ export class RecipeViewer extends LitElement {
             ></five-star-rating>
             ${!isNullOrEmpty(this.recipe?.servingSize) ? html`<div>Servings: ${this.recipe?.servingSize}</div>` : nothing}
             ${!isNullOrEmpty(this.recipe?.time) ? html`<div>Time: ${this.recipe?.time}</div>` : nothing}
-            ${!isNullOrEmpty(this.recipe?.sourceUrl)
-        ? html`
-                  <div>
-                    Source:
-                    ${this.recipe?.sourceUrl?.startsWith('http')
-            ? html`<a href=${this.recipe.sourceUrl} target="_blank" rel="noopener noreferrer">${this.recipe.sourceUrl}</a>`
-            : this.recipe?.sourceUrl}
-                  </div>
-                `
-        : nothing}
+            ${!isNullOrEmpty(this.recipe?.sourceUrl) ? html`<div>Source: ${this.getSourceLink(this.recipe?.sourceUrl)}</div>` : nothing}
             <div>${this.getRecipeDatesText(this.recipe?.createdAt, this.recipe?.modifiedAt)}</div>
           </ion-card-subtitle>
         </ion-card-header>
@@ -217,6 +208,13 @@ export class RecipeViewer extends LitElement {
         : nothing}
       </ion-card>
     `;
+  }
+
+  private getSourceLink(source: string | null | undefined) {
+    if (source?.startsWith('http')) {
+      return html`<a href=${source} target="_blank" rel="noopener noreferrer">${source}</a>`;
+    }
+    return source;
   }
 
   private getRecipeDatesText(createdAt: string | Date | null | undefined, modifiedAt: string | Date | null | undefined) {

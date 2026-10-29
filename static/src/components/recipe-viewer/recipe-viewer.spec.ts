@@ -134,7 +134,7 @@ describe('recipe-viewer', () => {
     }
   });
 
-  it('bind to main image and loads full image on thumbnail load', async () => {
+  it('bind to main image', async () => {
     const recipe: Recipe = {
       id: 1,
       name: 'image',
@@ -153,7 +153,6 @@ describe('recipe-viewer', () => {
     const el = await fixture<RecipeViewer>(html`<recipe-viewer .recipe=${recipe}></recipe-viewer>`);
     const img = el.renderRoot.querySelector<HTMLImageElement>(`img[src='/uploads/recipes/${recipe.id}/thumbs/${recipe.mainImageName}']`);
     expect(img).not.toBeNull();
-    img?.dispatchEvent(new Event('load'));
   });
 
   it('bind to links', async () => {
