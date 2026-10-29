@@ -263,7 +263,10 @@ describe('page-settings-searches', () => {
       expect(createModalSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           component: 'search-filter-editor',
-          componentProps: { prompt: 'New Search' },
+          componentProps: {
+            prompt: 'New Search',
+            showName: true,
+          },
           backdropDismiss: false,
         })
       );
@@ -381,6 +384,7 @@ describe('page-settings-searches', () => {
             prompt: 'Edit Search',
             name: 'Quick Dinners',
             searchFilter: mockFilter1,
+            showName: true,
           },
           backdropDismiss: false,
         })

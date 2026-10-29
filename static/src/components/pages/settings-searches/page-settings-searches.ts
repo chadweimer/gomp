@@ -162,7 +162,8 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
       presentingElement: this,
       component: 'search-filter-editor',
       componentProps: {
-        prompt: 'New Search'
+        prompt: 'New Search',
+        showName: true,
       },
     });
     if (!isNull(data)) {
@@ -193,7 +194,8 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
       componentProps: {
         prompt: 'Edit Search',
         name: searchFilter.name,
-        searchFilter: searchFilter
+        searchFilter: searchFilter,
+        showName: true,
       },
     });
     if (!isNull(data)) {
@@ -245,4 +247,3 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
     }
   }
 }
-

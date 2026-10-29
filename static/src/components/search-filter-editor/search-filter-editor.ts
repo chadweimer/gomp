@@ -32,7 +32,7 @@ export class SearchFilterEditor extends LitElement {
 
   @property({ type: String }) name = '';
   @property({ type: String }) saveLabel = 'Save';
-  @property({ type: Boolean }) showName = true;
+  @property({ type: Boolean }) showName = false;
   @property({ type: Boolean }) showSavedLoader = false;
   @property({ type: Object }) searchFilter: SearchFilter = getDefaultSearchFilter();
   @property({ type: String }) prompt = 'New Search';

@@ -135,10 +135,7 @@ describe('search-filter-editor', () => {
       expect(saveBtn?.textContent?.trim()).toBe('Save');
 
       const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
-      expect(nameInput).not.toBeNull();
-      expect(nameInput?.value).toBe('');
-      expect(nameInput?.hasAttribute('required')).toBe(true);
-      expect(nameInput?.hasAttribute('autofocus')).toBe(true);
+      expect(nameInput).toBeNull();
 
       const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
       expect(queryInput).not.toBeNull();
@@ -191,6 +188,7 @@ describe('search-filter-editor', () => {
           saveLabel="Apply"
           name="Taco Night"
           .searchFilter=${customFilter}
+          ?showName=${true}
         ></search-filter-editor>
       `);
       await root.updateComplete;
@@ -226,12 +224,16 @@ describe('search-filter-editor', () => {
       expect(fieldsSelect?.value).toEqual([SearchField.Directions]);
     });
 
-    it('hides name input when showName is false', async () => {
-      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor .showName=${false}></search-filter-editor>`);
+    it('shows name input when showName is true', async () => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor .showName=${true}></search-filter-editor>`);
       await root.updateComplete;
 
-      const nameInput = root.renderRoot.querySelector('ion-input[label="Name"]');
-      expect(nameInput).toBeNull();
+      const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
+      expect(nameInput).not.toBeNull();
+
+      expect(nameInput?.value).toBe('');
+      expect(nameInput?.hasAttribute('required')).toBe(true);
+      expect(nameInput?.hasAttribute('autofocus')).toBe(true);
     });
 
     it('prevents default form submission', async () => {
@@ -376,7 +378,7 @@ describe('search-filter-editor', () => {
 
   describe('Suite 4: Form Input Updates & Change Events', () => {
     it('updates name on ionChange', async () => {
-      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor ?showName=${true}></search-filter-editor>`);
       await root.updateComplete;
 
       const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
@@ -583,9 +585,9 @@ describe('search-filter-editor', () => {
 
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
 
-      const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
-      if (nameInput) {
-        nameInput.value = 'Unsaved Name';
+      const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+      if (queryInput) {
+        queryInput.value = 'Unsaved Query';
       }
 
       const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
@@ -601,9 +603,9 @@ describe('search-filter-editor', () => {
 
       vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
 
-      const nameInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Name"]');
-      if (nameInput) {
-        nameInput.value = 'Unsaved Name';
+      const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
+      if (queryInput) {
+        queryInput.value = 'Unsaved Query';
       }
 
       const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
