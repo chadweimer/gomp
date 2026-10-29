@@ -250,7 +250,7 @@ describe('page-tags', () => {
       present: vi.fn().mockResolvedValue(undefined),
       dismiss: vi.fn().mockResolvedValue(true),
       onDidDismiss: vi.fn().mockResolvedValue({ role: 'confirm', data: { values: 60 } }),
-    } as any);
+    } as unknown as HTMLIonAlertElement);
 
     const el = await fixture<PageTags>(html`<page-tags></page-tags>`);
     await el.activatedCallback();

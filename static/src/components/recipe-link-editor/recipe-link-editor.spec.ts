@@ -78,9 +78,9 @@ describe('recipe-link-editor', () => {
     const title = el.renderRoot.querySelector('ion-title');
     expect(title?.textContent?.trim()).toBe('Add Link');
 
-    const input = el.renderRoot.querySelector('ion-input[type="search"]');
+    const input = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="search"]');
     expect(input).not.toBeNull();
-    expect(input?.getAttribute('.value') ?? (input as any).value).toBe('');
+    expect(input?.getAttribute('.value') ?? input?.value).toBe('');
 
     const toggleBtn = el.renderRoot.querySelector('ion-list-header ion-button');
     expect(toggleBtn?.textContent?.trim()).toBe('Include Archived');
@@ -208,7 +208,7 @@ describe('recipe-link-editor', () => {
       radioGroup?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 1 } }));
       await el.updateComplete;
 
-      expect((el as any).selectedRecipeId).toBe(1);
+      expect((el as unknown as { selectedRecipeId: number | null }).selectedRecipeId).toBe(1);
     });
   });
 

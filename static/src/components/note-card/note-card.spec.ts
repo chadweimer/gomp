@@ -10,7 +10,7 @@ describe('note-card', () => {
     const el = await fixture<NoteCard>(html`<note-card .note=${note}></note-card>`);
     const viewer = el.renderRoot.querySelector('html-viewer');
     expect(viewer).not.toBeNull();
-    expect((viewer as any).value).toBe(note.text);
+    expect(viewer?.value).toBe(note.text);
   });
 
   it('toggles edit/delete buttons based on readonly prop', async () => {

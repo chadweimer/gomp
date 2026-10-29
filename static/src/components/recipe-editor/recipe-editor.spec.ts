@@ -402,7 +402,7 @@ describe('recipe-editor', () => {
         present: vi.fn().mockResolvedValue(undefined),
         dismiss: vi.fn().mockResolvedValue(true),
         onDidDismiss: vi.fn().mockResolvedValue({ role: 'destructive' }),
-      } as any);
+      } as unknown as HTMLIonAlertElement);
 
       const canDismiss = await callCanDismiss(modal, undefined, 'cancel');
       expect(canDismiss).toBe(true);
@@ -420,7 +420,7 @@ describe('recipe-editor', () => {
         present: vi.fn().mockResolvedValue(undefined),
         dismiss: vi.fn().mockResolvedValue(true),
         onDidDismiss: vi.fn().mockResolvedValue({ role: 'cancel' }),
-      } as any);
+      } as unknown as HTMLIonAlertElement);
 
       const canDismiss = await callCanDismiss(modal, undefined, 'cancel');
       expect(canDismiss).toBe(false);

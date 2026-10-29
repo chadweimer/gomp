@@ -272,7 +272,7 @@ describe('page-search', () => {
       const scrollToPointSpy = vi.fn().mockResolvedValue(undefined);
       content!.scrollToPoint = scrollToPointSpy;
 
-      (root as any).updated();
+      root.updated();
       expect(scrollToPointSpy).toHaveBeenCalledWith(0, 350);
     });
 
@@ -287,7 +287,7 @@ describe('page-search', () => {
       content!.scrollToPoint = vi.fn().mockRejectedValue(new Error('Scroll failure'));
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
-      (root as any).updated();
+      root.updated();
       await Promise.resolve();
 
       expect(consoleErrorSpy).toHaveBeenCalled();
@@ -304,7 +304,7 @@ describe('page-search', () => {
       const scrollToPointSpy = vi.fn().mockResolvedValue(undefined);
       content!.scrollToPoint = scrollToPointSpy;
 
-      (root as any).updated();
+      root.updated();
       expect(scrollToPointSpy).not.toHaveBeenCalled();
     });
 
@@ -318,7 +318,7 @@ describe('page-search', () => {
 
       delete (content as unknown as { scrollToPoint?: unknown }).scrollToPoint;
 
-      expect(() => (root as any).updated()).not.toThrow();
+      expect(() => root.updated()).not.toThrow();
     });
   });
 

@@ -72,7 +72,7 @@ describe('recipe-print', () => {
     const el = await fixture<RecipePrint>(html`<recipe-print .recipe=${recipe}></recipe-print>`);
     const htmlViewer = el.renderRoot.querySelector('html-viewer');
     expect(htmlViewer).not.toBeNull();
-    expect((htmlViewer as any).value).toBe(
+    expect(htmlViewer?.value).toBe(
       '<p>Pour mix <img src="/uploads/recipes/9/images/waffle.jpg" alt="waffle.jpg" data-image="waffle.jpg"></p>'
     );
   });

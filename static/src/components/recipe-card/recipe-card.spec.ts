@@ -15,7 +15,7 @@ describe('recipe-card', () => {
 
     const rating = el.renderRoot.querySelector('five-star-rating');
     expect(rating).not.toBeNull();
-    expect((rating as any).value).toBe(0);
+    expect(rating?.value).toBe(0);
   });
 
   it('binds to recipe and renders title and rating', async () => {
