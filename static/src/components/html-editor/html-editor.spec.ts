@@ -40,25 +40,6 @@ describe('html-editor', () => {
     expect(picker).toBeNull();
   });
 
-  it('renders image button and toggles image picker panel when images provided', async () => {
-    const el = await fixture<HTMLEditor>(html`<html-editor .images=${mockImages}></html-editor>`);
-
-    const imageIcon = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]');
-    expect(imageIcon).not.toBeNull();
-
-    const imageBtn = imageIcon?.closest('ion-button');
-    imageBtn?.click();
-    await el.updateComplete;
-
-    const picker = el.renderRoot.querySelector('.image-picker-panel');
-    expect(picker).not.toBeNull();
-
-    // Clicking again closes panel
-    imageBtn?.click();
-    await el.updateComplete;
-    expect(el.renderRoot.querySelector('.image-picker-panel')).toBeNull();
-  });
-
   it('emits valueChanged on blur', async () => {
     const el = await fixture<HTMLEditor>(
       html`<html-editor .images=${mockImages} .value=${`<p>Step 1: <img src="${mockImages[0].url}" data-image="${mockImages[0].name}" /></p>`}></html-editor>`
@@ -109,6 +90,8 @@ describe('html-editor', () => {
     await el.updateComplete;
 
     expect(focusSpy).toHaveBeenCalled();
+    const ownerDoc = el.renderRoot instanceof ShadowRoot ? el.renderRoot : el.ownerDocument;
+    expect(ownerDoc.activeElement).toBe(editor);
   });
 
   it('does not re-delegate focus when a child element receives focus', async () => {
@@ -130,6 +113,25 @@ describe('html-editor', () => {
     const el = await fixture<HTMLEditor>(html`<html-editor .images=${[]}></html-editor>`);
     const imageIcon = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]');
     expect(imageIcon).toBeNull();
+  });
+
+  it('renders image button and toggles image picker panel when images provided', async () => {
+    const el = await fixture<HTMLEditor>(html`<html-editor .images=${mockImages}></html-editor>`);
+
+    const imageIcon = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]');
+    expect(imageIcon).not.toBeNull();
+
+    const imageBtn = imageIcon?.closest('ion-button');
+    imageBtn?.click();
+    await el.updateComplete;
+
+    const picker = el.renderRoot.querySelector('.image-picker-panel');
+    expect(picker).not.toBeNull();
+
+    // Clicking again closes panel
+    imageBtn?.click();
+    await el.updateComplete;
+    expect(el.renderRoot.querySelector('.image-picker-panel')).toBeNull();
   });
 
   it('inserts image when an image is selected', async () => {
@@ -313,7 +315,7 @@ describe('html-editor', () => {
     outsideEl.remove();
   });
 
-  it('returns clean HTML from getValue()', async () => {
+  it('returns clean HTML from getCleanHTML()', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor .value=${'<p>Initial text</p>'}></html-editor>`);
     const val = el.getCleanHTML();
     expect(val).toBe('<p>Initial text</p>');

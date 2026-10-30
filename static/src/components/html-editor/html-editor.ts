@@ -319,146 +319,6 @@ export class HTMLEditor extends LitElement {
     return htmlContent === '<p></p>' ? '' : htmlContent;
   }
 
-  private initEditor() {
-    if (!this.editorContentRef || this.editor) {
-      return;
-    }
-
-    const extensions = [
-      StarterKit.configure({
-        code: false,
-        codeBlock: false,
-        heading: false,
-        link: {
-          openOnClick: false,
-          HTMLAttributes: {
-            target: '_blank',
-            rel: 'noopener noreferrer',
-          },
-        },
-        trailingNode: false,
-      }),
-      GompImage.configure({
-        inline: true,
-        resize: {
-          enabled: true,
-          minWidth: 50,
-          minHeight: 50,
-          alwaysPreserveAspectRatio: true,
-        },
-      }),
-      InvisibleCharacters.configure({
-        builders: [new HardBreakNode(), new ParagraphNode()],
-        visible: false,
-      }),
-      Selection,
-    ];
-
-    this.editor = new Editor({
-      element: this.editorContentRef,
-      extensions,
-      content: this.value || '',
-      onTransaction: () => {
-        this.updateButtonStates();
-      },
-      onSelectionUpdate: () => {
-        this.closePanel('helpPanel');
-        this.updateButtonStates();
-      },
-    });
-
-    this.updateButtonStates();
-  }
-
-  private handleFocus(e: FocusEvent) {
-    if (e.target === this) {
-      const tiptapEl = this.renderRoot.querySelector<HTMLElement>('.tiptap');
-      tiptapEl?.focus();
-      this.editor?.commands.focus();
-    }
-  }
-
-  private handleBlur(e: FocusEvent) {
-    if (this.contains(e.relatedTarget as Node) || this.renderRoot.contains(e.relatedTarget as Node)) {
-      return;
-    }
-
-    this.activePanel = null;
-    emit(this, 'valueChanged', this.getCleanHTML());
-  }
-
-  private updateButtonStates() {
-    if (!this.editor || this.editor.isDestroyed) {
-      return;
-    }
-
-    this.isBoldActive = this.editor.isActive('bold');
-    this.isItalicActive = this.editor.isActive('italic');
-    this.isUnderlineActive = this.editor.isActive('underline');
-    this.isOrderedListActive = this.editor.isActive('orderedList');
-    this.isUnorderedListActive = this.editor.isActive('bulletList');
-    this.isLinkActive = this.editor.isActive('link');
-    this.isInvisibleCharactersActive = this.editor.storage.invisibleCharacters?.visibility?.() ?? false;
-
-    if (this.isLinkActive) {
-      const linkAttrs = this.editor.getAttributes('link') as { href?: string };
-      this.linkUrl = linkAttrs.href || '';
-    } else {
-      this.linkUrl = '';
-    }
-  }
-
-  private editorCommand(fn: (chain: ChainedCommands) => ChainedCommands) {
-    if (!this.editor || this.editor.isDestroyed) {
-      return;
-    }
-    fn(this.editor.chain().focus()).run();
-  }
-
-  private togglePanel(panel: Panel) {
-    this.activePanel = this.activePanel === panel ? null : panel;
-  }
-
-  private closePanel(panel: Panel) {
-    if (this.activePanel === panel) {
-      this.activePanel = null;
-    }
-  }
-
-  private applyLink(linkUrl: string) {
-    if (isNullOrEmpty(linkUrl)) {
-      this.removeLink();
-      return;
-    }
-
-    if (!linkUrl.startsWith('http://') && !linkUrl.startsWith('https://')) {
-      linkUrl = 'https://' + linkUrl;
-    }
-
-    this.editorCommand((chain) => chain.extendMarkRange('link').setLink({ href: linkUrl }));
-    this.closePanel('linkPanel');
-  }
-
-  private removeLink() {
-    this.editorCommand((chain) => chain.extendMarkRange('link').unsetLink());
-    this.closePanel('linkPanel');
-  }
-
-  private insertImage(image: { name: string; url: string; thumbUrl: string }) {
-    this.editorCommand((chain) =>
-      chain.insertContent({
-        type: GompImage.name,
-        attrs: {
-          src: image.url,
-          alt: image.name,
-          'data-image': image.name,
-        },
-      })
-    );
-
-    this.closePanel('imagePicker');
-  }
-
   render() {
     const primaryButtons: ToolbarButton[] = [
       {
@@ -649,6 +509,144 @@ export class HTMLEditor extends LitElement {
 
       <div class="editor-content"></div>
     `;
+  }
+
+  private initEditor() {
+    if (!this.editorContentRef || this.editor) {
+      return;
+    }
+
+    const extensions = [
+      StarterKit.configure({
+        code: false,
+        codeBlock: false,
+        heading: false,
+        link: {
+          openOnClick: false,
+          HTMLAttributes: {
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          },
+        },
+        trailingNode: false,
+      }),
+      GompImage.configure({
+        inline: true,
+        resize: {
+          enabled: true,
+          minWidth: 50,
+          minHeight: 50,
+          alwaysPreserveAspectRatio: true,
+        },
+      }),
+      InvisibleCharacters.configure({
+        builders: [new HardBreakNode(), new ParagraphNode()],
+        visible: false,
+      }),
+      Selection,
+    ];
+
+    this.editor = new Editor({
+      element: this.editorContentRef,
+      extensions,
+      content: this.value || '',
+      onTransaction: () => {
+        this.updateButtonStates();
+      },
+      onSelectionUpdate: () => {
+        this.closePanel('helpPanel');
+        this.updateButtonStates();
+      },
+    });
+
+    this.updateButtonStates();
+  }
+
+  private handleFocus(e: FocusEvent) {
+    if (e.target === this) {
+      this.editor?.view?.focus();
+    }
+  }
+
+  private handleBlur(e: FocusEvent) {
+    if (this.contains(e.relatedTarget as Node) || this.renderRoot.contains(e.relatedTarget as Node)) {
+      return;
+    }
+
+    this.activePanel = null;
+    emit(this, 'valueChanged', this.getCleanHTML());
+  }
+
+  private updateButtonStates() {
+    if (!this.editor || this.editor.isDestroyed) {
+      return;
+    }
+
+    this.isBoldActive = this.editor.isActive('bold');
+    this.isItalicActive = this.editor.isActive('italic');
+    this.isUnderlineActive = this.editor.isActive('underline');
+    this.isOrderedListActive = this.editor.isActive('orderedList');
+    this.isUnorderedListActive = this.editor.isActive('bulletList');
+    this.isLinkActive = this.editor.isActive('link');
+    this.isInvisibleCharactersActive = this.editor.storage.invisibleCharacters?.visibility?.() ?? false;
+
+    if (this.isLinkActive) {
+      const linkAttrs = this.editor.getAttributes('link') as { href?: string };
+      this.linkUrl = linkAttrs.href || '';
+    } else {
+      this.linkUrl = '';
+    }
+  }
+
+  private editorCommand(fn: (chain: ChainedCommands) => ChainedCommands) {
+    if (!this.editor || this.editor.isDestroyed) {
+      return;
+    }
+    fn(this.editor.chain().focus()).run();
+  }
+
+  private togglePanel(panel: Panel) {
+    this.activePanel = this.activePanel === panel ? null : panel;
+  }
+
+  private closePanel(panel: Panel) {
+    if (this.activePanel === panel) {
+      this.activePanel = null;
+    }
+  }
+
+  private applyLink(linkUrl: string) {
+    if (isNullOrEmpty(linkUrl)) {
+      this.removeLink();
+      return;
+    }
+
+    if (!linkUrl.startsWith('http://') && !linkUrl.startsWith('https://')) {
+      linkUrl = 'https://' + linkUrl;
+    }
+
+    this.editorCommand((chain) => chain.extendMarkRange('link').setLink({ href: linkUrl }));
+    this.closePanel('linkPanel');
+  }
+
+  private removeLink() {
+    this.editorCommand((chain) => chain.extendMarkRange('link').unsetLink());
+    this.closePanel('linkPanel');
+  }
+
+  private insertImage(image: { name: string; url: string; thumbUrl: string }) {
+    this.editorCommand((chain) =>
+      chain.insertContent({
+        type: GompImage.name,
+        attrs: {
+          src: image.url,
+          alt: image.name,
+          'data-image': image.name,
+        },
+      })
+    );
+
+    this.closePanel('imagePicker');
   }
 }
 
