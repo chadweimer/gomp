@@ -51,7 +51,7 @@ export class UserEditor extends LitElement {
       }
 
       return this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel ||
-        this.passwordInput?.value !== '' || this.repeatPasswordInput?.value !== '';
+        (this.passwordInput?.value ?? '') !== '' || (this.repeatPasswordInput?.value ?? '') !== '';
     });
   }
 
