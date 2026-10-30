@@ -181,7 +181,7 @@ describe('recipe-card', () => {
 
     const visibleBadges = el.renderRoot.querySelectorAll('.tags ion-badge:not(.probe-badge):not(.more-badge)');
     expect(visibleBadges).toHaveLength(1);
-    expect(visibleBadges?.[0].classList.contains('truncate-single')).toBe(true);
+    expect(visibleBadges?.[0].classList).toContain('truncate-single');
     expect(visibleBadges?.[0].textContent?.trim()).toBe('very-long-tag-name');
 
     const moreBadge = el.renderRoot.querySelector('.more-badge');

@@ -11,7 +11,7 @@ describe('five-star-rating', () => {
     expect(icons).toHaveLength(5);
     icons?.forEach(icon => {
       expect(icon.getAttribute('name')).toBe('star-outline');
-      expect(icon.classList.contains('hover')).toBe(false);
+      expect(icon.classList).not.toContain('hover');
     });
   });
 
@@ -60,7 +60,7 @@ describe('five-star-rating', () => {
       } else {
         expect(icon.getAttribute('name')).toBe('star-outline');
       }
-      expect(icon.classList.contains('hover')).toBe(true);
+      expect(icon.classList).toContain('hover');
     });
 
     // Hover right half of 3rd star -> 3
@@ -80,7 +80,7 @@ describe('five-star-rating', () => {
       } else {
         expect(icon.getAttribute('name')).toBe('star');
       }
-      expect(icon.classList.contains('hover')).toBe(false);
+      expect(icon.classList).not.toContain('hover');
     });
   });
 
@@ -116,7 +116,7 @@ describe('five-star-rating', () => {
     icons[0].dispatchEvent(new MouseEvent('mousemove', { clientX: 10, bubbles: true }));
     await el.updateComplete;
 
-    expect(icons[0].classList.contains('hover')).toBe(false);
+    expect(icons[0].classList).not.toContain('hover');
 
     icons[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
     expect(onValueSelected).not.toHaveBeenCalled();

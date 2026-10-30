@@ -176,8 +176,8 @@ describe('app-root', () => {
 
       const preferencesLink = el.renderRoot.querySelector('ion-item[href="/settings/preferences"]');
       expect(preferencesLink).not.toBeNull();
-      expect(preferencesLink?.classList.contains('child-link')).toBe(true);
-      expect(settingsLink?.classList.contains('child-link')).toBe(false);
+      expect(preferencesLink?.classList).toContain('child-link');
+      expect(settingsLink?.classList).not.toContain('child-link');
     });
 
     it('renders admin links and child routes for Admin users', async () => {
@@ -187,19 +187,19 @@ describe('app-root', () => {
 
       const adminLink = el.renderRoot.querySelector('ion-item[href="/admin"]');
       expect(adminLink).not.toBeNull();
-      expect(adminLink?.classList.contains('child-link')).toBe(false);
+      expect(adminLink?.classList).not.toContain('child-link');
 
       const adminConfigLink = el.renderRoot.querySelector('ion-item[href="/admin/configuration"]');
       expect(adminConfigLink).not.toBeNull();
-      expect(adminConfigLink?.classList.contains('child-link')).toBe(true);
+      expect(adminConfigLink?.classList).toContain('child-link');
 
       const adminUsersLink = el.renderRoot.querySelector('ion-item[href="/admin/users"]');
       expect(adminUsersLink).not.toBeNull();
-      expect(adminUsersLink?.classList.contains('child-link')).toBe(true);
+      expect(adminUsersLink?.classList).toContain('child-link');
 
       const adminMaintenanceLink = el.renderRoot.querySelector('ion-item[href="/admin/maintenance"]');
       expect(adminMaintenanceLink).not.toBeNull();
-      expect(adminMaintenanceLink?.classList.contains('child-link')).toBe(true);
+      expect(adminMaintenanceLink?.classList).toContain('child-link');
     });
 
     it('preserves component classes (e.g. hydrated) when toggling pageTitle active state', async () => {
@@ -218,18 +218,18 @@ describe('app-root', () => {
       el.pageTitle = 'Home';
       await el.updateComplete;
 
-      expect(homeItem.classList.contains('active')).toBe(true);
-      expect(homeItem.classList.contains('hydrated')).toBe(true);
-      expect(homeItem.classList.contains('item')).toBe(true);
-      expect(homeItem.classList.contains('md')).toBe(true);
+      expect(homeItem.classList).toContain('active');
+      expect(homeItem.classList).toContain('hydrated');
+      expect(homeItem.classList).toContain('item');
+      expect(homeItem.classList).toContain('md');
 
       el.pageTitle = 'Recipes';
       await el.updateComplete;
 
-      expect(homeItem.classList.contains('active')).toBe(false);
-      expect(homeItem.classList.contains('hydrated')).toBe(true);
-      expect(homeItem.classList.contains('item')).toBe(true);
-      expect(homeItem.classList.contains('md')).toBe(true);
+      expect(homeItem.classList).not.toContain('active');
+      expect(homeItem.classList).toContain('hydrated');
+      expect(homeItem.classList).toContain('item');
+      expect(homeItem.classList).toContain('md');
     });
   });
 
@@ -307,17 +307,14 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       expect(el).toBeDefined();
 
-      const router = el.renderRoot.querySelector<HTMLIonRouterElement>('ion-router');
-      if (router) {
-        router.push = vi.fn().mockResolvedValue(true);
-      }
-
       // Trigger a request that returns 401
       const { response } = await api.client.GET('/users/current/settings');
       expect(response.status).toBe(401);
       await new Promise((r) => setTimeout(r, 50));
 
+      // State should be cleared and redirect triggered
       expect(state.currentUser).toBeUndefined();
+      expect(routerEl.push).toHaveBeenCalledWith('/login');
     });
   });
 
@@ -379,11 +376,6 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const router = el.renderRoot.querySelector<HTMLIonRouterElement>('ion-router');
-      if (router) {
-        router.push = vi.fn().mockResolvedValue(true);
-      }
-
       const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
       expect(searchbar).not.toBeNull();
       if (searchbar) {
@@ -392,38 +384,25 @@ describe('app-root', () => {
       }
 
       expect(state.searchFilter).toEqual(initialFilter);
-      if (router) {
-        expect(router.push).not.toHaveBeenCalled();
-      }
+      expect(routerEl.push).not.toHaveBeenCalled();
 
       searchbar?.dispatchEvent(new CustomEvent('ionClear', { bubbles: true }));
       expect(state.searchFilter).toEqual(initialFilter);
-      if (router) {
-        expect(router.push).not.toHaveBeenCalled();
-      }
+      expect(routerEl.push).not.toHaveBeenCalled();
 
       searchbar?.dispatchEvent(new CustomEvent('ionCancel', { bubbles: true }));
       expect(state.searchFilter).toEqual(initialFilter);
-      if (router) {
-        expect(router.push).not.toHaveBeenCalled();
-      }
+      expect(routerEl.push).not.toHaveBeenCalled();
 
       const filterButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button ion-icon[name="filter"]')?.closest('ion-button');
       expect(filterButton).not.toBeNull();
       filterButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-      if (router) {
-        expect(router.push).not.toHaveBeenCalled();
-      }
+      expect(routerEl.push).not.toHaveBeenCalled();
     });
 
     it('updates query and redirects to /recipes on Enter key press', async () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
-
-      const router = el.renderRoot.querySelector<HTMLIonRouterElement>('ion-router');
-      if (router) {
-        router.push = vi.fn().mockResolvedValue(true);
-      }
 
       const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
       expect(searchbar).not.toBeNull();
@@ -441,11 +420,6 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const router = el.renderRoot.querySelector<HTMLIonRouterElement>('ion-router');
-      if (router) {
-        router.push = vi.fn().mockResolvedValue(true);
-      }
-
       const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
       expect(searchbar).not.toBeNull();
       searchbar?.dispatchEvent(new CustomEvent('ionClear', { bubbles: true }));
@@ -462,11 +436,6 @@ describe('app-root', () => {
       };
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
-
-      const router = el.renderRoot.querySelector<HTMLIonRouterElement>('ion-router');
-      if (router) {
-        router.push = vi.fn().mockResolvedValue(true);
-      }
 
       const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
       expect(searchbar).not.toBeNull();
@@ -508,13 +477,16 @@ describe('app-root', () => {
       const router = setupRouterOutlet(el);
       expect(router).not.toBeNull();
 
+      // Initially pageTitle is empty: no ion-text in ion-title
       const title = el.renderRoot.querySelector('ion-title');
       expect(title?.querySelector('ion-text')).toBeNull();
 
+      // Navigate to /recipes first to set a non-empty pageTitle
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes', from: '/' } }));
       await el.updateComplete;
       expect(title?.querySelector('ion-text')?.textContent?.trim()).toBe('| Recipes');
 
+      // Navigate to unmatched route /login -> clears pageTitle
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/login', from: '/recipes' } }));
       await el.updateComplete;
 
@@ -523,14 +495,14 @@ describe('app-root', () => {
       const toolbarButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button');
       toolbarButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('clear');
-        expect(btn.classList.contains('active')).toBe(false);
+        expect(btn.classList).not.toContain('active');
       });
 
       const menuItems = el.renderRoot.querySelectorAll('ion-menu ion-item[href]');
       menuItems.forEach((item) => {
         expect(item.getAttribute('color')).toBeNull();
         expect(item.hasAttribute('detail')).toBe(false);
-        expect(item.classList.contains('active')).toBe(false);
+        expect(item.classList).not.toContain('active');
       });
     });
 
@@ -546,22 +518,23 @@ describe('app-root', () => {
       expect(titleText).not.toBeNull();
       expect(titleText?.textContent?.trim()).toBe('| Home');
 
+      // Home is not in toolbar, so all toolbar buttons remain inactive
       const toolbarButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button');
       expect(toolbarButtons.length).toBeGreaterThan(0);
       toolbarButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('clear');
-        expect(btn.classList.contains('active')).toBe(false);
+        expect(btn.classList).not.toContain('active');
       });
 
       const homeItem = el.renderRoot.querySelector('ion-menu ion-item[href="/"]');
       expect(homeItem?.getAttribute('color')).toBe('secondary');
       expect(homeItem?.hasAttribute('detail')).toBe(true);
-      expect(homeItem?.classList.contains('active')).toBe(true);
+      expect(homeItem?.classList).toContain('active');
 
       const recipesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/recipes"]');
       expect(recipesItem?.getAttribute('color')).toBeNull();
       expect(recipesItem?.hasAttribute('detail')).toBe(false);
-      expect(recipesItem?.classList.contains('active')).toBe(false);
+      expect(recipesItem?.classList).not.toContain('active');
     });
 
     it('updates pageTitle to "Recipes" on "/recipes" and highlights matching toolbar buttons and side menu item', async () => {
@@ -576,29 +549,31 @@ describe('app-root', () => {
       expect(titleText).not.toBeNull();
       expect(titleText?.textContent?.trim()).toBe('| Recipes');
 
+      // Toolbar: both desktop and mobile Recipes buttons are active/solid; others are clear
       const recipesButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button[href="/recipes"]');
       expect(recipesButtons).toHaveLength(2);
       recipesButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('solid');
-        expect(btn.classList.contains('active')).toBe(true);
+        expect(btn.classList).toContain('active');
       });
 
       const otherButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button:not([href="/recipes"])');
       expect(otherButtons.length).toBeGreaterThan(0);
       otherButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('clear');
-        expect(btn.classList.contains('active')).toBe(false);
+        expect(btn.classList).not.toContain('active');
       });
 
+      // Side menu: Recipes is active, Home is inactive
       const recipesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/recipes"]');
       expect(recipesItem?.getAttribute('color')).toBe('secondary');
       expect(recipesItem?.hasAttribute('detail')).toBe(true);
-      expect(recipesItem?.classList.contains('active')).toBe(true);
+      expect(recipesItem?.classList).toContain('active');
 
       const homeItem = el.renderRoot.querySelector('ion-menu ion-item[href="/"]');
       expect(homeItem?.getAttribute('color')).toBeNull();
       expect(homeItem?.hasAttribute('detail')).toBe(false);
-      expect(homeItem?.classList.contains('active')).toBe(false);
+      expect(homeItem?.classList).not.toContain('active');
     });
 
     it('updates pageTitle to "Recipes" on dynamic routes like "/recipes/123" and highlights matching toolbar buttons and side menu item', async () => {
@@ -613,23 +588,26 @@ describe('app-root', () => {
       expect(titleText).not.toBeNull();
       expect(titleText?.textContent?.trim()).toBe('| Recipes');
 
+      // Toolbar: both desktop and mobile Recipes buttons are active/solid
       const recipesButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button[href="/recipes"]');
       expect(recipesButtons).toHaveLength(2);
       recipesButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('solid');
-        expect(btn.classList.contains('active')).toBe(true);
+        expect(btn.classList).toContain('active');
       });
 
+      // Side menu: Recipes is active, Home is inactive
       const recipesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/recipes"]');
       expect(recipesItem?.getAttribute('color')).toBe('secondary');
       expect(recipesItem?.hasAttribute('detail')).toBe(true);
-      expect(recipesItem?.classList.contains('active')).toBe(true);
+      expect(recipesItem?.classList).toContain('active');
 
+      // Also verify with trailing slash
       router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes/456/', from: '/recipes/123' } }));
       await el.updateComplete;
 
       expect(el.renderRoot.querySelector('ion-title ion-text')?.textContent?.trim()).toBe('| Recipes');
-      expect(recipesItem?.classList.contains('active')).toBe(true);
+      expect(recipesItem?.classList).toContain('active');
     });
 
     it('matches parent and child link on child routes like "/settings/preferences"', async () => {
@@ -644,29 +622,31 @@ describe('app-root', () => {
       expect(titleText).not.toBeNull();
       expect(titleText?.textContent?.trim()).toBe('| Settings');
 
+      // Toolbar: Settings buttons are active/solid
       const settingsButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button[href="/settings"]');
       expect(settingsButtons).toHaveLength(2);
       settingsButtons.forEach((btn) => {
         expect(btn.getAttribute('fill')).toBe('solid');
-        expect(btn.classList.contains('active')).toBe(true);
+        expect(btn.classList).toContain('active');
       });
 
+      // Side menu: parent Settings item has active class and secondary icon/label, while child Preferences item has secondary color and detail
       const settingsItem = el.renderRoot.querySelector('ion-menu ion-item[href="/settings"]');
       expect(settingsItem?.getAttribute('color')).toBeNull();
       expect(settingsItem?.hasAttribute('detail')).toBe(false);
-      expect(settingsItem?.classList.contains('active')).toBe(true);
+      expect(settingsItem?.classList).toContain('active');
       expect(settingsItem?.querySelector('ion-icon')?.getAttribute('color')).toBe('secondary');
       expect(settingsItem?.querySelector('ion-label')?.getAttribute('color')).toBe('secondary');
 
       const preferencesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/settings/preferences"]');
       expect(preferencesItem?.getAttribute('color')).toBe('secondary');
       expect(preferencesItem?.hasAttribute('detail')).toBe(true);
-      expect(preferencesItem?.classList.contains('active')).toBe(true);
+      expect(preferencesItem?.classList).toContain('active');
 
       const searchesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/settings/searches"]');
       expect(searchesItem?.getAttribute('color')).toBeNull();
       expect(searchesItem?.hasAttribute('detail')).toBe(false);
-      expect(searchesItem?.classList.contains('active')).toBe(false);
+      expect(searchesItem?.classList).not.toContain('active');
     });
 
     it('clears pageTitle on unmatched routes like /login when user is unauthenticated', async () => {
@@ -686,7 +666,7 @@ describe('app-root', () => {
 
       const menuItems = el.renderRoot.querySelectorAll('ion-menu ion-item[href]');
       menuItems.forEach((item) => {
-        expect(item.classList.contains('active')).toBe(false);
+        expect(item.classList).not.toContain('active');
       });
     });
 
@@ -710,7 +690,7 @@ describe('app-root', () => {
       expect(homeItem).not.toBeNull();
       expect(homeItem?.getAttribute('color')).toBe('secondary');
       expect(homeItem?.hasAttribute('detail')).toBe(true);
-      expect(homeItem?.classList.contains('active')).toBe(true);
+      expect(homeItem?.classList).toContain('active');
     });
   });
 
