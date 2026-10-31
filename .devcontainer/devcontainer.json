@@ -43,7 +43,9 @@
     "ghcr.io/devcontainers/features/go:1": {
       "version": "none"
     },
-    "ghcr.io/devcontainers/features/node:2": {},
+    "ghcr.io/devcontainers/features/node:2": {
+      "pnpmVersion": "latest"
+    },
     // Needed for SonarQube extension
     "ghcr.io/devcontainers/features/java:1": {}
   },

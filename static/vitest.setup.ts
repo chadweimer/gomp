@@ -1,6 +1,6 @@
 import createFetchMock from 'vitest-fetch-mock';
 import { vi, afterEach } from 'vitest';
-import { fixtureCleanup } from '@open-wc/testing-helpers';
+import { fixtureCleanup } from '@open-wc/testing';
 
 const fetchMocker = createFetchMock(vi);
 fetchMocker.enableMocks();

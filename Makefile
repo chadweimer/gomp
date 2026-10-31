@@ -57,12 +57,12 @@ docs:
 install: $(CLIENT_INSTALL_DIR)
 	go get ./...
 
-$(CLIENT_INSTALL_DIR): $(CLIENT_DIR)/package.json
-	npm --prefix $(CLIENT_DIR) ci --silent
+$(CLIENT_INSTALL_DIR): $(CLIENT_DIR)/package.json $(CLIENT_DIR)/pnpm-lock.yaml
+	pnpm --dir $(CLIENT_DIR) install --frozen-lockfile --silent
 
 .PHONY: uninstall
 uninstall:
-	npm --prefix $(CLIENT_DIR) run clear
+	pnpm --dir $(CLIENT_DIR) run clear
 
 
 # ---- CODEGEN ----
@@ -71,7 +71,7 @@ uninstall:
 codegen: $(CODEGEN_FILES) $(CLIENT_CODEGEN_API)
 
 $(CLIENT_CODEGEN_API): $(CLIENT_INSTALL_DIR) openapi.yaml models.yaml
-	npm --prefix $(CLIENT_DIR) run codegen
+	pnpm --dir $(CLIENT_DIR) run codegen
 
 $(API_CODEGEN_FILE): $(MODELS_CODEGEN_FILE) openapi.yaml api/cfg.yaml
 	go generate $(GO_MODULE_NAME)/api
@@ -90,7 +90,7 @@ lint: lint-client lint-server
 
 .PHONY: lint-client
 lint-client: $(CLIENT_INSTALL_DIR) $(CLIENT_CODEGEN_API)
-	npm --prefix $(CLIENT_DIR) run lint
+	pnpm --dir $(CLIENT_DIR) run lint
 
 .PHONY: lint-server
 lint-server: $(CODEGEN_FILES)
@@ -106,7 +106,7 @@ lint-server: $(CODEGEN_FILES)
 clean:
 	rm -rf $(ROOT_BUILD_DIR)
 	find . -type f -name "*.gen.go" -delete
-	npm --prefix $(CLIENT_DIR) run clean
+	pnpm --dir $(CLIENT_DIR) run clean
 	$(GO_ENV) go clean -i ./...
 
 
@@ -115,7 +115,7 @@ clean:
 $(ROOT_BUILD_DIR): $(BUILD_DIR)
 
 $(CLIENT_BUILD_DIR): $(CLIENT_INSTALL_DIR) $(CLIENT_FILES) $(CLIENT_CODEGEN_API)
-	rm -rf $@ && npm --prefix $(CLIENT_DIR) run build
+	rm -rf $@ && pnpm --dir $(CLIENT_DIR) run build
 
 $(BUILD_DIR): $(BUILD_DIR)/gomp $(BUILD_DIR)/db/migrations $(BUILD_DIR)/static
 
@@ -153,7 +153,7 @@ $(ROOT_BUILD_DIR)/coverage/server: go.mod $(CODEGEN_FILES) $(GO_FILES)
 $(ROOT_BUILD_DIR)/coverage/client: $(CLIENT_FILES) $(CLIENT_CODEGEN_API)
 	rm -rf $@
 	mkdir -p $@
-	npm --prefix $(CLIENT_DIR) run cover
+	pnpm --dir $(CLIENT_DIR) run cover
 	if [ -d $(CLIENT_DIR)/coverage ]; then cp -r $(CLIENT_DIR)/coverage/* $@; fi
 	# Use sed to add static/ prefix to all file paths in the lcov.info file
 	if [ -f $@/lcov.info ]; then sed -i 's/^SF:\(.*\)/SF:$(CLIENT_DIR)\/\1/' $@/lcov.info; fi
