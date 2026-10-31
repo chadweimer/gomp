@@ -3,6 +3,16 @@
   "private": true,
   "description": "GOMP: Go Meal Planner - A web-based recipe book",
   "type": "module",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "lts"
+    },
+    "packageManager": {
+      "name": "pnpm",
+      "version": "latest"
+    }
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
