@@ -10,7 +10,7 @@
     "clean": "rm -fr ./dist && rm -f src/helpers/schema.gen.ts",
     "preview": "vite preview",
     "codegen": "openapi-typescript ../openapi.yaml -o ./src/helpers/schema.gen.ts --root-types --root-types-no-schema-prefix --enum",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "test": "vitest run",
     "test:watch": "vitest",
     "cover": "vitest run --coverage"
@@ -30,17 +30,16 @@
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@open-wc/testing": "^5.0.0",
     "@types/dompurify": "^3.0.5",
     "@types/node": "^24.19.2",
     "@vitest/coverage-v8": "^5.0.5",
-    "eslint": "^10.13.0",
     "globals": "^17.13.0",
     "jsdom": "^29.0.1",
     "openapi-typescript": "^7.13.0",
+    "oxlint": "^1.90.0",
+    "oxlint-tsgolint": "^7.0.2005",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5",
     "vitest": "^5.0.5",
     "vitest-fetch-mock": "^0.4.5"
