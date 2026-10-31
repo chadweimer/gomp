@@ -8,6 +8,7 @@
 _obj
 _test
 node_modules/
+.pnpm-store/
 build/
 /vendor/
 .glide/
