@@ -7,20 +7,20 @@
 */
 
 /** Core CSS required for ionic components to work property */
-@import '../../node_modules/@ionic/core/css/core.css';
+@import '@ionic/core/css/core.css';
 
 /** Basic CSS for apps built with Ionic */
-@import '../../node_modules/@ionic/core/css/display.css';
-@import '../../node_modules/@ionic/core/css/normalize.css';
-@import '../../node_modules/@ionic/core/css/structure.css';
-@import '../../node_modules/@ionic/core/css/typography.css';
+@import '@ionic/core/css/display.css';
+@import '@ionic/core/css/normalize.css';
+@import '@ionic/core/css/structure.css';
+@import '@ionic/core/css/typography.css';
 
-/** Optional CSS utils that can be commented out */
-@import '../../node_modules/@ionic/core/css/padding.css';
-@import '../../node_modules/@ionic/core/css/float-elements.css';
-@import '../../node_modules/@ionic/core/css/text-alignment.css';
-@import '../../node_modules/@ionic/core/css/text-transformation.css';
-@import '../../node_modules/@ionic/core/css/flex-utils.css';
+/** Optional CSS utils */
+@import '@ionic/core/css/padding.css';
+@import '@ionic/core/css/float-elements.css';
+@import '@ionic/core/css/text-alignment.css';
+@import '@ionic/core/css/text-transformation.css';
+@import '@ionic/core/css/flex-utils.css';
 
 /*
   The CSS Variables below can be used to theme your app.
@@ -196,7 +196,6 @@
   overflow: visible !important;
 }
 
-
 @media (prefers-reduced-motion: no-preference) {
   .zoom {
     transition: transform 150ms;
@@ -248,7 +247,7 @@ ion-thumbnail.preview {
 }
 
 @media only screen and (max-width: 575.98px) and (max-height: 575.98px) {
-  ion-model {
+  ion-modal {
     --width: 100%;
     --height: 100%;
   }

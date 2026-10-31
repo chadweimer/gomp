@@ -36,22 +36,22 @@ Use this guide for consistent tests across API, DB, and middleware layers.
   - `mocks/upload/mocks.gen.go`
 - Regenerate with `go generate ./...` when interfaces change.
 
-## Frontend Tests (Stencil + Vitest)
+## Frontend Tests (Lit + Vitest)
 
-Use this guide for component tests under `static/src/components/**/test/*.spec.tsx`.
+Use this guide for component tests under `static/src/components/**/*.spec.ts`.
 
 ### Core Setup & Lifecycle
-- Mount components with `render(<component-tag ... />)` from `@stencil/vitest`.
-- Always `await waitForChanges()` after interactions, clicks, or event emissions to let Stencil finish its batched update cycle.
+- Mount components with `fixture<ComponentName>(html`<component-tag ...></component-tag>`)` from `@open-wc/testing`.
+- Always `await el.updateComplete` (or re-query DOM) after interactions, clicks, or property updates to let Lit finish its reactive update cycle.
 - In `beforeEach` and `afterEach`:
   - `fetchMocker.resetMocks()` to clear mock routes and recorded calls.
   - `clearState()` from `stores/state` to reset global app state between tests.
   - Restore `globalThis.fetch` and call `vi.restoreAllMocks()`.
   - Clean up any manually mounted DOM elements (e.g., mock router) in `afterEach`.
-- Always use specific matchers (e.g., `toHaveLength`, `toBeNull`, `toEqualText`, `toEqualAttribute`, `toHaveTextContent`, etc) instead of generic assertions like `expect(x).toBe(y)`.
+- Always use specific matchers (e.g., `toHaveLength`, `toBeNull`, `toBeDefined`, `toContain`, etc) instead of generic assertions like `expect(x).toBe(y)`.
 
 ### Mocking HTTP Requests (`fetchMocker`)
-- Import `fetchMocker` from `../../../../../vitest.setup` (or relative path to `static/vitest.setup.ts`).
+- Import `fetchMocker` from relative path to `vitest.setup.ts`.
 - Mock responses matching `req.url` (regex) and `req.method`:
   ```ts
   fetchMocker.mockResponse((req: Request) => {
@@ -67,7 +67,6 @@ Use this guide for component tests under `static/src/components/**/test/*.spec.t
   const body = (await putReq?.clone().json()) as Recipe;
   expect(body.name).toBe('Updated Recipe');
   ```
-- **Error handling during initial load**: `@stencil/vitest` captures any `Error` passed to `console.error` during `render()` and re-throws it after hydration. When testing failed initial data loading (e.g. 500 status), wrap `render(...)` in `try / catch`, assert that the lifecycle error was caught, and verify that the component in DOM degraded gracefully to its fallback state.
 
 ### Mocking Ionic Controllers & Overlays
 - Controllers (`alertController`, `modalController`, `actionSheetController`, `toastController`, `loadingController`) from `@ionic/core` are singletons.
@@ -121,11 +120,11 @@ Use this guide for component tests under `static/src/components/**/test/*.spec.t
   - `AccessLevel.Editor` / `AccessLevel.Admin`: verify full action controls visible and functional.
 
 ### Child Component Events & Queries
-- Stencil component interfaces (`HTMLRecipeViewerElement`, `HTMLNoteCardElement`, etc.) are declared globally in `components.d.ts`—use them for query selectors: `root.querySelector<HTMLRecipeViewerElement>('recipe-viewer')`.
+- Query components using their custom element tag names and cast or type with their exported class: `el.renderRoot.querySelector<RecipeViewer>('recipe-viewer')`.
 - Trigger component custom events via `dispatchEvent`:
   ```ts
   recipeViewer?.dispatchEvent(new CustomEvent('ratingSelected', { detail: 5 }));
-  await waitForChanges();
+  await el.updateComplete;
   ```
 
 ### Linting Guardrails

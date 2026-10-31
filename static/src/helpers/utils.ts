@@ -1,6 +1,6 @@
 import { createGesture, GestureDetail } from '@ionic/core';
 import DOMPurify from 'dompurify';
-import { AccessLevel, User, YesNoAny } from '../helpers/schema.gen';
+import { AccessLevel, User, YesNoAny } from './schema.gen';
 import { SwipeDirection } from '../models';
 
 export interface ComponentWithActivatedCallback {
@@ -54,7 +54,7 @@ export function isAuthorized(user: User | null | undefined, accessLevel: AccessL
 }
 
 export async function redirect(route: string) {
-  const router = document.querySelector('ion-router');
+  const router = document.querySelector<HTMLIonRouterElement>('ion-router');
   await router?.push(route);
 }
 
@@ -63,7 +63,7 @@ export function insertSpacesBetweenWords(val: string | null | undefined) {
     return '';
   }
 
-  return val.replace(/([A-Z])/g, ' $1').trim()
+  return val.replace(/([A-Z])/g, ' $1').trim();
 }
 
 export function enumKeyFromValue(keys: Record<string, string>, val: string | null | undefined) {
@@ -134,7 +134,7 @@ export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirect
 
 function getSwipe(e: GestureDetail): SwipeDirection | undefined {
   if (Math.abs(e.velocityX) < 0.1) {
-    return undefined
+    return undefined;
   }
 
   if (e.deltaX < 0) {
@@ -160,7 +160,13 @@ async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTa
       }
     }
   }
-  return routeId.element;
+
+  const el = routeId.element;
+  if (el?.tagName === 'ION-ROUTER-OUTLET') {
+    return getActiveComponent(el as HTMLIonRouterOutletElement);
+  }
+
+  return el;
 }
 
 export async function sendActivatedCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
@@ -373,4 +379,12 @@ export function getAllShadowParents(el: Element): ShadowRoot[] {
     rootNode = rootNode.host.getRootNode();
   }
   return shadows;
+}
+
+export function emit<T>(el: HTMLElement, type: string, detail: T) {
+  el.dispatchEvent(new CustomEvent(type, {
+    detail: detail,
+    bubbles: true,
+    composed: true,
+  }));
 }

@@ -1,12 +1,12 @@
-import { createStore } from '@stencil/store';
 import { AppConfiguration, AppInfo } from '../helpers/schema.gen';
+import { createStore } from './store';
 
 interface AppConfig {
   info: AppInfo;
   config: AppConfiguration;
 }
 
-const { state: appConfig } = createStore<AppConfig>({
+export const appConfigStore = createStore<AppConfig>({
   info: {
     copyright: 'Copyright © Chad Weimer',
     version: '<Unknown>'
@@ -15,5 +15,7 @@ const { state: appConfig } = createStore<AppConfig>({
     title: 'GOMP: Go Meal Planner'
   }
 });
+const appConfig = appConfigStore.state;
 
 export default appConfig;
+

@@ -41,7 +41,7 @@ class Api {
         state.loadingCount--;
       }
     }
-  }
+  };
 
   readonly loadUserSettings = async (): Promise<UserSettings | null> => {
     const { data: settings, error } = await api.client.GET('/users/current/settings');
@@ -51,7 +51,7 @@ class Api {
     }
 
     return settings ?? null;
-  }
+  };
 
   readonly loadSearchFilters = async (page = 1, count = -1): Promise<SavedSearchFilterCompact[]> => {
     const { data, error } = await api.client.GET('/users/current/filters', {
@@ -63,7 +63,7 @@ class Api {
     }
 
     return data?.filters ?? [];
-  }
+  };
 
   readonly performRecipeSearch = async (filter: SearchFilter, page: number, count: number): Promise<SearchResult> => {
     // Make sure to fill in any missing fields
@@ -91,7 +91,7 @@ class Api {
     }
 
     return recipes;
-  }
+  };
 }
 
 export const api = new Api();
@@ -117,7 +117,7 @@ export async function refreshSearchResults() {
 
   // Also populate total recipe and tag counts
   try {
-    const { data: results, error } = await api.client.GET('/recipes', { params: { query: { count: 0, } } });
+    const { data: results, error } = await api.client.GET('/recipes', { params: { query: { count: 0 } } });
 
     if (error) {
       throw new Error('Failed to fetch total recipe count.', { cause: error });

@@ -1,7 +1,8 @@
-:host {
+page-admin {
   display: block;
 }
 
-ion-tab-button {
+page-admin ion-tab-button {
   --color-selected: var(--ion-color-secondary);
 }
+

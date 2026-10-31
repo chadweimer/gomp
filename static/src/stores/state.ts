@@ -1,7 +1,7 @@
-import { createStore } from '@stencil/store';
 import { RecipeCompact, SearchFilter, User } from '../helpers/schema.gen';
 import { isNull } from '../helpers/utils';
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../models';
+import { createStore } from './store';
 
 interface AppState {
   currentUser?: User;
@@ -18,9 +18,7 @@ interface AppState {
   totalTagsCount?: number;
 }
 
-// Start with an empty state
-// eslint-disable-next-line @typescript-eslint/unbound-method
-const { state, set, onChange, reset } = createStore<AppState>({
+export const appStateStore = createStore<AppState>({
   searchFilter: getDefaultSearchFilter(),
   searchSettings: getDefaultSearchSettings(),
   searchPage: 1,
@@ -29,34 +27,41 @@ const { state, set, onChange, reset } = createStore<AppState>({
   loadingCount: 0
 });
 
+const appState = appStateStore.state;
+export const clearState = () => appStateStore.reset();
+export const onStateChange = <K extends keyof AppState>(key: K, listener: (value: AppState[K]) => void) =>
+  appStateStore.onChange(key, listener);
+
 // Sync certain properties from browser storage
-const propsToSync: { storage: Storage, key: keyof AppState }[] = [
-  { storage: localStorage, key: 'currentUser' },
-  { storage: sessionStorage, key: 'searchFilter' },
-  { storage: sessionStorage, key: 'searchSettings' },
-  { storage: sessionStorage, key: 'searchPage' },
-  { storage: sessionStorage, key: 'searchResultsPerPage' }
-];
-for (const prop of propsToSync) {
-  const val = prop.storage.getItem(prop.key);
-  if (!isNull(val)) {
-    try {
-      const parsedVal = JSON.parse(val) as number | SearchFilter | SearchSettings | RecipeCompact[] | User | undefined;
-      set(prop.key, parsedVal);
-    } catch (e) {
-      prop.storage.removeItem(prop.key);
-      console.warn(`Failed to parse stored value for ${prop.key}: ${val}`, e);
-      continue;
+if (typeof window !== 'undefined' && localStorage && sessionStorage) {
+  const propsToSync: { storage: Storage; key: keyof AppState }[] = [
+    { storage: localStorage, key: 'currentUser' },
+    { storage: sessionStorage, key: 'searchFilter' },
+    { storage: sessionStorage, key: 'searchSettings' },
+    { storage: sessionStorage, key: 'searchPage' },
+    { storage: sessionStorage, key: 'searchResultsPerPage' }
+  ];
+
+  for (const prop of propsToSync) {
+    const val = prop.storage.getItem(prop.key);
+    if (!isNull(val)) {
+      try {
+        const parsedVal = JSON.parse(val) as AppState[typeof prop.key];
+        appStateStore.set(prop.key, parsedVal);
+      } catch (e) {
+        prop.storage.removeItem(prop.key);
+        console.warn(`Failed to parse stored value for ${prop.key}: ${val}`, e);
+        continue;
+      }
     }
+    appStateStore.onChange(prop.key, (val => {
+      if (isNull(val)) {
+        prop.storage.removeItem(prop.key);
+      } else {
+        prop.storage.setItem(prop.key, JSON.stringify(val));
+      }
+    }));
   }
-  onChange(prop.key, val => {
-    if (isNull(val)) {
-      prop.storage.removeItem(prop.key);
-    } else {
-      prop.storage.setItem(prop.key, JSON.stringify(val));
-    }
-  });
 }
 
-export default state;
-export { reset as clearState, onChange as onStateChange };
+export default appState;

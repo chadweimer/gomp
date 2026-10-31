@@ -16,7 +16,7 @@
       "env": {
         "PORT": "5678",
         "LOG_LEVEL": "debug",
-        "BASE_ASSETS_PATH": "static/www/static"
+        "BASE_ASSETS_PATH": "static/dist"
       },
       "buildFlags": "-ldflags '-X github.com/chadweimer/gomp/metadata.BuildVersion=DEBUG'",
     },

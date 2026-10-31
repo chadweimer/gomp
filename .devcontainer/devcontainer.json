@@ -23,6 +23,7 @@
         "golang.go",
         "ms-azuretools.vscode-containers",
         "redhat.vscode-yaml",
+        "runem.lit-plugin",
         "SonarSource.sonarlint-vscode",
         "tamasfe.even-better-toml",
         "vitest.explorer"

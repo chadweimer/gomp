@@ -1,9 +1,0 @@
-@import '../../global/app.css';
-
-:host {
-  display: block;
-}
-
-form {
-  height: 100%;
-}

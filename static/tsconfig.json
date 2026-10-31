@@ -1,25 +1,30 @@
 {
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "allowUnreachableCode": false,
-    "declaration": false,
-    "experimentalDecorators": true,
-    "lib": [
-      "dom",
-      "es2023"
-    ],
+    "target": "ES2022",
+    "module": "ESNext",
     "moduleResolution": "bundler",
-    "module": "esnext",
-    "target": "es2022",
-    "jsx": "react",
-    "jsxFactory": "h",
-    "skipLibCheck": true
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true
   },
   "include": [
-    "src"
-  ],
-  "exclude": [
-    "node_modules",
-    "src/**/*.gen.ts"
+    "src/**/*.ts",
+    "vite.config.ts",
+    "vitest.config.mts"
   ]
 }

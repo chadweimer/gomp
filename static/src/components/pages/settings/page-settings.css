@@ -1,7 +1,8 @@
-:host {
+page-settings {
   display: block;
 }
 
-ion-tab-button {
+page-settings ion-tab-button {
   --color-selected: var(--ion-color-secondary);
 }
+

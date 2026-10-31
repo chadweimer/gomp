@@ -51,7 +51,7 @@ export function configureModalCanDismiss(
   isDirty: (data?: unknown, role?: string) => boolean | Promise<boolean>
 ) {
   if (!modal) {
-    return
+    return;
   }
 
   modal.canDismiss = async (data?: unknown, role?: string) => {
@@ -165,6 +165,6 @@ export async function showResultsPerPageAlert<T extends number = ResultsPerPage>
   });
 
   if (role === 'confirm') {
-    onSelect(data?.values ?? currentValue)
+    onSelect(data?.values ?? currentValue);
   }
 }
