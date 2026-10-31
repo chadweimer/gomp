@@ -44,7 +44,7 @@ class Api {
   };
 
   readonly loadUserSettings = async (): Promise<UserSettings | null> => {
-    const { data: settings, error } = await api.client.GET('/users/current/settings');
+    const { data: settings, error } = await this.client.GET('/users/current/settings');
 
     if (error) {
       throw new Error('Failed to load user settings.', { cause: error });
@@ -54,7 +54,7 @@ class Api {
   };
 
   readonly loadSearchFilters = async (page = 1, count = -1): Promise<SavedSearchFilterCompact[]> => {
-    const { data, error } = await api.client.GET('/users/current/filters', {
+    const { data, error } = await this.client.GET('/users/current/filters', {
       params: { query: { page, count } }
     });
 
@@ -70,7 +70,7 @@ class Api {
     const defaultFilter = getDefaultSearchFilter();
     filter = { ...defaultFilter, ...filter };
 
-    const { data: recipes, error } = await api.client.GET('/recipes', {
+    const { data: recipes, error } = await this.client.GET('/recipes', {
       params: {
         query: {
           sort: filter.sortBy,
