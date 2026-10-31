@@ -14,6 +14,8 @@
   "go.lintFlags": [
     "-config=${workspaceRoot}/revive.toml"
   ],
+  "oxc.configPath": "static/.oxlintrc.json",
+  "oxc.path.tsgolint": "static/node_modules/oxlint-tsgolint/bin/tsgolint.js",
   "sonarlint.connectedMode.project": {
     "connectionId": "chadweimer",
     "projectKey": "chadweimer_gomp"
