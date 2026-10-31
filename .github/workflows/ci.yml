@@ -63,6 +63,7 @@ jobs:
           version: latest
           install: false
           cache: true
+          save-cache: false
           working-directory: static
       - uses: actions/setup-go@v7
         with:
