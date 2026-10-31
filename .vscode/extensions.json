@@ -14,6 +14,7 @@
     "ms-azuretools.vscode-containers",
     "ms-vscode-remote.remote-containers",
     "oxc.oxc-vscode",
+    "pflannery.vscode-versionlens",
     "redhat.vscode-yaml",
     "runem.lit-plugin",
     "SonarSource.sonarlint-vscode",

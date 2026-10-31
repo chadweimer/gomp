@@ -22,6 +22,7 @@
         "golang.go",
         "ms-azuretools.vscode-containers",
         "oxc.oxc-vscode",
+        "pflannery.vscode-versionlens",
         "redhat.vscode-yaml",
         "runem.lit-plugin",
         "SonarSource.sonarlint-vscode",
