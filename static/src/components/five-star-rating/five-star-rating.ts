@@ -2,32 +2,28 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { globalStyles } from '../../global/shared-styles';
 import { emit } from '../../helpers/utils';
 import '../app-icon/app-icon';
 
 @customElement('five-star-rating')
 export class FiveStarRating extends LitElement {
-  static readonly styles = [
-    globalStyles,
-    css`
-      :host {
-        display: inline-block;
-      }
+  static readonly styles = css`
+    :host {
+      display: inline-block;
+    }
 
-      app-icon:not(.disabled) {
-        cursor: pointer;
-      }
+    app-icon:not(.disabled) {
+      cursor: pointer;
+    }
 
-      app-icon {
-        color: var(--five-star-rating-text-selected-color, var(--ion-color-tertiary, #fdd835));
-      }
+    app-icon {
+      color: var(--five-star-rating-text-selected-color, var(--ion-color-tertiary, #fdd835));
+    }
 
-      app-icon.hover:not(.disabled) {
-        color: var(--five-star-rating-text-hover-color, var(--ion-color-tertiary-tint, #ffeb3b));
-      }
-    `
-  ];
+    app-icon.hover:not(.disabled) {
+      color: var(--five-star-rating-text-hover-color, var(--ion-color-tertiary-tint, #ffeb3b));
+    }
+  `;
 
   @property({ type: Number }) value = 0;
   @property({ type: Boolean }) disabled = false;

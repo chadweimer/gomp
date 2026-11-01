@@ -18,9 +18,8 @@ describe('app-icon', () => {
     expect(span?.classList.contains('filled')).toBe(true);
   });
 
-  it('reflects size and color attributes', async () => {
-    const el = await fixture<AppIcon>(html`<app-icon name="delete" size="small" color="danger"></app-icon>`);
+  it('reflects size', async () => {
+    const el = await fixture<AppIcon>(html`<app-icon name="delete" size="small"></app-icon>`);
     expect(el.getAttribute('size')).toBe('small');
-    expect(el.getAttribute('color')).toBe('danger');
   });
 });

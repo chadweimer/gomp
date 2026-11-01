@@ -635,7 +635,7 @@ describe('app-root', () => {
       expect(settingsItem?.getAttribute('color')).toBeNull();
       expect(settingsItem?.hasAttribute('detail')).toBe(false);
       expect(settingsItem?.classList).toContain('active');
-      expect(settingsItem?.querySelector('app-icon')?.getAttribute('color')).toBe('secondary');
+      expect(settingsItem?.querySelector('[slot="start"]')?.getAttribute('color')).toBe('secondary');
       expect(settingsItem?.querySelector('ion-label')?.getAttribute('color')).toBe('secondary');
 
       const preferencesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/settings/preferences"]');

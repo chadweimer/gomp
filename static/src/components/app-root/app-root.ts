@@ -122,7 +122,7 @@ export class AppRoot extends LitElement {
           </ion-route>
         </ion-router>
 
-        <ion-menu side="start" type="reveal" content-id="main-content">
+        <ion-menu side="start" content-id="main-content">
           <ion-content>
             <ion-list class="ion-no-padding">
               ${Array.from(this.appLinks.entries())
@@ -137,7 +137,9 @@ export class AppRoot extends LitElement {
                       ?detail=${isActive && !isParentOfActive}
                       class=${classMap({ 'active': isActive, 'child-link': !isNullOrEmpty(link.parentUrl), })}
                     >
-                      <app-icon slot="start" name=${link.icon} .color=${isParentOfActive ? 'secondary' : undefined}></app-icon>
+                      <ion-text slot="start" color=${isParentOfActive ? 'secondary' : nothing}>
+                        <app-icon name=${link.icon}></app-icon>
+                      </ion-text>
                       <ion-label color=${isParentOfActive ? 'secondary' : nothing}>${link.title}</ion-label>
                       ${!isNull(link.detail) ? html`<ion-label slot="end">${link.detail()}</ion-label>` : nothing}
                     </ion-item>

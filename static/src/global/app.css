@@ -216,9 +216,17 @@
 }
 
 p {
+  min-height: 1lh;
+}
+
+:not(li)>p {
   margin-top: 0.25lh;
   margin-bottom: 0.25lh;
-  min-height: 1lh;
+}
+
+li>p {
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 ion-item:has(:focus-within)>ion-label {
@@ -249,12 +257,12 @@ ion-thumbnail.preview {
   --border-radius: 5px;
 }
 
-app-icon[slot="start"],
+:not(ion-item)>app-icon[slot="start"],
 app-icon.start {
   padding-inline-end: calc(var(--ion-padding, 8px)/2);
 }
 
-app-icon[slot="end"],
+:not(ion-item)>app-icon[slot="end"],
 app-icon.end {
   padding-inline-start: calc(var(--ion-padding, 8px)/2);
 }
