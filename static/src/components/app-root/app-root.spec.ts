@@ -390,7 +390,9 @@ describe('app-root', () => {
       expect(state.searchFilter).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
-      searchbar?.dispatchEvent(new CustomEvent('ionCancel', { bubbles: true }));
+      const resetButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Reset Search"]');
+      expect(resetButton).not.toBeNull();
+      resetButton?.click();
       expect(state.searchFilter).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
@@ -428,7 +430,7 @@ describe('app-root', () => {
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
-    it('resets to default search filter and redirects to /recipes on ionCancel event', async () => {
+    it('resets to default search filter and redirects to /recipes on reset button click', async () => {
       state.searchFilter = {
         ...getDefaultSearchFilter(),
         query: 'pasta',
@@ -437,9 +439,9 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
-      expect(searchbar).not.toBeNull();
-      searchbar?.dispatchEvent(new CustomEvent('ionCancel', { bubbles: true }));
+      const resetButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Reset Search"]');
+      expect(resetButton).not.toBeNull();
+      resetButton?.click();
 
       expect(state.searchFilter).toEqual(getDefaultSearchFilter());
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');

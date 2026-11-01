@@ -257,7 +257,7 @@ describe('page-search', () => {
       const buttons = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
       const viewModeBtn = buttons[3];
       const icon = viewModeBtn.querySelector('app-icon');
-      expect(icon?.getAttribute('name')).toBe('grid_view');
+      expect(icon?.getAttribute('name')).toBe('list_alt');
 
       viewModeBtn.click();
       expect(state.searchSettings.viewMode).toBe(SearchViewMode.List);
