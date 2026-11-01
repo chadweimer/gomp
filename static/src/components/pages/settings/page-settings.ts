@@ -74,7 +74,7 @@ export class PageSettings extends LitElement {
             <ion-label>Preferences</ion-label>
           </ion-tab-button>
           <ion-tab-button tab="tab-settings-searches" href="/settings/searches">
-            <app-icon name="search"></app-icon>
+            <app-icon name="saved_search"></app-icon>
             <ion-label>Searches</ion-label>
           </ion-tab-button>
           <ion-tab-button tab="tab-settings-security" href="/settings/security">

@@ -46,7 +46,7 @@ export class AppRoot extends LitElement {
     ['/tags', { title: 'Tags', icon: 'bookmarks', showOn: () => this.isLoggedIn(), detail: () => appState.totalTagsCount ?? 0 }],
     ['/settings', { title: 'Settings', icon: 'settings', showOn: () => this.isLoggedIn() }],
     ['/settings/preferences', { title: 'Preferences', icon: 'tune', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
-    ['/settings/searches', { title: 'Searches', icon: 'search', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
+    ['/settings/searches', { title: 'Searches', icon: 'saved_search', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
     ['/settings/security', { title: 'Security', icon: 'fingerprint', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
     ['/admin', { title: 'Admin', icon: 'security', showOn: () => this.isAdmin() }],
     ['/admin/configuration', { title: 'Configuration', icon: 'description', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],

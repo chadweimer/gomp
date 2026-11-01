@@ -62,7 +62,7 @@ describe('page-settings', () => {
 
     expect(tabButtons[1].getAttribute('tab')).toBe('tab-settings-searches');
     expect(tabButtons[1].getAttribute('href')).toBe('/settings/searches');
-    expect(tabButtons[1].querySelector('app-icon')?.getAttribute('name')).toBe('search');
+    expect(tabButtons[1].querySelector('app-icon')?.getAttribute('name')).toBe('saved_search');
     expect(tabButtons[1].querySelector('ion-label')?.textContent).toBe('Searches');
 
     expect(tabButtons[2].getAttribute('tab')).toBe('tab-settings-security');
