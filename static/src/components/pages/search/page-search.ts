@@ -22,6 +22,7 @@ import { StoreController } from '../../../stores/store';
 import '../../recipe-card/recipe-card';
 import '../../page-navigator/page-navigator';
 import '../../recipe-editor/recipe-editor';
+import '../../app-icon/app-icon';
 import './page-search.css';
 
 @customElement('page-search')
@@ -76,36 +77,36 @@ export class PageSearch extends LitElement {
               class="ion-display-none ion-display-sm-flex"
               @click=${() => this.onSearchStatesClicked()}
             >
-              <ion-icon slot="start" icon="filter"></ion-icon>
+              <app-icon slot="start" name="filter_list"></app-icon>
               ${insertSpacesBetweenWords(this.getRecipeStatesText(state.searchFilter.states))}
-              <ion-icon slot="end" icon="caret-down"></ion-icon>
+              <app-icon slot="end" name="arrow_drop_down"></app-icon>
             </ion-button>
             <ion-button color="secondary" @click=${() => this.onSortByClicked()}>
-              <ion-icon slot="start" icon="swap-vertical"></ion-icon>
+              <app-icon slot="start" name="swap_vert"></app-icon>
               ${insertSpacesBetweenWords(enumKeyFromValue(SortBy, state.searchFilter.sortBy))}
-              <ion-icon slot="end" icon="caret-down"></ion-icon>
+              <app-icon slot="end" name="arrow_drop_down"></app-icon>
             </ion-button>
             <ion-button
               color="secondary"
               @click=${() => this.setSortDir(state.searchFilter.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}
             >
-              <ion-icon
+              <app-icon
                 slot="icon-only"
-                icon=${state.searchFilter.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'}
-              ></ion-icon>
+                name=${state.searchFilter.sortDir === SortDir.Asc ? 'arrow_upward' : 'arrow_downward'}
+              ></app-icon>
             </ion-button>
             <ion-button
               color="secondary"
               @click=${() => this.setViewMode(state.searchSettings.viewMode === SearchViewMode.Card ? SearchViewMode.List : SearchViewMode.Card)}
             >
-              <ion-icon
+              <app-icon
                 slot="icon-only"
-                icon=${state.searchSettings.viewMode === SearchViewMode.Card ? 'grid' : 'list'}
-              ></ion-icon>
+                name=${state.searchSettings.viewMode === SearchViewMode.Card ? 'grid_view' : 'view_list'}
+              ></app-icon>
             </ion-button>
             <ion-button color="secondary" @click=${() => this.onResultsPerPage()}>
               ${state.searchResultsPerPage}
-              <ion-icon slot="end" icon="caret-down"></ion-icon>
+              <app-icon slot="end" name="arrow_drop_down"></app-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
@@ -147,7 +148,7 @@ export class PageSearch extends LitElement {
         ? html`
               <ion-fab horizontal="end" vertical="bottom" slot="fixed">
                 <ion-fab-button color="secondary" @click=${() => this.onNewRecipeClicked()}>
-                  <ion-icon icon="add"></ion-icon>
+                  <app-icon name="add"></app-icon>
                 </ion-fab-button>
               </ion-fab>
             `

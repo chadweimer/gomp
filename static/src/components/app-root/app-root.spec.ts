@@ -88,7 +88,7 @@ describe('app-root', () => {
         expect(searchbar.hasAttribute('disabled') || searchbar.disabled).toBeTruthy();
       });
 
-      const filterButtons = el.renderRoot.querySelectorAll<HTMLIonIconElement>('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
+      const filterButtons = el.renderRoot.querySelectorAll('ion-button app-icon[name="filter_list"]');
       expect(filterButtons).toHaveLength(2);
       filterButtons.forEach(icon => {
         const btn = icon.closest('ion-button');
@@ -136,7 +136,7 @@ describe('app-root', () => {
         expect(searchbar.hasAttribute('disabled')).toBe(false);
       });
 
-      const filterButtons = el.renderRoot.querySelectorAll<HTMLIonIconElement>('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
+      const filterButtons = el.renderRoot.querySelectorAll('ion-button app-icon[name="filter_list"]');
       expect(filterButtons).toHaveLength(2);
       filterButtons.forEach(icon => {
         const btn = icon.closest('ion-button');
@@ -394,7 +394,7 @@ describe('app-root', () => {
       expect(state.searchFilter).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
-      const filterButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button ion-icon[name="filter"]')?.closest('ion-button');
+      const filterButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button app-icon[name="filter_alt"]')?.closest('ion-button');
       expect(filterButton).not.toBeNull();
       filterButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       expect(routerEl.push).not.toHaveBeenCalled();
@@ -635,7 +635,7 @@ describe('app-root', () => {
       expect(settingsItem?.getAttribute('color')).toBeNull();
       expect(settingsItem?.hasAttribute('detail')).toBe(false);
       expect(settingsItem?.classList).toContain('active');
-      expect(settingsItem?.querySelector('ion-icon')?.getAttribute('color')).toBe('secondary');
+      expect(settingsItem?.querySelector('app-icon')?.getAttribute('color')).toBe('secondary');
       expect(settingsItem?.querySelector('ion-label')?.getAttribute('color')).toBe('secondary');
 
       const preferencesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/settings/preferences"]');

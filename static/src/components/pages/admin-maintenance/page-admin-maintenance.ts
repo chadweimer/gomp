@@ -5,6 +5,7 @@ import { api, fileContentSerializer } from '../../../helpers/api';
 import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, isNull, scaleValue } from '../../../helpers/utils';
 import '../../file-upload-browser/file-upload-browser';
+import '../../app-icon/app-icon';
 import './page-admin-maintenance.css';
 
 @customElement('page-admin-maintenance')
@@ -57,17 +58,17 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
                         </ion-item>
                         <ion-item-options side="start" @ionSwipe=${() => this.onDeleteBackupClicked(backup)}>
                           <ion-item-option color="danger" .expandable=${true} @click=${() => this.onDeleteBackupClicked(backup)}>
-                            <ion-icon slot="start" name="trash"></ion-icon>
+                            <app-icon slot="start" name="delete"></app-icon>
                             Delete
                           </ion-item-option>
                         </ion-item-options>
                         <ion-item-options side="end">
                           <ion-item-option color="medium" @click=${() => this.onDownloadBackupClicked(backup)}>
-                            <ion-icon slot="start" name="download"></ion-icon>
+                            <app-icon slot="start" name="download"></app-icon>
                             Download
                           </ion-item-option>
                           <ion-item-option color="secondary" @click=${() => this.onRestoreBackupClicked(backup)}>
-                            <ion-icon slot="start" name="open"></ion-icon>
+                            <app-icon slot="start" name="settings_backup_restore"></app-icon>
                             Restore
                           </ion-item-option>
                         </ion-item-options>
@@ -76,11 +77,11 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
                   </ion-list>
                 </ion-card-content>
                 <ion-button fill="clear" @click=${() => this.createBackupClicked()}>
-                  <ion-icon slot="start" name="server"></ion-icon>
+                  <app-icon slot="start" name="storage" size="small"></app-icon>
                   Backup Now
                 </ion-button>
                 <ion-button fill="clear" @click=${() => this.onUploadClicked()}>
-                  <ion-icon slot="start" name="open-outline"></ion-icon>
+                  <app-icon slot="start" name="upload" size="small"></app-icon>
                   Upload
                 </ion-button>
               </ion-card>
@@ -265,4 +266,3 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     link.remove();
   }
 }
-

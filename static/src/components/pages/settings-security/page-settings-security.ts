@@ -4,6 +4,7 @@ import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, enumKeyFromValue, insertSpacesBetweenWords } from '../../../helpers/utils';
+import '../../app-icon/app-icon';
 import './page-settings-security.css';
 
 @customElement('page-settings-security')
@@ -91,7 +92,7 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
                     </ion-item>
                   </ion-card-content>
                   <ion-button fill="clear" color="primary" @click=${() => this.onUpdatePasswordClicked()}>
-                    <ion-icon slot="start" name="save"></ion-icon>
+                    <app-icon slot="start" name="save" size="small"></app-icon>
                     Update Password
                   </ion-button>
                 </ion-card>

@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { globalStyles } from '../../global/shared-styles';
 import { emit } from '../../helpers/utils';
+import '../app-icon/app-icon';
 
 @customElement('five-star-rating')
 export class FiveStarRating extends LitElement {
@@ -14,15 +15,15 @@ export class FiveStarRating extends LitElement {
         display: inline-block;
       }
 
-      ion-icon:not(.disabled) {
+      app-icon:not(.disabled) {
         cursor: pointer;
       }
 
-      ion-icon {
+      app-icon {
         color: var(--five-star-rating-text-selected-color, var(--ion-color-tertiary, #fdd835));
       }
 
-      ion-icon.hover:not(.disabled) {
+      app-icon.hover:not(.disabled) {
         color: var(--five-star-rating-text-hover-color, var(--ion-color-tertiary-tint, #ffeb3b));
       }
     `
@@ -30,7 +31,7 @@ export class FiveStarRating extends LitElement {
 
   @property({ type: Number }) value = 0;
   @property({ type: Boolean }) disabled = false;
-  @property({ type: String }) size = 'small';
+  @property({ type: String }) size?: 'small' | 'large';
 
   @state() private hoverValue: number | null = null;
 
@@ -49,28 +50,29 @@ export class FiveStarRating extends LitElement {
 
     return html`
       ${this.stars.map(star => {
-      const iconName = this.getIconName(star, displayValue);
+      const { name, fill } = this.getStarConfig(star, displayValue);
       return html`
-          <ion-icon
-            name=${iconName}
+          <app-icon
+            name=${name}
+            ?fill=${fill}
             size=${ifDefined(this.size)}
             class=${classMap({ hover: isHovering, disabled: this.disabled, })}
             @mousemove=${(e: MouseEvent) => this.onMouseMove(e, star)}
             @click=${(e: MouseEvent) => this.onClick(e, star)}
-          ></ion-icon>
+          ></app-icon>
         `;
     })}
     `;
   }
 
-  private getIconName(star: number, value: number): string {
+  private getStarConfig(star: number, value: number): { name: string; fill: boolean } {
     if (value >= star) {
-      return 'star';
+      return { name: 'star', fill: true };
     }
     if (value >= star - 0.5) {
-      return 'star-half';
+      return { name: 'star_half', fill: true };
     }
-    return 'star-outline';
+    return { name: 'star', fill: false };
   }
 
   private getRatingFromEvent(event: MouseEvent, star: number): number {

@@ -8,6 +8,7 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import { emit, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import { GompImage } from './extensions';
+import '../app-icon/app-icon';
 
 type Panel = 'imagePicker' | 'linkPanel' | 'helpPanel';
 
@@ -323,42 +324,42 @@ export class HTMLEditor extends LitElement {
     const primaryButtons: ToolbarButton[] = [
       {
         name: 'bold',
-        content: html`<strong>B</strong>`,
+        content: html`<app-icon name="format_bold" size="small"></app-icon>`,
         title: 'Bold',
         click: () => this.editorCommand((chain) => chain.toggleBold()),
         active: this.isBoldActive,
       },
       {
         name: 'italic',
-        content: html`<em>I</em>`,
+        content: html`<app-icon name="format_italic" size="small"></app-icon>`,
         title: 'Italic',
         click: () => this.editorCommand((chain) => chain.toggleItalic()),
         active: this.isItalicActive,
       },
       {
         name: 'underline',
-        content: html`<u>U</u>`,
+        content: html`<app-icon name="format_underlined" size="small"></app-icon>`,
         title: 'Underline',
         click: () => this.editorCommand((chain) => chain.toggleUnderline()),
         active: this.isUnderlineActive,
       },
       {
         name: 'ordered-list',
-        content: '#',
+        content: html`<app-icon name="format_list_numbered" size="small"></app-icon>`,
         title: 'Numbered list',
         click: () => this.editorCommand((chain) => chain.toggleOrderedList()),
         active: this.isOrderedListActive,
       },
       {
         name: 'unordered-list',
-        content: html`<ion-icon icon="list"></ion-icon>`,
+        content: html`<app-icon name="format_list_bulleted" size="small"></app-icon>`,
         title: 'Bullet list',
         click: () => this.editorCommand((chain) => chain.toggleBulletList()),
         active: this.isUnorderedListActive,
       },
       {
         name: 'link',
-        content: html`<ion-icon icon="link"></ion-icon>`,
+        content: html`<app-icon name="link" size="small"></app-icon>`,
         title: 'Hyperlink',
         click: () => this.togglePanel('linkPanel'),
         active: this.activePanel === 'linkPanel' || this.isLinkActive,
@@ -369,7 +370,7 @@ export class HTMLEditor extends LitElement {
       primaryButtons.push({
         name: 'image',
         title: 'Insert image',
-        content: html`<ion-icon icon="image"></ion-icon>`,
+        content: html`<app-icon name="image" size="small"></app-icon>`,
         click: () => this.togglePanel('imagePicker'),
         active: this.activePanel === 'imagePicker',
       });
@@ -378,14 +379,14 @@ export class HTMLEditor extends LitElement {
     const secondaryButtons: ToolbarButton[] = [
       {
         name: 'invisible-characters',
-        content: html`<ion-icon icon="document-text-outline"></ion-icon>`,
+        content: html`<app-icon name="space_bar" size="small"></app-icon>`,
         title: 'Invisible characters',
         click: () => this.editorCommand((chain) => chain.toggleInvisibleCharacters()),
         active: this.isInvisibleCharactersActive,
       },
       {
         name: 'help',
-        content: html`<ion-icon icon="help-circle-outline"></ion-icon>`,
+        content: html`<app-icon name="help" size="small"></app-icon>`,
         title: 'Keyboard shortcuts',
         click: () => this.togglePanel('helpPanel'),
         active: this.activePanel === 'helpPanel',

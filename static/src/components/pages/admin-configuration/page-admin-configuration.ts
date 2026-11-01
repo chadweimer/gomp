@@ -5,6 +5,7 @@ import { api } from '../../../helpers/api';
 import { showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback } from '../../../helpers/utils';
 import appConfig from '../../../stores/config';
+import '../../app-icon/app-icon';
 import './page-admin-configuration.css';
 
 @customElement('page-admin-configuration')
@@ -47,11 +48,11 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
                     </ion-item>
                   </ion-card-content>
                   <ion-button fill="clear" color="primary" @click=${() => this.onSaveConfigurationClicked()}>
-                    <ion-icon slot="start" name="save"></ion-icon>
+                    <app-icon slot="start" name="save" size="small"></app-icon>
                     Save
                   </ion-button>
                   <ion-button fill="clear" color="danger" @click=${() => this.loadAppConfiguration()}>
-                    <ion-icon slot="start" name="arrow-undo"></ion-icon>
+                    <app-icon slot="start" name="undo" size="small"></app-icon>
                     Reset
                   </ion-button>
                 </ion-card>

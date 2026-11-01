@@ -6,6 +6,7 @@ import { showAlert, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, enumKeyFromValue, isNull } from '../../../helpers/utils';
 import '../../page-navigator/page-navigator';
 import '../../user-editor/user-editor';
+import '../../app-icon/app-icon';
 import './page-admin-users.css';
 
 @customElement('page-admin-users')
@@ -42,11 +43,11 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
                     <ion-card-subtitle>${enumKeyFromValue(AccessLevel, user.accessLevel)}</ion-card-subtitle>
                   </ion-card-header>
                   <ion-button size="small" fill="clear" @click=${() => this.onEditUserClicked(user)}>
-                    <ion-icon slot="start" name="create"></ion-icon>
+                    <app-icon slot="start" name="edit_square" size="small"></app-icon>
                     Edit
                   </ion-button>
                   <ion-button size="small" fill="clear" color="danger" @click=${() => this.onDeleteUserClicked(user)}>
-                    <ion-icon slot="start" name="trash"></ion-icon>
+                    <app-icon slot="start" name="delete" size="small"></app-icon>
                     Delete
                   </ion-button>
                 </ion-card>
@@ -57,7 +58,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
 
         <ion-fab horizontal="end" vertical="bottom" slot="fixed">
           <ion-fab-button color="secondary" @click=${() => this.onAddUserClicked()}>
-            <ion-icon icon="person-add"></ion-icon>
+            <app-icon name="person_add"></app-icon>
           </ion-fab-button>
         </ion-fab>
       </ion-content>
@@ -198,4 +199,3 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
     }
   }
 }
-

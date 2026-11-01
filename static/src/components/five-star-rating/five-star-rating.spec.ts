@@ -2,38 +2,43 @@ import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, vi } from 'vitest';
 import './five-star-rating';
 import { FiveStarRating } from './five-star-rating';
+import { AppIcon } from '../app-icon/app-icon';
 
 describe('five-star-rating', () => {
   it('renders empty stars by default', async () => {
     const el = await fixture<FiveStarRating>(html`<five-star-rating></five-star-rating>`);
-    const icons = el.renderRoot.querySelectorAll('ion-icon');
+    const icons = el.renderRoot.querySelectorAll<AppIcon>('app-icon');
     expect(icons).not.toBeNull();
     expect(icons).toHaveLength(5);
     icons?.forEach(icon => {
-      expect(icon.getAttribute('name')).toBe('star-outline');
+      expect(icon.getAttribute('name')).toBe('star');
+      expect(icon.fill).toBe(false);
       expect(icon.classList).not.toContain('hover');
     });
   });
 
   it('renders value with whole, half, and outline stars', async () => {
     const el = await fixture<FiveStarRating>(html`<five-star-rating .value=${3.5}></five-star-rating>`);
-    const icons = el.renderRoot.querySelectorAll('ion-icon');
+    const icons = el.renderRoot.querySelectorAll<AppIcon>('app-icon');
     expect(icons).toHaveLength(5);
 
     icons?.forEach((icon, i) => {
       if (i <= 2) {
         expect(icon.getAttribute('name')).toBe('star');
+        expect(icon.fill).toBe(true);
       } else if (i === 3) {
-        expect(icon.getAttribute('name')).toBe('star-half');
+        expect(icon.getAttribute('name')).toBe('star_half');
+        expect(icon.fill).toBe(true);
       } else {
-        expect(icon.getAttribute('name')).toBe('star-outline');
+        expect(icon.getAttribute('name')).toBe('star');
+        expect(icon.fill).toBe(false);
       }
     });
   });
 
   it('previews half and whole star ratings on hover and resets on mouse leave', async () => {
     const el = await fixture<FiveStarRating>(html`<five-star-rating .value=${4}></five-star-rating>`);
-    const icons = el.renderRoot.querySelectorAll('ion-icon');
+    const icons = el.renderRoot.querySelectorAll<AppIcon>('app-icon');
     expect(icons).not.toBeNull();
 
     vi.spyOn(icons[2], 'getBoundingClientRect').mockReturnValue({
@@ -55,10 +60,13 @@ describe('five-star-rating', () => {
     icons?.forEach((icon, i) => {
       if (i <= 1) {
         expect(icon.getAttribute('name')).toBe('star');
+        expect(icon.fill).toBe(true);
       } else if (i === 2) {
-        expect(icon.getAttribute('name')).toBe('star-half');
+        expect(icon.getAttribute('name')).toBe('star_half');
+        expect(icon.fill).toBe(true);
       } else {
-        expect(icon.getAttribute('name')).toBe('star-outline');
+        expect(icon.getAttribute('name')).toBe('star');
+        expect(icon.fill).toBe(false);
       }
       expect(icon.classList).toContain('hover');
     });
@@ -68,7 +76,9 @@ describe('five-star-rating', () => {
     await el.updateComplete;
 
     expect(icons[2].getAttribute('name')).toBe('star');
-    expect(icons[3].getAttribute('name')).toBe('star-outline');
+    expect(icons[2].fill).toBe(true);
+    expect(icons[3].getAttribute('name')).toBe('star');
+    expect(icons[3].fill).toBe(false);
 
     // Mouse leave resets to value=4
     el.dispatchEvent(new MouseEvent('mouseleave'));
@@ -76,9 +86,11 @@ describe('five-star-rating', () => {
 
     icons.forEach((icon, i) => {
       if (i === 4) {
-        expect(icon.getAttribute('name')).toBe('star-outline');
+        expect(icon.getAttribute('name')).toBe('star');
+        expect(icon.fill).toBe(false);
       } else {
         expect(icon.getAttribute('name')).toBe('star');
+        expect(icon.fill).toBe(true);
       }
       expect(icon.classList).not.toContain('hover');
     });
@@ -88,7 +100,7 @@ describe('five-star-rating', () => {
     const onValueSelected = vi.fn();
     const el = await fixture<FiveStarRating>(html`<five-star-rating></five-star-rating>`);
     el.addEventListener('valueSelected', (e: Event) => onValueSelected((e as CustomEvent).detail));
-    const icons = el.renderRoot.querySelectorAll('ion-icon');
+    const icons = el.renderRoot.querySelectorAll<AppIcon>('app-icon');
 
     vi.spyOn(icons[1], 'getBoundingClientRect').mockReturnValue({
       left: 20,
@@ -111,7 +123,7 @@ describe('five-star-rating', () => {
     const onValueSelected = vi.fn();
     const el = await fixture<FiveStarRating>(html`<five-star-rating disabled .value=${3}></five-star-rating>`);
     el.addEventListener('valueSelected', (e: Event) => onValueSelected((e as CustomEvent).detail));
-    const icons = el.renderRoot.querySelectorAll('ion-icon');
+    const icons = el.renderRoot.querySelectorAll<AppIcon>('app-icon');
 
     icons[0].dispatchEvent(new MouseEvent('mousemove', { clientX: 10, bubbles: true }));
     await el.updateComplete;

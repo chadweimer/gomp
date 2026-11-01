@@ -8,6 +8,7 @@ import { ComponentWithActivatedCallback, createSwipeGesture, isNull } from '../.
 import { getDefaultSearchFilter, SwipeDirection } from '../../../models';
 import appState from '../../../stores/state';
 import '../../page-navigator/page-navigator';
+import '../../app-icon/app-icon';
 import './page-tags.css';
 
 @customElement('page-tags')
@@ -61,16 +62,16 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
         <ion-toolbar color="light">
           <ion-buttons class="ion-justify-content-center">
             <ion-button color="secondary" @click=${() => this.onSortByClicked()}>
-              <ion-icon slot="start" icon="swap-vertical"></ion-icon>
+              <app-icon slot="start" name="swap_vert"></app-icon>
               ${this.sortBy}
             </ion-button>
             <ion-button color="secondary" @click=${() => this.onSortDirClicked()}>
-              <ion-icon slot="start" icon=${this.sortDir === SortDir.Asc ? 'arrow-up' : 'arrow-down'}></ion-icon>
+              <app-icon slot="start" name=${this.sortDir === SortDir.Asc ? 'arrow_upward' : 'arrow_downward'}></app-icon>
               ${this.sortDir}
             </ion-button>
             <ion-button color="secondary" @click=${() => this.onResultsPerPageClicked()}>
               ${this.resultsPerPage}
-              <ion-icon slot="end" icon="caret-down"></ion-icon>
+              <app-icon slot="end" name="arrow_drop_down"></app-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
@@ -83,7 +84,7 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
               <ion-col key=${item.tag} size="12" size-md="6" size-lg="4" size-xl="3">
                 <ion-item href="/recipes" @click=${() => this.onTagClicked(item.tag)}>
                   <ion-label>${item.tag}</ion-label>
-                  <ion-icon slot="end" name="bookmark" size="small"></ion-icon>
+                  <app-icon slot="end" name="bookmark" size="small"></app-icon>
                   <ion-note slot="end">${item.count}</ion-note>
                 </ion-item>
               </ion-col>

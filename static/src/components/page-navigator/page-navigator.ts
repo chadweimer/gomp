@@ -4,6 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { globalStyles } from '../../global/shared-styles';
 import { emit } from '../../helpers/utils';
+import '../app-icon/app-icon';
 
 @customElement('page-navigator')
 export class PageNavigator extends LitElement {
@@ -31,7 +32,7 @@ export class PageNavigator extends LitElement {
           ?disabled=${this.page === 1}
           @click=${() => this.onClick(1)}
         >
-          <ion-icon slot="icon-only" icon="arrow-back"></ion-icon>
+          <app-icon slot="icon-only" name="first_page"></app-icon>
         </ion-button>
         <ion-button
           fill=${ifDefined(this.fill)}
@@ -39,7 +40,7 @@ export class PageNavigator extends LitElement {
           ?disabled=${this.page === 1}
           @click=${() => this.onClick(this.page - 1)}
         >
-          <ion-icon slot="icon-only" icon="chevron-back"></ion-icon>
+          <app-icon slot="icon-only" name="chevron_left"></app-icon>
         </ion-button>
         <ion-button
           fill=${ifDefined(this.fill)}
@@ -54,7 +55,7 @@ export class PageNavigator extends LitElement {
           ?disabled=${this.page === this.numPages}
           @click=${() => this.onClick(this.page + 1)}
         >
-          <ion-icon slot="icon-only" icon="chevron-forward"></ion-icon>
+          <app-icon slot="icon-only" name="chevron_right"></app-icon>
         </ion-button>
         <ion-button
           fill=${ifDefined(this.fill)}
@@ -62,7 +63,7 @@ export class PageNavigator extends LitElement {
           ?disabled=${this.page === this.numPages}
           @click=${() => this.onClick(this.numPages)}
         >
-          <ion-icon slot="icon-only" icon="arrow-forward"></ion-icon>
+          <app-icon slot="icon-only" name="last_page"></app-icon>
         </ion-button>
       </ion-buttons>
     `;

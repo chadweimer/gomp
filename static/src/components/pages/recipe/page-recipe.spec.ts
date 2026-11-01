@@ -45,7 +45,7 @@ describe('page-recipe', () => {
 
   function getFooterMenuButton(root: ReactiveElement): HTMLIonButtonElement | undefined {
     const buttons = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-footer ion-buttons[slot="primary"] ion-button'));
-    return buttons.find(b => b.querySelector('ion-icon[slot="icon-only"]') !== null) ?? buttons[buttons.length - 1];
+    return buttons.find(b => b.querySelector('app-icon[slot="icon-only"]') !== null) ?? buttons[buttons.length - 1];
   }
 
   function mockModal(data: unknown = null): HTMLIonModalElement {

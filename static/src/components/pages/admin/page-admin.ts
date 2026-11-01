@@ -6,6 +6,7 @@ import { SwipeDirection } from '../../../models';
 import '../admin-configuration/page-admin-configuration';
 import '../admin-users/page-admin-users';
 import '../admin-maintenance/page-admin-maintenance';
+import '../../app-icon/app-icon';
 import './page-admin.css';
 
 @customElement('page-admin')
@@ -69,15 +70,15 @@ export class PageAdmin extends LitElement {
 
         <ion-tab-bar slot="top">
           <ion-tab-button tab="tab-admin-configuration" href="/admin/configuration">
-            <ion-icon name="document-text"></ion-icon>
+            <app-icon name="description"></app-icon>
             <ion-label>Configuration</ion-label>
           </ion-tab-button>
           <ion-tab-button tab="tab-admin-users" href="/admin/users">
-            <ion-icon name="people"></ion-icon>
+            <app-icon name="group"></app-icon>
             <ion-label>Users</ion-label>
           </ion-tab-button>
           <ion-tab-button tab="tab-admin-maintenance" href="/admin/maintenance">
-            <ion-icon name="build"></ion-icon>
+            <app-icon name="construction"></app-icon>
             <ion-label>Maintenance</ion-label>
           </ion-tab-button>
         </ion-tab-bar>

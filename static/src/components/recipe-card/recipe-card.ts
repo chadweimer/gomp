@@ -187,7 +187,7 @@ export class RecipeCard extends LitElement {
           </ion-card-title>
         </ion-card-header>
         <ion-card-content class="content">
-          <five-star-rating .value=${this.recipe?.rating ?? 0} ?disabled=${true}></five-star-rating>
+          <five-star-rating .value=${this.recipe?.rating ?? 0} size="small" ?disabled=${true}></five-star-rating>
         </ion-card-content>
         ${this.recipe?.state === RecipeState.Archived
         ? html`<ion-badge class="top-right-padded translucent" color="light">Archived</ion-badge>`

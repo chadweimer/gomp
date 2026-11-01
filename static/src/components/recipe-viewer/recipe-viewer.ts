@@ -6,6 +6,7 @@ import { emit, formatDate, getRecipeImageUrl, getRecipeThumbnailUrl, isNullOrEmp
 import { globalStyles } from '../../global/shared-styles';
 import '../five-star-rating/five-star-rating';
 import '../html-viewer/html-viewer';
+import '../app-icon/app-icon';
 
 @customElement('recipe-viewer')
 export class RecipeViewer extends LitElement {
@@ -190,7 +191,7 @@ export class RecipeViewer extends LitElement {
                                   color="danger"
                                   @click=${() => emit(this, 'deleteLinkClicked', link)}
                                 >
-                                  <ion-icon slot="start" icon="close"></ion-icon>
+                                  <app-icon slot="start" name="close"></app-icon>
                                   Remove
                                 </ion-item-option>
                               </ion-item-options>

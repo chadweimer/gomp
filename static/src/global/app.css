@@ -22,6 +22,11 @@
 @import '@ionic/core/css/text-transformation.css';
 @import '@ionic/core/css/flex-utils.css';
 
+/** Material Symbols Icons */
+@import 'material-symbols/outlined.css';
+@import 'material-symbols/rounded.css';
+@import 'material-symbols/sharp.css';
+
 /*
   The CSS Variables below can be used to theme your app.
   For more info on CSS variables check out:
@@ -244,6 +249,16 @@ ion-grid {
 ion-thumbnail.preview {
   --size: 35px;
   --border-radius: 5px;
+}
+
+app-icon[slot="start"],
+app-icon.start {
+  padding-inline-end: calc(var(--ion-padding, 8px)/2);
+}
+
+app-icon[slot="end"],
+app-icon.end {
+  padding-inline-start: calc(var(--ion-padding, 8px)/2);
 }
 
 @media only screen and (max-width: 575.98px) and (max-height: 575.98px) {

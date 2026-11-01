@@ -57,17 +57,17 @@ describe('page-settings', () => {
 
     expect(tabButtons[0].getAttribute('tab')).toBe('tab-settings-preferences');
     expect(tabButtons[0].getAttribute('href')).toBe('/settings/preferences');
-    expect(tabButtons[0].querySelector('ion-icon')?.getAttribute('name')).toBe('options');
+    expect(tabButtons[0].querySelector('app-icon')?.getAttribute('name')).toBe('tune');
     expect(tabButtons[0].querySelector('ion-label')?.textContent).toBe('Preferences');
 
     expect(tabButtons[1].getAttribute('tab')).toBe('tab-settings-searches');
     expect(tabButtons[1].getAttribute('href')).toBe('/settings/searches');
-    expect(tabButtons[1].querySelector('ion-icon')?.getAttribute('name')).toBe('search');
+    expect(tabButtons[1].querySelector('app-icon')?.getAttribute('name')).toBe('search');
     expect(tabButtons[1].querySelector('ion-label')?.textContent).toBe('Searches');
 
     expect(tabButtons[2].getAttribute('tab')).toBe('tab-settings-security');
     expect(tabButtons[2].getAttribute('href')).toBe('/settings/security');
-    expect(tabButtons[2].querySelector('ion-icon')?.getAttribute('name')).toBe('finger-print');
+    expect(tabButtons[2].querySelector('app-icon')?.getAttribute('name')).toBe('fingerprint');
     expect(tabButtons[2].querySelector('ion-label')?.textContent).toBe('Security');
   });
 

@@ -32,12 +32,12 @@ importers:
       dompurify:
         specifier: ^3.4.17
         version: 3.4.17
-      ionicons:
-        specifier: ^8.1.0
-        version: 8.1.0
       lit:
         specifier: ^3.2.1
         version: 3.3.3
+      material-symbols:
+        specifier: ^0.48.2
+        version: 0.48.2
       openapi-fetch:
         specifier: ^0.17.0
         version: 0.17.0
@@ -1478,6 +1478,9 @@ packages:
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
     engines: {node: '>=10'}
+
+  material-symbols@0.48.2:
+    resolution: {integrity: sha512-HepjQnrny9CsxBuTofUJsHS1Il41l3oa9ZiLHTnrKJKZbIyDvXHZJBD1ffLEO/5lSKdb8v2filRW59IPsO65yA==}
 
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
@@ -3424,6 +3427,8 @@ snapshots:
   make-dir@4.0.0:
     dependencies:
       semver: 7.8.5
+
+  material-symbols@0.48.2: {}
 
   math-intrinsics@1.1.0: {}
 

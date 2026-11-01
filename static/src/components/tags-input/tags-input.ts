@@ -3,6 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { emit, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
+import '../app-icon/app-icon';
 
 @customElement('tags-input')
 export class TagsInput extends LitElement {
@@ -70,7 +71,7 @@ export class TagsInput extends LitElement {
           tag => html`
                   <ion-chip @click=${() => this.removeTag(tag)}>
                     ${tag}
-                    <ion-icon icon="close-circle"></ion-icon>
+                    <app-icon class="end" name="close" size="small"></app-icon>
                   </ion-chip>
                 `
         )}
@@ -83,7 +84,7 @@ export class TagsInput extends LitElement {
           tag => html`
             <ion-chip class="suggested" color="secondary" @click=${() => this.addTag(tag)}>
               ${tag}
-              <ion-icon icon="add-circle"></ion-icon>
+              <app-icon class="end" name="add" size="small"></app-icon>
             </ion-chip>
           `
         )}

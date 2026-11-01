@@ -256,8 +256,8 @@ describe('page-search', () => {
       // The 4th header button is viewMode toggle
       const buttons = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
       const viewModeBtn = buttons[3];
-      const icon = viewModeBtn.querySelector('ion-icon');
-      expect(icon?.getAttribute('icon')).toBe('grid');
+      const icon = viewModeBtn.querySelector('app-icon');
+      expect(icon?.getAttribute('name')).toBe('grid_view');
 
       viewModeBtn.click();
       expect(state.searchSettings.viewMode).toBe(SearchViewMode.List);
@@ -664,8 +664,8 @@ describe('page-search', () => {
       await root.updateComplete;
 
       const sortDirBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button')[2];
-      const icon = sortDirBtn.querySelector('ion-icon');
-      expect(icon?.getAttribute('icon')).toBe('arrow-up');
+      const icon = sortDirBtn.querySelector('app-icon');
+      expect(icon?.getAttribute('name')).toBe('arrow_upward');
 
       sortDirBtn.click();
       expect(state.searchFilter.sortDir).toBe(SortDir.Desc);

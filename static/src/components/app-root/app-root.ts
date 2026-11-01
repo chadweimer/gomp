@@ -22,6 +22,7 @@ import '../pages/tags/page-tags';
 import '../pages/settings/page-settings';
 import '../pages/admin/page-admin';
 import '../search-filter-editor/search-filter-editor';
+import '../app-icon/app-icon';
 
 interface AppLink {
   title: string;
@@ -41,16 +42,16 @@ export class AppRoot extends LitElement {
 
   private readonly appLinks: Map<string, AppLink> = new Map<string, AppLink>([
     ['/', { title: 'Home', icon: 'home', showOn: (type: 'menu' | 'toolbar') => type === 'menu' }],
-    ['/recipes', { title: 'Recipes', icon: 'restaurant', showOn: () => this.isLoggedIn(), detail: () => appState.totalRecipeCount ?? 0 }],
+    ['/recipes', { title: 'Recipes', icon: 'chef_hat', showOn: () => this.isLoggedIn(), detail: () => appState.totalRecipeCount ?? 0 }],
     ['/tags', { title: 'Tags', icon: 'bookmarks', showOn: () => this.isLoggedIn(), detail: () => appState.totalTagsCount ?? 0 }],
     ['/settings', { title: 'Settings', icon: 'settings', showOn: () => this.isLoggedIn() }],
-    ['/settings/preferences', { title: 'Preferences', icon: 'options', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
+    ['/settings/preferences', { title: 'Preferences', icon: 'tune', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
     ['/settings/searches', { title: 'Searches', icon: 'search', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
-    ['/settings/security', { title: 'Security', icon: 'finger-print', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
-    ['/admin', { title: 'Admin', icon: 'shield-checkmark', showOn: () => this.isAdmin() }],
-    ['/admin/configuration', { title: 'Configuration', icon: 'document-text', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
-    ['/admin/users', { title: 'Users', icon: 'people', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
-    ['/admin/maintenance', { title: 'Maintenance', icon: 'build', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
+    ['/settings/security', { title: 'Security', icon: 'fingerprint', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
+    ['/admin', { title: 'Admin', icon: 'security', showOn: () => this.isAdmin() }],
+    ['/admin/configuration', { title: 'Configuration', icon: 'description', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
+    ['/admin/users', { title: 'Users', icon: 'group', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
+    ['/admin/maintenance', { title: 'Maintenance', icon: 'construction', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
   ]);
 
   @state() pageTitle = '';
@@ -136,14 +137,14 @@ export class AppRoot extends LitElement {
                       ?detail=${isActive && !isParentOfActive}
                       class=${classMap({ 'active': isActive, 'child-link': !isNullOrEmpty(link.parentUrl), })}
                     >
-                      <ion-icon name=${link.icon} slot="start" color=${isParentOfActive ? 'secondary' : nothing}></ion-icon>
+                      <app-icon slot="start" name=${link.icon} .color=${isParentOfActive ? 'secondary' : undefined}></app-icon>
                       <ion-label color=${isParentOfActive ? 'secondary' : nothing}>${link.title}</ion-label>
                       ${!isNull(link.detail) ? html`<ion-label slot="end">${link.detail()}</ion-label>` : nothing}
                     </ion-item>
                   `;
         })}
               <ion-item button @click=${() => this.logout()}>
-                <ion-icon name="log-out" slot="start"></ion-icon>
+                <app-icon slot="start" name="logout"></app-icon>
                 <ion-label>Logout</ion-label>
               </ion-item>
             </ion-list>
@@ -159,7 +160,7 @@ export class AppRoot extends LitElement {
             <ion-toolbar color="primary">
               <ion-buttons slot="start">
                 <ion-menu-button>
-                  ${appState.loadingCount > 0 ? html`<ion-spinner name="bubbles"></ion-spinner>` : html`<ion-icon name="menu"></ion-icon>`}
+                  ${appState.loadingCount > 0 ? html`<ion-spinner name="bubbles"></ion-spinner>` : html`<app-icon name="menu"></app-icon>`}
                 </ion-menu-button>
               </ion-buttons>
 
@@ -180,7 +181,7 @@ export class AppRoot extends LitElement {
                         href=${url}
                         title=${link.title}
                       >
-                        <ion-icon slot="start" name=${link.icon}></ion-icon>
+                        <app-icon slot="start" name=${link.icon}></app-icon>
                         ${link.title}
                       </ion-button>
                     `,
@@ -192,7 +193,7 @@ export class AppRoot extends LitElement {
                         href=${url}
                         title=${link.title}
                       >
-                        <ion-icon slot="icon-only" name=${link.icon} size="small"></ion-icon>
+                        <app-icon slot="icon-only" name=${link.icon} size="small"></app-icon>
                       </ion-button>
                     `
         ])}
@@ -206,7 +207,7 @@ export class AppRoot extends LitElement {
                 .disabled=${!this.isLoggedIn()}
                 show-cancel-button=${this.isDefaultSearch() ? 'never' : 'always'}
                 cancel-button-text="Reset"
-                cancel-button-icon="arrow-undo-outline"
+                cancel-button-icon="undo"
                 .value=${appState.searchFilter?.query ?? ''}
                 @keydown=${(e: KeyboardEvent) => this.onSearchKeyDown(e)}
                 @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = appState.searchFilter?.query ?? '')}
@@ -215,7 +216,7 @@ export class AppRoot extends LitElement {
               ></ion-searchbar>
               <ion-buttons slot="end" class="ion-display-none ion-display-lg-flex">
                 <ion-button color="light" .disabled=${!this.isLoggedIn()} @click=${() => this.onSearchFilterClicked()}>
-                  <ion-icon name="filter" slot="start"></ion-icon>
+                  <app-icon slot="start" name="filter_list"></app-icon>
                   <ion-badge color="secondary">${appState.searchResultCount ?? 0}</ion-badge>
                 </ion-button>
               </ion-buttons>
@@ -228,7 +229,7 @@ export class AppRoot extends LitElement {
                 .disabled=${!this.isLoggedIn()}
                 show-cancel-button=${this.isDefaultSearch() ? 'never' : 'always'}
                 cancel-button-text="Reset"
-                cancel-button-icon="arrow-undo-outline"
+                cancel-button-icon="undo"
                 .value=${appState.searchFilter?.query ?? ''}
                 @keydown=${(e: KeyboardEvent) => this.onSearchKeyDown(e)}
                 @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = appState.searchFilter?.query ?? '')}
@@ -237,7 +238,7 @@ export class AppRoot extends LitElement {
               ></ion-searchbar>
               <ion-buttons slot="end">
                 <ion-button color="light" .disabled=${!this.isLoggedIn()} @click=${() => this.onSearchFilterClicked()}>
-                  <ion-icon name="filter" slot="start"></ion-icon>
+                  <app-icon slot="start" name="filter_list"></app-icon>
                   <ion-badge color="secondary">${appState.searchResultCount ?? 0}</ion-badge>
                 </ion-button>
               </ion-buttons>
