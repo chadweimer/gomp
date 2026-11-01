@@ -66,8 +66,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
       <ion-footer>
         <ion-toolbar color="light">
           <page-navigator
-            class="ion-justify-content-center"
-            color="secondary"
+            class="ion-justify-content-center ion-color-secondary"
             .page=${this.page}
             .numPages=${this.numPages}
             @pageChanged=${(e: CustomEvent<number>) => this.setPage(e.detail)}
