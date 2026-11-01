@@ -201,23 +201,24 @@ export class AppRoot extends LitElement {
         ])}
               </ion-buttons>
 
+              </ion-buttons>
+
               <ion-searchbar
                 slot="end"
                 class="end ion-display-none ion-display-lg-flex"
                 .autocorrect=${true}
                 .spellcheck=${true}
                 .disabled=${!this.isLoggedIn()}
-                show-cancel-button=${this.isDefaultSearch() ? 'never' : 'always'}
-                cancel-button-text="Reset"
-                cancel-button-icon="undo"
                 .value=${appState.searchFilter?.query ?? ''}
                 @keydown=${(e: KeyboardEvent) => this.onSearchKeyDown(e)}
                 @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = appState.searchFilter?.query ?? '')}
                 @ionClear=${() => this.onSearchClearClicked()}
-                @ionCancel=${() => this.onSearchCancelClicked()}
               ></ion-searchbar>
               <ion-buttons slot="end" class="ion-display-none ion-display-lg-flex">
-                <ion-button color="light" .disabled=${!this.isLoggedIn()} @click=${() => this.onSearchFilterClicked()}>
+                <ion-button title="Reset Search" .disabled=${!this.isLoggedIn() || this.isDefaultSearch()} @click=${() => this.onSearchCancelClicked()}>
+                  <app-icon slot="icon-only" name="search_off"></app-icon>
+                </ion-button>
+                <ion-button title="Search Settings" .disabled=${!this.isLoggedIn()} @click=${() => this.onSearchFilterClicked()}>
                   <app-icon slot="start" name="filter_list"></app-icon>
                   <ion-badge color="secondary">${appState.searchResultCount ?? 0}</ion-badge>
                 </ion-button>
@@ -229,17 +230,16 @@ export class AppRoot extends LitElement {
                 .autocorrect=${true}
                 .spellcheck=${true}
                 .disabled=${!this.isLoggedIn()}
-                show-cancel-button=${this.isDefaultSearch() ? 'never' : 'always'}
-                cancel-button-text="Reset"
-                cancel-button-icon="undo"
                 .value=${appState.searchFilter?.query ?? ''}
                 @keydown=${(e: KeyboardEvent) => this.onSearchKeyDown(e)}
                 @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = appState.searchFilter?.query ?? '')}
                 @ionClear=${() => this.onSearchClearClicked()}
-                @ionCancel=${() => this.onSearchCancelClicked()}
               ></ion-searchbar>
               <ion-buttons slot="end">
-                <ion-button color="light" .disabled=${!this.isLoggedIn()} @click=${() => this.onSearchFilterClicked()}>
+                <ion-button title="Reset Search" .disabled=${!this.isLoggedIn() || this.isDefaultSearch()} @click=${() => this.onSearchCancelClicked()}>
+                  <app-icon slot="icon-only" name="search_off"></app-icon>
+                </ion-button>
+                <ion-button title="Search Settings" .disabled=${!this.isLoggedIn()} @click=${() => this.onSearchFilterClicked()}>
                   <app-icon slot="start" name="filter_list"></app-icon>
                   <ion-badge color="secondary">${appState.searchResultCount ?? 0}</ion-badge>
                 </ion-button>

@@ -62,11 +62,11 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
         <ion-toolbar color="light">
           <ion-buttons class="ion-justify-content-center">
             <ion-button color="secondary" @click=${() => this.onSortByClicked()}>
-              <app-icon slot="start" name="swap_vert"></app-icon>
+              <app-icon slot="start" name="swap_vert" size="small"></app-icon>
               ${this.sortBy}
             </ion-button>
             <ion-button color="secondary" @click=${() => this.onSortDirClicked()}>
-              <app-icon slot="start" name=${this.sortDir === SortDir.Asc ? 'arrow_upward' : 'arrow_downward'}></app-icon>
+              <app-icon slot="start" name=${this.sortDir === SortDir.Asc ? 'arrow_upward' : 'arrow_downward'} size="small"></app-icon>
               ${this.sortDir}
             </ion-button>
             <ion-button color="secondary" @click=${() => this.onResultsPerPageClicked()}>
@@ -84,7 +84,7 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
               <ion-col key=${item.tag} size="12" size-md="6" size-lg="4" size-xl="3">
                 <ion-item href="/recipes" @click=${() => this.onTagClicked(item.tag)}>
                   <ion-label>${item.tag}</ion-label>
-                  <app-icon slot="end" name="bookmark" size="small"></app-icon>
+                  <app-icon slot="start" name="bookmark" size="small"></app-icon>
                   <ion-note slot="end">${item.count}</ion-note>
                 </ion-item>
               </ion-col>
