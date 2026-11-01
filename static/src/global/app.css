@@ -23,9 +23,7 @@
 @import '@ionic/core/css/flex-utils.css';
 
 /** Material Symbols Icons */
-@import 'material-symbols/outlined.css';
-@import 'material-symbols/rounded.css';
-@import 'material-symbols/sharp.css';
+@import '@material-symbols/font-400/outlined.css';
 
 /*
   The CSS Variables below can be used to theme your app.

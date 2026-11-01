@@ -3,8 +3,6 @@ import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { globalStyles } from '../../global/shared-styles';
 
-export type IconVariant = 'outlined' | 'rounded' | 'sharp';
-
 @customElement('app-icon')
 export class AppIcon extends LitElement {
   static readonly styles = [
@@ -59,6 +57,7 @@ export class AppIcon extends LitElement {
       }
 
       .symbol {
+        font-family: 'Material Symbols Outlined';
         font-weight: normal;
         font-style: normal;
         font-size: inherit;
@@ -75,18 +74,6 @@ export class AppIcon extends LitElement {
         user-select: none;
       }
 
-      .symbol.outlined {
-        font-family: 'Material Symbols Outlined';
-      }
-
-      .symbol.rounded {
-        font-family: 'Material Symbols Rounded';
-      }
-
-      .symbol.sharp {
-        font-family: 'Material Symbols Sharp';
-      }
-
       .symbol.filled {
         font-variation-settings: 'FILL' 1;
       }
@@ -94,7 +81,6 @@ export class AppIcon extends LitElement {
   ];
 
   @property({ type: String }) name = '';
-  @property({ type: String }) variant: IconVariant = 'outlined';
   @property({ type: Boolean }) fill = false;
   @property({ type: String, reflect: true }) size?: 'small' | 'large';
   @property({ type: String, reflect: true }) color?: string;
@@ -105,7 +91,6 @@ export class AppIcon extends LitElement {
         aria-hidden="true"
         class=${classMap({
       symbol: true,
-      [this.variant]: true,
       filled: this.fill,
     })}
       >${this.name}</span>
