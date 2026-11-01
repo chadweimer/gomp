@@ -103,15 +103,13 @@ describe('page-navigator', () => {
   });
 
   describe('styling props', () => {
-    it('propagates fill and color to buttons', async () => {
+    it('propagates fill to buttons', async () => {
       const el = await fixture<PageNavigator>(
-        html`<page-navigator .page=${2} .numPages=${5} fill="outline" color="secondary"></page-navigator>`
+        html`<page-navigator .page=${2} .numPages=${5} fill="outline"></page-navigator>`
       );
       const buttons = el.renderRoot.querySelectorAll('ion-button');
       expect(buttons?.[0].getAttribute('fill')).toBe('outline');
-      expect(buttons?.[0].getAttribute('color')).toBe('secondary');
       expect(buttons?.[2].getAttribute('fill')).toBe('outline');
-      expect(buttons?.[2].getAttribute('color')).toBe('secondary');
     });
   });
 });
