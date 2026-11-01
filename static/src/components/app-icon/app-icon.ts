@@ -10,7 +10,7 @@ export class AppIcon extends LitElement {
       align-items: center;
       justify-content: center;
       line-height: 1;
-      font-size: var(--icon-size, 1.5rem);
+      font-size: var(--icon-size, 1.4rem);
       vertical-align: middle;
       contain: layout style;
       box-sizing: content-box;
@@ -22,7 +22,7 @@ export class AppIcon extends LitElement {
     }
 
     :host([size='large']) {
-      font-size: 1.8rem;
+      font-size: 1.7rem;
     }
 
     .symbol {

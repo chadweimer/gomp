@@ -9,7 +9,7 @@ import '../app-icon/app-icon';
 export class FiveStarRating extends LitElement {
   static readonly styles = css`
     :host {
-      display: inline-block;
+      display: inline-flex;
     }
 
     app-icon:not(.disabled) {
