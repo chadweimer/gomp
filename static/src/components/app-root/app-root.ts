@@ -59,6 +59,7 @@ export class AppRoot extends LitElement {
 
   @query('ion-router-outlet') private readonly routerOutlet?: HTMLIonRouterOutletElement;
   @query('ion-menu') private readonly menu?: HTMLIonMenuElement;
+  @query('#search-menu-popover') private readonly searchMenuPopover?: HTMLIonPopoverElement;
 
   createRenderRoot() {
     return this;
@@ -186,8 +187,6 @@ export class AppRoot extends LitElement {
                         <app-icon slot="start" name=${link.icon}></app-icon>
                         ${link.title}
                       </ion-button>
-                    `,
-          html`
                       <ion-button
                         size="small"
                         fill=${this.pageTitle === link.title ? 'solid' : 'clear'}
@@ -215,11 +214,8 @@ export class AppRoot extends LitElement {
                 @ionClear=${() => this.onSearchClearClicked()}
               ></ion-searchbar>
               <ion-buttons slot="end" class="ion-display-none ion-display-lg-flex">
-                <ion-button title="Reset Search" .disabled=${!this.isLoggedIn() || this.isDefaultSearch()} @click=${() => this.onSearchCancelClicked()}>
-                  <app-icon slot="icon-only" name="search_off"></app-icon>
-                </ion-button>
-                <ion-button title="Search Settings" .disabled=${!this.isLoggedIn()} @click=${() => this.onSearchFilterClicked()}>
-                  <app-icon slot="start" name="filter_list"></app-icon>
+                <ion-button .disabled=${!this.isLoggedIn()} @click=${(e: CustomEvent) => this.onSearchMenuClicked(e)}>
+                  <app-icon slot="start" name="manage_search"></app-icon>
                   <ion-badge color="secondary">${appState.searchResultCount ?? 0}</ion-badge>
                 </ion-button>
               </ion-buttons>
@@ -236,11 +232,8 @@ export class AppRoot extends LitElement {
                 @ionClear=${() => this.onSearchClearClicked()}
               ></ion-searchbar>
               <ion-buttons slot="end">
-                <ion-button title="Reset Search" .disabled=${!this.isLoggedIn() || this.isDefaultSearch()} @click=${() => this.onSearchCancelClicked()}>
-                  <app-icon slot="icon-only" name="search_off"></app-icon>
-                </ion-button>
-                <ion-button title="Search Settings" .disabled=${!this.isLoggedIn()} @click=${() => this.onSearchFilterClicked()}>
-                  <app-icon slot="start" name="filter_list"></app-icon>
+                <ion-button .disabled=${!this.isLoggedIn()} @click=${(e: CustomEvent) => this.onSearchMenuClicked(e)}>
+                  <app-icon slot="start" name="manage_search"></app-icon>
                   <ion-badge color="secondary">${appState.searchResultCount ?? 0}</ion-badge>
                 </ion-button>
               </ion-buttons>
@@ -251,6 +244,19 @@ export class AppRoot extends LitElement {
             <ion-router-outlet></ion-router-outlet>
           </ion-content>
         </div>
+
+        <ion-popover id="search-menu-popover" dismiss-on-select>
+          <ion-list lines="none">
+            <ion-item button ?disabled=${this.isDefaultSearch()} @click=${() => this.onSearchCancelClicked()}>
+              <app-icon slot="start" name="search_off"></app-icon>
+              Reset Search
+            </ion-item>
+            <ion-item button @click=${() => this.onSearchFilterClicked()}>
+              <app-icon slot="start" name="search_gear"></app-icon>
+              Search Settings
+            </ion-item>
+          </ion-list>
+        </ion-popover>
       </ion-app>
     `;
   }
@@ -387,6 +393,14 @@ export class AppRoot extends LitElement {
       };
       await redirect('/recipes');
     }
+  }
+
+  private async onSearchMenuClicked(e: CustomEvent) {
+    if (!this.isLoggedIn()) {
+      return;
+    }
+
+    await this.searchMenuPopover?.present(e);
   }
 
   private async onSearchClearClicked() {

@@ -88,9 +88,9 @@ describe('app-root', () => {
         expect(searchbar.hasAttribute('disabled') || searchbar.disabled).toBeTruthy();
       });
 
-      const filterButtons = el.renderRoot.querySelectorAll('ion-button app-icon[name="filter_list"]');
-      expect(filterButtons).toHaveLength(2);
-      filterButtons.forEach(icon => {
+      const searchMenuButtons = el.renderRoot.querySelectorAll('ion-button app-icon[name="manage_search"]');
+      expect(searchMenuButtons).toHaveLength(2);
+      searchMenuButtons.forEach(icon => {
         const btn = icon.closest('ion-button');
         expect(btn?.hasAttribute('disabled') || btn?.disabled).toBeTruthy();
       });
@@ -136,9 +136,9 @@ describe('app-root', () => {
         expect(searchbar.hasAttribute('disabled')).toBe(false);
       });
 
-      const filterButtons = el.renderRoot.querySelectorAll('ion-button app-icon[name="filter_list"]');
-      expect(filterButtons).toHaveLength(2);
-      filterButtons.forEach(icon => {
+      const searchMenuButtons = el.renderRoot.querySelectorAll('ion-button app-icon[name="manage_search"]');
+      expect(searchMenuButtons).toHaveLength(2);
+      searchMenuButtons.forEach(icon => {
         const btn = icon.closest('ion-button');
         expect(btn?.hasAttribute('disabled')).toBe(false);
       });
@@ -390,15 +390,26 @@ describe('app-root', () => {
       expect(state.searchFilter).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
-      const resetButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Reset Search"]');
-      expect(resetButton).not.toBeNull();
-      resetButton?.click();
+      const resetItem = Array.from(
+        el.renderRoot.querySelectorAll<HTMLIonItemElement>('#search-menu-popover ion-item')
+      ).find((item) => item.textContent?.includes('Reset Search'));
+      expect(resetItem).toBeDefined();
+      resetItem?.click();
       expect(state.searchFilter).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
-      const filterButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button app-icon[name="filter_alt"]')?.closest('ion-button');
-      expect(filterButton).not.toBeNull();
-      filterButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      const settingsItem = Array.from(
+        el.renderRoot.querySelectorAll<HTMLIonItemElement>('#search-menu-popover ion-item')
+      ).find((item) => item.textContent?.includes('Search Settings'));
+      expect(settingsItem).toBeDefined();
+      settingsItem?.click();
+      expect(routerEl.push).not.toHaveBeenCalled();
+
+      const searchMenuButton = el.renderRoot
+        .querySelector<HTMLIonButtonElement>('ion-button app-icon[name="manage_search"]')
+        ?.closest('ion-button');
+      expect(searchMenuButton).not.toBeNull();
+      searchMenuButton?.dispatchEvent(new CustomEvent('click', { bubbles: true }));
       expect(routerEl.push).not.toHaveBeenCalled();
     });
 
@@ -439,12 +450,33 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const resetButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Reset Search"]');
-      expect(resetButton).not.toBeNull();
-      resetButton?.click();
+      const resetItem = Array.from(
+        el.renderRoot.querySelectorAll<HTMLIonItemElement>('#search-menu-popover ion-item')
+      ).find((item) => item.textContent?.includes('Reset Search'));
+      expect(resetItem).toBeDefined();
+      resetItem?.click();
 
       expect(state.searchFilter).toEqual(getDefaultSearchFilter());
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
+    });
+
+    it('presents search menu popover when search menu button is clicked', async () => {
+      const el = await fixture<AppRoot>(html`<app-root></app-root>`);
+      await el.updateComplete;
+
+      const popover = el.renderRoot.querySelector<HTMLIonPopoverElement>('#search-menu-popover');
+      expect(popover).not.toBeNull();
+      if (popover) {
+        popover.present = vi.fn().mockResolvedValue(undefined);
+      }
+
+      const searchMenuButton = el.renderRoot
+        .querySelector<HTMLIonButtonElement>('ion-button app-icon[name="manage_search"]')
+        ?.closest('ion-button');
+      expect(searchMenuButton).not.toBeNull();
+      searchMenuButton?.click();
+
+      expect(popover?.present).toHaveBeenCalled();
     });
   });
 
