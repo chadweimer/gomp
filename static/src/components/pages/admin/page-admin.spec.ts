@@ -57,17 +57,17 @@ describe('page-admin', () => {
 
     expect(tabButtons[0].getAttribute('tab')).toBe('tab-admin-configuration');
     expect(tabButtons[0].getAttribute('href')).toBe('/admin/configuration');
-    expect(tabButtons[0].querySelector('ion-icon')?.getAttribute('name')).toBe('document-text');
+    expect(tabButtons[0].querySelector('app-icon')?.getAttribute('name')).toBe('description');
     expect(tabButtons[0].querySelector('ion-label')?.textContent).toBe('Configuration');
 
     expect(tabButtons[1].getAttribute('tab')).toBe('tab-admin-users');
     expect(tabButtons[1].getAttribute('href')).toBe('/admin/users');
-    expect(tabButtons[1].querySelector('ion-icon')?.getAttribute('name')).toBe('people');
+    expect(tabButtons[1].querySelector('app-icon')?.getAttribute('name')).toBe('group');
     expect(tabButtons[1].querySelector('ion-label')?.textContent).toBe('Users');
 
     expect(tabButtons[2].getAttribute('tab')).toBe('tab-admin-maintenance');
     expect(tabButtons[2].getAttribute('href')).toBe('/admin/maintenance');
-    expect(tabButtons[2].querySelector('ion-icon')?.getAttribute('name')).toBe('build');
+    expect(tabButtons[2].querySelector('app-icon')?.getAttribute('name')).toBe('construction');
     expect(tabButtons[2].querySelector('ion-label')?.textContent).toBe('Maintenance');
   });
 

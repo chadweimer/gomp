@@ -73,7 +73,7 @@ describe('page-tags', () => {
     await el.activatedCallback();
     await new Promise(resolve => setTimeout(resolve, 50));
 
-    const items = el.renderRoot.querySelectorAll('ion-item');
+    const items = el.renderRoot.querySelectorAll('ion-item.tag-item');
     expect(items).toHaveLength(mockTagResult.tags?.length ?? 0);
 
     const firstLabel = items[0].querySelector('ion-label');
@@ -235,7 +235,7 @@ describe('page-tags', () => {
     await new Promise(resolve => setTimeout(resolve, 50));
 
     expect(consoleErrorSpy).toHaveBeenCalled();
-    const items = el.renderRoot.querySelectorAll('ion-item');
+    const items = el.renderRoot.querySelectorAll('ion-item.tag-item');
     expect(items).toHaveLength(0);
   });
 

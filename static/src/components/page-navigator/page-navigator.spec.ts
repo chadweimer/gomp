@@ -15,6 +15,12 @@ describe('page-navigator', () => {
     expect(buttons?.[2].textContent?.trim()).toBe('1 of 1');
     expect(buttons?.[3].hasAttribute('disabled')).toBe(true);
     expect(buttons?.[4].hasAttribute('disabled')).toBe(true);
+
+    const icons = el.renderRoot.querySelectorAll('app-icon');
+    expect(icons).toHaveLength(4);
+    icons.forEach((icon) => {
+      expect(icon.hasAttribute('size')).toBe(false);
+    });
   });
 
   describe('button disabled states', () => {
@@ -103,15 +109,33 @@ describe('page-navigator', () => {
   });
 
   describe('styling props', () => {
-    it('propagates fill and color to buttons', async () => {
+    it('propagates fill to buttons', async () => {
       const el = await fixture<PageNavigator>(
-        html`<page-navigator .page=${2} .numPages=${5} fill="outline" color="secondary"></page-navigator>`
+        html`<page-navigator .page=${2} .numPages=${5} fill="outline"></page-navigator>`
       );
       const buttons = el.renderRoot.querySelectorAll('ion-button');
       expect(buttons?.[0].getAttribute('fill')).toBe('outline');
-      expect(buttons?.[0].getAttribute('color')).toBe('secondary');
       expect(buttons?.[2].getAttribute('fill')).toBe('outline');
-      expect(buttons?.[2].getAttribute('color')).toBe('secondary');
+    });
+
+    it('propagates size to icons and reflects attribute', async () => {
+      const el = await fixture<PageNavigator>(
+        html`<page-navigator size="small"></page-navigator>`
+      );
+      expect(el.getAttribute('size')).toBe('small');
+      let icons = el.renderRoot.querySelectorAll('app-icon');
+      expect(icons).toHaveLength(4);
+      icons.forEach((icon) => {
+        expect(icon.getAttribute('size')).toBe('small');
+      });
+
+      el.size = 'large';
+      await el.updateComplete;
+      expect(el.getAttribute('size')).toBe('large');
+      icons = el.renderRoot.querySelectorAll('app-icon');
+      icons.forEach((icon) => {
+        expect(icon.getAttribute('size')).toBe('large');
+      });
     });
   });
 });

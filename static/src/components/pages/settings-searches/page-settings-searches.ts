@@ -7,6 +7,7 @@ import { ComponentWithActivatedCallback, isNull, redirect } from '../../../helpe
 import appState from '../../../stores/state';
 import '../../page-navigator/page-navigator';
 import '../../search-filter-editor/search-filter-editor';
+import '../../app-icon/app-icon';
 import './page-settings-searches.css';
 
 @customElement('page-settings-searches')
@@ -42,15 +43,15 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
                     <ion-card-title>${filter.name}</ion-card-title>
                   </ion-card-header>
                   <ion-button size="small" fill="clear" @click=${() => this.onLoadSearchClicked(filter.id)}>
-                    <ion-icon slot="start" name="open-outline"></ion-icon>
+                    <app-icon slot="start" name="open_in_new" size="small"></app-icon>
                     Load
                   </ion-button>
                   <ion-button size="small" fill="clear" @click=${() => this.onEditFilterClicked(filter.id)}>
-                    <ion-icon slot="start" name="create"></ion-icon>
+                    <app-icon slot="start" name="edit_square" size="small"></app-icon>
                     Edit
                   </ion-button>
                   <ion-button size="small" fill="clear" color="danger" @click=${() => this.onDeleteFilterClicked(filter)}>
-                    <ion-icon slot="start" name="trash"></ion-icon>
+                    <app-icon slot="start" name="delete" size="small"></app-icon>
                     Delete
                   </ion-button>
                 </ion-card>
@@ -61,7 +62,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
 
         <ion-fab horizontal="end" vertical="bottom" slot="fixed">
           <ion-fab-button color="secondary" @click=${() => this.onAddFilterClicked()}>
-            <ion-icon icon="add"></ion-icon>
+            <app-icon name="add"></app-icon>
           </ion-fab-button>
         </ion-fab>
       </ion-content>
@@ -69,10 +70,10 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
       <ion-footer>
         <ion-toolbar color="light">
           <page-navigator
-            class="ion-justify-content-center"
-            color="secondary"
+            class="ion-justify-content-center ion-color-secondary"
             .page=${this.page}
             .numPages=${this.numPages}
+            size="large"
             @pageChanged=${(e: CustomEvent<number>) => this.setPage(e.detail)}
           ></page-navigator>
         </ion-toolbar>

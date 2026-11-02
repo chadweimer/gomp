@@ -1,6 +1,6 @@
 import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { alertController, loadingController, modalController, toastController } from '@ionic/core';
+import { loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
 import { SearchViewMode, SwipeDirection } from '../../../models';
@@ -73,13 +73,6 @@ describe('page-search', () => {
     } as unknown as HTMLIonModalElement;
   }
 
-  function mockAlert(data?: unknown, role = 'confirm'): HTMLIonAlertElement {
-    return {
-      present: vi.fn().mockResolvedValue(undefined),
-      dismiss: vi.fn().mockResolvedValue(true),
-      onDidDismiss: vi.fn().mockResolvedValue({ data, role }),
-    } as unknown as HTMLIonAlertElement;
-  }
 
   function mockToast(): HTMLIonToastElement {
     return {
@@ -160,7 +153,7 @@ describe('page-search', () => {
       expect((cards[0] as unknown as { recipe: RecipeCompact }).recipe).toEqual(mockRecipes[0]);
       expect((cards[1] as unknown as { recipe: RecipeCompact }).recipe).toEqual(mockRecipes[1]);
 
-      const items = root.renderRoot.querySelectorAll('ion-item');
+      const items = root.renderRoot.querySelectorAll('ion-item.recipe-item');
       expect(items).toHaveLength(0);
     });
 
@@ -174,7 +167,7 @@ describe('page-search', () => {
       const cards = root.renderRoot.querySelectorAll('recipe-card');
       expect(cards).toHaveLength(0);
 
-      const items = root.renderRoot.querySelectorAll('ion-item');
+      const items = root.renderRoot.querySelectorAll('ion-item.recipe-item');
       expect(items).toHaveLength(2);
 
       // First item has mainImageName -> renders img
@@ -219,7 +212,7 @@ describe('page-search', () => {
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const items = root.renderRoot.querySelectorAll('ion-item');
+      const items = root.renderRoot.querySelectorAll('ion-item.recipe-item');
       expect(items).toHaveLength(2);
 
       // Active recipe: no archived badge
@@ -239,13 +232,13 @@ describe('page-search', () => {
       const rootEmpty = await fixture<PageSearch>(html`<page-search></page-search>`);
       await rootEmpty.updateComplete;
       expect(rootEmpty.querySelectorAll('recipe-card')).toHaveLength(0);
-      expect(rootEmpty.querySelectorAll('ion-item')).toHaveLength(0);
+      expect(rootEmpty.querySelectorAll('ion-item.recipe-item')).toHaveLength(0);
 
       state.searchResults = undefined;
       const rootNull = await fixture<PageSearch>(html`<page-search></page-search>`);
       await rootNull.updateComplete;
       expect(rootNull.querySelectorAll('recipe-card')).toHaveLength(0);
-      expect(rootNull.querySelectorAll('ion-item')).toHaveLength(0);
+      expect(rootNull.querySelectorAll('ion-item.recipe-item')).toHaveLength(0);
     });
 
     it('toggles view mode between Card and List on button click', async () => {
@@ -256,8 +249,8 @@ describe('page-search', () => {
       // The 4th header button is viewMode toggle
       const buttons = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button');
       const viewModeBtn = buttons[3];
-      const icon = viewModeBtn.querySelector('ion-icon');
-      expect(icon?.getAttribute('icon')).toBe('grid');
+      const icon = viewModeBtn.querySelector('app-icon');
+      expect(icon?.getAttribute('name')).toBe('list_alt');
 
       viewModeBtn.click();
       expect(state.searchSettings.viewMode).toBe(SearchViewMode.List);
@@ -604,56 +597,57 @@ describe('page-search', () => {
       expect(btnEmpty?.textContent?.trim()).toBe('All');
     });
 
-    it('opens states filter alert and updates state on OK confirmation', async () => {
+    it('renders states filter popover and updates state on item click', async () => {
       state.searchFilter = { ...state.searchFilter, states: [RecipeState.Active] };
-      const alert = mockAlert({ values: [RecipeState.Archived] }, 'confirm');
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const statesBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button')[0];
-      statesBtn.click();
-      await root.updateComplete;
+      const statesBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('#states-menu');
+      expect(statesBtn).not.toBeNull();
 
-      const alertOptions = createAlertSpy.mock.calls[0][0];
-      expect(alertOptions.header).toBe('States');
-      expect(alertOptions.inputs).toHaveLength(2);
-      expect(alertOptions.inputs?.[0].value).toBe(RecipeState.Active);
-      expect(alertOptions.inputs?.[0].checked).toBe(true);
-      expect(alertOptions.inputs?.[1].value).toBe(RecipeState.Archived);
-      expect(alertOptions.inputs?.[1].checked).toBe(false);
+      const popover = root.renderRoot.querySelector<HTMLIonPopoverElement>('ion-popover[trigger="states-menu"]');
+      expect(popover).not.toBeNull();
 
-      await alert.dismiss();
+      const items = popover?.querySelectorAll<HTMLIonItemElement>('ion-item');
+      expect(items).toHaveLength(3);
+      expect(items?.[0].textContent?.trim()).toBe('Active');
+      expect(items?.[0].getAttribute('color')).toBe('secondary');
+      expect(items?.[1].textContent?.trim()).toBe('Archived');
+      expect(items?.[1].getAttribute('color')).toBeNull();
+      expect(items?.[2].textContent?.trim()).toBe('All');
+      expect(items?.[2].getAttribute('color')).toBeNull();
+
+      items?.[1].click();
       await root.updateComplete;
-      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(state.searchFilter.states).toEqual([RecipeState.Archived]);
     });
 
-    it('opens sort by alert and updates state on OK confirmation', async () => {
+    it('renders sort by popover and updates state on item click', async () => {
       state.searchFilter = { ...state.searchFilter, sortBy: SortBy.Name };
-      const alert = mockAlert({ values: SortBy.Rating }, 'confirm');
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const sortByBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button')[1];
+      const sortByBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('#sort-menu');
       expect(sortByBtn?.textContent?.trim()).toBe('Name');
 
-      sortByBtn.click();
-      await root.updateComplete;
+      const popover = root.renderRoot.querySelector<HTMLIonPopoverElement>('ion-popover[trigger="sort-menu"]');
+      expect(popover).not.toBeNull();
 
-      const alertOptions = createAlertSpy.mock.calls[0][0];
-      expect(alertOptions.header).toBe('Sort By');
-      expect(alertOptions.inputs).toHaveLength(Object.keys(SortBy).length);
-      expect(alertOptions.inputs?.[0].value).toBe(SortBy.Name);
-      expect(alertOptions.inputs?.[0].checked).toBe(true);
+      const items = popover?.querySelectorAll<HTMLIonItemElement>('ion-item');
+      expect(items).toHaveLength(Object.keys(SortBy).length);
 
-      await alert.dismiss();
+      const nameItem = Array.from(items ?? []).find(item => item.textContent?.trim() === 'Name');
+      expect(nameItem?.getAttribute('color')).toBe('secondary');
+
+      const ratingItem = Array.from(items ?? []).find(item => item.textContent?.trim() === 'Rating');
+      expect(ratingItem).not.toBeUndefined();
+      expect(ratingItem?.getAttribute('color')).toBeNull();
+
+      ratingItem?.click();
       await root.updateComplete;
-      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(state.searchFilter.sortBy).toBe(SortBy.Rating);
     });
@@ -664,8 +658,8 @@ describe('page-search', () => {
       await root.updateComplete;
 
       const sortDirBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button')[2];
-      const icon = sortDirBtn.querySelector('ion-icon');
-      expect(icon?.getAttribute('icon')).toBe('arrow-up');
+      const icon = sortDirBtn.querySelector('app-icon');
+      expect(icon?.getAttribute('name')).toBe('arrow_upward');
 
       sortDirBtn.click();
       expect(state.searchFilter.sortDir).toBe(SortDir.Desc);
@@ -675,32 +669,28 @@ describe('page-search', () => {
       expect(state.searchFilter.sortDir).toBe(SortDir.Asc);
     });
 
-    it('opens results per page alert and updates state on OK confirmation', async () => {
+    it('renders results per page popover and updates state on item click', async () => {
       state.searchResultsPerPage = 36;
-      const alert = mockAlert({ values: 60 }, 'confirm');
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
 
       const root = await fixture<PageSearch>(html`<page-search></page-search>`);
       await root.updateComplete;
 
-      const resultsPerPageBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button')[4];
+      const resultsPerPageBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('#results-per-page-menu');
       expect(resultsPerPageBtn?.textContent?.trim()).toBe('36');
 
-      resultsPerPageBtn.click();
-      await root.updateComplete;
+      const popover = root.renderRoot.querySelector<HTMLIonPopoverElement>('ion-popover[trigger="results-per-page-menu"]');
+      expect(popover).not.toBeNull();
 
-      const alertOptions = createAlertSpy.mock.calls[0][0];
-      expect(alertOptions.header).toBe('Results Per Page');
-      expect(alertOptions.inputs).toHaveLength(5);
-      expect(alertOptions.inputs?.[0].value).toBe(24);
-      expect(alertOptions.inputs?.[1].value).toBe(36);
-      expect(alertOptions.inputs?.[1].checked).toBe(true);
-      expect(alertOptions.inputs?.[2].value).toBe(60);
-      expect(alertOptions.inputs?.[2].checked).toBe(false);
+      const items = popover?.querySelectorAll<HTMLIonItemElement>('ion-item');
+      expect(items).toHaveLength(5);
+      expect(items?.[0].textContent?.trim()).toBe('24');
+      expect(items?.[1].textContent?.trim()).toBe('36');
+      expect(items?.[1].getAttribute('color')).toBe('secondary');
+      expect(items?.[2].textContent?.trim()).toBe('60');
+      expect(items?.[2].getAttribute('color')).toBeNull();
 
-      await alert.dismiss();
+      items?.[2].click();
       await root.updateComplete;
-      await new Promise((resolve) => setTimeout(resolve, 50));
 
       expect(state.searchResultsPerPage).toBe(60);
     });

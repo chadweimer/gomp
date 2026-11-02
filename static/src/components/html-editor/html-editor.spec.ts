@@ -20,20 +20,19 @@ describe('html-editor', () => {
   it('builds and renders default formatting buttons without image button when images is not provided', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor .value=${'<p>Hello world</p>'}></html-editor>`);
 
-    const boldBtn = el.renderRoot.querySelector('ion-button strong');
+    const boldBtn = el.renderRoot.querySelector('ion-button app-icon[name="format_bold"]');
     expect(boldBtn).not.toBeNull();
-    expect(boldBtn?.textContent?.trim()).toBe('B');
 
-    const italicBtn = el.renderRoot.querySelector('ion-button em');
+    const italicBtn = el.renderRoot.querySelector('ion-button app-icon[name="format_italic"]');
     expect(italicBtn).not.toBeNull();
 
-    const underlineBtn = el.renderRoot.querySelector('ion-button u');
+    const underlineBtn = el.renderRoot.querySelector('ion-button app-icon[name="format_underlined"]');
     expect(underlineBtn).not.toBeNull();
 
-    const listIcon = el.renderRoot.querySelector('ion-button ion-icon[icon="list"]');
+    const listIcon = el.renderRoot.querySelector('ion-button app-icon[name="format_list_bulleted"]');
     expect(listIcon).not.toBeNull();
 
-    const imageIcon = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]');
+    const imageIcon = el.renderRoot.querySelector('ion-button app-icon[name="image"]');
     expect(imageIcon).toBeNull();
 
     const picker = el.renderRoot.querySelector('.image-picker-panel');
@@ -64,7 +63,7 @@ describe('html-editor', () => {
   it('closes panel on blur when focus moves outside', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor .images=${mockImages}></html-editor>`);
 
-    const imageIcon = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]');
+    const imageIcon = el.renderRoot.querySelector('ion-button app-icon[name="image"]');
     const imageBtn = imageIcon?.closest('ion-button');
     imageBtn?.click();
     await el.updateComplete;
@@ -111,14 +110,14 @@ describe('html-editor', () => {
 
   it('does not render image button when images is an empty array', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor .images=${[]}></html-editor>`);
-    const imageIcon = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]');
+    const imageIcon = el.renderRoot.querySelector('ion-button app-icon[name="image"]');
     expect(imageIcon).toBeNull();
   });
 
   it('renders image button and toggles image picker panel when images provided', async () => {
     const el = await fixture<HTMLEditor>(html`<html-editor .images=${mockImages}></html-editor>`);
 
-    const imageIcon = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]');
+    const imageIcon = el.renderRoot.querySelector('ion-button app-icon[name="image"]');
     expect(imageIcon).not.toBeNull();
 
     const imageBtn = imageIcon?.closest('ion-button');
@@ -139,7 +138,7 @@ describe('html-editor', () => {
       html`<html-editor .images=${mockImages} .value=${'<p>Instructions</p>'}></html-editor>`
     );
 
-    const imageBtn = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]')?.closest('ion-button');
+    const imageBtn = el.renderRoot.querySelector('ion-button app-icon[name="image"]')?.closest('ion-button');
     imageBtn?.click();
     await el.updateComplete;
 
@@ -219,11 +218,11 @@ describe('html-editor', () => {
     const buttons = utilityButtons?.querySelectorAll('ion-button');
     expect(buttons).toHaveLength(2);
 
-    const invisIcon = buttons?.[0].querySelector('ion-icon[icon="document-text-outline"]');
+    const invisIcon = buttons?.[0].querySelector('app-icon[name="space_bar"]');
     expect(invisIcon).not.toBeNull();
     expect(buttons?.[0].getAttribute('title')).toBe('Invisible characters');
 
-    const helpIcon = buttons?.[1].querySelector('ion-icon[icon="help-circle-outline"]');
+    const helpIcon = buttons?.[1].querySelector('app-icon[name="help"]');
     expect(helpIcon).not.toBeNull();
     expect(buttons?.[1].getAttribute('title')).toBe('Keyboard shortcuts');
   });
@@ -276,7 +275,7 @@ describe('html-editor', () => {
     const el = await fixture<HTMLEditor>(html`<html-editor .images=${mockImages}></html-editor>`);
 
     const helpBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Keyboard shortcuts"]');
-    const imageBtn = el.renderRoot.querySelector('ion-button ion-icon[icon="image"]')?.closest<HTMLIonButtonElement>('ion-button');
+    const imageBtn = el.renderRoot.querySelector('ion-button app-icon[name="image"]')?.closest<HTMLIonButtonElement>('ion-button');
     const linkBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Hyperlink"]');
 
     // Open image picker

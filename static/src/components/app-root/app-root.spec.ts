@@ -88,7 +88,7 @@ describe('app-root', () => {
         expect(searchbar.hasAttribute('disabled') || searchbar.disabled).toBeTruthy();
       });
 
-      const filterButtons = el.renderRoot.querySelectorAll<HTMLIonIconElement>('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
+      const filterButtons = el.renderRoot.querySelectorAll('ion-button app-icon[name="filter_list"]');
       expect(filterButtons).toHaveLength(2);
       filterButtons.forEach(icon => {
         const btn = icon.closest('ion-button');
@@ -136,7 +136,7 @@ describe('app-root', () => {
         expect(searchbar.hasAttribute('disabled')).toBe(false);
       });
 
-      const filterButtons = el.renderRoot.querySelectorAll<HTMLIonIconElement>('ion-button ion-icon[name="filter"], ion-button ion-icon[icon="filter"]');
+      const filterButtons = el.renderRoot.querySelectorAll('ion-button app-icon[name="filter_list"]');
       expect(filterButtons).toHaveLength(2);
       filterButtons.forEach(icon => {
         const btn = icon.closest('ion-button');
@@ -390,11 +390,13 @@ describe('app-root', () => {
       expect(state.searchFilter).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
-      searchbar?.dispatchEvent(new CustomEvent('ionCancel', { bubbles: true }));
+      const resetButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Reset Search"]');
+      expect(resetButton).not.toBeNull();
+      resetButton?.click();
       expect(state.searchFilter).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
-      const filterButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button ion-icon[name="filter"]')?.closest('ion-button');
+      const filterButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button app-icon[name="filter_alt"]')?.closest('ion-button');
       expect(filterButton).not.toBeNull();
       filterButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       expect(routerEl.push).not.toHaveBeenCalled();
@@ -428,7 +430,7 @@ describe('app-root', () => {
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
-    it('resets to default search filter and redirects to /recipes on ionCancel event', async () => {
+    it('resets to default search filter and redirects to /recipes on reset button click', async () => {
       state.searchFilter = {
         ...getDefaultSearchFilter(),
         query: 'pasta',
@@ -437,9 +439,9 @@ describe('app-root', () => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
-      expect(searchbar).not.toBeNull();
-      searchbar?.dispatchEvent(new CustomEvent('ionCancel', { bubbles: true }));
+      const resetButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[title="Reset Search"]');
+      expect(resetButton).not.toBeNull();
+      resetButton?.click();
 
       expect(state.searchFilter).toEqual(getDefaultSearchFilter());
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
@@ -635,7 +637,7 @@ describe('app-root', () => {
       expect(settingsItem?.getAttribute('color')).toBeNull();
       expect(settingsItem?.hasAttribute('detail')).toBe(false);
       expect(settingsItem?.classList).toContain('active');
-      expect(settingsItem?.querySelector('ion-icon')?.getAttribute('color')).toBe('secondary');
+      expect(settingsItem?.querySelector('[slot="start"]')?.getAttribute('color')).toBe('secondary');
       expect(settingsItem?.querySelector('ion-label')?.getAttribute('color')).toBe('secondary');
 
       const preferencesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/settings/preferences"]');

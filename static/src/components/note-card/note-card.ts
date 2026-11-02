@@ -5,6 +5,7 @@ import { emit, formatDate, toPresentationHtml } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 
 import '../html-viewer/html-viewer';
+import '../app-icon/app-icon';
 
 @customElement('note-card')
 export class NoteCard extends LitElement {
@@ -32,7 +33,7 @@ export class NoteCard extends LitElement {
       <ion-card>
         <ion-card-header>
           <ion-card-title class="title">
-            <ion-icon icon="chatbox"></ion-icon>&nbsp;${formatDate(this.note?.createdAt)}
+            <app-icon name="notes"></app-icon>&nbsp;${formatDate(this.note?.createdAt)}
           </ion-card-title>
           ${this.note?.createdAt !== this.note?.modifiedAt
         ? html`<ion-card-subtitle>Last Modified: ${formatDate(this.note?.modifiedAt)}</ion-card-subtitle>`
@@ -48,7 +49,7 @@ export class NoteCard extends LitElement {
             fill="clear"
             @click=${() => emit(this, 'editClicked', this.note)}
           >
-            <ion-icon slot="start" icon="create"></ion-icon>
+            <app-icon slot="start" name="edit_note" size="small"></app-icon>
             Edit
           </ion-button>
           <ion-button
@@ -57,7 +58,7 @@ export class NoteCard extends LitElement {
             color="danger"
             @click=${() => emit(this, 'deleteClicked', this.note)}
           >
-            <ion-icon slot="start" icon="trash"></ion-icon>
+            <app-icon slot="start" name="delete" size="small"></app-icon>
             Delete
           </ion-button>
         `

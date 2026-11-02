@@ -10,6 +10,7 @@ import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings 
 
 import '../../recipe-card/recipe-card';
 import '../../recipe-editor/recipe-editor';
+import '../../app-icon/app-icon';
 import './page-home.css';
 
 @customElement('page-home')
@@ -77,7 +78,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
       ${isAuthorized(appState.currentUser, AccessLevel.Editor) ? html`
         <ion-fab horizontal="end" vertical="bottom" slot="fixed">
           <ion-fab-button color="secondary" @click=${() => this.onNewRecipeClicked()}>
-            <ion-icon icon="add"></ion-icon>
+            <app-icon name="add"></app-icon>
           </ion-fab-button>
         </ion-fab>
       ` : nothing}

@@ -6,6 +6,7 @@ import { SwipeDirection } from '../../../models';
 import '../settings-preferences/page-settings-preferences';
 import '../settings-searches/page-settings-searches';
 import '../settings-security/page-settings-security';
+import '../../app-icon/app-icon';
 import './page-settings.css';
 
 @customElement('page-settings')
@@ -69,15 +70,15 @@ export class PageSettings extends LitElement {
 
         <ion-tab-bar slot="top">
           <ion-tab-button tab="tab-settings-preferences" href="/settings/preferences">
-            <ion-icon name="options"></ion-icon>
+            <app-icon name="tune"></app-icon>
             <ion-label>Preferences</ion-label>
           </ion-tab-button>
           <ion-tab-button tab="tab-settings-searches" href="/settings/searches">
-            <ion-icon name="search"></ion-icon>
+            <app-icon name="saved_search"></app-icon>
             <ion-label>Searches</ion-label>
           </ion-tab-button>
           <ion-tab-button tab="tab-settings-security" href="/settings/security">
-            <ion-icon name="finger-print"></ion-icon>
+            <app-icon name="fingerprint"></app-icon>
             <ion-label>Security</ion-label>
           </ion-tab-button>
         </ion-tab-bar>

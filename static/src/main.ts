@@ -1,11 +1,7 @@
 import { initialize } from '@ionic/core';
 import { defineCustomElements } from '@ionic/core/loader';
-import { setAssetPath } from 'ionicons';
 
 import './global/app.css';
-
-// Configure asset path for Ionicons SVGs
-setAssetPath('/static/');
 
 // Initialize Ionic Framework
 initialize({

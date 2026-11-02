@@ -16,7 +16,7 @@ ion-searchbar.end {
   pointer-events: auto;
 }
 
-.child-link ion-icon {
+.child-link app-icon {
   margin-inline-start: 16px;
 }
 

@@ -18,6 +18,7 @@ import { globalStyles } from '../../global/shared-styles';
 import { InputCustomEvent, SelectCustomEvent } from '@ionic/core';
 
 import '../tags-input/tags-input';
+import '../app-icon/app-icon';
 
 @customElement('search-filter-editor')
 export class SearchFilterEditor extends LitElement {
@@ -118,7 +119,7 @@ export class SearchFilterEditor extends LitElement {
                       ?disabled=${isNull(this.selectedFilterId)}
                       @click=${() => this.onLoadSearchClicked()}
                     >
-                      <ion-icon slot="start" name="open-outline"></ion-icon>
+                      <app-icon slot="start" name="open_in_new" size="small"></app-icon>
                       Load
                     </ion-button>
                   </ion-select>

@@ -5,6 +5,7 @@ import { api, fileContentSerializer } from '../../../helpers/api';
 import { showLoading, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, trap } from '../../../helpers/utils';
 import '../../tags-input/tags-input';
+import '../../app-icon/app-icon';
 import './page-settings-preferences.css';
 
 @customElement('page-settings-preferences')
@@ -75,11 +76,11 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
                     </ion-item>
                   </ion-card-content>
                   <ion-button fill="clear" color="primary" @click=${() => this.onSaveSettingsClicked()}>
-                    <ion-icon slot="start" name="save"></ion-icon>
+                    <app-icon slot="start" name="save" size="small"></app-icon>
                     Save
                   </ion-button>
                   <ion-button fill="clear" color="danger" @click=${async () => this.settings = await trap(api.loadUserSettings, null)}>
-                    <ion-icon slot="start" name="arrow-undo"></ion-icon>
+                    <app-icon slot="start" name="undo" size="small"></app-icon>
                     Reset
                   </ion-button>
                 </ion-card>
