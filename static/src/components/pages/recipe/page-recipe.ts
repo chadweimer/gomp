@@ -222,7 +222,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
             Add Note
           </ion-item>
           <ion-item button @click=${() => this.onEditClicked()}>
-            <app-icon slot="start" name="edit"></app-icon>
+            <app-icon slot="start" name="edit_square"></app-icon>
             Edit
           </ion-item>
         `
