@@ -1,6 +1,6 @@
 import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { actionSheetController, alertController, loadingController, modalController, toastController } from '@ionic/core';
+import { alertController, loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipePatch, RecipeState } from '../../../helpers/schema.gen';
 import state, { clearState } from '../../../stores/state';
@@ -44,8 +44,17 @@ describe('page-recipe', () => {
   }
 
   function getFooterMenuButton(root: ReactiveElement): HTMLIonButtonElement | undefined {
-    const buttons = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-footer ion-buttons[slot="primary"] ion-button'));
-    return buttons.find(b => b.querySelector('app-icon[slot="icon-only"]') !== null) ?? buttons[buttons.length - 1];
+    return root.renderRoot.querySelector<HTMLIonButtonElement>('#recipe-menu')
+      ?? Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-footer ion-buttons[slot="primary"] ion-button')).pop();
+  }
+
+  function getPopoverMenuItems(root: ReactiveElement): HTMLIonItemElement[] {
+    const popover = root.renderRoot.querySelector('ion-popover[trigger="recipe-menu"]');
+    return Array.from(popover?.querySelectorAll<HTMLIonItemElement>('ion-item') ?? []);
+  }
+
+  function getPopoverMenuItem(root: ReactiveElement, text: string): HTMLIonItemElement | undefined {
+    return getPopoverMenuItems(root).find(item => item.textContent?.trim().includes(text));
   }
 
   function mockModal(data: unknown = null): HTMLIonModalElement {
@@ -78,13 +87,6 @@ describe('page-recipe', () => {
     } as unknown as HTMLIonLoadingElement;
   }
 
-  function mockActionSheet(role = 'cancel'): HTMLIonActionSheetElement {
-    return {
-      present: vi.fn().mockResolvedValue(undefined),
-      dismiss: vi.fn().mockResolvedValue(true),
-      onDidDismiss: vi.fn().mockResolvedValue({ role }),
-    } as unknown as HTMLIonActionSheetElement;
-  }
 
   function defaultFetchResponse(req: Request) {
     const url = req.url;
@@ -1234,22 +1236,16 @@ describe('page-recipe', () => {
     });
   });
 
-  describe('Suite 7: Mobile Action Sheet Menu Operations', () => {
-    it('creates action sheet with only Print and Cancel for Viewer users', async () => {
+  describe('Suite 7: Mobile Popover Menu Operations', () => {
+    it('renders popover menu with only Print and Cancel for Viewer users', async () => {
       state.currentUser = { id: 99, username: 'viewer', accessLevel: AccessLevel.Viewer };
-      const createActionSheetSpy = vi.spyOn(actionSheetController, 'create').mockResolvedValue(mockActionSheet('cancel'));
 
       const root = await createRecipePage(1);
 
-      getFooterMenuButton(root)?.click();
-      await root.updateComplete;
-      await new Promise((r) => setTimeout(r, 10));
-
-      expect(createActionSheetSpy).toHaveBeenCalled();
-      const options = createActionSheetSpy.mock.calls[0][0];
-      const buttonTexts = options.buttons.map((b) => (typeof b === 'string' ? b : b.text));
+      expect(getFooterMenuButton(root)).not.toBeNull();
+      const items = getPopoverMenuItems(root);
+      const buttonTexts = items.map((b) => b.textContent?.trim());
       expect(buttonTexts).toContain('Print');
-      expect(buttonTexts).toContain('Cancel');
       expect(buttonTexts).not.toContain('Edit');
       expect(buttonTexts).not.toContain('Add Note');
       expect(buttonTexts).not.toContain('Upload Picture');
@@ -1258,19 +1254,14 @@ describe('page-recipe', () => {
       expect(buttonTexts).not.toContain('Archive');
     });
 
-    it('creates action sheet with all editor options for active recipes', async () => {
+    it('renders popover menu with all editor options for active recipes', async () => {
       state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
-      const createActionSheetSpy = vi.spyOn(actionSheetController, 'create').mockResolvedValue(mockActionSheet('cancel'));
 
       const root = await createRecipePage(1);
 
-      getFooterMenuButton(root)?.click();
-      await root.updateComplete;
-      await new Promise((r) => setTimeout(r, 10));
-
-      expect(createActionSheetSpy).toHaveBeenCalled();
-      const options = createActionSheetSpy.mock.calls[0][0];
-      const buttonTexts = options.buttons.map((b) => (typeof b === 'string' ? b : b.text));
+      expect(getFooterMenuButton(root)).not.toBeNull();
+      const items = getPopoverMenuItems(root);
+      const buttonTexts = items.map((b) => b.textContent?.trim());
       expect(buttonTexts).toContain('Delete');
       expect(buttonTexts).toContain('Archive');
       expect(buttonTexts).toContain('Add Link');
@@ -1278,66 +1269,59 @@ describe('page-recipe', () => {
       expect(buttonTexts).toContain('Add Note');
       expect(buttonTexts).toContain('Edit');
       expect(buttonTexts).toContain('Print');
-      expect(buttonTexts).toContain('Cancel');
     });
 
-    it('creates action sheet with Unarchive for archived recipes', async () => {
+    it('renders popover menu with Unarchive for archived recipes', async () => {
       state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
       const archivedRecipe: Recipe = { ...mockRecipe, state: RecipeState.Archived };
       setupDefaultFetchMock(archivedRecipe);
 
-      const createActionSheetSpy = vi.spyOn(actionSheetController, 'create').mockResolvedValue(mockActionSheet('cancel'));
-
       const root = await createRecipePage(1);
 
-      getFooterMenuButton(root)?.click();
-      await root.updateComplete;
-      await new Promise((r) => setTimeout(r, 10));
-
-      expect(createActionSheetSpy).toHaveBeenCalled();
-      const options = createActionSheetSpy.mock.calls[0][0];
-      const buttonTexts = options.buttons.map((b) => (typeof b === 'string' ? b : b.text));
+      expect(getFooterMenuButton(root)).not.toBeNull();
+      const items = getPopoverMenuItems(root);
+      const buttonTexts = items.map((b) => b.textContent?.trim());
       expect(buttonTexts).toContain('Unarchive');
       expect(buttonTexts).not.toContain('Archive');
     });
 
-    it('handles action sheet dismissal for each role', async () => {
+    it('handles clicking each popover menu item', async () => {
       state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
 
-      const roles = ['print', 'destructive', 'archive', 'add-link', 'upload-image', 'add-note', 'edit'] as const;
+      const actions = ['Print', 'Delete', 'Archive', 'Add Link', 'Upload Picture', 'Add Note', 'Edit'] as const;
 
-      for (const role of roles) {
-        vi.spyOn(actionSheetController, 'create').mockResolvedValue(mockActionSheet(role));
+      for (const action of actions) {
         const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
         const createModalSpy = vi.spyOn(modalController, 'create').mockResolvedValue(mockModal(null));
         const printSpy = vi.spyOn(window, 'print').mockImplementation(() => { });
 
         const root = await createRecipePage(1);
 
-        getFooterMenuButton(root)?.click();
+        const menuItem = getPopoverMenuItem(root, action);
+        expect(menuItem).not.toBeUndefined();
+        menuItem?.click();
         await root.updateComplete;
-        await new Promise((r) => setTimeout(r, 10));
 
-        switch (role) {
-          case 'print':
+        switch (action) {
+          case 'Print':
             expect(printSpy).toHaveBeenCalled();
             break;
-          case 'destructive':
+          case 'Delete':
             expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Delete Recipe?' }));
             break;
-          case 'archive':
+          case 'Archive':
             expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Archive Recipe?' }));
             break;
-          case 'add-link':
+          case 'Add Link':
             expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: 'recipe-link-editor' }));
             break;
-          case 'upload-image':
+          case 'Upload Picture':
             expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: 'file-upload-browser' }));
             break;
-          case 'add-note':
+          case 'Add Note':
             expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: 'note-editor' }));
             break;
-          case 'edit':
+          case 'Edit':
             expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: 'recipe-editor' }));
             break;
         }
@@ -1347,19 +1331,19 @@ describe('page-recipe', () => {
       }
     });
 
-    it('handles action sheet unarchive role for archived recipe', async () => {
+    it('handles unarchive click for archived recipe', async () => {
       state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
       const archivedRecipe: Recipe = { ...mockRecipe, state: RecipeState.Archived };
       setupDefaultFetchMock(archivedRecipe);
 
-      vi.spyOn(actionSheetController, 'create').mockResolvedValue(mockActionSheet('archive'));
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
 
       const root = await createRecipePage(1);
 
-      getFooterMenuButton(root)?.click();
+      const unarchiveItem = getPopoverMenuItem(root, 'Unarchive');
+      expect(unarchiveItem).not.toBeUndefined();
+      unarchiveItem?.click();
       await root.updateComplete;
-      await new Promise((r) => setTimeout(r, 10));
 
       expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Unarchive Recipe?' }));
     });

@@ -4,7 +4,7 @@ import { customElement, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
-import { showToast, showLoading, showResultsPerPageAlert, showModal, showAlert } from '../../../helpers/modals';
+import { showToast, showLoading, showModal, DEFAULT_RESULTS_PER_PAGE_OPTIONS } from '../../../helpers/modals';
 import {
   redirect,
   createSwipeGesture,
@@ -73,15 +73,15 @@ export class PageSearch extends LitElement {
         <ion-toolbar color="light">
           <ion-buttons class="ion-justify-content-center">
             <ion-button
+              id="states-menu"
               color="secondary"
               class="ion-display-none ion-display-sm-flex"
-              @click=${() => this.onSearchStatesClicked()}
             >
               <app-icon slot="start" name="filter_list" size="small"></app-icon>
               ${insertSpacesBetweenWords(this.getRecipeStatesText(state.searchFilter.states))}
               <app-icon slot="end" name="arrow_drop_down"></app-icon>
             </ion-button>
-            <ion-button color="secondary" @click=${() => this.onSortByClicked()}>
+            <ion-button id="sort-menu" color="secondary">
               <app-icon slot="start" name="swap_vert" size="small"></app-icon>
               ${insertSpacesBetweenWords(enumKeyFromValue(SortBy, state.searchFilter.sortBy))}
               <app-icon slot="end" name="arrow_drop_down"></app-icon>
@@ -107,7 +107,7 @@ export class PageSearch extends LitElement {
                 ?fill=${state.searchSettings.viewMode === SearchViewMode.List}
               ></app-icon>
             </ion-button>
-            <ion-button color="secondary" @click=${() => this.onResultsPerPage()}>
+            <ion-button id="results-per-page-menu" color="secondary">
               ${state.searchResultsPerPage}
               <app-icon slot="end" name="arrow_drop_down"></app-icon>
             </ion-button>
@@ -130,7 +130,7 @@ export class PageSearch extends LitElement {
                   `
         : html`
                     <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
-                      <ion-item href=${`/recipes/${recipe.id}`} title=${ifDefined(recipe.name)}>
+                      <ion-item class="recipe-item" href=${`/recipes/${recipe.id}`} title=${ifDefined(recipe.name)}>
                         <ion-thumbnail slot="start" class="preview">
                           ${!isNullOrEmpty(recipe.mainImageName)
             ? html`<img loading="lazy" alt="" src=${ifDefined(getRecipeThumbnailUrl(recipe.id, recipe.mainImageName))} />`
@@ -168,6 +168,65 @@ export class PageSearch extends LitElement {
           ></page-navigator>
         </ion-toolbar>
       </ion-footer>
+      <ion-popover trigger="states-menu" dismiss-on-select>
+        <ion-list lines="none">
+          <ion-item
+            button
+            color=${ifDefined(state.searchFilter.states.length === 1 && state.searchFilter.states.includes(RecipeState.Active) ? 'secondary' : undefined)}
+            @click=${() => this.setRecipeStates([RecipeState.Active])}
+          >
+            <app-icon slot="start" name="select_check_box"></app-icon>
+            Active
+          </ion-item>
+          <ion-item
+            button
+            color=${ifDefined(state.searchFilter.states.length === 1 && state.searchFilter.states.includes(RecipeState.Archived) ? 'secondary' : undefined)}
+            @click=${() => this.setRecipeStates([RecipeState.Archived])}
+          >
+            <app-icon slot="start" name="archive"></app-icon>
+            Archived
+          </ion-item>
+          <ion-item
+            button
+            color=${ifDefined(state.searchFilter.states.length === 0 || (state.searchFilter.states.includes(RecipeState.Active) && state.searchFilter.states.includes(RecipeState.Archived)) ? 'secondary' : undefined)}
+            @click=${() => this.setRecipeStates([RecipeState.Active, RecipeState.Archived])}
+          >
+            <app-icon slot="start" name="done_all"></app-icon>
+            All
+          </ion-item>
+        </ion-list>
+      </ion-popover>
+      <ion-popover trigger="sort-menu" dismiss-on-select>
+        <ion-list lines="none">
+        ${Object.keys(SortBy).map(
+          (item) => html`
+              <ion-item
+                button
+                color=${ifDefined(state.searchFilter.sortBy === SortBy[item as keyof typeof SortBy] ? 'secondary' : undefined)}
+                @click=${() => this.setSortBy(SortBy[item as keyof typeof SortBy])}
+              >
+                <app-icon slot="start" name=${this.getSortByIcon(SortBy[item as keyof typeof SortBy])}></app-icon>
+                ${insertSpacesBetweenWords(item)}
+              </ion-item>
+            `
+        )}
+        </ion-list>
+      </ion-popover>
+      <ion-popover trigger="results-per-page-menu" dismiss-on-select>
+        <ion-list lines="none">
+          ${DEFAULT_RESULTS_PER_PAGE_OPTIONS.map(item =>
+          html`
+              <ion-item
+                button
+                color=${ifDefined(state.searchResultsPerPage === item ? 'secondary' : undefined)}
+                @click=${() => state.searchResultsPerPage = item}
+              >
+                ${item}
+              </ion-item>
+            `
+        )}
+        </ion-list>
+    </ion-popover>
     `;
   }
 
@@ -184,6 +243,25 @@ export class PageSearch extends LitElement {
     }
 
     return 'All';
+  }
+
+  private getSortByIcon(sortBy: SortBy) {
+    switch (sortBy) {
+      case SortBy.Created:
+        return 'calendar_today';
+      case SortBy.Id:
+        return 'id_card';
+      case SortBy.Modified:
+        return 'edit_calendar';
+      case SortBy.Name:
+        return 'sort_by_alpha';
+      case SortBy.Random:
+        return 'shuffle';
+      case SortBy.Rating:
+        return 'star';
+      default:
+        return 'sort';
+    }
   }
 
   private setRecipeStates(states: RecipeState[]) {
@@ -268,50 +346,6 @@ export class PageSearch extends LitElement {
     if (!isNull(data)) {
       await this.saveNewRecipe(data.recipe, data.file);
     }
-  }
-
-  private async onSearchStatesClicked() {
-    const { data, role } = await showAlert<{ values: RecipeState[] }>({
-      header: 'States',
-      inputs: Object.keys(RecipeState).map((item) => ({
-        type: 'checkbox',
-        label: insertSpacesBetweenWords(item),
-        value: RecipeState[item as keyof typeof RecipeState],
-        checked: state.searchFilter.states.includes(RecipeState[item as keyof typeof RecipeState]),
-      })),
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'OK', role: 'confirm' },
-      ],
-    });
-    if (role === 'confirm') {
-      this.setRecipeStates(data?.values ?? state.searchFilter.states);
-    }
-  }
-
-  private async onSortByClicked() {
-    const { data, role } = await showAlert<{ values: SortBy }>({
-      header: 'Sort By',
-      inputs: Object.keys(SortBy).map((item) => ({
-        type: 'radio',
-        label: insertSpacesBetweenWords(item),
-        value: SortBy[item as keyof typeof SortBy],
-        checked: state.searchFilter.sortBy === SortBy[item as keyof typeof SortBy],
-      })),
-      buttons: [
-        { text: 'Cancel', role: 'cancel' },
-        { text: 'OK', role: 'confirm' },
-      ],
-    });
-    if (role === 'confirm') {
-      this.setSortBy(data?.values ?? state.searchFilter.sortBy);
-    }
-  }
-
-  private async onResultsPerPage() {
-    await showResultsPerPageAlert(state.searchResultsPerPage, (count) => {
-      state.searchResultsPerPage = count;
-    });
   }
 }
 

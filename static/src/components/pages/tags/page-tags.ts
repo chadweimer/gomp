@@ -3,13 +3,14 @@ import { LitElement, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { SortDir, Tag, TagSortBy } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
-import { ResultsPerPage, showResultsPerPageAlert } from '../../../helpers/modals';
+import { DEFAULT_RESULTS_PER_PAGE_OPTIONS, ResultsPerPage } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, createSwipeGesture, isNull } from '../../../helpers/utils';
 import { getDefaultSearchFilter, SwipeDirection } from '../../../models';
 import appState from '../../../stores/state';
 import '../../page-navigator/page-navigator';
 import '../../app-icon/app-icon';
 import './page-tags.css';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 @customElement('page-tags')
 export class PageTags extends LitElement implements ComponentWithActivatedCallback {
@@ -69,7 +70,7 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
               <app-icon slot="start" name=${this.sortDir === SortDir.Asc ? 'arrow_upward' : 'arrow_downward'} size="small"></app-icon>
               ${this.sortDir}
             </ion-button>
-            <ion-button color="secondary" @click=${() => this.onResultsPerPageClicked()}>
+            <ion-button id="results-per-page-menu" color="secondary">
               ${this.resultsPerPage}
               <app-icon slot="end" name="arrow_drop_down"></app-icon>
             </ion-button>
@@ -82,7 +83,7 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
           <ion-row>
             ${this.tags?.map(item => html`
               <ion-col key=${item.tag} size="12" size-md="6" size-lg="4" size-xl="3">
-                <ion-item href="/recipes" @click=${() => this.onTagClicked(item.tag)}>
+                <ion-item class="tag-item" href="/recipes" @click=${() => this.onTagClicked(item.tag)}>
                   <ion-label>${item.tag}</ion-label>
                   <app-icon slot="start" name="bookmark" size="small"></app-icon>
                   <ion-note slot="end">${item.count}</ion-note>
@@ -103,6 +104,22 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
           ></page-navigator>
         </ion-toolbar>
       </ion-footer>
+
+      <ion-popover trigger="results-per-page-menu" dismiss-on-select>
+        <ion-list lines="none">
+          ${DEFAULT_RESULTS_PER_PAGE_OPTIONS.map(item =>
+      html`
+              <ion-item
+                button
+                color=${ifDefined(this.resultsPerPage === item ? 'secondary' : undefined)}
+                @click=${() => this.setResultsPerPage(item)}
+              >
+                ${item}
+              </ion-item>
+            `
+    )}
+        </ion-list>
+      </ion-popover>
     `;
   }
 
@@ -137,6 +154,13 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
     this.load().catch(console.error);
   }
 
+  private setResultsPerPage(count: ResultsPerPage) {
+    this.resultsPerPage = count;
+    this.page = 1;
+    this.load().catch(console.error);
+  }
+
+
   private onSortByClicked() {
     this.sortBy = this.sortBy === TagSortBy.Tag ? TagSortBy.Count : TagSortBy.Tag;
     this.page = 1;
@@ -148,15 +172,6 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
     this.page = 1;
     this.load().catch(console.error);
   }
-
-  private async onResultsPerPageClicked() {
-    await showResultsPerPageAlert(this.resultsPerPage, count => {
-      this.resultsPerPage = count;
-      this.page = 1;
-      this.load().catch(console.error);
-    });
-  }
-
   private onTagClicked(tag: string) {
     const filter = getDefaultSearchFilter();
     appState.searchFilter = {

@@ -3,7 +3,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
-import { showActionSheet, showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
+import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
 import {
   ComponentWithActivatedCallback,
   getRecipeImageUrl,
@@ -186,12 +186,49 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
               <app-icon slot="start" name="print"></app-icon>
               Print
             </ion-button>
-            <ion-button class="ion-display-lg-none" @click=${() => this.onRecipeMenuClicked()}>
+            <ion-button id="recipe-menu" class="ion-display-lg-none">
               <app-icon slot="icon-only" name="more_vert"></app-icon>
             </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-footer>
+
+      <ion-popover trigger="recipe-menu" dismiss-on-select>
+        <ion-list lines="none">
+          <ion-item button @click=${() => this.onPrintClicked()}>
+            <app-icon slot="start" name="print"></app-icon>
+            Print
+          </ion-item>
+            ${isAuthorized(appState.currentUser, AccessLevel.Editor)
+        ? html`
+          <ion-item button @click=${() => this.onDeleteClicked()}>
+            <app-icon slot="start" name="delete"></app-icon>
+            Delete
+          </ion-item>
+          <ion-item button @click=${() => this.onArchiveClicked()}>
+            <app-icon slot="start" name=${this.recipe?.state === RecipeState.Archived ? 'unarchive' : 'archive'}></app-icon>
+            ${this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive'}
+          </ion-item>
+          <ion-item button @click=${() => this.onAddLinkClicked()}>
+            <app-icon slot="start" name="link"></app-icon>
+            Add Link
+          </ion-item>
+          <ion-item button @click=${() => this.onUploadImageClicked()}>
+            <app-icon slot="start" name="photo_camera"></app-icon>
+            Upload Picture
+          </ion-item>
+          <ion-item button @click=${() => this.onAddNoteClicked()}>
+            <app-icon slot="start" name="notes"></app-icon>
+            Add Note
+          </ion-item>
+          <ion-item button @click=${() => this.onEditClicked()}>
+            <app-icon slot="start" name="edit"></app-icon>
+            Edit
+          </ion-item>
+        `
+        : nothing}
+        </ion-list>
+      </ion-popover>
     `;
   }
 
@@ -465,53 +502,6 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to save main image for recipe.');
-    }
-  }
-
-  private async onRecipeMenuClicked() {
-    const isArchived = this.recipe?.state === RecipeState.Archived;
-    const archiveAction = isArchived ? 'Unarchive' : 'Archive';
-
-    const { role } = await showActionSheet({
-      header: 'Menu',
-      buttons: [
-        { text: 'Print', role: 'print' },
-        ...(isAuthorized(appState.currentUser, AccessLevel.Editor)
-          ? [
-            { text: 'Delete', role: 'destructive' },
-            { text: archiveAction, role: 'archive' },
-            { text: 'Add Link', role: 'add-link' },
-            { text: 'Upload Picture', role: 'upload-image' },
-            { text: 'Add Note', role: 'add-note' },
-            { text: 'Edit', role: 'edit' },
-          ]
-          : []),
-        { text: 'Cancel', role: 'cancel' },
-      ],
-    });
-
-    switch (role) {
-      case 'print':
-        this.onPrintClicked();
-        break;
-      case 'destructive':
-        await this.onDeleteClicked();
-        break;
-      case 'archive':
-        await this.onArchiveClicked();
-        break;
-      case 'add-link':
-        await this.onAddLinkClicked();
-        break;
-      case 'upload-image':
-        await this.onUploadImageClicked();
-        break;
-      case 'add-note':
-        await this.onAddNoteClicked();
-        break;
-      case 'edit':
-        await this.onEditClicked();
-        break;
     }
   }
 

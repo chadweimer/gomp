@@ -1,4 +1,4 @@
-import { actionSheetController, ActionSheetOptions, alertController, AlertOptions, ComponentRef, loadingController, modalController, ModalOptions, OverlayEventDetail, toastController } from "@ionic/core";
+import { alertController, AlertOptions, ComponentRef, loadingController, modalController, ModalOptions, OverlayEventDetail, toastController } from "@ionic/core";
 
 const dismissingModals = new WeakMap<HTMLElement, boolean>();
 async function present<T = unknown>(
@@ -121,11 +121,6 @@ export async function showAlert<T = unknown>(options: AlertOptions, cancelRole =
   return await present<T>(alert, cancelRole);
 }
 
-export async function showActionSheet<T = unknown>(options: ActionSheetOptions, cancelRole = 'cancel') {
-  const actionSheet = await actionSheetController.create(options);
-  return await present<T>(actionSheet, cancelRole);
-}
-
 export async function showToast(message: string, duration = 2000) {
   const toast = await toastController.create({ message, duration });
   await toast.present();
@@ -145,26 +140,3 @@ export async function showLoading(action: () => Promise<void>, message = 'Please
 
 export type ResultsPerPage = 24 | 36 | 60 | 96 | 120;
 export const DEFAULT_RESULTS_PER_PAGE_OPTIONS: readonly ResultsPerPage[] = [24, 36, 60, 96, 120] as const;
-export async function showResultsPerPageAlert<T extends number = ResultsPerPage>(
-  currentValue: T,
-  onSelect: (count: T) => void,
-  options: readonly T[] = DEFAULT_RESULTS_PER_PAGE_OPTIONS as readonly T[],
-): Promise<void> {
-  const { data, role } = await showAlert<{ values: T }>({
-    header: 'Results Per Page',
-    inputs: options.map(item => ({
-      type: 'radio',
-      label: item.toLocaleString(),
-      value: item,
-      checked: currentValue === item,
-    })),
-    buttons: [
-      { text: 'Cancel', role: 'cancel' },
-      { text: 'OK', role: 'confirm' },
-    ],
-  });
-
-  if (role === 'confirm') {
-    onSelect(data?.values ?? currentValue);
-  }
-}
