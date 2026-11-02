@@ -15,6 +15,12 @@ describe('page-navigator', () => {
     expect(buttons?.[2].textContent?.trim()).toBe('1 of 1');
     expect(buttons?.[3].hasAttribute('disabled')).toBe(true);
     expect(buttons?.[4].hasAttribute('disabled')).toBe(true);
+
+    const icons = el.renderRoot.querySelectorAll('app-icon');
+    expect(icons).toHaveLength(4);
+    icons.forEach((icon) => {
+      expect(icon.hasAttribute('size')).toBe(false);
+    });
   });
 
   describe('button disabled states', () => {
@@ -110,6 +116,26 @@ describe('page-navigator', () => {
       const buttons = el.renderRoot.querySelectorAll('ion-button');
       expect(buttons?.[0].getAttribute('fill')).toBe('outline');
       expect(buttons?.[2].getAttribute('fill')).toBe('outline');
+    });
+
+    it('propagates size to icons and reflects attribute', async () => {
+      const el = await fixture<PageNavigator>(
+        html`<page-navigator size="small"></page-navigator>`
+      );
+      expect(el.getAttribute('size')).toBe('small');
+      let icons = el.renderRoot.querySelectorAll('app-icon');
+      expect(icons).toHaveLength(4);
+      icons.forEach((icon) => {
+        expect(icon.getAttribute('size')).toBe('small');
+      });
+
+      el.size = 'large';
+      await el.updateComplete;
+      expect(el.getAttribute('size')).toBe('large');
+      icons = el.renderRoot.querySelectorAll('app-icon');
+      icons.forEach((icon) => {
+        expect(icon.getAttribute('size')).toBe('large');
+      });
     });
   });
 });

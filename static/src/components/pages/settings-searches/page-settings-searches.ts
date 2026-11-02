@@ -73,6 +73,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
             class="ion-justify-content-center ion-color-secondary"
             .page=${this.page}
             .numPages=${this.numPages}
+            size="large"
             @pageChanged=${(e: CustomEvent<number>) => this.setPage(e.detail)}
           ></page-navigator>
         </ion-toolbar>

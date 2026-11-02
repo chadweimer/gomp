@@ -164,6 +164,7 @@ export class PageSearch extends LitElement {
             class="ion-justify-content-center ion-color-secondary"
             .page=${state.searchPage}
             .numPages=${state.searchNumPages}
+            size="large"
             @pageChanged=${(e: CustomEvent<number>) => (state.searchPage = e.detail)}
           ></page-navigator>
         </ion-toolbar>

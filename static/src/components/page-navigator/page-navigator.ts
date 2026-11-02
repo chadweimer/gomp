@@ -17,6 +17,7 @@ export class PageNavigator extends LitElement {
   @property({ type: Number }) page = 1;
   @property({ type: Number }) numPages = 1;
   @property({ type: String, reflect: true }) fill?: 'clear' | 'outline' | 'solid' | 'default';
+  @property({ type: String, reflect: true }) size?: 'small' | 'large';
 
   render() {
     return html`
@@ -26,14 +27,14 @@ export class PageNavigator extends LitElement {
           ?disabled=${this.page === 1}
           @click=${() => this.onClick(1)}
         >
-          <app-icon slot="icon-only" name="first_page"></app-icon>
+          <app-icon slot="icon-only" name="first_page" size=${ifDefined(this.size)}></app-icon>
         </ion-button>
         <ion-button
           fill=${ifDefined(this.fill)}
           ?disabled=${this.page === 1}
           @click=${() => this.onClick(this.page - 1)}
         >
-          <app-icon slot="icon-only" name="chevron_left"></app-icon>
+          <app-icon slot="icon-only" name="chevron_left" size=${ifDefined(this.size)}></app-icon>
         </ion-button>
         <ion-button
           fill=${ifDefined(this.fill)}
@@ -46,14 +47,14 @@ export class PageNavigator extends LitElement {
           ?disabled=${this.page === this.numPages}
           @click=${() => this.onClick(this.page + 1)}
         >
-          <app-icon slot="icon-only" name="chevron_right"></app-icon>
+          <app-icon slot="icon-only" name="chevron_right" size=${ifDefined(this.size)}></app-icon>
         </ion-button>
         <ion-button
           fill=${ifDefined(this.fill)}
           ?disabled=${this.page === this.numPages}
           @click=${() => this.onClick(this.numPages)}
         >
-          <app-icon slot="icon-only" name="last_page"></app-icon>
+          <app-icon slot="icon-only" name="last_page" size=${ifDefined(this.size)}></app-icon>
         </ion-button>
       </ion-buttons>
     `;

@@ -69,6 +69,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
             class="ion-justify-content-center ion-color-secondary"
             .page=${this.page}
             .numPages=${this.numPages}
+            size="large"
             @pageChanged=${(e: CustomEvent<number>) => this.setPage(e.detail)}
           ></page-navigator>
         </ion-toolbar>
