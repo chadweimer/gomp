@@ -1,12 +1,12 @@
 import { LitElement, html, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
+import { consume } from '@lit/context';
 import { getDefaultSearchFilter } from '../../../models';
-import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
+import { api, fileContentSerializer } from '../../../helpers/api';
 import { showToast, showLoading, showModal } from '../../../helpers/modals';
-import { redirect, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized, trap } from '../../../helpers/utils';
-import appState, { appStateStore } from '../../../stores/state';
-import { StoreController } from '../../../stores/store';
+import { redirect, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized, trap } from '../../../helpers/utils';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../helpers/schema.gen';
+import { searchContext, SearchContextValue, userContext, UserContextValue } from '../../../context';
 
 import '../../recipe-card/recipe-card';
 import '../../recipe-editor/recipe-editor';
@@ -15,6 +15,14 @@ import './page-home.css';
 
 @customElement('page-home')
 export class PageHome extends LitElement implements ComponentWithActivatedCallback {
+  @consume({ context: userContext, subscribe: true })
+  @property({ attribute: false })
+  userCtx?: UserContextValue;
+
+  @consume({ context: searchContext, subscribe: false })
+  @property({ attribute: false })
+  searchCtx?: SearchContextValue;
+
   @state() private currentUserSettings: UserSettings | null = null;
   @state() private searches: {
     title: string;
@@ -22,9 +30,6 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
     count: number;
     results: RecipeCompact[];
   }[] = [];
-
-  // Reactive store controller to respond to currentUser changes
-  protected stateController = new StoreController(this, appStateStore);
 
   protected createRenderRoot() {
     return this;
@@ -75,7 +80,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
         </ion-grid>
       </ion-content>
 
-      ${isAuthorized(appState.currentUser, AccessLevel.Editor) ? html`
+      ${isAuthorized(this.userCtx?.user, AccessLevel.Editor) ? html`
         <ion-fab horizontal="end" vertical="bottom" slot="fixed">
           <ion-fab-button color="secondary" @click=${() => this.onNewRecipeClicked()}>
             <app-icon name="add"></app-icon>
@@ -115,16 +120,16 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
       // Then load the first 10 of the user's saved filters
       const savedFilters = await api.loadSearchFilters(1, 10);
       const results = await Promise.all(savedFilters.map(async savedFilter => {
-        if (isNull(savedFilter.id)) return null;
+        if (savedFilter.id == null) return null;
         const { data: savedSearchFilter, error } = await api.client.GET('/users/current/filters/{filterId}', {
           params: { path: { filterId: savedFilter.id } }
         });
 
-        if (error) {
+        if (error != null) {
           throw new Error('Failed to load saved search filter.', { cause: error });
         }
 
-        if (!savedSearchFilter) {
+        if (savedSearchFilter == null) {
           return null;
         }
 
@@ -136,7 +141,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
           results: filterRecipes ?? []
         };
       }));
-      searches.push(...results.filter(r => r !== null));
+      searches.push(...results.filter(r => r != null));
 
       this.searches = searches;
     } catch (ex) {
@@ -165,14 +170,14 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
         body: recipe
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to create new recipe.', { cause: error });
       }
 
-      if (!isNull(file)) {
+      if (file != null) {
         await showLoading(
           async () => {
-            if (isNull(newRecipe.id)) {
+            if (newRecipe.id == null) {
               throw new Error('Failed to upload image: recipe ID is null.');
             }
 
@@ -184,7 +189,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
               }
             });
 
-            if (imgError) {
+            if (imgError != null) {
               throw new Error('Failed to create new recipe.', { cause: imgError });
             }
           },
@@ -192,7 +197,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
       }
 
       // Update the search results since the new recipe may be in them
-      await refreshSearchResults();
+      await this.searchCtx?.refresh();
 
       await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
@@ -206,15 +211,15 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
       presentingElement: this,
       component: 'recipe-editor',
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNewRecipe(data.recipe, data.file);
     }
   }
 
   private async onFilterClicked(filter: SearchFilter) {
-    appState.searchFilter = {
+    this.searchCtx?.setFilter({
       ...filter
-    };
+    });
     await redirect('/recipes');
   }
 }

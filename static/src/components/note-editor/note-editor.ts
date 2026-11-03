@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { Note } from '../../helpers/schema.gen';
 import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
-import { isNull, toStorageHtml } from '../../helpers/utils';
+import { toStorageHtml } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import { HTMLEditor } from '../html-editor/html-editor';
 
@@ -53,7 +53,7 @@ export class NoteEditor extends LitElement {
           <ion-buttons slot="primary">
             <ion-button color="primary" @click=${() => this.onSaveClicked()}>Save</ion-button>
           </ion-buttons>
-          <ion-title>${isNull(this.note?.id) ? 'New' : 'Edit'} Note</ion-title>
+          <ion-title>${this.note?.id == null ? 'New' : 'Edit'} Note</ion-title>
           <ion-buttons slot="secondary">
             <ion-button color="danger" @click=${() => this.onCancelClicked()}>Cancel</ion-button>
           </ion-buttons>
@@ -77,7 +77,7 @@ export class NoteEditor extends LitElement {
   }
 
   private async onSaveClicked() {
-    if (this.form && !this.form.reportValidity()) {
+    if (this.form != null && !this.form.reportValidity()) {
       return;
     }
 

@@ -1,23 +1,22 @@
 import { Gesture, ScrollBaseCustomEvent } from '@ionic/core';
 import { LitElement, html, nothing } from 'lit';
-import { customElement, query } from 'lit/decorators.js';
+import { customElement, property, query } from 'lit/decorators.js';
+import { consume } from '@lit/context';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
-import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
+import { api, fileContentSerializer } from '../../../helpers/api';
 import { showToast, showLoading, showModal, DEFAULT_RESULTS_PER_PAGE_OPTIONS } from '../../../helpers/modals';
 import {
   redirect,
   createSwipeGesture,
   enumKeyFromValue,
   insertSpacesBetweenWords,
-  isNull,
   isNullOrEmpty,
   isAuthorized,
   getRecipeThumbnailUrl,
 } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
-import state, { appStateStore } from '../../../stores/state';
-import { StoreController } from '../../../stores/store';
+import { searchContext, SearchContextValue, userContext, UserContextValue } from '../../../context';
 
 import '../../recipe-card/recipe-card';
 import '../../page-navigator/page-navigator';
@@ -27,7 +26,13 @@ import './page-search.css';
 
 @customElement('page-search')
 export class PageSearch extends LitElement {
-  protected stateController = new StoreController(this, appStateStore);
+  @consume({ context: searchContext, subscribe: true })
+  @property({ attribute: false })
+  searchCtx?: SearchContextValue;
+
+  @consume({ context: userContext, subscribe: true })
+  @property({ attribute: false })
+  userCtx?: UserContextValue;
 
   @query('ion-content') private readonly content?: HTMLIonContentElement;
   private gesture: Gesture | null = null;
@@ -39,15 +44,17 @@ export class PageSearch extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.gesture = createSwipeGesture(this, (swipe) => {
+      const page = this.searchCtx?.page ?? 1;
+      const numPages = this.searchCtx?.numPages ?? 1;
       switch (swipe) {
         case SwipeDirection.Right:
-          if (state.searchPage > 1) {
-            state.searchPage--;
+          if (page > 1) {
+            this.searchCtx?.setPage(page - 1);
           }
           break;
         case SwipeDirection.Left:
-          if (state.searchPage < state.searchNumPages) {
-            state.searchPage++;
+          if (page < numPages) {
+            this.searchCtx?.setPage(page + 1);
           }
           break;
       }
@@ -62,12 +69,23 @@ export class PageSearch extends LitElement {
   }
 
   updated() {
-    if (!isNull(state.searchScrollPosition) && typeof this.content?.scrollToPoint === 'function') {
-      this.content.scrollToPoint(0, state.searchScrollPosition).catch(console.error);
+    if (this.searchCtx?.scrollPosition != null && typeof this.content?.scrollToPoint === 'function') {
+      this.content.scrollToPoint(0, this.searchCtx.scrollPosition).catch(console.error);
     }
   }
 
   render() {
+    const filter = this.searchCtx?.filter;
+    const settings = this.searchCtx?.settings;
+    const resultsPerPage = this.searchCtx?.resultsPerPage ?? 36;
+    const results = this.searchCtx?.results;
+    const page = this.searchCtx?.page ?? 1;
+    const numPages = this.searchCtx?.numPages ?? 1;
+    const states = filter?.states ?? [];
+    const sortBy = filter?.sortBy ?? SortBy.Name;
+    const sortDir = filter?.sortDir ?? SortDir.Asc;
+    const viewMode = settings?.viewMode ?? SearchViewMode.Card;
+
     return html`
       <ion-header>
         <ion-toolbar color="light">
@@ -78,37 +96,37 @@ export class PageSearch extends LitElement {
               class="ion-display-none ion-display-sm-flex"
             >
               <app-icon slot="start" name="filter_list" size="small"></app-icon>
-              ${insertSpacesBetweenWords(this.getRecipeStatesText(state.searchFilter.states))}
+              ${insertSpacesBetweenWords(this.getRecipeStatesText(states))}
               <app-icon slot="end" name="arrow_drop_down"></app-icon>
             </ion-button>
             <ion-button id="sort-menu" color="secondary">
               <app-icon slot="start" name="swap_vert" size="small"></app-icon>
-              ${insertSpacesBetweenWords(enumKeyFromValue(SortBy, state.searchFilter.sortBy))}
+              ${insertSpacesBetweenWords(enumKeyFromValue(SortBy, sortBy))}
               <app-icon slot="end" name="arrow_drop_down"></app-icon>
             </ion-button>
             <ion-button
               color="secondary"
-              @click=${() => this.setSortDir(state.searchFilter.sortDir === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}
+              @click=${() => this.setSortDir((this.searchCtx?.filter?.sortDir ?? SortDir.Asc) === SortDir.Asc ? SortDir.Desc : SortDir.Asc)}
             >
               <app-icon
                 slot="start"
-                name=${state.searchFilter.sortDir === SortDir.Asc ? 'arrow_upward' : 'arrow_downward'}
+                name=${sortDir === SortDir.Asc ? 'arrow_upward' : 'arrow_downward'}
                 size="small"
               ></app-icon>
-              ${state.searchFilter.sortDir}
+              ${sortDir}
             </ion-button>
             <ion-button
               color="secondary"
-              @click=${() => this.setViewMode(state.searchSettings.viewMode === SearchViewMode.Card ? SearchViewMode.List : SearchViewMode.Card)}
+              @click=${() => this.setViewMode((this.searchCtx?.settings?.viewMode ?? SearchViewMode.Card) === SearchViewMode.Card ? SearchViewMode.List : SearchViewMode.Card)}
             >
               <app-icon
                 slot="icon-only"
                 name="list_alt"
-                ?fill=${state.searchSettings.viewMode === SearchViewMode.List}
+                ?fill=${viewMode === SearchViewMode.List}
               ></app-icon>
             </ion-button>
             <ion-button id="results-per-page-menu" color="secondary">
-              ${state.searchResultsPerPage}
+              ${resultsPerPage}
               <app-icon slot="end" name="arrow_drop_down"></app-icon>
             </ion-button>
           </ion-buttons>
@@ -121,8 +139,8 @@ export class PageSearch extends LitElement {
       >
         <ion-grid class="no-pad">
           <ion-row>
-            ${state.searchResults?.map((recipe) =>
-      state.searchSettings?.viewMode === SearchViewMode.Card
+            ${results?.map((recipe) =>
+      viewMode === SearchViewMode.Card
         ? html`
                     <ion-col size="6" size-md="4" size-lg="3" size-xl="2">
                       <recipe-card .recipe=${recipe} class="zoom"></recipe-card>
@@ -147,7 +165,7 @@ export class PageSearch extends LitElement {
           </ion-row>
         </ion-grid>
 
-        ${isAuthorized(state.currentUser, AccessLevel.Editor)
+        ${isAuthorized(this.userCtx?.user, AccessLevel.Editor)
         ? html`
               <ion-fab horizontal="end" vertical="bottom" slot="fixed">
                 <ion-fab-button color="secondary" @click=${() => this.onNewRecipeClicked()}>
@@ -162,10 +180,10 @@ export class PageSearch extends LitElement {
         <ion-toolbar color="light">
           <page-navigator
             class="ion-justify-content-center ion-color-secondary"
-            .page=${state.searchPage}
-            .numPages=${state.searchNumPages}
+            .page=${page}
+            .numPages=${numPages}
             size="large"
-            @pageChanged=${(e: CustomEvent<number>) => (state.searchPage = e.detail)}
+            @pageChanged=${(e: CustomEvent<number>) => this.searchCtx?.setPage(e.detail)}
           ></page-navigator>
         </ion-toolbar>
       </ion-footer>
@@ -173,7 +191,7 @@ export class PageSearch extends LitElement {
         <ion-list lines="none">
           <ion-item
             button
-            color=${ifDefined(state.searchFilter.states.length === 1 && state.searchFilter.states.includes(RecipeState.Active) ? 'secondary' : undefined)}
+            color=${ifDefined(states.length === 1 && states.includes(RecipeState.Active) ? 'secondary' : undefined)}
             @click=${() => this.setRecipeStates([RecipeState.Active])}
           >
             <app-icon slot="start" name="select_check_box"></app-icon>
@@ -181,7 +199,7 @@ export class PageSearch extends LitElement {
           </ion-item>
           <ion-item
             button
-            color=${ifDefined(state.searchFilter.states.length === 1 && state.searchFilter.states.includes(RecipeState.Archived) ? 'secondary' : undefined)}
+            color=${ifDefined(states.length === 1 && states.includes(RecipeState.Archived) ? 'secondary' : undefined)}
             @click=${() => this.setRecipeStates([RecipeState.Archived])}
           >
             <app-icon slot="start" name="archive"></app-icon>
@@ -189,7 +207,7 @@ export class PageSearch extends LitElement {
           </ion-item>
           <ion-item
             button
-            color=${ifDefined(state.searchFilter.states.length === 0 || (state.searchFilter.states.includes(RecipeState.Active) && state.searchFilter.states.includes(RecipeState.Archived)) ? 'secondary' : undefined)}
+            color=${ifDefined(states.length === 0 || (states.includes(RecipeState.Active) && states.includes(RecipeState.Archived)) ? 'secondary' : undefined)}
             @click=${() => this.setRecipeStates([RecipeState.Active, RecipeState.Archived])}
           >
             <app-icon slot="start" name="done_all"></app-icon>
@@ -203,7 +221,7 @@ export class PageSearch extends LitElement {
           (item) => html`
               <ion-item
                 button
-                color=${ifDefined(state.searchFilter.sortBy === SortBy[item as keyof typeof SortBy] ? 'secondary' : undefined)}
+                color=${ifDefined(sortBy === SortBy[item as keyof typeof SortBy] ? 'secondary' : undefined)}
                 @click=${() => this.setSortBy(SortBy[item as keyof typeof SortBy])}
               >
                 <app-icon slot="start" name=${this.getSortByIcon(SortBy[item as keyof typeof SortBy])}></app-icon>
@@ -219,8 +237,8 @@ export class PageSearch extends LitElement {
           html`
               <ion-item
                 button
-                color=${ifDefined(state.searchResultsPerPage === item ? 'secondary' : undefined)}
-                @click=${() => state.searchResultsPerPage = item}
+                color=${ifDefined(resultsPerPage === item ? 'secondary' : undefined)}
+                @click=${() => this.searchCtx?.setResultsPerPage(item)}
               >
                 ${item}
               </ion-item>
@@ -266,31 +284,31 @@ export class PageSearch extends LitElement {
   }
 
   private setRecipeStates(states: RecipeState[]) {
-    state.searchFilter = {
-      ...state.searchFilter,
+    this.searchCtx?.setFilter({
+      ...this.searchCtx.filter,
       states,
-    };
+    });
   }
 
   private setSortBy(sortBy: SortBy) {
-    state.searchFilter = {
-      ...state.searchFilter,
+    this.searchCtx?.setFilter({
+      ...this.searchCtx.filter,
       sortBy,
-    };
+    });
   }
 
   private setSortDir(sortDir: SortDir) {
-    state.searchFilter = {
-      ...state.searchFilter,
+    this.searchCtx?.setFilter({
+      ...this.searchCtx.filter,
       sortDir,
-    };
+    });
   }
 
   private setViewMode(viewMode: SearchViewMode) {
-    state.searchSettings = {
-      ...state.searchSettings,
+    this.searchCtx?.setSettings({
+      ...this.searchCtx.settings,
       viewMode,
-    };
+    });
   }
 
   private async saveNewRecipe(recipe: Recipe, file: File | null) {
@@ -299,13 +317,13 @@ export class PageSearch extends LitElement {
         body: recipe,
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to create new recipe', { cause: error });
       }
 
-      if (!isNull(file)) {
+      if (file != null) {
         await showLoading(async () => {
-          if (isNull(newRecipe.id)) {
+          if (newRecipe.id == null) {
             throw new Error('Failed to upload image: recipe ID is null.');
           }
 
@@ -317,14 +335,14 @@ export class PageSearch extends LitElement {
             },
           });
 
-          if (uploadError) {
+          if (uploadError != null) {
             throw new Error('Failed to create new recipe.', { cause: uploadError });
           }
         }, 'Uploading picture...');
       }
 
       // Update the search results since the new recipe may be in them
-      await refreshSearchResults();
+      await this.searchCtx?.refresh();
 
       await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
@@ -335,7 +353,8 @@ export class PageSearch extends LitElement {
 
   private async onContentScrolled(e: ScrollBaseCustomEvent) {
     if (!e.detail.isScrolling) {
-      state.searchScrollPosition = (await this.content?.getScrollElement())?.scrollTop;
+      const top = (await this.content?.getScrollElement())?.scrollTop;
+      this.searchCtx?.setScrollPosition(top);
     }
   }
 
@@ -344,7 +363,7 @@ export class PageSearch extends LitElement {
       presentingElement: this,
       component: 'recipe-editor',
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNewRecipe(data.recipe, data.file);
     }
   }

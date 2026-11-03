@@ -11,13 +11,13 @@ async function present<T = unknown>(
 ) {
   const onPopState = async () => {
     globalThis.history.pushState({ modal: true }, '');
-    if (!dismissingModals.get(presenter)) {
+    if (dismissingModals.get(presenter) !== true) {
       await presenter.dismiss(undefined, cancelRole);
     }
   };
 
   let pushedState = false;
-  if (!(globalThis.history.state as { modal?: boolean })?.modal) {
+  if ((globalThis.history.state as { modal?: boolean } | null)?.modal !== true) {
     globalThis.addEventListener('popstate', onPopState);
     globalThis.history.pushState({ modal: true }, '');
     pushedState = true;
@@ -50,7 +50,7 @@ export function configureModalCanDismiss(
   modal: HTMLIonModalElement | null | undefined,
   isDirty: (data?: unknown, role?: string) => boolean | Promise<boolean>
 ) {
-  if (!modal) {
+  if (modal == null) {
     return;
   }
 
@@ -106,8 +106,8 @@ export function performAutofocus(this: HTMLIonModalElement) {
 
   // Check the shadow DOM first, then the light DOM, and finally the component itself.
   const focusEl = component?.shadowRoot?.querySelector('[autofocus]')
-    || component?.querySelector('[autofocus]')
-    || component;
+    ?? component?.querySelector('[autofocus]')
+    ?? component;
 
   if (focusEl instanceof HTMLElement) {
     focusEl.focus();

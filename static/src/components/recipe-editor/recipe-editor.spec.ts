@@ -37,7 +37,7 @@ describe('recipe-editor', () => {
   function setupDefaultFetchMock(settings: UserSettings | null = mockSettings) {
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current\/settings$/)) {
-        if (settings === null) {
+        if (settings == null) {
           return Promise.resolve({ status: 404, body: '' });
         }
         return Promise.resolve(JSON.stringify(settings));

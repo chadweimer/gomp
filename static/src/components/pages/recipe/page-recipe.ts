@@ -1,20 +1,19 @@
 import { LitElement, html, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { consume } from '@lit/context';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipeState } from '../../../helpers/schema.gen';
-import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
+import { api, fileContentSerializer } from '../../../helpers/api';
 import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
 import {
   ComponentWithActivatedCallback,
   getRecipeImageUrl,
   getRecipeThumbnailUrl,
   isAuthorized,
-  isNull,
   redirect,
 } from '../../../helpers/utils';
-import appState, { appStateStore } from '../../../stores/state';
-import { StoreController } from '../../../stores/store';
 import { getDefaultSearchFilter } from '../../../models';
+import { searchContext, SearchContextValue, userContext, UserContextValue } from '../../../context';
 import '../../recipe-viewer/recipe-viewer';
 import '../../recipe-print/recipe-print';
 import '../../note-card/note-card';
@@ -27,7 +26,13 @@ import './page-recipe.css';
 
 @customElement('page-recipe')
 export class PageRecipe extends LitElement implements ComponentWithActivatedCallback {
-  protected stateController = new StoreController(this, appStateStore);
+  @consume({ context: userContext, subscribe: true })
+  @property({ attribute: false })
+  userCtx?: UserContextValue;
+
+  @consume({ context: searchContext, subscribe: false })
+  @property({ attribute: false })
+  searchCtx?: SearchContextValue;
 
   @property({ type: Number }) recipeId = 0;
 
@@ -65,7 +70,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
               <recipe-viewer
                 .recipe=${this.recipe}
                 .links=${this.links}
-                ?readonly=${!isAuthorized(appState.currentUser, AccessLevel.Editor)}
+                ?readonly=${!isAuthorized(this.userCtx?.user, AccessLevel.Editor)}
                 @ratingSelected=${(e: CustomEvent<number>) => void this.onRatingSelected(e.detail)}
                 @deleteLinkClicked=${(e: CustomEvent<RecipeCompact>) => void this.onDeleteLinkClicked(e.detail)}
                 @tagClicked=${(e: CustomEvent<string>) => void this.onTagClicked(e.detail)}
@@ -93,7 +98,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
                               />
                             </ion-thumbnail>
                           </a>
-                          ${isAuthorized(appState.currentUser, AccessLevel.Editor)
+                          ${isAuthorized(this.userCtx?.user, AccessLevel.Editor)
           ? html`
                                 <ion-button
                                   size="small"
@@ -133,7 +138,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
                       <ion-col>
                         <note-card
                           .note=${note}
-                          ?readonly=${!isAuthorized(appState.currentUser, AccessLevel.Editor)}
+                          ?readonly=${!isAuthorized(this.userCtx?.user, AccessLevel.Editor)}
                           @editClicked=${(e: CustomEvent<Note>) => void this.onEditNoteClicked(e.detail)}
                           @deleteClicked=${(e: CustomEvent<Note>) => void this.onDeleteNoteClicked(e.detail)}
                         ></note-card>
@@ -154,7 +159,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
             </ion-button>
           </ion-buttons>
           <ion-buttons slot="primary">
-            ${isAuthorized(appState.currentUser, AccessLevel.Editor)
+            ${isAuthorized(this.userCtx?.user, AccessLevel.Editor)
         ? html`
                   <ion-button @click=${() => this.onEditClicked()}>
                     <app-icon slot="start" name="edit_square"></app-icon>
@@ -199,7 +204,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
             <app-icon slot="start" name="print"></app-icon>
             Print
           </ion-item>
-            ${isAuthorized(appState.currentUser, AccessLevel.Editor)
+            ${isAuthorized(this.userCtx?.user, AccessLevel.Editor)
         ? html`
           <ion-item button @click=${() => this.onDeleteClicked()}>
             <app-icon slot="start" name="delete"></app-icon>
@@ -245,7 +250,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load recipe.', { cause: error });
       }
 
@@ -262,7 +267,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load links.', { cause: error });
       }
       this.links = links ?? [];
@@ -278,7 +283,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load images.', { cause: error });
       }
 
@@ -295,7 +300,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load notes.', { cause: error });
       }
       this.notes = notes ?? [];
@@ -312,7 +317,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         body: recipe,
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save recipe.', { cause: error });
       }
     } catch (ex) {
@@ -327,7 +332,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete recipe.', { cause: error });
       }
     } catch (ex) {
@@ -343,7 +348,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         body: { state },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save recipe state.', { cause: error });
       }
     } catch (ex) {
@@ -358,7 +363,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId, destRecipeId: recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to add link to recipe.', { cause: error });
       }
     } catch (ex) {
@@ -369,7 +374,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async deleteLink(link: RecipeCompact) {
     try {
-      if (isNull(link.id)) {
+      if (link.id == null) {
         throw new Error('Cannot delete link: linked recipe ID is null.');
       }
 
@@ -377,7 +382,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId, destRecipeId: link.id } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete linked recipe.', { cause: error });
       }
     } catch (ex) {
@@ -388,13 +393,13 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async saveNote(note: Note) {
     try {
-      if (isNull(note.id)) {
+      if (note.id == null) {
         const { error } = await api.client.POST('/recipes/{recipeId}/notes', {
           params: { path: { recipeId: this.recipeId } },
           body: note,
         });
 
-        if (error) {
+        if (error != null) {
           throw new Error('Failed to create new note.', { cause: error });
         }
       } else {
@@ -403,7 +408,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
           body: note,
         });
 
-        if (error) {
+        if (error != null) {
           throw new Error('Failed to save note.', { cause: error });
         }
       }
@@ -415,7 +420,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async deleteNote(note: Note) {
     try {
-      if (isNull(note.id)) {
+      if (note.id == null) {
         throw new Error('Cannot delete note: note ID is null.');
       }
 
@@ -423,7 +428,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId, noteId: note.id } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete note.', { cause: error });
       }
     } catch (ex) {
@@ -443,7 +448,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
           },
         });
 
-        if (error) {
+        if (error != null) {
           throw new Error('Failed to upload picture.', { cause: error });
         }
       } catch (ex) {
@@ -464,7 +469,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         return;
       }
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete picture.', { cause: error });
       }
     } catch (ex) {
@@ -480,7 +485,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         body: { rating },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save recipe rating.', { cause: error });
       }
     } catch (ex) {
@@ -496,7 +501,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         body: { mainImageName: image },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save main image for recipe.', { cause: error });
       }
     } catch (ex) {
@@ -514,7 +519,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         recipeImages: this.images,
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveRecipe({
         ...this.recipe,
         ...data.recipe
@@ -522,7 +527,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       await this.loadRecipe();
 
       // Update the search results since the modified recipe may be in them
-      await refreshSearchResults();
+      await this.searchCtx?.refresh();
     }
   }
 
@@ -539,7 +544,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       await this.deleteRecipe();
 
       // Update the search results since the modified recipe may be in them
-      await refreshSearchResults();
+      await this.searchCtx?.refresh();
       await redirect('/recipes');
     }
   }
@@ -560,7 +565,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       await this.loadRecipe();
 
       // Update the search results since the modified recipe may be in them
-      await refreshSearchResults();
+      await this.searchCtx?.refresh();
     }
   }
 
@@ -572,7 +577,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         parentRecipeId: this.recipeId,
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.addLink(data.recipeId);
       await this.loadLinks();
     }
@@ -598,7 +603,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       presentingElement: this,
       component: 'note-editor',
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNote(data.note);
       await this.loadNotes();
     }
@@ -610,7 +615,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       component: 'note-editor',
       componentProps: { note },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNote({
         ...note,
         ...data.note
@@ -644,13 +649,13 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         accept: 'image/*',
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.uploadImage(data.file);
       await this.loadRecipe();
       await this.loadImages();
 
       // Update the search results since the modified recipe may be in them
-      await refreshSearchResults();
+      await this.searchCtx?.refresh();
     }
   }
 
@@ -663,7 +668,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
     await this.loadRecipe();
 
     // Update the search results since the modified recipe may be in them
-    await refreshSearchResults();
+    await this.searchCtx?.refresh();
   }
 
   private async onSetMainImageClicked(image: string) {
@@ -681,7 +686,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       await this.loadRecipe();
 
       // Update the search results since the modified recipe may be in them
-      await refreshSearchResults();
+      await this.searchCtx?.refresh();
     }
   }
 
@@ -700,15 +705,15 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       await this.loadImages();
 
       // Update the search results since the modified recipe may be in them
-      await refreshSearchResults();
+      await this.searchCtx?.refresh();
     }
   }
 
   private async onTagClicked(tag: string) {
-    appState.searchFilter = {
+    this.searchCtx?.setFilter({
       ...getDefaultSearchFilter(),
       tags: [tag],
-    };
+    });
     await redirect('/recipes');
   }
 }

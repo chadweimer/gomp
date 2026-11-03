@@ -108,7 +108,7 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
     try {
       const { data: user, error } = await api.client.GET('/users/current');
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load current user', { cause: error });
       }
 
@@ -124,7 +124,7 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
         body: { currentPassword, newPassword }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to update password.', { cause: error });
       }
     } catch (ex) {
@@ -137,7 +137,7 @@ export class PageSettingsSecurity extends LitElement implements ComponentWithAct
     const native = await this.repeatPasswordInput?.getInputElement();
     native?.setCustomValidity(this.newPassword === this.repeatPassword ? '' : 'Passwords must match');
 
-    if (this.form && !this.form.reportValidity()) {
+    if (this.form != null && !this.form.reportValidity()) {
       return;
     }
 

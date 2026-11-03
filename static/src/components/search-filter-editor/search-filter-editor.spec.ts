@@ -15,7 +15,7 @@ import {
 } from '../../helpers/schema.gen';
 import { getDefaultSearchFilter } from '../../models';
 import { toYesNoAny } from '../../helpers/utils';
-import { clearState } from '../../stores/state';
+import { clearTestStorage } from '../../testing/context-helpers';
 import './search-filter-editor';
 import { SearchFilterEditor } from './search-filter-editor';
 import { TagsInput } from '../tags-input/tags-input';
@@ -83,7 +83,7 @@ describe('search-filter-editor', () => {
 
   beforeEach(() => {
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     modalEl = document.createElement('ion-modal');
     modalEl.dismiss = vi.fn().mockResolvedValue(true);
     document.body.appendChild(modalEl);
@@ -94,19 +94,19 @@ describe('search-filter-editor', () => {
 
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current\/settings$/) && req.method === 'GET') {
-        if (currentSettings === null) {
+        if (currentSettings == null) {
           return { status: 500, body: JSON.stringify({ message: 'Error' }) };
         }
         return { status: 200, body: JSON.stringify(currentSettings) };
       }
       if (req.url.match(/\/users\/current\/filters\/\d+$/) && req.method === 'GET') {
-        if (currentFilterDetail === null) {
+        if (currentFilterDetail == null) {
           return { status: 500, body: JSON.stringify({ message: 'Error' }) };
         }
         return { status: 200, body: JSON.stringify(currentFilterDetail) };
       }
       if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-        if (currentFilters === null) {
+        if (currentFilters == null) {
           return { status: 500, body: JSON.stringify({ message: 'Error' }) };
         }
         return { status: 200, body: JSON.stringify({ total: currentFilters.length, filters: currentFilters }) };
@@ -118,7 +118,7 @@ describe('search-filter-editor', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     modalEl.remove();
     vi.restoreAllMocks();
   });

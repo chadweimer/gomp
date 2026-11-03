@@ -3,7 +3,7 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import { Recipe, RecipeState, UserSettings } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
 import { configureModalCanDismiss, getContainingModal } from '../../helpers/modals';
-import { getRecipeImageUrl, getRecipeThumbnailUrl, isNull, toPresentationHtml, toStorageHtml } from '../../helpers/utils';
+import { getRecipeImageUrl, getRecipeThumbnailUrl, toPresentationHtml, toStorageHtml } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import { HTMLEditor } from '../html-editor/html-editor';
 import { InputCustomEvent } from '@ionic/core';
@@ -90,7 +90,7 @@ export class RecipeEditor extends LitElement {
           <ion-buttons slot="primary">
             <ion-button color="primary" @click=${() => this.onSaveClicked()}>Save</ion-button>
           </ion-buttons>
-          <ion-title>${isNull(this.recipe?.id) ? 'New' : 'Edit'} Recipe</ion-title>
+          <ion-title>${this.recipe?.id == null ? 'New' : 'Edit'} Recipe</ion-title>
           <ion-buttons slot="secondary">
             <ion-button color="danger" @click=${() => this.onCancelClicked()}>Cancel</ion-button>
           </ion-buttons>
@@ -111,7 +111,7 @@ export class RecipeEditor extends LitElement {
               @ionChange=${(e: InputCustomEvent) => this.recipe = { ...this.recipe, name: e.detail.value ?? '' }}
             ></ion-input>
           </ion-item>
-          ${isNull(this.recipe?.id)
+          ${this.recipe?.id == null
         ? html`
                 <ion-item lines="full">
                   <form enctype="multipart/form-data">
@@ -209,7 +209,7 @@ export class RecipeEditor extends LitElement {
   }
 
   private async onSaveClicked() {
-    if (this.form && !this.form.reportValidity()) {
+    if (this.form != null && !this.form.reportValidity()) {
       return;
     }
 

@@ -52,21 +52,30 @@ Reusable components (e.g. `recipe-editor`, `tags-input`, `note-card`) encapsulat
 
 ## 2. State Management & Reactivity
 
-Global state is managed by `appStateStore` in `static/src/stores/state.ts` (and configuration by `appConfigStore` in `static/src/stores/config.ts`).
+Global state is managed via Lit Context (`@lit/context`) under `static/src/context/`:
+- `userContext`: User authentication state (`user`, `login()`, `logout()`).
+- `searchContext`: Search parameters, pagination, and results (`filter`, `settings`, `page`, `results`, `setFilter()`, `refresh()`).
+- `configContext`: Application configuration and metadata (`config`, `info`, `setConfig()`).
 
-### When to Use `StoreController`
-Reactivity in Lit is component-scoped (`host.requestUpdate()`). Attaching a controller to a parent (or `app-root`) does **not** re-render descendant or routed components.
-- **Attach `StoreController` when**: The component directly reads global store properties (e.g., `appState.currentUser`, `appState.searchResults`, `appConfig.title`) inside its `render()` template and must re-render when the store changes.
+### Consuming Context in Components
+- **Reading state in `render()`**: Subscribe to the context so Lit automatically requests updates when values change:
   ```ts
-  protected stateController = new StoreController(this, appStateStore);
+  @consume({ context: userContext, subscribe: true })
+  @property({ attribute: false })
+  userCtx?: UserContextValue;
   ```
-- **Do NOT attach `StoreController` when**:
-  - **Leaf / Presentational Components**: They should receive data via standard Lit `@property()` bindings passed from parent templates (e.g., `<recipe-card .recipe=${recipe}>`). When the parent updates, Lit automatically updates the child.
-  - **Write-Only Components**: If a component only writes/mutates store state (e.g., `appState.currentUser = user` in `page-login` or setting `searchFilter` before navigating), it does not need a controller.
-  - **Page-Local State**: Pages that manage their own data via local `@state()` loaded on navigation via `activatedCallback()` / `connectedCallback()` do not need a store controller unless they also bind directly to store properties in `render()`.
+- **Write-Only / Action Invocation**: When a component only triggers updates/mutations (e.g. setting search filters or logging in) and does not need to re-render on state changes, set `subscribe: false`:
+  ```ts
+  @consume({ context: searchContext, subscribe: false })
+  @property({ attribute: false })
+  searchCtx?: SearchContextValue;
+  ```
+- **Leaf / Presentational Components**: Prefer receiving data via standard Lit `@property()` bindings passed from parent templates (e.g., `<recipe-card .recipe=${recipe}>`).
 
-### Imperative Property Changes
-- **Listening to Property Changes**: Use `onStateChange('propName', callback)` (or `store.onChange('key', callback)`) for imperative side effects outside of render cycles without subscribing the entire component to every store update.
+### Persistence with `StorageController`
+Properties synced with browser storage use `StorageController` (`static/src/helpers/storage-controller.ts`):
+- `currentUser`: Backed by `localStorage` with multi-tab `storage` event synchronization.
+- `searchFilter`, `searchSettings`, `searchPage`, `searchResultsPerPage`: Backed by `sessionStorage`.
 
 ---
 

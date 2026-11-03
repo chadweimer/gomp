@@ -41,7 +41,7 @@ export class FiveStarRating extends LitElement {
   }
 
   render() {
-    const isHovering = !this.disabled && this.hoverValue !== null;
+    const isHovering = !this.disabled && this.hoverValue != null;
     const displayValue = isHovering ? this.hoverValue! : this.value;
 
     return html`
@@ -73,7 +73,7 @@ export class FiveStarRating extends LitElement {
 
   private getRatingFromEvent(event: MouseEvent, star: number): number {
     const target = event.currentTarget as HTMLElement | null;
-    if (target) {
+    if (target != null) {
       const rect = target.getBoundingClientRect();
       if (rect.width > 0 && event.clientX - rect.left < rect.width / 2) {
         return star - 0.5;

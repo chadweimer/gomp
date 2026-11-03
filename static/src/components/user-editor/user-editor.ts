@@ -2,7 +2,7 @@ import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { AccessLevel, User } from '../../helpers/schema.gen';
 import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
-import { insertSpacesBetweenWords, isNull } from '../../helpers/utils';
+import { insertSpacesBetweenWords, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import { InputCustomEvent, SelectCustomEvent } from '@ionic/core';
 
@@ -43,7 +43,7 @@ export class UserEditor extends LitElement {
       }
 
       // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-      if (this.usernameInput) {
+      if (this.usernameInput != null) {
         this.user = {
           ...this.user,
           username: this.usernameInput.value as string
@@ -51,7 +51,7 @@ export class UserEditor extends LitElement {
       }
 
       return this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel ||
-        (this.passwordInput?.value ?? '') !== '' || (this.repeatPasswordInput?.value ?? '') !== '';
+        !isNullOrEmpty(this.passwordInput?.value as string) || !isNullOrEmpty(this.repeatPasswordInput?.value as string);
     });
   }
 
@@ -61,7 +61,7 @@ export class UserEditor extends LitElement {
   }
 
   render() {
-    const isNew = isNull(this.user?.id);
+    const isNew = this.user?.id == null;
 
     return html`
       <ion-header>
@@ -138,11 +138,11 @@ export class UserEditor extends LitElement {
   }
 
   private async onSaveClicked() {
-    if (isNull(this.user.id)) {
+    if (this.user.id == null) {
       const native = await this.repeatPasswordInput?.getInputElement();
       native?.setCustomValidity(this.password === this.repeatPassword ? '' : 'Passwords must match');
 
-      if (this.form && !this.form.reportValidity()) {
+      if (this.form != null && !this.form.reportValidity()) {
         return;
       }
 

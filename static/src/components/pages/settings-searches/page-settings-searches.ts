@@ -1,10 +1,11 @@
 import { LitElement, html } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
+import { consume } from '@lit/context';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showAlert, showModal, showToast } from '../../../helpers/modals';
-import { ComponentWithActivatedCallback, isNull, redirect } from '../../../helpers/utils';
-import appState from '../../../stores/state';
+import { ComponentWithActivatedCallback, redirect } from '../../../helpers/utils';
+import { searchContext, SearchContextValue } from '../../../context';
 import '../../page-navigator/page-navigator';
 import '../../search-filter-editor/search-filter-editor';
 import '../../app-icon/app-icon';
@@ -12,6 +13,10 @@ import './page-settings-searches.css';
 
 @customElement('page-settings-searches')
 export class PageSettingsSearches extends LitElement implements ComponentWithActivatedCallback {
+  @consume({ context: searchContext, subscribe: false })
+  @property({ attribute: false })
+  searchCtx?: SearchContextValue;
+
   private readonly resultsPerPage = 24;
 
   @state() filters: SavedSearchFilterCompact[] = [];
@@ -87,7 +92,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         params: { query: { page: this.page, count: this.resultsPerPage } }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load search filters.', { cause: error });
       }
 
@@ -111,7 +116,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         body: searchFilter
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to create search filter.', { cause: error });
       }
     } catch (ex) {
@@ -122,7 +127,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
 
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      if (isNull(searchFilter.id)) {
+      if (searchFilter.id == null) {
         throw new Error('Cannot save search filter: filter ID is null.');
       }
       const { error } = await api.client.PUT('/users/current/filters/{filterId}', {
@@ -130,7 +135,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         body: searchFilter
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save search filter.', { cause: error });
       }
     } catch (ex) {
@@ -140,7 +145,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
   }
 
   private async deleteSearchFilter(id: number | null | undefined) {
-    if (isNull(id)) {
+    if (id == null) {
       return;
     }
 
@@ -149,7 +154,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         params: { path: { filterId: id } }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete search filter.', { cause: error });
       }
     } catch (ex) {
@@ -167,7 +172,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         showName: true,
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNewSearchFilter({
         ...data.searchFilter,
         name: data.name
@@ -177,7 +182,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
   }
 
   private async onEditFilterClicked(id: number | null | undefined) {
-    if (isNull(id)) {
+    if (id == null) {
       return;
     }
 
@@ -185,7 +190,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
       params: { path: { filterId: id } }
     });
 
-    if (error || !searchFilter) {
+    if (error != null || searchFilter == null) {
       return;
     }
 
@@ -199,7 +204,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         showName: true,
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveExistingSearchFilter({
         ...searchFilter,
         ...data.searchFilter,
@@ -226,7 +231,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
   }
 
   private async onLoadSearchClicked(id: number | null | undefined) {
-    if (isNull(id)) {
+    if (id == null) {
       return;
     }
 
@@ -235,12 +240,12 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         params: { path: { filterId: id } }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load search filter.', { cause: error });
       }
 
-      if (searchFilter) {
-        appState.searchFilter = searchFilter;
+      if (searchFilter != null) {
+        this.searchCtx?.setFilter(searchFilter);
       }
       await redirect('/recipes');
     } catch (ex) {

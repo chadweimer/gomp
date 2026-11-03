@@ -43,9 +43,9 @@ Use this guide for component tests under `static/src/components/**/*.spec.ts`.
 - Mount components with `fixture<ComponentName>(html`<component-tag ...></component-tag>`)` from `@open-wc/testing`.
 - Always `await el.updateComplete` (or re-query DOM) after interactions, clicks, or property updates to let Lit finish its reactive update cycle.
 - In `beforeEach` and `afterEach`:
-  - `localStorage?.clear();` and `sessionStorage?.clear();` to avoid leaking storage state.
+  - `clearTestStorage()` from `testing/context-helpers` (or `localStorage?.clear();` and `sessionStorage?.clear();`) to avoid leaking storage state.
   - `fetchMocker.resetMocks()` to clear mock routes and recorded calls.
-  - `clearState()` from `stores/state` to reset global app state between tests.
+  - Mock contexts using helpers from `testing/context-helpers` (`createMockUserContext`, `createMockSearchContext`, etc.).
   - Restore `globalThis.fetch` and call `vi.restoreAllMocks()`.
   - Clean up any manually mounted DOM elements (e.g., mock router) in `afterEach`.
 - Always use specific matchers (e.g., `toHaveLength`, `toBeNull`, `toBeDefined`, `toContain`, etc) instead of generic assertions like `expect(x).toBe(y)`.

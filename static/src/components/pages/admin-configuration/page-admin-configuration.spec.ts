@@ -3,13 +3,14 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { AppConfiguration } from '../../../helpers/schema.gen';
-import appConfig from '../../../stores/config';
-import { clearState } from '../../../stores/state';
+import { clearTestStorage, createMockConfigContext } from '../../../testing/context-helpers';
+import { ConfigContextValue } from '../../../context';
 import './page-admin-configuration';
 import { PageAdminConfiguration } from './page-admin-configuration';
 
 describe('page-admin-configuration', () => {
   const originalFetch = globalThis.fetch;
+  let mockConfigCtx: ConfigContextValue;
 
   const mockConfig: AppConfiguration = {
     title: 'Custom Meal Planner',
@@ -22,17 +23,17 @@ describe('page-admin-configuration', () => {
   }
 
   beforeEach(() => {
-    localStorage?.clear();
-    sessionStorage?.clear();
+    clearTestStorage();
     fetchMocker.resetMocks();
-    clearState();
-    appConfig.config = { title: 'GOMP: Go Meal Planner' };
+    mockConfigCtx = createMockConfigContext({
+      config: { title: 'GOMP: Go Meal Planner' }
+    });
   });
 
   afterEach(() => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     vi.restoreAllMocks();
   });
 
@@ -100,7 +101,7 @@ describe('page-admin-configuration', () => {
       return Promise.resolve('{}');
     });
 
-    const root = await fixture<PageAdminConfiguration>(html`<page-admin-configuration></page-admin-configuration>`);
+    const root = await fixture<PageAdminConfiguration>(html`<page-admin-configuration .configCtx=${mockConfigCtx}></page-admin-configuration>`);
     await new Promise(r => setTimeout(r, 10));
     await root.updateComplete;
 
@@ -121,7 +122,7 @@ describe('page-admin-configuration', () => {
     expect(putReq).toBeDefined();
     const body = (await putReq?.clone().json()) as AppConfiguration;
     expect(body.title).toBe('Updated App Name');
-    expect(appConfig.config.title).toBe('Updated App Name');
+    expect(mockConfigCtx.config?.title).toBe('Updated App Name');
   });
 
   it('does not save configuration when form validity check fails', async () => {

@@ -60,7 +60,7 @@ export class FileUploadBrowser extends LitElement {
   }
 
   private async onSaveClicked() {
-    if (this.inputForm && !this.inputForm.reportValidity()) {
+    if (this.inputForm != null && !this.inputForm.reportValidity()) {
       return;
     }
 

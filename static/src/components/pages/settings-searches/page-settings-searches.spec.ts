@@ -3,13 +3,15 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { alertController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SearchFilterSearchResult, SortBy, SortDir } from '../../../helpers/schema.gen';
-import state, { clearState } from '../../../stores/state';
+import { clearTestStorage, createMockSearchContext } from '../../../testing/context-helpers';
+import { SearchContextValue } from '../../../context';
 import './page-settings-searches';
 import { PageSettingsSearches } from './page-settings-searches';
 
 describe('page-settings-searches', () => {
   const originalFetch = globalThis.fetch;
   let routerEl: HTMLIonRouterElement;
+  let mockSearchCtx: SearchContextValue;
 
   const mockFilterCompacts: SavedSearchFilterCompact[] = [
     { id: 1, name: 'Quick Dinners' },
@@ -56,10 +58,9 @@ describe('page-settings-searches', () => {
   }
 
   beforeEach(() => {
-    localStorage?.clear();
-    sessionStorage?.clear();
+    clearTestStorage();
     fetchMocker.resetMocks();
-    clearState();
+    mockSearchCtx = createMockSearchContext();
 
     routerEl = document.createElement('ion-router');
     routerEl.push = vi.fn().mockResolvedValue(true);
@@ -69,7 +70,7 @@ describe('page-settings-searches', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     routerEl.remove();
     vi.restoreAllMocks();
   });
@@ -183,7 +184,7 @@ describe('page-settings-searches', () => {
         return Promise.resolve('{}');
       });
 
-      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
+      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches .searchCtx=${mockSearchCtx}></page-settings-searches>`);
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
@@ -192,8 +193,8 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      expect(state.searchFilter.query).toBe('dinner');
-      expect(state.searchFilter.tags).toEqual(['quick']);
+      expect(mockSearchCtx.filter.query).toBe('dinner');
+      expect(mockSearchCtx.filter.tags).toEqual(['quick']);
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 

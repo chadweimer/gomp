@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { alertController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { AccessLevel, User, UserSearchResult } from '../../../helpers/schema.gen';
-import { clearState } from '../../../stores/state';
+import { clearTestStorage } from '../../../testing/context-helpers';
 import './page-admin-users';
 import { PageAdminUsers } from './page-admin-users';
 import { PageNavigator } from '../../page-navigator/page-navigator';
@@ -46,13 +46,13 @@ describe('page-admin-users', () => {
     localStorage?.clear();
     sessionStorage?.clear();
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
   });
 
   afterEach(() => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     vi.restoreAllMocks();
   });
 

@@ -1,16 +1,23 @@
 import { actionSheetController, alertController, modalController, popoverController, RouterCustomEvent } from '@ionic/core';
 import { LitElement, html, nothing } from 'lit';
-import { customElement, state, query } from 'lit/decorators.js';
+import { customElement, state, query, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { Subscription } from 'rxjs';
-import { api, refreshSearchResults } from '../../helpers/api';
+import { ContextRoot, provide } from '@lit/context';
+import { api } from '../../helpers/api';
 import { showModal } from '../../helpers/modals';
-import { AccessLevel, SearchFilter } from '../../helpers/schema.gen';
-import { isAuthorized, isNull, isNullOrEmpty, redirect, sendActivatedCallback } from '../../helpers/utils';
-import { getDefaultSearchFilter } from '../../models';
-import appConfig, { appConfigStore } from '../../stores/config';
-import appState, { appStateStore, clearState } from '../../stores/state';
-import { StoreController } from '../../stores/store';
+import { AccessLevel, AppConfiguration, AppInfo, RecipeCompact, SearchFilter, User } from '../../helpers/schema.gen';
+import { isAuthorized, isNullOrEmpty, redirect, sendActivatedCallback } from '../../helpers/utils';
+import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../../models';
+import { StorageController } from '../../helpers/storage-controller';
+import {
+  configContext,
+  ConfigContextValue,
+  searchContext,
+  SearchContextValue,
+  userContext,
+  UserContextValue
+} from '../../context';
 
 // Import page components and placeholders
 import './app-root.css';
@@ -34,16 +41,54 @@ interface AppLink {
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
-  // Connect to reactive stores
-  protected stateController = new StoreController(this, appStateStore);
-  protected configController = new StoreController(this, appConfigStore);
-
+  private readonly contextRoot = new ContextRoot();
   private readonly subscriptions: Subscription[] = [];
+
+  // Storage Controllers for persistence
+  private readonly userStorage = new StorageController<User | undefined>(
+    this,
+    'currentUser',
+    localStorage,
+    undefined,
+    { syncCrossTabs: true, onUpdate: () => this.updateUserContext() }
+  );
+
+  private readonly searchFilterStorage = new StorageController<SearchFilter>(
+    this,
+    'searchFilter',
+    sessionStorage,
+    getDefaultSearchFilter(),
+    { onUpdate: () => this.onSearchParamChanged(false) }
+  );
+
+  private readonly searchSettingsStorage = new StorageController<SearchSettings>(
+    this,
+    'searchSettings',
+    sessionStorage,
+    getDefaultSearchSettings(),
+    { onUpdate: () => this.onSearchParamChanged(false) }
+  );
+
+  private readonly searchPageStorage = new StorageController<number>(
+    this,
+    'searchPage',
+    sessionStorage,
+    1,
+    { onUpdate: () => this.onSearchParamChanged(true) }
+  );
+
+  private readonly searchResultsPerPageStorage = new StorageController<24 | 36 | 60 | 96 | 120>(
+    this,
+    'searchResultsPerPage',
+    sessionStorage,
+    36,
+    { onUpdate: () => this.onSearchParamChanged(false) }
+  );
 
   private readonly appLinks: Map<string, AppLink> = new Map<string, AppLink>([
     ['/', { title: 'Home', icon: 'home', showOn: (type: 'menu' | 'toolbar') => type === 'menu' }],
-    ['/recipes', { title: 'Recipes', icon: 'chef_hat', showOn: () => this.isLoggedIn(), detail: () => appState.totalRecipeCount ?? 0 }],
-    ['/tags', { title: 'Tags', icon: 'bookmarks', showOn: () => this.isLoggedIn(), detail: () => appState.totalTagsCount ?? 0 }],
+    ['/recipes', { title: 'Recipes', icon: 'chef_hat', showOn: () => this.isLoggedIn(), detail: () => this.totalRecipeCount ?? 0 }],
+    ['/tags', { title: 'Tags', icon: 'bookmarks', showOn: () => this.isLoggedIn(), detail: () => this.totalTagsCount ?? 0 }],
     ['/settings', { title: 'Settings', icon: 'settings', showOn: () => this.isLoggedIn() }],
     ['/settings/preferences', { title: 'Preferences', icon: 'tune', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
     ['/settings/searches', { title: 'Searches', icon: 'saved_search', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
@@ -53,6 +98,39 @@ export class AppRoot extends LitElement {
     ['/admin/users', { title: 'Users', icon: 'group', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
     ['/admin/maintenance', { title: 'Maintenance', icon: 'construction', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
   ]);
+
+  // Context Providers
+  @provide({ context: userContext })
+  @property({ attribute: false })
+  userCtx!: UserContextValue;
+
+  @provide({ context: searchContext })
+  @property({ attribute: false })
+  searchCtx!: SearchContextValue;
+
+  @provide({ context: configContext })
+  @property({ attribute: false })
+  configCtx!: ConfigContextValue;
+
+  // Search Results state
+  @state() private searchResults?: RecipeCompact[];
+  @state() private searchResultCount?: number;
+  @state() private searchNumPages = 1;
+  @state() private searchScrollPosition = 0;
+
+  // Configuration state
+  @state() appConfigInfo: AppInfo = {
+    copyright: 'Copyright © Chad Weimer',
+    version: '<Unknown>'
+  };
+  @state() appConfigData: AppConfiguration = {
+    title: 'GOMP: Go Meal Planner'
+  };
+
+  // Status state
+  @state() private loadingCount = 0;
+  @state() private totalRecipeCount?: number;
+  @state() private totalTagsCount?: number;
 
   @state() pageTitle = '';
   @state() childPageTitle = '';
@@ -66,25 +144,99 @@ export class AppRoot extends LitElement {
   }
 
   connectedCallback() {
+    this.contextRoot.attach(this);
+    this.updateUserContext();
+    this.updateSearchContext();
+    this.updateConfigContext();
+
     super.connectedCallback();
 
-    // Automatically trigger a logout if an API returns a 401
-    this.subscriptions.push(api.responses.subscribe(async ({ request, response }) => {
-      if (response.status === 401) {
-        // Make sure we don't recursively call ourselves if the logout also triggers a 401
-        if (!request.url.endsWith('/auth') || request.method.toLowerCase() !== 'delete') {
-          await this.logout();
+    this.subscriptions.push(
+      // Subscribe to api loading requests
+      api.loading$.subscribe((count) => { this.loadingCount = count; }),
+      // Automatically trigger a logout if an API returns a 401
+      api.responses$.subscribe(async ({ request, response }) => {
+        if (response.status === 401) {
+          // Make sure we don't recursively call ourselves if the logout also triggers a 401
+          if (!request.url.endsWith('/auth') || request.method.toLowerCase() !== 'delete') {
+            await this.logout();
+          }
         }
-      }
-    }));
+      })
+    );
 
     this.loadAppConfiguration().catch(console.error);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.contextRoot.detach(this);
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.subscriptions.length = 0;
+  }
+
+  updateUserContext() {
+    this.userCtx = {
+      user: this.userStorage.get(),
+      login: (user: User) => {
+        this.userStorage.set(user);
+        this.updateUserContext();
+        this.executeSearch().catch(console.error);
+      },
+      logout: () => this.logout()
+    };
+  }
+
+  updateSearchContext() {
+    this.searchCtx = {
+      filter: this.searchFilterStorage.get(),
+      settings: this.searchSettingsStorage.get(),
+      page: this.searchPageStorage.get(),
+      numPages: this.searchNumPages,
+      resultsPerPage: this.searchResultsPerPageStorage.get(),
+      results: this.searchResults,
+      resultCount: this.searchResultCount,
+      scrollPosition: this.searchScrollPosition,
+      setFilter: (filter: SearchFilter) => {
+        this.searchFilterStorage.set(filter);
+      },
+      setSettings: (settings: SearchSettings) => {
+        this.searchSettingsStorage.set(settings);
+      },
+      setPage: (page: number) => {
+        this.searchPageStorage.set(page);
+      },
+      setResultsPerPage: (count: 24 | 36 | 60 | 96 | 120) => {
+        this.searchResultsPerPageStorage.set(count);
+      },
+      setScrollPosition: (pos: number) => {
+        this.searchScrollPosition = pos;
+        this.updateSearchContext();
+      },
+      refresh: () => this.executeSearch(),
+      reset: () => {
+        this.searchFilterStorage.reset();
+        this.searchPageStorage.reset();
+        this.searchScrollPosition = 0;
+        this.updateSearchContext();
+      }
+    };
+  }
+
+  updateConfigContext() {
+    this.configCtx = {
+      config: this.appConfigData,
+      info: this.appConfigInfo,
+      setConfig: (config: AppConfiguration) => {
+        this.appConfigData = config;
+        this.updateConfigContext();
+        document.title = config.title;
+      },
+      setInfo: (info: AppInfo) => {
+        this.appConfigInfo = info;
+        this.updateConfigContext();
+      }
+    };
   }
 
   render() {
@@ -142,7 +294,7 @@ export class AppRoot extends LitElement {
                         <app-icon name=${link.icon}></app-icon>
                       </ion-text>
                       <ion-label color=${isParentOfActive ? 'secondary' : nothing}>${link.title}</ion-label>
-                      ${!isNull(link.detail) ? html`<ion-label slot="end">${link.detail()}</ion-label>` : nothing}
+                      ${link.detail != null ? html`<ion-label slot="end">${link.detail()}</ion-label>` : nothing}
                     </ion-item>
                   `;
         })}
@@ -154,7 +306,7 @@ export class AppRoot extends LitElement {
           </ion-content>
 
           <ion-footer color="medium" class="ion-text-center ion-padding copyright">
-            GOMP: Go Meal Planner ${appConfig.info.version}. ${appConfig.info.copyright}
+            GOMP: Go Meal Planner ${this.appConfigInfo.version}. ${this.appConfigInfo.copyright}
           </ion-footer>
         </ion-menu>
 
@@ -163,12 +315,12 @@ export class AppRoot extends LitElement {
             <ion-toolbar color="primary">
               <ion-buttons slot="start">
                 <ion-menu-button>
-                  ${appState.loadingCount > 0 ? html`<ion-spinner name="bubbles"></ion-spinner>` : html`<app-icon name="menu"></app-icon>`}
+                  ${this.loadingCount > 0 ? html`<ion-spinner name="bubbles"></ion-spinner>` : html`<app-icon name="menu"></app-icon>`}
                 </ion-menu-button>
               </ion-buttons>
 
               <ion-title slot="start">
-                <ion-router-link color="light" href="/">${appConfig.config.title}</ion-router-link>
+                <ion-router-link color="light" href="/">${this.appConfigData.title}</ion-router-link>
                 ${!isNullOrEmpty(this.pageTitle) ? html`<ion-text color="light" class="ion-display-md-none"> | ${this.pageTitle}</ion-text>` : nothing}
               </ion-title>
 
@@ -200,23 +352,21 @@ export class AppRoot extends LitElement {
         ])}
               </ion-buttons>
 
-              </ion-buttons>
-
               <ion-searchbar
                 slot="end"
                 class="end ion-display-none ion-display-lg-flex"
                 .autocorrect=${true}
                 .spellcheck=${true}
                 .disabled=${!this.isLoggedIn()}
-                .value=${appState.searchFilter?.query ?? ''}
+                .value=${this.searchCtx.filter?.query ?? ''}
                 @keydown=${(e: KeyboardEvent) => this.onSearchKeyDown(e)}
-                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = appState.searchFilter?.query ?? '')}
+                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = this.searchCtx.filter?.query ?? '')}
                 @ionClear=${() => this.onSearchClearClicked()}
               ></ion-searchbar>
               <ion-buttons slot="end" class="ion-display-none ion-display-lg-flex">
                 <ion-button .disabled=${!this.isLoggedIn()} @click=${(e: CustomEvent) => this.onSearchMenuClicked(e)}>
                   <app-icon slot="start" name="manage_search"></app-icon>
-                  <ion-badge color="secondary">${appState.searchResultCount ?? 0}</ion-badge>
+                  <ion-badge color="secondary">${this.searchResultCount ?? 0}</ion-badge>
                 </ion-button>
               </ion-buttons>
             </ion-toolbar>
@@ -226,15 +376,15 @@ export class AppRoot extends LitElement {
                 .autocorrect=${true}
                 .spellcheck=${true}
                 .disabled=${!this.isLoggedIn()}
-                .value=${appState.searchFilter?.query ?? ''}
+                .value=${this.searchCtx.filter?.query ?? ''}
                 @keydown=${(e: KeyboardEvent) => this.onSearchKeyDown(e)}
-                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = appState.searchFilter?.query ?? '')}
+                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = this.searchCtx.filter?.query ?? '')}
                 @ionClear=${() => this.onSearchClearClicked()}
               ></ion-searchbar>
               <ion-buttons slot="end">
                 <ion-button .disabled=${!this.isLoggedIn()} @click=${(e: CustomEvent) => this.onSearchMenuClicked(e)}>
                   <app-icon slot="start" name="manage_search"></app-icon>
-                  <ion-badge color="secondary">${appState.searchResultCount ?? 0}</ion-badge>
+                  <ion-badge color="secondary">${this.searchResultCount ?? 0}</ion-badge>
                 </ion-button>
               </ion-buttons>
             </ion-toolbar>
@@ -261,28 +411,29 @@ export class AppRoot extends LitElement {
     `;
   }
 
-  private async loadAppConfiguration() {
+  async loadAppConfiguration() {
     try {
       const { data: info, error: infoError } = await api.client.GET('/app/info');
-      if (infoError) {
+      if (infoError != null) {
         throw new Error('Failed to load app info', { cause: infoError });
       }
 
       const { data: config, error: configError } = await api.client.GET('/app/configuration');
-      if (configError) {
+      if (configError != null) {
         throw new Error('Failed to load app configuration', { cause: configError });
       }
 
-      appConfig.info = info;
-      appConfig.config = config;
+      this.appConfigInfo = info;
+      this.appConfigData = config;
+      this.updateConfigContext();
 
-      document.title = appConfig.config.title;
+      document.title = this.appConfigData.title;
       const appName = document.querySelector('meta[name="application-name"]');
-      if (!isNull(appName)) {
+      if (appName != null) {
         appName.setAttribute('content', document.title);
       }
       const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-      if (!isNull(appTitle)) {
+      if (appTitle != null) {
         appTitle.setAttribute('content', document.title);
       }
     } catch (ex) {
@@ -290,21 +441,79 @@ export class AppRoot extends LitElement {
     }
   }
 
-  private async logout() {
-    clearState();
+  private onSearchParamChanged(isPageOnly: boolean) {
+    if (!isPageOnly) {
+      this.searchCtx.setPage(1);
+      this.searchScrollPosition = 0;
+    }
+    this.updateSearchContext();
+    this.executeSearch().catch(console.error);
+  }
+
+  private async executeSearch() {
+    if (!this.isLoggedIn()) return;
+
+    const filter = this.searchCtx.filter;
+    const page = this.searchCtx.page;
+    const count = this.searchCtx.resultsPerPage;
+
     try {
-      const { error } = await api.client.DELETE('/auth');
-      if (error) {
-        throw new Error('Failed to logout.', { cause: error });
-      }
-      await redirect('/login');
+      const { total, recipes } = await api.performRecipeSearch(filter, page, count);
+      this.searchResults = recipes ?? [];
+      this.searchResultCount = total;
+      this.searchNumPages = Math.max(Math.ceil(total / count), 1);
     } catch (ex) {
       console.error(ex);
+      this.searchResults = [];
+      this.searchResultCount = undefined;
+      this.searchNumPages = 1;
+    } finally {
+      if (page > this.searchNumPages) {
+        this.searchCtx.setPage(this.searchNumPages);
+      }
+      this.updateSearchContext();
+    }
+
+    try {
+      this.totalRecipeCount = await api.fetchTotalRecipeCount();
+    } catch (ex) {
+      console.error(ex);
+      this.totalRecipeCount = undefined;
+    }
+
+    try {
+      this.totalTagsCount = await api.fetchTotalTagsCount();
+    } catch (ex) {
+      console.error(ex);
+      this.totalTagsCount = undefined;
+    }
+  }
+
+  private async logout() {
+    this.userStorage.reset();
+    this.searchFilterStorage.reset();
+    this.searchSettingsStorage.reset();
+    this.searchPageStorage.reset();
+    this.searchResultsPerPageStorage.reset();
+    this.searchResults = undefined;
+    this.searchResultCount = undefined;
+    this.updateUserContext();
+    this.updateSearchContext();
+
+    try {
+      const { error } = await api.client.DELETE('/auth');
+      if (error != null) {
+        throw new Error('Failed to logout.', { cause: error });
+      }
+    } catch (ex) {
+      console.error(ex);
+    } finally {
+      await redirect('/login');
     }
   }
 
   private isLoggedIn() {
-    return !isNull(appState.currentUser);
+    return this.userCtx.user != null;
   }
 
   private requireLogin() {
@@ -315,7 +524,7 @@ export class AppRoot extends LitElement {
   }
 
   private isAdmin() {
-    return this.isLoggedIn() && isAuthorized(appState.currentUser, AccessLevel.Admin);
+    return this.isLoggedIn() && isAuthorized(this.userCtx.user, AccessLevel.Admin);
   }
 
   private requireAdmin() {
@@ -345,13 +554,13 @@ export class AppRoot extends LitElement {
     let route = e.detail.to;
     const idRouteMatcher = /^(?<base>\/[\w-]+)\/\d+\/?$/;
     const match = idRouteMatcher.exec(e.detail.to);
-    if (match) {
+    if (match != null) {
       route = match.groups?.base ?? route;
     }
 
     // Set the page title based on the active page
     const link = this.appLinks.get(route);
-    if (!isNull(link)) {
+    if (link != null) {
       if (!isNullOrEmpty(link.parentUrl)) {
         const parentLink = this.appLinks.get(link.parentUrl);
         this.pageTitle = parentLink?.title ?? '';
@@ -367,13 +576,13 @@ export class AppRoot extends LitElement {
 
     if (this.isLoggedIn()) {
       // Make sure there are search results on initial load
-      if (isNull(appState.searchResults)) {
-        await refreshSearchResults().catch(console.error);
+      if (this.searchResults == null) {
+        await this.executeSearch().catch(console.error);
       }
     }
 
     // Let the new page know it's been activated
-    if (this.routerOutlet) {
+    if (this.routerOutlet != null) {
       await sendActivatedCallback(this.routerOutlet);
     }
 
@@ -387,10 +596,10 @@ export class AppRoot extends LitElement {
 
     if (e.key === 'Enter') {
       const searchBar = e.target as HTMLIonInputElement;
-      appState.searchFilter = {
-        ...appState.searchFilter,
+      this.searchCtx.setFilter({
+        ...this.searchCtx.filter,
         query: searchBar.value?.toString() ?? ''
-      };
+      });
       await redirect('/recipes');
     }
   }
@@ -408,10 +617,10 @@ export class AppRoot extends LitElement {
       return;
     }
 
-    appState.searchFilter = {
-      ...appState.searchFilter,
+    this.searchCtx.setFilter({
+      ...this.searchCtx.filter,
       query: ''
-    };
+    });
     await redirect('/recipes');
   }
 
@@ -420,7 +629,7 @@ export class AppRoot extends LitElement {
       return;
     }
 
-    appState.searchFilter = getDefaultSearchFilter();
+    this.searchCtx.setFilter(getDefaultSearchFilter());
     await redirect('/recipes');
   }
 
@@ -437,11 +646,11 @@ export class AppRoot extends LitElement {
         prompt: 'Search',
         showName: false,
         showSavedLoader: true,
-        searchFilter: appState.searchFilter
+        searchFilter: this.searchCtx.filter
       },
     });
-    if (!isNull(data)) {
-      appState.searchFilter = data.searchFilter;
+    if (data != null) {
+      this.searchCtx.setFilter(data.searchFilter);
       await redirect('/recipes');
     }
   }
@@ -450,7 +659,7 @@ export class AppRoot extends LitElement {
     const defaultFilter = getDefaultSearchFilter();
     const currentFilter = {
       ...defaultFilter,
-      ...appState.searchFilter
+      ...this.searchCtx.filter
     };
     return JSON.stringify(defaultFilter) === JSON.stringify(currentFilter);
   }

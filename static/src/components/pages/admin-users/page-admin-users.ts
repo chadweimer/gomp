@@ -3,7 +3,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showAlert, showModal, showToast } from '../../../helpers/modals';
-import { ComponentWithActivatedCallback, enumKeyFromValue, isNull } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enumKeyFromValue } from '../../../helpers/utils';
 import '../../page-navigator/page-navigator';
 import '../../user-editor/user-editor';
 import '../../app-icon/app-icon';
@@ -83,7 +83,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
         params: { query: { page: this.page, count: this.resultsPerPage } }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load users.', { cause: error });
       }
 
@@ -107,7 +107,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
         body: { ...user, password }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to create new user.', { cause: error });
       }
     } catch (ex) {
@@ -118,7 +118,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
 
   private async saveExistingUser(user: User) {
     try {
-      if (isNull(user.id)) {
+      if (user.id == null) {
         throw new Error('Cannot save user: user ID is null.');
       }
 
@@ -127,7 +127,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
         body: user
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save user.', { cause: error });
       }
     } catch (ex) {
@@ -138,7 +138,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
 
   private async deleteUser(user: User) {
     try {
-      if (isNull(user.id)) {
+      if (user.id == null) {
         throw new Error('Cannot delete user: user ID is null.');
       }
 
@@ -146,7 +146,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
         params: { path: { userId: user.id } }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete user.', { cause: error });
       }
     } catch (ex) {
@@ -160,7 +160,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
       presentingElement: this,
       component: 'user-editor',
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNewUser(data.user, data.password);
       await this.loadUsers();
     }
@@ -174,7 +174,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
         user: user
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveExistingUser({
         ...user,
         ...data.user

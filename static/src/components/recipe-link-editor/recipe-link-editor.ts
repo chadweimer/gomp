@@ -3,7 +3,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { RecipeCompact, RecipeState, SearchField, SortBy, SortDir } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
 import { getContainingModal } from '../../helpers/modals';
-import { getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
+import { getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import { InputCustomEvent, RadioGroupCustomEvent } from '@ionic/core';
 
@@ -139,13 +139,13 @@ export class RecipeLinkEditor extends LitElement {
 
   private async onSaveClicked() {
     const native = await this.searchInput?.getInputElement();
-    if (isNull(this.selectedRecipeId)) {
+    if (this.selectedRecipeId == null) {
       native?.setCustomValidity('A recipe must be selected');
     } else {
       native?.setCustomValidity('');
     }
 
-    if (this.form && !this.form.reportValidity()) {
+    if (this.form != null && !this.form.reportValidity()) {
       return;
     }
 

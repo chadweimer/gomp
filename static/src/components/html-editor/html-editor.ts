@@ -296,10 +296,10 @@ export class HTMLEditor extends LitElement {
 
   updated(changedProperties: PropertyValues<this>) {
     if (changedProperties.has('value')) {
-      if (this.editor && !this.editor.isDestroyed) {
+      if (this.editor != null && !this.editor.isDestroyed) {
         const currentHTML = this.getCleanHTML();
         if ((this.value ?? '') !== currentHTML) {
-          this.editor.commands.setContent(this.value || '', { emitUpdate: false });
+          this.editor.commands.setContent(this.value ?? '', { emitUpdate: false });
           this.updateButtonStates();
         }
       }
@@ -313,7 +313,7 @@ export class HTMLEditor extends LitElement {
   }
 
   getCleanHTML() {
-    if (!this.editor || this.editor.isDestroyed) {
+    if (this.editor == null || this.editor.isDestroyed) {
       return this.value ?? '';
     }
     const htmlContent = this.editor.getHTML();
@@ -513,7 +513,7 @@ export class HTMLEditor extends LitElement {
   }
 
   private initEditor() {
-    if (!this.editorContentRef || this.editor) {
+    if (this.editorContentRef == null || this.editor != null) {
       return;
     }
 
@@ -550,7 +550,7 @@ export class HTMLEditor extends LitElement {
     this.editor = new Editor({
       element: this.editorContentRef,
       extensions,
-      content: this.value || '',
+      content: this.value ?? '',
       onTransaction: () => {
         this.updateButtonStates();
       },
@@ -579,7 +579,7 @@ export class HTMLEditor extends LitElement {
   }
 
   private updateButtonStates() {
-    if (!this.editor || this.editor.isDestroyed) {
+    if (this.editor == null || this.editor.isDestroyed) {
       return;
     }
 
@@ -593,14 +593,14 @@ export class HTMLEditor extends LitElement {
 
     if (this.isLinkActive) {
       const linkAttrs = this.editor.getAttributes('link') as { href?: string };
-      this.linkUrl = linkAttrs.href || '';
+      this.linkUrl = linkAttrs.href ?? '';
     } else {
       this.linkUrl = '';
     }
   }
 
   private editorCommand(fn: (chain: ChainedCommands) => ChainedCommands) {
-    if (!this.editor || this.editor.isDestroyed) {
+    if (this.editor == null || this.editor.isDestroyed) {
       return;
     }
     fn(this.editor.chain().focus()).run();

@@ -21,6 +21,13 @@
     "*.setup.{js,mjs,cjs,ts,mts,cts}"
   ],
   "rules": {
+    "eqeqeq": [
+      "error",
+      "always",
+      {
+        "null": "never"
+      }
+    ],
     "no-array-constructor": "error",
     "no-unused-expressions": "error",
     "no-unused-vars": "error",
@@ -62,6 +69,15 @@
     "typescript/require-await": "error",
     "typescript/restrict-plus-operands": "error",
     "typescript/restrict-template-expressions": "error",
+    "typescript/strict-boolean-expressions": [
+      "error",
+      {
+        "allowNullableObject": false,
+        "allowNullableBoolean": false,
+        "allowNullableNumber": false,
+        "allowNullableString": false
+      }
+    ],
     "typescript/triple-slash-reference": "error",
     "typescript/unbound-method": "error"
   },
@@ -147,7 +163,8 @@
       ],
       "rules": {
         "typescript/no-unsafe-member-access": "off",
-        "typescript/no-unsafe-return": "off"
+        "typescript/no-unsafe-return": "off",
+        "typescript/strict-boolean-expressions": "off"
       }
     }
   ]

@@ -7,16 +7,12 @@ export interface ComponentWithActivatedCallback {
   activatedCallback?: () => Promise<void>;
 }
 
-export function isNull<T>(val: T | null | undefined): val is null | undefined {
-  return val === undefined || val === null;
-}
-
 export function isNullOrEmpty(val: string | null | undefined): val is '' | null | undefined {
-  return isNull(val) || val === '';
+  return val == null || val === '';
 }
 
 export function formatDate(date: string | Date | null | undefined) {
-  if (isNull(date)) {
+  if (date == null) {
     return '';
   }
 
@@ -37,7 +33,7 @@ export function formatDate(date: string | Date | null | undefined) {
 }
 
 export function isAuthorized(user: User | null | undefined, accessLevel: AccessLevel) {
-  if (isNull(user)) {
+  if (user == null) {
     return false;
   }
 
@@ -59,7 +55,7 @@ export async function redirect(route: string) {
 }
 
 export function insertSpacesBetweenWords(val: string | null | undefined) {
-  if (isNull(val)) {
+  if (val == null) {
     return '';
   }
 
@@ -67,7 +63,7 @@ export function insertSpacesBetweenWords(val: string | null | undefined) {
 }
 
 export function enumKeyFromValue(keys: Record<string, string>, val: string | null | undefined) {
-  if (isNull(val)) {
+  if (val == null) {
     return '';
   }
 
@@ -107,7 +103,7 @@ export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirect
     gestureName: 'swipe',
     canStart: detail => {
       // 1. Prevent tab swipe if the touch started on or inside an ion-item-sliding
-      const path = detail.event?.composedPath ? detail.event.composedPath() : [];
+      const path = typeof detail.event?.composedPath === 'function' ? detail.event.composedPath() : [];
       const isInsideSlidingItem = path.some(
         node => node instanceof HTMLElement && node.tagName.toLowerCase() === 'ion-item-sliding'
       );
@@ -115,9 +111,9 @@ export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirect
         return false;
       }
       // 2. Prevent tab swipe if any ion-item-sliding is currently open (swiped open)
-      const hasOpenSlidingItem = !!document.querySelector(
+      const hasOpenSlidingItem = document.querySelector(
         'ion-item-sliding.item-sliding-active-slide, ion-item-sliding.item-sliding-active-options-end, ion-item-sliding.item-sliding-active-options-start'
-      );
+      ) != null;
       if (hasOpenSlidingItem) {
         return false;
       }
@@ -146,13 +142,13 @@ function getSwipe(e: GestureDetail): SwipeDirection | undefined {
 
 async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   const routeId = await router.getRouteId();
-  if (isNull(routeId)) {
+  if (routeId == null) {
     return undefined;
   }
 
   if ('getTab' in router) {
     const tab = await router.getTab(routeId.id);
-    if (!isNull(tab?.component)) {
+    if (tab?.component != null) {
       if (tab.component instanceof HTMLElement) {
         return tab.component;
       } else if (typeof tab.component === 'string') {
@@ -172,7 +168,7 @@ async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTa
 export async function sendActivatedCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
   const el = await getActiveComponent(router) as ComponentWithActivatedCallback | null | undefined;
-  if (!isNull(el)) {
+  if (el != null) {
     await el.activatedCallback?.();
   }
 }
@@ -182,7 +178,7 @@ export function preProcessMultilineText(text: string | null | undefined) {
   // Before the introduction of the WYSIWYG edtior,
   // all text was rendered as the original text with whitespace preserved.
 
-  if (isNull(text)) {
+  if (text == null) {
     return '';
   }
 
@@ -248,14 +244,14 @@ export function toStorageHtml(host: Element, value: string | null | undefined): 
   const images = template.content.querySelectorAll('img');
   images.forEach(img => {
     const imageName = img.dataset.image;
-    if (imageName) {
+    if (!isNullOrEmpty(imageName)) {
       const parts = [`image:${imageName}`];
-      const width = img.dataset.width || img.style.width;
-      if (width) {
+      const width = img.dataset.width ?? img.style.width;
+      if (!isNullOrEmpty(width)) {
         parts.push(`width=${width}`);
       }
-      const height = img.dataset.height || img.style.height;
-      if (height) {
+      const height = img.dataset.height ?? img.style.height;
+      if (!isNullOrEmpty(height)) {
         parts.push(`height=${height}`);
       }
       const token = `{{${parts.join('|')}}}`;
@@ -287,13 +283,13 @@ export function toPresentationHtml(
 
     let width: string | null = null;
     let height: string | null = null;
-    if (attrString) {
+    if (!isNullOrEmpty(attrString)) {
       for (const part of attrString.split('|')) {
         const [k, v] = part.split('=');
-        if (k === 'width' && v) {
+        if (k === 'width' && !isNullOrEmpty(v)) {
           width = v;
         }
-        if (k === 'height' && v) {
+        if (k === 'height' && !isNullOrEmpty(v)) {
           height = v;
         }
       }
@@ -329,11 +325,11 @@ export function createImageElement(
   img.src = src;
   img.alt = imageName;
   img.dataset.image = imageName;
-  if (width) {
+  if (!isNullOrEmpty(width)) {
     img.dataset.width = width;
     img.style.width = width.endsWith('%') || width.endsWith('px') ? width : `${width}px`;
   }
-  if (height) {
+  if (!isNullOrEmpty(height)) {
     img.dataset.height = height;
     img.style.height = height.endsWith('%') || height.endsWith('px') ? height : `${height}px`;
   }
@@ -345,7 +341,7 @@ export function scaleValue(value: number | null | undefined, divider: number, de
 }
 
 export function getRecipeImageUrl(recipeId: number | null | undefined, imageName: string | null | undefined) {
-  if (isNull(recipeId) || isNull(imageName)) {
+  if (recipeId == null || imageName == null) {
     return '';
   }
 
@@ -354,7 +350,7 @@ export function getRecipeImageUrl(recipeId: number | null | undefined, imageName
 }
 
 export function getRecipeThumbnailUrl(recipeId: number | null | undefined, imageName: string | null | undefined) {
-  if (isNull(recipeId) || isNull(imageName)) {
+  if (recipeId == null || imageName == null) {
     return '';
   }
 

@@ -1,52 +1,43 @@
 import createClient, { Client } from 'openapi-fetch';
 import { paths, SavedSearchFilterCompact, SearchFilter, SearchResult, UserSettings } from './schema.gen';
 import { getDefaultSearchFilter } from '../models';
-import state, { onStateChange } from '../stores/state';
-import { isNull, toYesNoAny } from './utils';
-import { Subject } from 'rxjs';
-
-// Retrieve search results when search filters change
-const propsToSearch: (keyof typeof state)[] = ['searchSettings', 'searchFilter', 'searchPage', 'searchResultsPerPage'];
-for (const prop of propsToSearch) {
-  onStateChange(prop, () => {
-    if (prop !== 'searchPage') {
-      state.searchPage = 1;
-    }
-    state.searchScrollPosition = 0;
-
-    refreshSearchResults().catch(console.error);
-  });
-}
+import { toYesNoAny } from './utils';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 class Api {
   readonly client: Client<paths, `${string}/${string}`>;
-  readonly responses: Subject<{ request: Request, response: Response }>;
+  readonly responses$: Subject<{ request: Request, response: Response }>;
+  readonly loading$: BehaviorSubject<number>;
+  private activeRequests = 0;
 
   constructor() {
     this.client = createClient<paths>({
       baseUrl: `${globalThis.location.origin}/api/v1`,
       fetch: this.fetch
     });
-    this.responses = new Subject<{ request: Request, response: Response }>();
+    this.responses$ = new Subject<{ request: Request, response: Response }>();
+    this.loading$ = new BehaviorSubject<number>(0);
   }
 
   private readonly fetch = async (input: Request, init?: RequestInit): Promise<Response> => {
-    state.loadingCount++;
+    this.activeRequests++;
+    this.loading$.next(this.activeRequests);
     try {
       const response = await globalThis.fetch(input, init);
-      this.responses.next({ request: input, response });
+      this.responses$.next({ request: input, response });
       return response;
     } finally {
-      if (state.loadingCount > 0) {
-        state.loadingCount--;
+      if (this.activeRequests > 0) {
+        this.activeRequests--;
       }
+      this.loading$.next(this.activeRequests);
     }
   };
 
   readonly loadUserSettings = async (): Promise<UserSettings | null> => {
     const { data: settings, error } = await this.client.GET('/users/current/settings');
 
-    if (error) {
+    if (error != null) {
       throw new Error('Failed to load user settings.', { cause: error });
     }
 
@@ -58,7 +49,7 @@ class Api {
       params: { query: { page, count } }
     });
 
-    if (error) {
+    if (error != null) {
       throw new Error('Failed to load search filters.', { cause: error });
     }
 
@@ -86,69 +77,42 @@ class Api {
       }
     });
 
-    if (error) {
+    if (error != null) {
       throw new Error('Failed to perform recipe search.', { cause: error });
     }
 
     return recipes;
   };
-}
 
-export const api = new Api();
+  readonly fetchTotalRecipeCount = async (): Promise<number> => {
+    const { data: results, error } = await this.client.GET('/recipes', { params: { query: { count: 0 } } });
 
-export async function refreshSearchResults() {
-  if (isNull(state.currentUser)) return;
-
-  try {
-    const { total, recipes } = await api.performRecipeSearch(state.searchFilter, state.searchPage, state.searchResultsPerPage);
-    state.searchResults = recipes ?? [];
-    state.searchResultCount = total;
-    state.searchNumPages = Math.max(Math.ceil(total / state.searchResultsPerPage), 1);
-  } catch (ex) {
-    console.error(ex);
-    state.searchResults = [];
-    state.searchResultCount = undefined;
-    state.searchNumPages = 1;
-  } finally {
-    if (state.searchPage > state.searchNumPages) {
-      state.searchPage = state.searchNumPages;
-    }
-  }
-
-  // Also populate total recipe and tag counts
-  try {
-    const { data: results, error } = await api.client.GET('/recipes', { params: { query: { count: 0 } } });
-
-    if (error) {
+    if (error != null) {
       throw new Error('Failed to fetch total recipe count.', { cause: error });
     }
 
-    state.totalRecipeCount = results.total;
-  } catch (ex) {
-    console.error(ex);
-    state.totalRecipeCount = undefined;
-  }
+    return results.total;
+  };
 
-  try {
-    const { data: tagResults, error: tagError } = await api.client.GET('/tags', { params: { query: { count: 0 } } });
+  readonly fetchTotalTagsCount = async (): Promise<number> => {
+    const { data: tagResults, error: tagError } = await this.client.GET('/tags', { params: { query: { count: 0 } } });
 
-    if (tagError) {
+    if (tagError != null) {
       throw new Error('Failed to fetch total tags count.', { cause: tagError });
     }
 
-    state.totalTagsCount = tagResults.total;
-  } catch (ex) {
-    console.error(ex);
-    state.totalTagsCount = undefined;
-  }
+    return tagResults.total;
+  };
 }
+
+export const api = new Api();
 
 export function fileContentSerializer(_body: { file_content?: string } | undefined, file?: File) {
   // The unused _body parameter is required to match the expected signature for bodySerializer,
   // so that we know we're using the right part name in the form data
 
   const fd = new FormData();
-  if (file) {
+  if (file != null) {
     fd.append('file_content', file);
   }
   return fd;
