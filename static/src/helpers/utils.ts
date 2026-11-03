@@ -244,14 +244,14 @@ export function toStorageHtml(host: Element, value: string | null | undefined): 
   const images = template.content.querySelectorAll('img');
   images.forEach(img => {
     const imageName = img.dataset.image;
-    if (imageName != null && imageName !== '') {
+    if (!isNullOrEmpty(imageName)) {
       const parts = [`image:${imageName}`];
       const width = img.dataset.width ?? img.style.width;
-      if (width != null && width !== '') {
+      if (!isNullOrEmpty(width)) {
         parts.push(`width=${width}`);
       }
       const height = img.dataset.height ?? img.style.height;
-      if (height != null && height !== '') {
+      if (!isNullOrEmpty(height)) {
         parts.push(`height=${height}`);
       }
       const token = `{{${parts.join('|')}}}`;
@@ -283,13 +283,13 @@ export function toPresentationHtml(
 
     let width: string | null = null;
     let height: string | null = null;
-    if (attrString != null && attrString !== '') {
+    if (!isNullOrEmpty(attrString)) {
       for (const part of attrString.split('|')) {
         const [k, v] = part.split('=');
-        if (k === 'width' && v != null && v !== '') {
+        if (k === 'width' && !isNullOrEmpty(v)) {
           width = v;
         }
-        if (k === 'height' && v != null && v !== '') {
+        if (k === 'height' && !isNullOrEmpty(v)) {
           height = v;
         }
       }
@@ -325,11 +325,11 @@ export function createImageElement(
   img.src = src;
   img.alt = imageName;
   img.dataset.image = imageName;
-  if (width != null && width !== '') {
+  if (!isNullOrEmpty(width)) {
     img.dataset.width = width;
     img.style.width = width.endsWith('%') || width.endsWith('px') ? width : `${width}px`;
   }
-  if (height != null && height !== '') {
+  if (!isNullOrEmpty(height)) {
     img.dataset.height = height;
     img.style.height = height.endsWith('%') || height.endsWith('px') ? height : `${height}px`;
   }

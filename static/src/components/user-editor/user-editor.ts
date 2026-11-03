@@ -2,7 +2,7 @@ import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { AccessLevel, User } from '../../helpers/schema.gen';
 import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
-import { insertSpacesBetweenWords } from '../../helpers/utils';
+import { insertSpacesBetweenWords, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import { InputCustomEvent, SelectCustomEvent } from '@ionic/core';
 
@@ -51,7 +51,7 @@ export class UserEditor extends LitElement {
       }
 
       return this.user.username !== initialUser.username || this.user.accessLevel !== initialUser.accessLevel ||
-        (this.passwordInput?.value ?? '') !== '' || (this.repeatPasswordInput?.value ?? '') !== '';
+        !isNullOrEmpty(this.passwordInput?.value as string) || !isNullOrEmpty(this.repeatPasswordInput?.value as string);
     });
   }
 

@@ -218,7 +218,7 @@ export class RecipeCard extends LitElement {
     badges?.forEach((el) => {
       const tag = el.dataset.tag;
       const width = el.getBoundingClientRect().width;
-      if (tag != null && tag !== '' && width > 0) {
+      if (!isNullOrEmpty(tag) && width > 0) {
         this.tagWidths.set(tag, width);
       }
     });
