@@ -4,6 +4,7 @@ export interface AppStatusContextValue {
   loadingCount: number;
   totalRecipeCount?: number;
   totalTagsCount?: number;
+  setLoadingCount(count: number): void;
   setTotalRecipeCount(count: number): void;
   setTotalTagsCount(count: number): void;
 }

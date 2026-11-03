@@ -160,10 +160,7 @@ export class AppRoot extends LitElement {
 
     this.subscriptions.push(
       // Subscribe to api loading requests
-      api.loading$.subscribe((count) => {
-        this.loadingCount = count;
-        this.updateStatusContext();
-      }),
+      api.loading$.subscribe((count) => this.appStatusCtx.setLoadingCount(count)),
       // Automatically trigger a logout if an API returns a 401
       api.responses$.subscribe(async ({ request, response }) => {
         if (response.status === 401) {
@@ -180,6 +177,7 @@ export class AppRoot extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.contextRoot.detach(this);
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.subscriptions.length = 0;
   }
@@ -253,6 +251,10 @@ export class AppRoot extends LitElement {
       loadingCount: this.loadingCount,
       totalRecipeCount: this.totalRecipeCount,
       totalTagsCount: this.totalTagsCount,
+      setLoadingCount: (count: number) => {
+        this.loadingCount = count;
+        this.updateStatusContext();
+      },
       setTotalRecipeCount: (count: number) => {
         this.totalRecipeCount = count;
         this.updateStatusContext();
