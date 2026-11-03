@@ -12,29 +12,28 @@ description: Guide for writing tests in GOMP. Use this when asked to create or r
 Use this guide for consistent tests across API, DB, and middleware layers.
 
 ### Core Patterns
-- For Go, **always** use table-driven tests when testing multiple input/output scenarios.
-- For Go, Keep tests in package-local `*_test.go` files near the implementation.
+- **Always favor table-driven tests** across all Go test suites (`api/`, `db/`, etc.), defining slice-of-struct cases run in subtests via `t.Run(test.name, ...)`.
+- Keep tests in package-local `*_test.go` files near the implementation.
 - Focus on behavior and contract verification over implementation detail.
 
 ### API Layer Tests (`api/`)
-- Use `httptest.NewRequest` and `httptest.NewRecorder`.
-- Route through generated handler wiring where possible to exercise request parsing and response encoding.
+- Test the strict handler methods on `apiHandler` directly using table-driven tests and `gomock` (`t.Context()`, `GetXRequestObject`, and asserting on `GetXResponseObject` union types).
+- Use `httptest.NewRequest` and `httptest.NewRecorder` when testing middleware, authentication wrappers, or raw routing layers.
 - Verify:
-  - HTTP status code
-  - response body payload
-  - auth/permission behavior
-  - error mapping for invalid request/body/path mismatches
+  - Return types and payload matching (e.g. `GetNotes200JSONResponse`, `GetNotes404Response`)
+  - Error mapping and consistency
+  - Auth/permission behavior
 
 ### DB Layer Tests (`db/`)
-- Use `go-sqlmock` for SQL expectation tests.
+- Use table-driven tests with `go-sqlmock` for SQL expectation tests.
 - Assert SQL statements, bind argument ordering, and scan behavior.
 - Include not-found and error-path checks.
 
 ### Mocks and Interfaces
 - Use generated mocks under:
   - `mocks/db/mocks.gen.go`
-  - `mocks/upload/mocks.gen.go`
-- Regenerate with `go generate ./...` when interfaces change.
+  - `mocks/fileaccess/mocks.gen.go`
+- Regenerate with `make codegen` or `go generate ./...` when interfaces change.
 
 ## Frontend Tests (Lit + Vitest)
 
@@ -44,6 +43,7 @@ Use this guide for component tests under `static/src/components/**/*.spec.ts`.
 - Mount components with `fixture<ComponentName>(html`<component-tag ...></component-tag>`)` from `@open-wc/testing`.
 - Always `await el.updateComplete` (or re-query DOM) after interactions, clicks, or property updates to let Lit finish its reactive update cycle.
 - In `beforeEach` and `afterEach`:
+  - `localStorage?.clear();` and `sessionStorage?.clear();` to avoid leaking storage state.
   - `fetchMocker.resetMocks()` to clear mock routes and recorded calls.
   - `clearState()` from `stores/state` to reset global app state between tests.
   - Restore `globalThis.fetch` and call `vi.restoreAllMocks()`.

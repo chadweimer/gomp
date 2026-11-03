@@ -8,12 +8,9 @@ description: Guide for creating new database migrations in GOMP. Use this when a
 Use this checklist when making schema changes.
 
 ## 1) Create Migration Pair for Both Engines
-- Add the next numbered migration files for PostgreSQL:
-  - `db/migrations/postgres/NNNN_name.up.sql`
-  - `db/migrations/postgres/NNNN_name.down.sql`
-- Add equivalent migration files for SQLite:
-  - `db/migrations/sqlite/NNNN_name.up.sql`
-  - `db/migrations/sqlite/NNNN_name.down.sql`
+- Symmetrically add migrations for both database engines. Note that **PostgreSQL and SQLite have independent sequential numbering sequences** (do not assume the prefix numbers will match; inspect each directory for the latest number).
+  - PostgreSQL: `db/migrations/postgres/NNNN_name.up.sql` and `NNNN_name.down.sql`
+  - SQLite: `db/migrations/sqlite/NNNN_name.up.sql` and `NNNN_name.down.sql`
 
 ## 2) Keep Behavior Equivalent
 - Ensure table/column/index/constraint intent is equivalent across engines.
@@ -28,8 +25,8 @@ Use this checklist when making schema changes.
 - Confirm generated model tags and SQL scan targets still match schema.
 
 ## 5) Validate Migration Integration
-- Ensure migration files remain embedded and packaged in build output.
-- Run tests and any startup migration flow that exercises both migration and query paths.
+- Ensure migration files remain embedded (`embed.FS` in `db/migrations.go`) and packaged in build output.
+- Run tests and any startup migration flow that exercises both migration and query paths (e.g. `db/driver-postgres_test.go` and `db/driver-sqlite_test.go`).
 
 ## 6) Verify
 - Run `make test`.
@@ -37,5 +34,5 @@ Use this checklist when making schema changes.
 
 ## Guardrails
 - Do not create migrations for only one engine.
-- Keep migration numbers incremental in both SQLite and PostgreSQL.
+- Keep migration numbers strictly incremental within each respective directory (`postgres` and `sqlite`).
 - Prefer additive, backwards-compatible migrations when practical.

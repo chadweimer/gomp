@@ -17,10 +17,11 @@ Use this checklist when adding a new API endpoint to GOMP.
 - Confirm generated updates landed in:
   - `api/routes.gen.go`
   - `models/models.gen.go`
-  - `static/src/generated/*`
+  - `static/src/helpers/schema.gen.ts`
 
 ## 3) Implement Server Handler
 - Implement the generated strict handler method on `apiHandler` in the relevant file under `api/`.
+- Handlers follow the `strict-server` pattern accepting `(ctx context.Context, req <Operation>RequestObject)` and returning `(<Operation>ResponseObject, error)`.
 - Keep logic in existing patterns:
   - pull logger from context
   - validate path/body consistency where needed
@@ -32,9 +33,9 @@ Use this checklist when adding a new API endpoint to GOMP.
 - If data shape changed, update SQL queries and scans in DB layer.
 
 ## 5) Add Tests
-- API handler tests: use `httptest`, generated handler wiring, and existing test helpers.
+- API handler tests: test the strict handler directly using table-driven tests and `gomock` against `mocks/db` and `mocks/fileaccess`. Use `httptest` when testing middleware or raw HTTP routing.
 - DB tests: use `go-sqlmock` patterns in `db/*_test.go`.
-- Interface mocking: use mocks from `mocks/db` and `mocks/upload` where appropriate.
+- Interface mocking: use mocks from `mocks/db` and `mocks/fileaccess` where appropriate.
 - Cover success and failure branches (validation, auth, not found, conflict if applicable).
 
 ## 6) Validate
