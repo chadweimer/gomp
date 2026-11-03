@@ -15,7 +15,7 @@ import {
 } from '../../helpers/schema.gen';
 import { getDefaultSearchFilter } from '../../models';
 import { toYesNoAny } from '../../helpers/utils';
-import { clearState } from '../../stores/state';
+import { clearTestStorage } from '../../testing/context-helpers';
 import './search-filter-editor';
 import { SearchFilterEditor } from './search-filter-editor';
 import { TagsInput } from '../tags-input/tags-input';
@@ -83,7 +83,7 @@ describe('search-filter-editor', () => {
 
   beforeEach(() => {
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     modalEl = document.createElement('ion-modal');
     modalEl.dismiss = vi.fn().mockResolvedValue(true);
     document.body.appendChild(modalEl);
@@ -118,7 +118,7 @@ describe('search-filter-editor', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     modalEl.remove();
     vi.restoreAllMocks();
   });

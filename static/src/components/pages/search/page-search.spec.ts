@@ -4,7 +4,8 @@ import { loadingController, modalController, toastController } from '@ionic/core
 import { fetchMocker } from '../../../../vitest.setup';
 import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
 import { SearchViewMode, SwipeDirection } from '../../../models';
-import state, { clearState } from '../../../stores/state';
+import { clearTestStorage, createMockSearchContext, createMockUserContext } from '../../../testing/context-helpers';
+import { SearchContextValue, UserContextValue } from '../../../context';
 import './page-search';
 import { PageSearch } from './page-search';
 import { PageNavigator } from '../../page-navigator/page-navigator';
@@ -30,6 +31,12 @@ vi.mock('../../../helpers/utils', async (importOriginal) => {
 describe('page-search', () => {
   const originalFetch = globalThis.fetch;
   let routerEl: HTMLIonRouterElement;
+  let mockSearchCtx: SearchContextValue;
+  let mockUserCtx: UserContextValue;
+
+  async function createSearchPage() {
+    return await fixture<PageSearch>(html`<page-search .searchCtx=${mockSearchCtx} .userCtx=${mockUserCtx}></page-search>`);
+  }
 
   const mockRecipes: RecipeCompact[] = [
     {
@@ -88,10 +95,17 @@ describe('page-search', () => {
   }
 
   beforeEach(() => {
-    localStorage?.clear();
-    sessionStorage?.clear();
+    clearTestStorage();
     fetchMocker.resetMocks();
-    clearState();
+
+    mockSearchCtx = createMockSearchContext({
+      results: mockRecipes,
+      page: 1,
+      numPages: 3,
+    });
+    mockUserCtx = createMockUserContext({
+      user: { id: 1, username: 'admin', accessLevel: AccessLevel.Admin },
+    });
 
     routerEl = document.createElement('ion-router');
     routerEl.push = vi.fn().mockResolvedValue(true);
@@ -111,26 +125,19 @@ describe('page-search', () => {
         body: JSON.stringify({}),
       };
     });
-
-    state.searchResults = mockRecipes;
-    state.searchPage = 1;
-    state.searchNumPages = 3;
-    state.currentUser = { id: 1, username: 'admin', accessLevel: AccessLevel.Admin };
   });
 
   afterEach(() => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
-    clearState();
-    localStorage?.clear();
-    sessionStorage?.clear();
+    clearTestStorage();
     routerEl?.remove();
     vi.restoreAllMocks();
   });
 
   describe('Suite 1: Initial Render, View Modes & Scroll Restoration', () => {
     it('builds and hydrates the component', async () => {
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
 
       // Displays the toolbar
       const buttons = root.renderRoot.querySelectorAll('ion-header ion-button');
@@ -142,10 +149,10 @@ describe('page-search', () => {
     });
 
     it('renders recipes as cards when in Card view mode', async () => {
-      state.searchSettings = { ...state.searchSettings, viewMode: SearchViewMode.Card };
-      state.searchResults = mockRecipes;
+      mockSearchCtx.settings = { ...mockSearchCtx.settings, viewMode: SearchViewMode.Card };
+      mockSearchCtx.results = mockRecipes;
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const cards = root.renderRoot.querySelectorAll('recipe-card');
@@ -158,10 +165,10 @@ describe('page-search', () => {
     });
 
     it('renders recipes as list items when in List view mode with and without images', async () => {
-      state.searchSettings = { ...state.searchSettings, viewMode: SearchViewMode.List };
-      state.searchResults = mockRecipes;
+      mockSearchCtx.settings = { ...mockSearchCtx.settings, viewMode: SearchViewMode.List };
+      mockSearchCtx.results = mockRecipes;
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const cards = root.renderRoot.querySelectorAll('recipe-card');
@@ -189,8 +196,8 @@ describe('page-search', () => {
     });
 
     it('renders archived badge for archived recipes in List view mode', async () => {
-      state.searchSettings = { ...state.searchSettings, viewMode: SearchViewMode.List };
-      state.searchResults = [
+      mockSearchCtx.settings = { ...mockSearchCtx.settings, viewMode: SearchViewMode.List };
+      mockSearchCtx.results = [
         {
           id: 1,
           name: 'Active Recipe',
@@ -209,7 +216,7 @@ describe('page-search', () => {
         },
       ];
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const items = root.renderRoot.querySelectorAll('ion-item.recipe-item');
@@ -228,22 +235,22 @@ describe('page-search', () => {
     });
 
     it('handles empty and null search results safely', async () => {
-      state.searchResults = [];
-      const rootEmpty = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.results = [];
+      const rootEmpty = await createSearchPage();
       await rootEmpty.updateComplete;
       expect(rootEmpty.querySelectorAll('recipe-card')).toHaveLength(0);
       expect(rootEmpty.querySelectorAll('ion-item.recipe-item')).toHaveLength(0);
 
-      state.searchResults = undefined;
-      const rootNull = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.results = undefined;
+      const rootNull = await createSearchPage();
       await rootNull.updateComplete;
       expect(rootNull.querySelectorAll('recipe-card')).toHaveLength(0);
       expect(rootNull.querySelectorAll('ion-item.recipe-item')).toHaveLength(0);
     });
 
     it('toggles view mode between Card and List on button click', async () => {
-      state.searchSettings = { ...state.searchSettings, viewMode: SearchViewMode.Card };
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.settings = { ...mockSearchCtx.settings, viewMode: SearchViewMode.Card };
+      const root = await createSearchPage();
       await root.updateComplete;
 
       // The 4th header button is viewMode toggle
@@ -253,17 +260,17 @@ describe('page-search', () => {
       expect(icon?.getAttribute('name')).toBe('list_alt');
 
       viewModeBtn.click();
-      expect(state.searchSettings.viewMode).toBe(SearchViewMode.List);
+      expect(mockSearchCtx.settings.viewMode).toBe(SearchViewMode.List);
 
       // Now toggle back
-      state.searchSettings = { ...state.searchSettings, viewMode: SearchViewMode.List };
+      mockSearchCtx.settings = { ...mockSearchCtx.settings, viewMode: SearchViewMode.List };
       viewModeBtn.click();
-      expect(state.searchSettings.viewMode).toBe(SearchViewMode.Card);
+      expect(mockSearchCtx.settings.viewMode).toBe(SearchViewMode.Card);
     });
 
     it('restores scroll position in updated when searchScrollPosition is present', async () => {
-      state.searchScrollPosition = 350;
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.scrollPosition = 350;
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const content = root.renderRoot.querySelector('ion-content');
@@ -277,8 +284,8 @@ describe('page-search', () => {
     });
 
     it('catches and logs error if scrollToPoint rejects in updated', async () => {
-      state.searchScrollPosition = 200;
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.scrollPosition = 200;
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const content = root.renderRoot.querySelector('ion-content');
@@ -294,8 +301,8 @@ describe('page-search', () => {
     });
 
     it('does not scroll if searchScrollPosition is null or undefined', async () => {
-      state.searchScrollPosition = undefined;
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.scrollPosition = undefined;
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const content = root.renderRoot.querySelector('ion-content');
@@ -309,8 +316,8 @@ describe('page-search', () => {
     });
 
     it('does not throw in updated if scrollToPoint is not defined on content', async () => {
-      state.searchScrollPosition = 120;
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.scrollPosition = 120;
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const content = root.renderRoot.querySelector('ion-content');
@@ -324,31 +331,31 @@ describe('page-search', () => {
 
   describe('Suite 2: Access Control & Create Recipe FAB', () => {
     it('hides create recipe FAB for unauthenticated or Viewer users', async () => {
-      state.currentUser = undefined;
-      const rootNoUser = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockUserCtx.user = undefined;
+      const rootNoUser = await createSearchPage();
       await rootNoUser.updateComplete;
       expect(rootNoUser.querySelector('ion-fab')).toBeNull();
 
-      state.currentUser = { id: 1, username: 'viewer', accessLevel: AccessLevel.Viewer };
-      const rootViewer = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockUserCtx.user = { id: 1, username: 'viewer', accessLevel: AccessLevel.Viewer };
+      const rootViewer = await createSearchPage();
       await rootViewer.updateComplete;
       expect(rootViewer.querySelector('ion-fab')).toBeNull();
     });
 
     it('shows create recipe FAB for Editor and Admin users', async () => {
-      state.currentUser = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
-      const rootEditor = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockUserCtx.user = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
+      const rootEditor = await createSearchPage();
       await rootEditor.updateComplete;
       expect(rootEditor.querySelector('ion-fab')).not.toBeNull();
 
-      state.currentUser = { id: 3, username: 'admin', accessLevel: AccessLevel.Admin };
-      const rootAdmin = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockUserCtx.user = { id: 3, username: 'admin', accessLevel: AccessLevel.Admin };
+      const rootAdmin = await createSearchPage();
       await rootAdmin.updateComplete;
       expect(rootAdmin.querySelector('ion-fab')).not.toBeNull();
     });
 
     it('creates new recipe without image and redirects to recipe page', async () => {
-      state.currentUser = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
 
       const newRecipeData: Recipe = {
         ...mockFullRecipe,
@@ -384,7 +391,7 @@ describe('page-search', () => {
         return { status: 200, body: JSON.stringify({}) };
       });
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const fabBtn = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
@@ -402,7 +409,7 @@ describe('page-search', () => {
     });
 
     it('creates new recipe with image, showing loading overlay and redirecting', async () => {
-      state.currentUser = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
 
       const newRecipeData: Recipe = {
         ...mockFullRecipe,
@@ -446,7 +453,7 @@ describe('page-search', () => {
         return { status: 200, body: JSON.stringify({}) };
       });
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const fabBtn = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
@@ -467,7 +474,7 @@ describe('page-search', () => {
     });
 
     it('does nothing when recipe editor modal is dismissed without data', async () => {
-      state.currentUser = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
 
       vi.spyOn(modalController, 'create').mockResolvedValue(mockModal(null));
 
@@ -477,7 +484,7 @@ describe('page-search', () => {
         return { status: 200, body: JSON.stringify({}) };
       });
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const fabBtn = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
@@ -493,7 +500,7 @@ describe('page-search', () => {
     });
 
     it('shows toast when recipe creation API fails', async () => {
-      state.currentUser = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
 
       vi.spyOn(modalController, 'create').mockResolvedValue(
         mockModal({
@@ -511,7 +518,7 @@ describe('page-search', () => {
         return { status: 200, body: JSON.stringify({}) };
       });
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const fabBtn = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
@@ -528,7 +535,7 @@ describe('page-search', () => {
     });
 
     it('shows toast when image upload fails because created recipe ID is null', async () => {
-      state.currentUser = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
 
       vi.spyOn(modalController, 'create').mockResolvedValue(
         mockModal({
@@ -550,7 +557,7 @@ describe('page-search', () => {
         return { status: 200, body: JSON.stringify({}) };
       });
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const fabBtn = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab ion-fab-button');
@@ -569,38 +576,38 @@ describe('page-search', () => {
   describe('Suite 3: Filter, Sort & Pagination Controls', () => {
     it('formats recipe states button text correctly for each combination', async () => {
       // 1. Both Active and Archived -> 'All'
-      state.searchFilter = { ...state.searchFilter, states: [RecipeState.Active, RecipeState.Archived] };
-      const rootAll = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.filter = { ...mockSearchCtx.filter, states: [RecipeState.Active, RecipeState.Archived] };
+      const rootAll = await createSearchPage();
       await rootAll.updateComplete;
       const btnAll = rootAll.querySelectorAll('ion-header ion-button')[0];
       expect(btnAll?.textContent?.trim()).toBe('All');
 
       // 2. Active only -> 'Active'
-      state.searchFilter = { ...state.searchFilter, states: [RecipeState.Active] };
-      const rootActive = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.filter = { ...mockSearchCtx.filter, states: [RecipeState.Active] };
+      const rootActive = await createSearchPage();
       await rootActive.updateComplete;
       const btnActive = rootActive.querySelectorAll('ion-header ion-button')[0];
       expect(btnActive?.textContent?.trim()).toBe('Active');
 
       // 3. Archived only -> 'Archived'
-      state.searchFilter = { ...state.searchFilter, states: [RecipeState.Archived] };
-      const rootArchived = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.filter = { ...mockSearchCtx.filter, states: [RecipeState.Archived] };
+      const rootArchived = await createSearchPage();
       await rootArchived.updateComplete;
       const btnArchived = rootArchived.querySelectorAll('ion-header ion-button')[0];
       expect(btnArchived?.textContent?.trim()).toBe('Archived');
 
       // 4. Neither -> 'All'
-      state.searchFilter = { ...state.searchFilter, states: [] };
-      const rootEmpty = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.filter = { ...mockSearchCtx.filter, states: [] };
+      const rootEmpty = await createSearchPage();
       await rootEmpty.updateComplete;
       const btnEmpty = rootEmpty.querySelectorAll('ion-header ion-button')[0];
       expect(btnEmpty?.textContent?.trim()).toBe('All');
     });
 
     it('renders states filter popover and updates state on item click', async () => {
-      state.searchFilter = { ...state.searchFilter, states: [RecipeState.Active] };
+      mockSearchCtx.filter = { ...mockSearchCtx.filter, states: [RecipeState.Active] };
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const statesBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('#states-menu');
@@ -621,13 +628,13 @@ describe('page-search', () => {
       items?.[1].click();
       await root.updateComplete;
 
-      expect(state.searchFilter.states).toEqual([RecipeState.Archived]);
+      expect(mockSearchCtx.filter.states).toEqual([RecipeState.Archived]);
     });
 
     it('renders sort by popover and updates state on item click', async () => {
-      state.searchFilter = { ...state.searchFilter, sortBy: SortBy.Name };
+      mockSearchCtx.filter = { ...mockSearchCtx.filter, sortBy: SortBy.Name };
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const sortByBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('#sort-menu');
@@ -649,12 +656,12 @@ describe('page-search', () => {
       ratingItem?.click();
       await root.updateComplete;
 
-      expect(state.searchFilter.sortBy).toBe(SortBy.Rating);
+      expect(mockSearchCtx.filter.sortBy).toBe(SortBy.Rating);
     });
 
     it('toggles sort direction between Asc and Desc on button click', async () => {
-      state.searchFilter = { ...state.searchFilter, sortDir: SortDir.Asc };
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.filter = { ...mockSearchCtx.filter, sortDir: SortDir.Asc };
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const sortDirBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button')[2];
@@ -662,17 +669,17 @@ describe('page-search', () => {
       expect(icon?.getAttribute('name')).toBe('arrow_upward');
 
       sortDirBtn.click();
-      expect(state.searchFilter.sortDir).toBe(SortDir.Desc);
+      expect(mockSearchCtx.filter.sortDir).toBe(SortDir.Desc);
 
-      state.searchFilter = { ...state.searchFilter, sortDir: SortDir.Desc };
+      mockSearchCtx.filter = { ...mockSearchCtx.filter, sortDir: SortDir.Desc };
       sortDirBtn.click();
-      expect(state.searchFilter.sortDir).toBe(SortDir.Asc);
+      expect(mockSearchCtx.filter.sortDir).toBe(SortDir.Asc);
     });
 
     it('renders results per page popover and updates state on item click', async () => {
-      state.searchResultsPerPage = 36;
+      mockSearchCtx.resultsPerPage = 36;
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const resultsPerPageBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('#results-per-page-menu');
@@ -692,14 +699,14 @@ describe('page-search', () => {
       items?.[2].click();
       await root.updateComplete;
 
-      expect(state.searchResultsPerPage).toBe(60);
+      expect(mockSearchCtx.resultsPerPage).toBe(60);
     });
 
     it('updates searchPage when page-navigator emits pageChanged event', async () => {
-      state.searchPage = 1;
-      state.searchNumPages = 5;
+      mockSearchCtx.page = 1;
+      mockSearchCtx.numPages = 5;
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const navigator = root.renderRoot.querySelector<PageNavigator>('page-navigator');
@@ -708,60 +715,60 @@ describe('page-search', () => {
       expect(navigator?.numPages).toBe(5);
 
       navigator?.dispatchEvent(new CustomEvent('pageChanged', { detail: 3, bubbles: true }));
-      expect(state.searchPage).toBe(3);
+      expect(mockSearchCtx.page).toBe(3);
     });
   });
 
   describe('Suite 4: Gestures & Content Scrolling', () => {
     it('sets up swipe gesture and handles swipe right to decrease page', async () => {
-      state.searchPage = 3;
-      state.searchNumPages = 5;
+      mockSearchCtx.page = 3;
+      mockSearchCtx.numPages = 5;
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       expect(mockGestureEnable).toHaveBeenCalled();
       expect(swipeHandler).toBeDefined();
 
       swipeHandler?.(SwipeDirection.Right);
-      expect(state.searchPage).toBe(2);
+      expect(mockSearchCtx.page).toBe(2);
     });
 
     it('does not decrease searchPage below 1 on swipe right', async () => {
-      state.searchPage = 1;
-      state.searchNumPages = 5;
+      mockSearchCtx.page = 1;
+      mockSearchCtx.numPages = 5;
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       swipeHandler?.(SwipeDirection.Right);
-      expect(state.searchPage).toBe(1);
+      expect(mockSearchCtx.page).toBe(1);
     });
 
     it('handles swipe left to increase page', async () => {
-      state.searchPage = 2;
-      state.searchNumPages = 4;
+      mockSearchCtx.page = 2;
+      mockSearchCtx.numPages = 4;
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       swipeHandler?.(SwipeDirection.Left);
-      expect(state.searchPage).toBe(3);
+      expect(mockSearchCtx.page).toBe(3);
     });
 
     it('does not increase searchPage beyond searchNumPages on swipe left', async () => {
-      state.searchPage = 4;
-      state.searchNumPages = 4;
+      mockSearchCtx.page = 4;
+      mockSearchCtx.numPages = 4;
 
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       swipeHandler?.(SwipeDirection.Left);
-      expect(state.searchPage).toBe(4);
+      expect(mockSearchCtx.page).toBe(4);
     });
 
     it('cleans up gesture on disconnectedCallback', async () => {
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       root.disconnectedCallback();
@@ -773,7 +780,7 @@ describe('page-search', () => {
     });
 
     it('saves scroll position on ionScrollEnd event when isScrolling is false', async () => {
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const content = root.renderRoot.querySelector('ion-content');
@@ -789,12 +796,12 @@ describe('page-search', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 20));
 
-      expect(state.searchScrollPosition).toBe(420);
+      expect(mockSearchCtx.scrollPosition).toBe(420);
     });
 
     it('does not save scroll position when isScrolling is true', async () => {
-      state.searchScrollPosition = 100;
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      mockSearchCtx.scrollPosition = 100;
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const content = root.renderRoot.querySelector('ion-content');
@@ -810,11 +817,11 @@ describe('page-search', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 20));
 
-      expect(state.searchScrollPosition).toBe(100);
+      expect(mockSearchCtx.scrollPosition).toBe(100);
     });
 
     it('handles null scroll element safely when isScrolling is false', async () => {
-      const root = await fixture<PageSearch>(html`<page-search></page-search>`);
+      const root = await createSearchPage();
       await root.updateComplete;
 
       const content = root.renderRoot.querySelector('ion-content');
@@ -830,7 +837,7 @@ describe('page-search', () => {
 
       await new Promise((resolve) => setTimeout(resolve, 20));
 
-      expect(state.searchScrollPosition).toBeUndefined();
+      expect(mockSearchCtx.scrollPosition).toBeUndefined();
     });
   });
 });

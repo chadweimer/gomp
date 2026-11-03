@@ -39,7 +39,7 @@ Use this checklist when implementing features that touch both backend APIs and f
 ## Step 5: Frontend Implementation
 1. **API Client**: Consume generated endpoint types via `api.client` in `static/src/helpers/api.ts` or component code.
 2. **Components**: Build or update Lit/Ionic components adhering to Light DOM (pages) or Shadow DOM (leaf components).
-3. **Store**: Update `static/src/stores/state.ts` if global app state needs new properties.
+3. **State / Context**: Update context definitions under `static/src/context/` if shared state needs new properties or mutators.
 4. **Tests**: Add Vitest component specs in `static/src/components/**/*.spec.ts`.
 - **Reference**: Follow the [frontend-components](../frontend-components/SKILL.md) and [writing-tests](../writing-tests/SKILL.md) skills.
 

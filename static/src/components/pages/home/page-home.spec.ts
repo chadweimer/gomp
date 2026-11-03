@@ -3,13 +3,20 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { AccessLevel, Recipe, RecipeCompact, RecipeState, SavedSearchFilter, SavedSearchFilterCompact, SortBy, SortDir, UserSettings } from '../../../helpers/schema.gen';
-import state, { clearState } from '../../../stores/state';
+import { clearTestStorage, createMockSearchContext, createMockUserContext } from '../../../testing/context-helpers';
+import { SearchContextValue, UserContextValue } from '../../../context';
 import './page-home';
 import { PageHome } from './page-home';
 
 describe('page-home', () => {
   const originalFetch = globalThis.fetch;
   let routerEl: HTMLIonRouterElement;
+  let mockUserCtx: UserContextValue;
+  let mockSearchCtx: SearchContextValue;
+
+  async function createPageHome() {
+    return await fixture<PageHome>(html`<page-home .userCtx=${mockUserCtx} .searchCtx=${mockSearchCtx}></page-home>`);
+  }
 
   const mockUserSettings: UserSettings = {
     userId: 1,
@@ -136,10 +143,12 @@ describe('page-home', () => {
   }
 
   beforeEach(() => {
-    localStorage?.clear();
-    sessionStorage?.clear();
+    clearTestStorage();
     fetchMocker.resetMocks();
-    clearState();
+    mockUserCtx = createMockUserContext({
+      user: { id: 1, username: 'editor', accessLevel: AccessLevel.Editor }
+    });
+    mockSearchCtx = createMockSearchContext();
 
     routerEl = document.createElement('ion-router');
     routerEl.push = vi.fn().mockResolvedValue(true);
@@ -151,14 +160,14 @@ describe('page-home', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     routerEl.remove();
     vi.restoreAllMocks();
   });
 
   describe('Suite 1: Initialization & Rendering', () => {
     it('builds and renders initial empty state before activation', async () => {
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       const title = el.renderRoot.querySelector('header h1');
       expect(title?.textContent?.trim()).toBe('');
 
@@ -167,7 +176,7 @@ describe('page-home', () => {
     });
 
     it('loads and renders user settings and search filters on activatedCallback', async () => {
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -201,7 +210,7 @@ describe('page-home', () => {
         homeImageUrl: '',
       });
 
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -235,7 +244,7 @@ describe('page-home', () => {
         return Promise.resolve('{}');
       });
 
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -246,8 +255,8 @@ describe('page-home', () => {
 
   describe('Suite 2: Access Control (RBAC)', () => {
     it('hides new recipe FAB button for unauthenticated users', async () => {
-      state.currentUser = undefined;
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      mockUserCtx.user = undefined;
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -256,8 +265,8 @@ describe('page-home', () => {
     });
 
     it('hides new recipe FAB button for viewers', async () => {
-      state.currentUser = { id: 2, username: 'viewer', accessLevel: AccessLevel.Viewer };
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      mockUserCtx.user = { id: 2, username: 'viewer', accessLevel: AccessLevel.Viewer };
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -266,8 +275,8 @@ describe('page-home', () => {
     });
 
     it('shows new recipe FAB button for editors', async () => {
-      state.currentUser = { id: 3, username: 'editor', accessLevel: AccessLevel.Editor };
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      mockUserCtx.user = { id: 3, username: 'editor', accessLevel: AccessLevel.Editor };
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -278,8 +287,8 @@ describe('page-home', () => {
     });
 
     it('shows new recipe FAB button for admins', async () => {
-      state.currentUser = { id: 4, username: 'admin', accessLevel: AccessLevel.Admin };
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      mockUserCtx.user = { id: 4, username: 'admin', accessLevel: AccessLevel.Admin };
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -290,7 +299,7 @@ describe('page-home', () => {
 
   describe('Suite 3: Filter Navigation', () => {
     it('updates searchFilter store and redirects to /recipes when a filter is clicked', async () => {
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -301,13 +310,13 @@ describe('page-home', () => {
       filterItems[1].click();
       await new Promise(resolve => setTimeout(resolve, 20));
 
-      expect(state.searchFilter.query).toBe('dinner');
-      expect(state.searchFilter.tags).toEqual(['quick']);
+      expect(mockSearchCtx.filter.query).toBe('dinner');
+      expect(mockSearchCtx.filter.tags).toEqual(['quick']);
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
     it('redirects with default filter when all Recipes item is clicked', async () => {
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -316,14 +325,14 @@ describe('page-home', () => {
       firstItem?.click();
       await new Promise(resolve => setTimeout(resolve, 20));
 
-      expect(state.searchFilter.sortBy).toBe(SortBy.Random);
+      expect(mockSearchCtx.filter.sortBy).toBe(SortBy.Random);
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
   });
 
   describe('Suite 4: Recipe Creation', () => {
     beforeEach(() => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
     });
 
     it('opens recipe editor modal on FAB button click and saves recipe without image', async () => {
@@ -339,7 +348,7 @@ describe('page-home', () => {
         return defaultFetchResponse(req);
       });
 
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -383,7 +392,7 @@ describe('page-home', () => {
         return defaultFetchResponse(req);
       });
 
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -413,7 +422,7 @@ describe('page-home', () => {
         return defaultFetchResponse(req);
       });
 
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -440,7 +449,7 @@ describe('page-home', () => {
         return defaultFetchResponse(req);
       });
 
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -461,7 +470,7 @@ describe('page-home', () => {
       vi.spyOn(console, 'error').mockImplementation(() => { });
       setupDefaultFetchMock(null);
 
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -488,7 +497,7 @@ describe('page-home', () => {
         return Promise.resolve('{}');
       });
 
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 
@@ -516,7 +525,7 @@ describe('page-home', () => {
         return Promise.resolve('{}');
       });
 
-      const el = await fixture<PageHome>(html`<page-home></page-home>`);
+      const el = await createPageHome();
       await el.activatedCallback();
       await new Promise(resolve => setTimeout(resolve, 50));
 

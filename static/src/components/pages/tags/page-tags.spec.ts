@@ -4,7 +4,8 @@ import { alertController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { SortDir, TagSearchResult, TagSortBy } from '../../../helpers/schema.gen';
 import { SwipeDirection } from '../../../models';
-import state, { clearState } from '../../../stores/state';
+import { clearTestStorage, createMockSearchContext } from '../../../testing/context-helpers';
+import { SearchContextValue } from '../../../context';
 import './page-tags';
 import type { PageTags } from './page-tags';
 import { PageNavigator } from '../../page-navigator/page-navigator';
@@ -30,6 +31,7 @@ vi.mock('../../../helpers/utils', async (importOriginal) => {
 describe('page-tags', () => {
   const originalFetch = globalThis.fetch;
   let routerEl: HTMLIonRouterElement;
+  let mockSearchCtx: SearchContextValue;
 
   const mockTagResult: TagSearchResult = {
     total: 3,
@@ -42,7 +44,8 @@ describe('page-tags', () => {
 
   beforeEach(() => {
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
+    mockSearchCtx = createMockSearchContext();
     mockGestureEnable.mockClear();
     mockGestureDestroy.mockClear();
     swipeHandler = undefined;
@@ -184,14 +187,14 @@ describe('page-tags', () => {
       return { status: 404 };
     });
 
-    const el = await fixture<PageTags>(html`<page-tags></page-tags>`);
+    const el = await fixture<PageTags>(html`<page-tags .searchCtx=${mockSearchCtx}></page-tags>`);
     await el.activatedCallback();
     await new Promise(resolve => setTimeout(resolve, 50));
 
     const items = el.renderRoot.querySelectorAll<HTMLIonItemElement>('ion-item');
     items[0].click(); // 'dinner'
 
-    expect(state.searchFilter?.tags).toEqual(['dinner']);
+    expect(mockSearchCtx.filter.tags).toEqual(['dinner']);
   });
 
   it('handles swipe gestures to change page', async () => {

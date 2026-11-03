@@ -1,12 +1,12 @@
 import { LitElement, html, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
+import { consume } from '@lit/context';
 import { getDefaultSearchFilter } from '../../../models';
-import { api, fileContentSerializer, refreshSearchResults } from '../../../helpers/api';
+import { api, fileContentSerializer } from '../../../helpers/api';
 import { showToast, showLoading, showModal } from '../../../helpers/modals';
 import { redirect, isNull, isNullOrEmpty, ComponentWithActivatedCallback, isAuthorized, trap } from '../../../helpers/utils';
-import appState, { appStateStore } from '../../../stores/state';
-import { StoreController } from '../../../stores/store';
 import { AccessLevel, Recipe, RecipeCompact, SearchFilter, SortBy, UserSettings } from '../../../helpers/schema.gen';
+import { searchContext, SearchContextValue, userContext, UserContextValue } from '../../../context';
 
 import '../../recipe-card/recipe-card';
 import '../../recipe-editor/recipe-editor';
@@ -15,6 +15,14 @@ import './page-home.css';
 
 @customElement('page-home')
 export class PageHome extends LitElement implements ComponentWithActivatedCallback {
+  @consume({ context: userContext, subscribe: true })
+  @property({ attribute: false })
+  userCtx?: UserContextValue;
+
+  @consume({ context: searchContext, subscribe: false })
+  @property({ attribute: false })
+  searchCtx?: SearchContextValue;
+
   @state() private currentUserSettings: UserSettings | null = null;
   @state() private searches: {
     title: string;
@@ -22,9 +30,6 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
     count: number;
     results: RecipeCompact[];
   }[] = [];
-
-  // Reactive store controller to respond to currentUser changes
-  protected stateController = new StoreController(this, appStateStore);
 
   protected createRenderRoot() {
     return this;
@@ -75,7 +80,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
         </ion-grid>
       </ion-content>
 
-      ${isAuthorized(appState.currentUser, AccessLevel.Editor) ? html`
+      ${isAuthorized(this.userCtx?.user, AccessLevel.Editor) ? html`
         <ion-fab horizontal="end" vertical="bottom" slot="fixed">
           <ion-fab-button color="secondary" @click=${() => this.onNewRecipeClicked()}>
             <app-icon name="add"></app-icon>
@@ -192,7 +197,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
       }
 
       // Update the search results since the new recipe may be in them
-      await refreshSearchResults();
+      await this.searchCtx?.refresh();
 
       await redirect(`/recipes/${newRecipe.id}`);
     } catch (ex) {
@@ -212,9 +217,9 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
   }
 
   private async onFilterClicked(filter: SearchFilter) {
-    appState.searchFilter = {
+    this.searchCtx?.setFilter({
       ...filter
-    };
+    });
     await redirect('/recipes');
   }
 }

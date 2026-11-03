@@ -2,10 +2,9 @@ import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fetchMocker } from '../../../vitest.setup';
 import { api } from '../../helpers/api';
-import { AccessLevel, AppConfiguration, AppInfo } from '../../helpers/schema.gen';
+import { AccessLevel, AppConfiguration, AppInfo, SearchFilter, User } from '../../helpers/schema.gen';
 import { getDefaultSearchFilter } from '../../models';
-import appConfig from '../../stores/config';
-import state, { clearState } from '../../stores/state';
+import { clearTestStorage } from '../../testing/context-helpers';
 import './app-root';
 import type { AppRoot } from './app-root';
 import { ReactiveElement } from 'lit';
@@ -13,6 +12,18 @@ import { ReactiveElement } from 'lit';
 describe('app-root', () => {
   const originalFetch = globalThis.fetch;
   let routerEl: HTMLIonRouterElement;
+
+  function setCurrentUser(user?: User) {
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+  }
+
+  function setSearchFilter(filter: SearchFilter) {
+    sessionStorage.setItem('searchFilter', JSON.stringify(filter));
+  }
 
   const mockInfo: AppInfo = {
     copyright: '© 2026 My Recipe App',
@@ -24,7 +35,7 @@ describe('app-root', () => {
 
   beforeEach(() => {
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
 
     routerEl = document.createElement('ion-router');
     routerEl.push = vi.fn().mockResolvedValue(true);
@@ -52,7 +63,7 @@ describe('app-root', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     routerEl?.remove();
     vi.restoreAllMocks();
   });
@@ -64,17 +75,17 @@ describe('app-root', () => {
   });
 
   it('loads and applies application configuration on mount', async () => {
-    await fixture<AppRoot>(html`<app-root></app-root>`);
+    const el = await fixture<AppRoot>(html`<app-root></app-root>`);
     await new Promise((resolve) => setTimeout(resolve, 50));
 
-    expect(appConfig.info).toEqual(mockInfo);
-    expect(appConfig.config).toEqual(mockConfig);
+    expect(el.configCtx.info).toEqual(mockInfo);
+    expect(el.configCtx.config).toEqual(mockConfig);
     expect(document.title).toBe(mockConfig.title);
   });
 
   describe('authorization and navigation rendering', () => {
     it('disables searchbars and filter buttons, and hides toolbar buttons when user is not authenticated', async () => {
-      state.currentUser = undefined;
+      setCurrentUser(undefined);
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -97,7 +108,7 @@ describe('app-root', () => {
     });
 
     it('renders only Home link in the side menu when user is not authenticated', async () => {
-      state.currentUser = undefined;
+      setCurrentUser(undefined);
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -122,7 +133,7 @@ describe('app-root', () => {
     });
 
     it('shows menu button, enabled searchbars, and toolbar links when user is authenticated', async () => {
-      state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
+      setCurrentUser({ id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -145,10 +156,10 @@ describe('app-root', () => {
     });
 
     it('renders viewer navigation and hides admin links for Viewer users', async () => {
-      state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
-      state.totalRecipeCount = 42;
-      state.totalTagsCount = 43;
+      setCurrentUser({ id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
+      el.appStatusCtx.setTotalRecipeCount(42);
+      el.appStatusCtx.setTotalTagsCount(43);
       await el.updateComplete;
 
       expect(el.renderRoot.querySelector('ion-menu-button')).not.toBeNull();
@@ -181,7 +192,7 @@ describe('app-root', () => {
     });
 
     it('renders admin links and child routes for Admin users', async () => {
-      state.currentUser = { id: 2, username: 'adminuser', accessLevel: AccessLevel.Admin };
+      setCurrentUser({ id: 2, username: 'adminuser', accessLevel: AccessLevel.Admin });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -203,11 +214,11 @@ describe('app-root', () => {
     });
 
     it('preserves component classes (e.g. hydrated) when toggling pageTitle active state', async () => {
-      state.currentUser = {
+      setCurrentUser({
         id: 1,
         username: 'viewer',
         accessLevel: AccessLevel.Viewer,
-      };
+      });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
 
       const homeItem = el.renderRoot.querySelector<HTMLElement>('ion-item[href="/"]')!;
@@ -235,7 +246,7 @@ describe('app-root', () => {
 
   describe('route guards', () => {
     it('redirects to /login when unauthenticated user attempts to enter guarded routes', async () => {
-      state.currentUser = undefined;
+      setCurrentUser(undefined);
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -248,7 +259,7 @@ describe('app-root', () => {
     });
 
     it('allows access to guarded routes when user is authenticated', async () => {
-      state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
+      setCurrentUser({ id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -260,7 +271,7 @@ describe('app-root', () => {
     });
 
     it('redirects non-admin users attempting to enter admin routes', async () => {
-      state.currentUser = { id: 1, username: 'viewer', accessLevel: AccessLevel.Viewer };
+      setCurrentUser({ id: 1, username: 'viewer', accessLevel: AccessLevel.Viewer });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -272,7 +283,7 @@ describe('app-root', () => {
     });
 
     it('allows admin users to enter admin routes', async () => {
-      state.currentUser = { id: 2, username: 'admin', accessLevel: AccessLevel.Admin };
+      setCurrentUser({ id: 2, username: 'admin', accessLevel: AccessLevel.Admin });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -286,7 +297,7 @@ describe('app-root', () => {
 
   describe('fetch 401 interceptor', () => {
     it('triggers logout and clears state when an API returns 401', async () => {
-      state.currentUser = { id: 1, username: 'user', accessLevel: AccessLevel.Viewer };
+      setCurrentUser({ id: 1, username: 'user', accessLevel: AccessLevel.Viewer });
 
       fetchMocker.mockResponse((req: Request) => {
         if (req.url.match(/\/app\/info$/)) {
@@ -313,15 +324,19 @@ describe('app-root', () => {
       await new Promise((r) => setTimeout(r, 50));
 
       // State should be cleared and redirect triggered
-      expect(state.currentUser).toBeUndefined();
+      expect(el.userStorage.get()).toBeUndefined();
       expect(routerEl.push).toHaveBeenCalledWith('/login');
     });
   });
 
   describe('spinner indicators', () => {
+    afterEach(() => {
+      api.loading$.next(0);
+    });
+
     it('renders spinner when operations are loading', async () => {
-      state.loadingCount = 2;
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
+      api.loading$.next(2);
       await el.updateComplete;
 
       const spinner = el.renderRoot.querySelector('ion-spinner');
@@ -330,8 +345,8 @@ describe('app-root', () => {
     });
 
     it('does not render spinner when nothing is loading', async () => {
-      state.loadingCount = 0;
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
+      api.loading$.next(0);
       await el.updateComplete;
 
       const spinner = el.renderRoot.querySelector('ion-spinner');
@@ -341,7 +356,7 @@ describe('app-root', () => {
 
   describe('search bar interactions', () => {
     beforeEach(() => {
-      state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
+      setCurrentUser({ id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer });
 
       fetchMocker.mockResponse((req: Request) => {
         if (req.url.match(/\/app\/info$/)) {
@@ -369,9 +384,9 @@ describe('app-root', () => {
     });
 
     it('ignores search input and filter clicks when user is unauthenticated', async () => {
-      state.currentUser = undefined;
+      setCurrentUser(undefined);
       const initialFilter = { ...getDefaultSearchFilter() };
-      state.searchFilter = initialFilter;
+      setSearchFilter(initialFilter);
 
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
@@ -383,11 +398,11 @@ describe('app-root', () => {
         searchbar.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
       }
 
-      expect(state.searchFilter).toEqual(initialFilter);
+      expect(el.searchFilterStorage.get()).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
       searchbar?.dispatchEvent(new CustomEvent('ionClear', { bubbles: true }));
-      expect(state.searchFilter).toEqual(initialFilter);
+      expect(el.searchFilterStorage.get()).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
       const resetItem = Array.from(
@@ -395,7 +410,7 @@ describe('app-root', () => {
       ).find((item) => item.textContent?.includes('Reset Search'));
       expect(resetItem).toBeDefined();
       resetItem?.click();
-      expect(state.searchFilter).toEqual(initialFilter);
+      expect(el.searchFilterStorage.get()).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
       const settingsItem = Array.from(
@@ -424,12 +439,15 @@ describe('app-root', () => {
         searchbar.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
       }
 
-      expect(state.searchFilter.query).toBe('pasta');
+      expect(el.searchFilterStorage.get().query).toBe('pasta');
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
     it('clears query and redirects to /recipes on ionClear event', async () => {
-      state.searchFilter.query = 'pasta';
+      setSearchFilter({
+        ...getDefaultSearchFilter(),
+        query: 'pasta',
+      });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -437,16 +455,16 @@ describe('app-root', () => {
       expect(searchbar).not.toBeNull();
       searchbar?.dispatchEvent(new CustomEvent('ionClear', { bubbles: true }));
 
-      expect(state.searchFilter.query).toBe('');
+      expect(el.searchFilterStorage.get().query).toBe('');
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
     it('resets to default search filter and redirects to /recipes on reset button click', async () => {
-      state.searchFilter = {
+      setSearchFilter({
         ...getDefaultSearchFilter(),
         query: 'pasta',
         tags: ['dinner'],
-      };
+      });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -456,7 +474,7 @@ describe('app-root', () => {
       expect(resetItem).toBeDefined();
       resetItem?.click();
 
-      expect(state.searchFilter).toEqual(getDefaultSearchFilter());
+      expect(el.searchFilterStorage.get()).toEqual(getDefaultSearchFilter());
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
@@ -501,8 +519,7 @@ describe('app-root', () => {
     }
 
     beforeEach(() => {
-      state.currentUser = { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer };
-      state.searchResults = [];
+      setCurrentUser({ id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer });
     });
 
     it('has empty pageTitle initially and clears pageTitle on unmatched routes like /login', async () => {
@@ -684,7 +701,7 @@ describe('app-root', () => {
     });
 
     it('clears pageTitle on unmatched routes like /login when user is unauthenticated', async () => {
-      state.currentUser = undefined;
+      setCurrentUser(undefined);
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
       const router = setupRouterOutlet(el);
@@ -705,7 +722,7 @@ describe('app-root', () => {
     });
 
     it('updates pageTitle to "Home" on root route "/" and highlights Home without toolbar buttons when user is unauthenticated', async () => {
-      state.currentUser = undefined;
+      setCurrentUser(undefined);
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
       const router = setupRouterOutlet(el);
@@ -730,11 +747,11 @@ describe('app-root', () => {
 
   describe('logout and auth expiration', () => {
     it('clears state when user logs out', async () => {
-      state.currentUser = {
+      setCurrentUser({
         id: 1,
         username: 'viewer',
         accessLevel: AccessLevel.Viewer,
-      };
+      });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
 
       const logoutItem = Array.from(el.renderRoot.querySelectorAll('ion-item')).find((item) =>
@@ -745,7 +762,7 @@ describe('app-root', () => {
       logoutItem?.click();
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      expect(state.currentUser).toBeUndefined();
+      expect(el.userStorage.get()).toBeUndefined();
     });
   });
 

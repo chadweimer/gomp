@@ -2,7 +2,7 @@ import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fetchMocker } from '../../../vitest.setup';
 import { RecipeCompact, RecipeState } from '../../helpers/schema.gen';
-import { clearState } from '../../stores/state';
+import { clearTestStorage } from '../../testing/context-helpers';
 import './recipe-link-editor';
 import { RecipeLinkEditor } from './recipe-link-editor';
 
@@ -50,7 +50,7 @@ describe('recipe-link-editor', () => {
 
   beforeEach(() => {
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
 
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/recipes(\?.*)?$/) && req.method === 'GET') {
@@ -68,7 +68,7 @@ describe('recipe-link-editor', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     vi.restoreAllMocks();
   });
 

@@ -3,7 +3,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { alertController, loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { AccessLevel, Note, Recipe, RecipeCompact, RecipePatch, RecipeState } from '../../../helpers/schema.gen';
-import state, { clearState } from '../../../stores/state';
+import { clearTestStorage, createMockSearchContext, createMockUserContext } from '../../../testing/context-helpers';
+import { SearchContextValue, UserContextValue } from '../../../context';
 import './page-recipe';
 import { PageRecipe } from './page-recipe';
 import { ReactiveElement } from 'lit';
@@ -11,6 +12,8 @@ import { ReactiveElement } from 'lit';
 describe('page-recipe', () => {
   const originalFetch = globalThis.fetch;
   let routerEl: HTMLIonRouterElement;
+  let mockUserCtx: UserContextValue;
+  let mockSearchCtx: SearchContextValue;
 
   const mockRecipe: Recipe = {
     id: 1,
@@ -131,17 +134,19 @@ describe('page-recipe', () => {
   }
 
   async function createRecipePage(recipeId = 1): Promise<PageRecipe> {
-    const root = await fixture<PageRecipe>(html`<page-recipe .recipeId=${recipeId}></page-recipe>`);
+    const root = await fixture<PageRecipe>(html`<page-recipe .recipeId=${recipeId} .userCtx=${mockUserCtx} .searchCtx=${mockSearchCtx}></page-recipe>`);
     await new Promise((r) => setTimeout(r, 10));
     await root.updateComplete;
     return root;
   }
 
   beforeEach(() => {
-    localStorage?.clear();
-    sessionStorage?.clear();
+    clearTestStorage();
     fetchMocker.resetMocks();
-    clearState();
+    mockUserCtx = createMockUserContext({
+      user: { id: 1, username: 'editor', accessLevel: AccessLevel.Editor }
+    });
+    mockSearchCtx = createMockSearchContext();
 
     routerEl = document.createElement('ion-router');
     routerEl.push = vi.fn().mockResolvedValue(true);
@@ -153,7 +158,7 @@ describe('page-recipe', () => {
   afterEach(() => {
     globalThis.fetch = originalFetch;
     fetchMocker.resetMocks();
-    clearState();
+    clearTestStorage();
     routerEl.remove();
     vi.restoreAllMocks();
   });
@@ -231,7 +236,7 @@ describe('page-recipe', () => {
 
   describe('Suite 2: Access Control & Authorization (RBAC)', () => {
     it('renders read-only view and hides editor controls for unauthenticated or viewer users', async () => {
-      state.currentUser = { id: 99, username: 'viewer', accessLevel: AccessLevel.Viewer };
+      mockUserCtx.user = { id: 99, username: 'viewer', accessLevel: AccessLevel.Viewer };
       const root = await createRecipePage(1);
       await root.updateComplete;
 
@@ -261,7 +266,7 @@ describe('page-recipe', () => {
     });
 
     it('renders edit controls for editor or admin users', async () => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
       const root = await createRecipePage(1);
       await root.updateComplete;
 
@@ -286,7 +291,7 @@ describe('page-recipe', () => {
     });
 
     it('shows Archive button when recipe is active, and Unarchive when archived', async () => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
 
       const activeRoot = await createRecipePage(1);
       expect(getBottomToolbarItem(activeRoot, 'Archive')).toBeDefined();
@@ -307,7 +312,7 @@ describe('page-recipe', () => {
 
   describe('Suite 3: Recipe Operations', () => {
     beforeEach(() => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
     });
 
     it('edits recipe via modal and saves updated recipe', async () => {
@@ -606,7 +611,7 @@ describe('page-recipe', () => {
       await root.updateComplete;
       await new Promise((r) => setTimeout(r, 10));
 
-      expect(state.searchFilter.tags).toEqual(['breakfast']);
+      expect(mockSearchCtx.filter.tags).toEqual(['breakfast']);
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
@@ -625,7 +630,7 @@ describe('page-recipe', () => {
 
   describe('Suite 4: Recipe Link Operations', () => {
     beforeEach(() => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
     });
 
     it('adds a link via modal', async () => {
@@ -777,7 +782,7 @@ describe('page-recipe', () => {
 
   describe('Suite 5: Recipe Note Operations', () => {
     beforeEach(() => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
     });
 
     it('adds a new note via modal', async () => {
@@ -1007,7 +1012,7 @@ describe('page-recipe', () => {
 
   describe('Suite 6: Recipe Picture Operations', () => {
     beforeEach(() => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
     });
 
     it('uploads a picture via file-upload-browser modal', async () => {
@@ -1238,7 +1243,7 @@ describe('page-recipe', () => {
 
   describe('Suite 7: Mobile Popover Menu Operations', () => {
     it('renders popover menu with only Print and Cancel for Viewer users', async () => {
-      state.currentUser = { id: 99, username: 'viewer', accessLevel: AccessLevel.Viewer };
+      mockUserCtx.user = { id: 99, username: 'viewer', accessLevel: AccessLevel.Viewer };
 
       const root = await createRecipePage(1);
 
@@ -1255,7 +1260,7 @@ describe('page-recipe', () => {
     });
 
     it('renders popover menu with all editor options for active recipes', async () => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
 
       const root = await createRecipePage(1);
 
@@ -1272,7 +1277,7 @@ describe('page-recipe', () => {
     });
 
     it('renders popover menu with Unarchive for archived recipes', async () => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
       const archivedRecipe: Recipe = { ...mockRecipe, state: RecipeState.Archived };
       setupDefaultFetchMock(archivedRecipe);
 
@@ -1286,7 +1291,7 @@ describe('page-recipe', () => {
     });
 
     it('handles clicking each popover menu item', async () => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
 
       const actions = ['Print', 'Delete', 'Archive', 'Add Link', 'Upload Picture', 'Add Note', 'Edit'] as const;
 
@@ -1332,7 +1337,7 @@ describe('page-recipe', () => {
     });
 
     it('handles unarchive click for archived recipe', async () => {
-      state.currentUser = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
+      mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
       const archivedRecipe: Recipe = { ...mockRecipe, state: RecipeState.Archived };
       setupDefaultFetchMock(archivedRecipe);
 

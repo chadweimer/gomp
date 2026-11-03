@@ -1,14 +1,19 @@
 import { LitElement, html } from 'lit';
-import { customElement, state, query } from 'lit/decorators.js';
+import { customElement, state, query, property } from 'lit/decorators.js';
+import { consume } from '@lit/context';
 import { api } from '../../../helpers/api';
 import { redirect } from '../../../helpers/utils';
-import appState from '../../../stores/state';
+import { userContext, UserContextValue } from '../../../context';
 import { ToggleCustomEvent } from '@ionic/core';
 
 import './page-login.css';
 
 @customElement('page-login')
 export class PageLogin extends LitElement {
+  @consume({ context: userContext, subscribe: false })
+  @property({ attribute: false })
+  userCtx?: UserContextValue;
+
   @state() private errorMessage = '';
   @state() private rememberMe = false;
 
@@ -91,7 +96,9 @@ export class PageLogin extends LitElement {
       }
 
       // Store the user so we stay logged in
-      appState.currentUser = user;
+      if (user != null) {
+        this.userCtx?.login(user);
+      }
 
       // Clear the username so it's not left around when the next login is needed
       if (this.usernameInput) {

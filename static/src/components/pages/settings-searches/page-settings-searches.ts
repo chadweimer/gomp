@@ -1,10 +1,11 @@
 import { LitElement, html } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
+import { consume } from '@lit/context';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showAlert, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, isNull, redirect } from '../../../helpers/utils';
-import appState from '../../../stores/state';
+import { searchContext, SearchContextValue } from '../../../context';
 import '../../page-navigator/page-navigator';
 import '../../search-filter-editor/search-filter-editor';
 import '../../app-icon/app-icon';
@@ -12,6 +13,10 @@ import './page-settings-searches.css';
 
 @customElement('page-settings-searches')
 export class PageSettingsSearches extends LitElement implements ComponentWithActivatedCallback {
+  @consume({ context: searchContext, subscribe: false })
+  @property({ attribute: false })
+  searchCtx?: SearchContextValue;
+
   private readonly resultsPerPage = 24;
 
   @state() filters: SavedSearchFilterCompact[] = [];
@@ -239,8 +244,8 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         throw new Error('Failed to load search filter.', { cause: error });
       }
 
-      if (searchFilter) {
-        appState.searchFilter = searchFilter;
+      if (searchFilter != null) {
+        this.searchCtx?.setFilter(searchFilter);
       }
       await redirect('/recipes');
     } catch (ex) {

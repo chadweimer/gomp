@@ -1,15 +1,20 @@
 import { LitElement, html } from 'lit';
-import { customElement, state, query } from 'lit/decorators.js';
+import { customElement, state, query, property } from 'lit/decorators.js';
+import { consume } from '@lit/context';
 import { AppConfiguration } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback } from '../../../helpers/utils';
-import appConfig from '../../../stores/config';
+import { configContext, ConfigContextValue } from '../../../context';
 import '../../app-icon/app-icon';
 import './page-admin-configuration.css';
 
 @customElement('page-admin-configuration')
 export class PageAdminConfiguration extends LitElement implements ComponentWithActivatedCallback {
+  @consume({ context: configContext, subscribe: false })
+  @property({ attribute: false })
+  configCtx?: ConfigContextValue;
+
   @state() appConfig: AppConfiguration = {
     title: 'GOMP: Go Meal Planner'
   };
@@ -92,7 +97,7 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
         throw new Error('Failed to save configuration.', { cause: error });
       }
 
-      appConfig.config = this.appConfig;
+      this.configCtx?.setConfig(this.appConfig);
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to save configuration.');

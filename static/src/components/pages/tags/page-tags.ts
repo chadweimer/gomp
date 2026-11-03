@@ -1,12 +1,13 @@
 import { Gesture } from '@ionic/core';
 import { LitElement, html } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, property } from 'lit/decorators.js';
+import { consume } from '@lit/context';
 import { SortDir, Tag, TagSortBy } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { DEFAULT_RESULTS_PER_PAGE_OPTIONS, ResultsPerPage } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, createSwipeGesture, isNull } from '../../../helpers/utils';
 import { getDefaultSearchFilter, SwipeDirection } from '../../../models';
-import appState from '../../../stores/state';
+import { searchContext, SearchContextValue } from '../../../context';
 import '../../page-navigator/page-navigator';
 import '../../app-icon/app-icon';
 import './page-tags.css';
@@ -14,6 +15,10 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 
 @customElement('page-tags')
 export class PageTags extends LitElement implements ComponentWithActivatedCallback {
+  @consume({ context: searchContext, subscribe: false })
+  @property({ attribute: false })
+  searchCtx?: SearchContextValue;
+
   private gesture: Gesture | null = null;
 
   @state() private tags: Tag[] | null = null;
@@ -175,10 +180,10 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
   }
   private onTagClicked(tag: string) {
     const filter = getDefaultSearchFilter();
-    appState.searchFilter = {
+    this.searchCtx?.setFilter({
       ...filter,
       states: [],
       tags: [tag]
-    };
+    });
   }
 }
