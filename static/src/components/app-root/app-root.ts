@@ -489,7 +489,7 @@ export class AppRoot extends LitElement {
     }
   }
 
-  async logout() {
+  private async logout() {
     this.userStorage.reset();
     this.searchFilterStorage.reset();
     this.searchSettingsStorage.reset();
@@ -512,7 +512,7 @@ export class AppRoot extends LitElement {
     }
   }
 
-  isLoggedIn() {
+  private isLoggedIn() {
     return this.userCtx.user != null;
   }
 
