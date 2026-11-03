@@ -56,7 +56,6 @@ Global state is managed via Lit Context (`@lit/context`) under `static/src/conte
 - `userContext`: User authentication state (`user`, `login()`, `logout()`).
 - `searchContext`: Search parameters, pagination, and results (`filter`, `settings`, `page`, `results`, `setFilter()`, `refresh()`).
 - `configContext`: Application configuration and metadata (`config`, `info`, `setConfig()`).
-- `appStatusContext`: Global counters and loading indicators (`loadingCount`, `totalRecipeCount`, `totalTagsCount`).
 
 ### Consuming Context in Components
 - **Reading state in `render()`**: Subscribe to the context so Lit automatically requests updates when values change:

@@ -11,8 +11,6 @@ import { isAuthorized, isNullOrEmpty, redirect, sendActivatedCallback } from '..
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../../models';
 import { StorageController } from '../../helpers/storage-controller';
 import {
-  appStatusContext,
-  AppStatusContextValue,
   configContext,
   ConfigContextValue,
   searchContext,
@@ -114,10 +112,6 @@ export class AppRoot extends LitElement {
   @property({ attribute: false })
   configCtx!: ConfigContextValue;
 
-  @provide({ context: appStatusContext })
-  @property({ attribute: false })
-  appStatusCtx!: AppStatusContextValue;
-
   // Search Results state
   @state() private searchResults?: RecipeCompact[];
   @state() private searchResultCount?: number;
@@ -154,13 +148,12 @@ export class AppRoot extends LitElement {
     this.updateUserContext();
     this.updateSearchContext();
     this.updateConfigContext();
-    this.updateStatusContext();
 
     super.connectedCallback();
 
     this.subscriptions.push(
       // Subscribe to api loading requests
-      api.loading$.subscribe((count) => this.appStatusCtx.setLoadingCount(count)),
+      api.loading$.subscribe((count) => { this.loadingCount = count; }),
       // Automatically trigger a logout if an API returns a 401
       api.responses$.subscribe(async ({ request, response }) => {
         if (response.status === 401) {
@@ -242,26 +235,6 @@ export class AppRoot extends LitElement {
       setInfo: (info: AppInfo) => {
         this.appConfigInfo = info;
         this.updateConfigContext();
-      }
-    };
-  }
-
-  updateStatusContext() {
-    this.appStatusCtx = {
-      loadingCount: this.loadingCount,
-      totalRecipeCount: this.totalRecipeCount,
-      totalTagsCount: this.totalTagsCount,
-      setLoadingCount: (count: number) => {
-        this.loadingCount = count;
-        this.updateStatusContext();
-      },
-      setTotalRecipeCount: (count: number) => {
-        this.totalRecipeCount = count;
-        this.updateStatusContext();
-      },
-      setTotalTagsCount: (count: number) => {
-        this.totalTagsCount = count;
-        this.updateStatusContext();
       }
     };
   }
@@ -516,8 +489,6 @@ export class AppRoot extends LitElement {
       console.error(ex);
       this.totalTagsCount = undefined;
     }
-
-    this.updateStatusContext();
   }
 
   async logout() {

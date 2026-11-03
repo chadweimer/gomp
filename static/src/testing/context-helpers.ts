@@ -4,7 +4,6 @@ import { provide } from '@lit/context';
 import { userContext, UserContextValue } from '../context/user-context';
 import { searchContext, SearchContextValue } from '../context/search-context';
 import { configContext, ConfigContextValue } from '../context/config-context';
-import { appStatusContext, AppStatusContextValue } from '../context/app-status-context';
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../models';
 import { AppConfiguration, AppInfo, SearchFilter, User } from '../helpers/schema.gen';
 import { vi } from 'vitest';
@@ -79,22 +78,6 @@ export function createMockConfigContext(overrides: Partial<ConfigContextValue> =
   return ctx;
 }
 
-export function createMockAppStatusContext(overrides: Partial<AppStatusContextValue> = {}): AppStatusContextValue {
-  const ctx: AppStatusContextValue = {
-    loadingCount: 0,
-    totalRecipeCount: 0,
-    totalTagsCount: 0,
-    setTotalRecipeCount: (count: number) => {
-      (ctx as { totalRecipeCount: number }).totalRecipeCount = count;
-    },
-    setTotalTagsCount: (count: number) => {
-      (ctx as { totalTagsCount: number }).totalTagsCount = count;
-    },
-    ...overrides
-  };
-  return ctx;
-}
-
 @customElement('test-context-provider')
 export class TestContextProvider extends LitElement {
   @provide({ context: userContext })
@@ -108,10 +91,6 @@ export class TestContextProvider extends LitElement {
   @provide({ context: configContext })
   @property({ attribute: false })
   configCtx: ConfigContextValue = createMockConfigContext();
-
-  @provide({ context: appStatusContext })
-  @property({ attribute: false })
-  appStatusCtx: AppStatusContextValue = createMockAppStatusContext();
 
   protected createRenderRoot() {
     return this;

@@ -158,8 +158,9 @@ describe('app-root', () => {
     it('renders viewer navigation and hides admin links for Viewer users', async () => {
       setCurrentUser({ id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
-      el.appStatusCtx.setTotalRecipeCount(42);
-      el.appStatusCtx.setTotalTagsCount(43);
+      (el as unknown as { totalRecipeCount?: number; totalTagsCount?: number }).totalRecipeCount = 42;
+      (el as unknown as { totalRecipeCount?: number; totalTagsCount?: number }).totalTagsCount = 43;
+      el.requestUpdate();
       await el.updateComplete;
 
       expect(el.renderRoot.querySelector('ion-menu-button')).not.toBeNull();
