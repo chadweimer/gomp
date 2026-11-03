@@ -87,6 +87,20 @@ export class AppRoot extends LitElement {
     { onUpdate: () => this.onSearchParamChanged(false) }
   );
 
+  private readonly appLinks: Map<string, AppLink> = new Map<string, AppLink>([
+    ['/', { title: 'Home', icon: 'home', showOn: (type: 'menu' | 'toolbar') => type === 'menu' }],
+    ['/recipes', { title: 'Recipes', icon: 'chef_hat', showOn: () => this.isLoggedIn(), detail: () => this.totalRecipeCount ?? 0 }],
+    ['/tags', { title: 'Tags', icon: 'bookmarks', showOn: () => this.isLoggedIn(), detail: () => this.totalTagsCount ?? 0 }],
+    ['/settings', { title: 'Settings', icon: 'settings', showOn: () => this.isLoggedIn() }],
+    ['/settings/preferences', { title: 'Preferences', icon: 'tune', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
+    ['/settings/searches', { title: 'Searches', icon: 'saved_search', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
+    ['/settings/security', { title: 'Security', icon: 'fingerprint', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
+    ['/admin', { title: 'Admin', icon: 'security', showOn: () => this.isAdmin() }],
+    ['/admin/configuration', { title: 'Configuration', icon: 'description', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
+    ['/admin/users', { title: 'Users', icon: 'group', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
+    ['/admin/maintenance', { title: 'Maintenance', icon: 'construction', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
+  ]);
+
   // Context Providers
   @provide({ context: userContext })
   @property({ attribute: false })
@@ -130,20 +144,6 @@ export class AppRoot extends LitElement {
   @query('ion-router-outlet') private readonly routerOutlet?: HTMLIonRouterOutletElement;
   @query('ion-menu') private readonly menu?: HTMLIonMenuElement;
   @query('#search-menu-popover') private readonly searchMenuPopover?: HTMLIonPopoverElement;
-
-  private readonly appLinks: Map<string, AppLink> = new Map<string, AppLink>([
-    ['/', { title: 'Home', icon: 'home', showOn: (type: 'menu' | 'toolbar') => type === 'menu' }],
-    ['/recipes', { title: 'Recipes', icon: 'chef_hat', showOn: () => this.isLoggedIn(), detail: () => this.totalRecipeCount ?? 0 }],
-    ['/tags', { title: 'Tags', icon: 'bookmarks', showOn: () => this.isLoggedIn(), detail: () => this.totalTagsCount ?? 0 }],
-    ['/settings', { title: 'Settings', icon: 'settings', showOn: () => this.isLoggedIn() }],
-    ['/settings/preferences', { title: 'Preferences', icon: 'tune', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
-    ['/settings/searches', { title: 'Searches', icon: 'saved_search', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
-    ['/settings/security', { title: 'Security', icon: 'fingerprint', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isLoggedIn(), parentUrl: '/settings' }],
-    ['/admin', { title: 'Admin', icon: 'security', showOn: () => this.isAdmin() }],
-    ['/admin/configuration', { title: 'Configuration', icon: 'description', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
-    ['/admin/users', { title: 'Users', icon: 'group', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
-    ['/admin/maintenance', { title: 'Maintenance', icon: 'construction', showOn: (type: 'menu' | 'toolbar') => type === 'menu' && this.isAdmin(), parentUrl: '/admin' }],
-  ]);
 
   createRenderRoot() {
     return this;
