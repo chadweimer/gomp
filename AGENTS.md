@@ -18,7 +18,9 @@ This repository relies on a Dev Container for all development toolchains (Go, No
 ## Architecture & Layout
 - **Backend**: Go service located at repository root (`github.com/chadweimer/gomp`).
 - **Frontend**: Located in `static/` (Lit, TypeScript, Ionic components, Vite). Uses `pnpm` as the package manager.
-- **Generated Code**: Never directly modify `*.gen.go` or `*.gen.ts` files. Run `make codegen` after updating schemas (`openapi.yaml`, `models.yaml`) or Go interfaces.
+- **Contract-First API**: All API models and routes originate in `openapi.yaml` and `models.yaml`.
+- **Generated Code**: Never directly modify `*.gen.go` or `*.gen.ts` files. Run `make codegen` after updating schemas or Go interfaces.
+- **Database Abstraction**: Supports both **PostgreSQL** and **SQLite** via `db.Driver`. Symmetrical migrations and dialect handling are required.
 
 ## Common Commands (Run via Dev Container)
 - `make codegen` – Regenerates API routes, models, mocks, and frontend schema helpers.
@@ -26,12 +28,10 @@ This repository relies on a Dev Container for all development toolchains (Go, No
 - `make test` – Runs Go tests (`go test`) and frontend tests (`vitest`).
 - `make build` – Compiles static assets and the Go binary into `build/`.
 
-## Database Schema & Migrations
-- GOMP supports both **PostgreSQL** and **SQLite**.
-- Any database schema change requires symmetric migration files in both `db/migrations/postgres/` and `db/migrations/sqlite/`.
-
 ## Repository Skills
 Consult specialized skills located in `.agents/skills/`:
+- `fullstack-feature-checklist`: End-to-end orchestration checklist for features spanning backend and frontend.
 - `new-api-endpoint`: Checklist and guide for adding or updating API endpoints.
 - `new-db-migration`: Checklist for schema migrations across SQLite and PostgreSQL.
+- `frontend-components`: Guide for creating Lit and Ionic page vs. leaf components and store binding.
 - `writing-tests`: Patterns for Go table-driven tests, SQL mocks, and Lit component tests.
