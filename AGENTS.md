@@ -19,14 +19,26 @@ This repository relies on a Dev Container for all development toolchains (Go, No
 - **Backend**: Go service located at repository root (`github.com/chadweimer/gomp`).
 - **Frontend**: Located in `static/` (Lit, TypeScript, Ionic components, Vite). Uses `pnpm` as the package manager.
 - **Contract-First API**: All API models and routes originate in `openapi.yaml` and `models.yaml`.
-- **Generated Code**: Never directly modify `*.gen.go` or `*.gen.ts` files. Run `make codegen` after updating schemas or Go interfaces.
+- **Generated Code**: Never directly modify `*.gen.*` files (`*.gen.go`, `*.gen.ts`). They are gitignored and generated dynamically during builds or via `make codegen`. Do not commit them.
 - **Database Abstraction**: Supports both **PostgreSQL** and **SQLite** via `db.Driver`. Symmetrical migrations and dialect handling are required.
+
+## Core Conventions
+- **Logging**: Use structured logging with `slog`. Retrieve request loggers from context via `middleware.GetLoggerFromContext(ctx)`.
+- **Database Access**: Always access data via `db.Driver` interfaces; never couple API handlers to concrete DB drivers.
+- **API Handlers**: Implement generated strict handler methods returning generated response types.
+- **Targeted Edits**: Prefer minimal, targeted changes. Maintain existing package boundaries and avoid reformatting unrelated code.
 
 ## Common Commands (Run via Dev Container)
 - `make codegen` – Regenerates API routes, models, mocks, and frontend schema helpers.
 - `make lint` – Runs Go linter checks (`go vet`, `revive`, `gosec`) and frontend ESLint (`pnpm --dir static run lint`).
 - `make test` – Runs Go tests (`go test`) and frontend tests (`vitest`).
 - `make build` – Compiles static assets and the Go binary into `build/`.
+
+## CI & Pre-Flight Verification
+GitHub Actions CI enforces that all linting, tests, and builds succeed. Before concluding changes, verify:
+1. `make lint`
+2. `make test`
+3. `make build`
 
 ## Repository Skills
 Consult specialized skills located in `.agents/skills/`:

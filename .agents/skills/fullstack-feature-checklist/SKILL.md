@@ -16,7 +16,7 @@ Use this checklist when implementing features that touch both backend APIs and f
 
 ## Step 2: Regenerate Code
 - Run `make codegen` inside the dev container.
-- Verify generated outputs:
+- Verify generated outputs (note: `*.gen.*` files are gitignored and not committed):
   - `api/routes.gen.go`
   - `models/models.gen.go`
   - `mocks/db/mocks.gen.go`
