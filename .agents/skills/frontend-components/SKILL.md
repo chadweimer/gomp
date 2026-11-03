@@ -52,10 +52,21 @@ Reusable components (e.g. `recipe-editor`, `tags-input`, `note-card`) encapsulat
 
 ## 2. State Management & Reactivity
 
-Global state is managed by `appStateStore` in `static/src/stores/state.ts`.
-- **Connecting Component to Store**: Add `protected stateController = new StoreController(this, appStateStore);` to subscribe the component to store changes and trigger automatic re-renders.
-- **Accessing State**: Import `appState` from `stores/state` (e.g., `appState.currentUser`, `appState.searchFilter`).
-- **Listening to Property Changes**: Use `onStateChange('propName', callback)` for imperative triggers outside of render cycles.
+Global state is managed by `appStateStore` in `static/src/stores/state.ts` (and configuration by `appConfigStore` in `static/src/stores/config.ts`).
+
+### When to Use `StoreController`
+Reactivity in Lit is component-scoped (`host.requestUpdate()`). Attaching a controller to a parent (or `app-root`) does **not** re-render descendant or routed components.
+- **Attach `StoreController` when**: The component directly reads global store properties (e.g., `appState.currentUser`, `appState.searchResults`, `appConfig.title`) inside its `render()` template and must re-render when the store changes.
+  ```ts
+  protected stateController = new StoreController(this, appStateStore);
+  ```
+- **Do NOT attach `StoreController` when**:
+  - **Leaf / Presentational Components**: They should receive data via standard Lit `@property()` bindings passed from parent templates (e.g., `<recipe-card .recipe=${recipe}>`). When the parent updates, Lit automatically updates the child.
+  - **Write-Only Components**: If a component only writes/mutates store state (e.g., `appState.currentUser = user` in `page-login` or setting `searchFilter` before navigating), it does not need a controller.
+  - **Page-Local State**: Pages that manage their own data via local `@state()` loaded on navigation via `activatedCallback()` / `connectedCallback()` do not need a store controller unless they also bind directly to store properties in `render()`.
+
+### Imperative Property Changes
+- **Listening to Property Changes**: Use `onStateChange('propName', callback)` (or `store.onChange('key', callback)`) for imperative side effects outside of render cycles without subscribing the entire component to every store update.
 
 ---
 
