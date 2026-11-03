@@ -45,14 +45,7 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
                         .autocorrect=${true}
                         .spellcheck=${true}
                         required
-                        @ionBlur=${(e: Event) => {
-        const val = (e.currentTarget as HTMLIonInputElement).value as string;
-        this.settings = {
-          ...this.settings,
-          homeTitle: val,
-          favoriteTags: this.settings?.favoriteTags ?? []
-        };
-      }}
+                        @ionBlur=${(e: Event) => this.onTitleBlur(e)}
                       ></ion-input>
                     </ion-item>
                     <ion-item lines="full">
@@ -65,9 +58,8 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
                       </ion-thumbnail>
                     </ion-item>
                     <ion-item lines="full">
+                      <ion-label position="stacked">Favorite Tags</ion-label>
                       <tags-input
-                        label="Favorite Tags"
-                        label-placement="stacked"
                         .value=${this.settings?.favoriteTags ?? []}
                         @valueChanged=${(e: CustomEvent<string[]>) => { this.settings = { ...this.settings, favoriteTags: e.detail }; }}
                       >
@@ -110,6 +102,15 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
       console.error(ex);
       await showToast('Failed to save preferences.');
     }
+  }
+
+  private onTitleBlur(e: Event) {
+    const val = (e.currentTarget as HTMLIonInputElement).value as string;
+    this.settings = {
+      ...this.settings,
+      homeTitle: val,
+      favoriteTags: this.settings?.favoriteTags ?? []
+    };
   }
 
   private async onSaveSettingsClicked() {
