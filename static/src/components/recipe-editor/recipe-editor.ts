@@ -111,21 +111,19 @@ export class RecipeEditor extends LitElement {
               @ionChange=${(e: InputCustomEvent) => this.recipe = { ...this.recipe, name: e.detail.value ?? '' }}
             ></ion-input>
           </ion-item>
-          ${this.recipe?.id == null
-        ? html`
-                <ion-item lines="full">
-                  <form enctype="multipart/form-data">
-                    <ion-label position="stacked">Picture</ion-label>
-                    <input
-                      name="file_content"
-                      type="file"
-                      accept=".jpg,.jpeg,.png"
-                      class="ion-padding-vertical"
-                    />
-                  </form>
-                </ion-item>
-              `
-        : nothing}
+          ${this.recipe?.id == null ? html`
+            <ion-item lines="full">
+              <form enctype="multipart/form-data">
+                <ion-label position="stacked">Picture</ion-label>
+                <input
+                  name="file_content"
+                  type="file"
+                  accept=".jpg,.jpeg,.png"
+                  class="ion-padding-vertical"
+                />
+              </form>
+            </ion-item>
+          ` : nothing}
           <ion-item lines="full">
             <ion-input
               label="Serving Size"
@@ -159,11 +157,7 @@ export class RecipeEditor extends LitElement {
             <html-editor
               id="directions"
               .value=${toPresentationHtml(this, this.recipe?.directions, this.recipe?.id, false)}
-              .images=${this.recipeImages.map((name) => ({
-          name,
-          url: getRecipeImageUrl(this.recipe?.id, name),
-          thumbUrl: getRecipeThumbnailUrl(this.recipe?.id, name),
-        }))}
+              .images=${this.getImagesForEditor()}
               @valueChanged=${(e: CustomEvent<string>) => this.recipe = { ...this.recipe, directions: toStorageHtml(this, e.detail) }}
             ></html-editor>
           </ion-item>
@@ -193,9 +187,8 @@ export class RecipeEditor extends LitElement {
             ></ion-input>
           </ion-item>
           <ion-item lines="full">
+            <ion-label position="stacked">Tags</ion-label>
             <tags-input
-              label="Tags"
-              label-placement="stacked"
               .value=${this.recipe?.tags ?? []}
               .suggestions=${this.currentUserSettings?.favoriteTags ?? []}
               @valueChanged=${(e: CustomEvent<string[]>) => (this.recipe = { ...this.recipe, tags: e.detail })}
@@ -221,6 +214,14 @@ export class RecipeEditor extends LitElement {
 
   private async onCancelClicked() {
     await this.parentModal?.dismiss(undefined, 'cancel');
+  }
+
+  private getImagesForEditor() {
+    return this.recipeImages.map((name) => ({
+      name,
+      url: getRecipeImageUrl(this.recipe?.id, name),
+      thumbUrl: getRecipeThumbnailUrl(this.recipe?.id, name),
+    }))
   }
 
   private areEqual(a: Recipe, b: Recipe) {

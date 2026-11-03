@@ -1,6 +1,5 @@
 import { LitElement, html, css, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { emit, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 import '../app-icon/app-icon';
@@ -21,8 +20,6 @@ export class TagsInput extends LitElement {
     `
   ];
 
-  @property({ type: String }) label?: string;
-  @property({ type: String, attribute: 'label-placement' }) labelPlacement?: 'fixed' | 'floating' | 'stacked';
   @property({ type: Array }) value: string[] = [];
   @property({ type: Array }) suggestions: string[] = [];
 
@@ -61,33 +58,24 @@ export class TagsInput extends LitElement {
 
   render() {
     return html`
-      ${!isNullOrEmpty(this.label)
-        ? html`<ion-label position=${ifDefined(this.labelPlacement)}>${this.label}</ion-label>`
-        : nothing}
-      ${this.internalValue.length > 0
-        ? html`
-            <div class="ion-padding-top">
-              ${this.internalValue.map(
-          tag => html`
-                  <ion-chip @click=${() => this.removeTag(tag)}>
-                    ${tag}
-                    <app-icon class="end" name="close" size="small"></app-icon>
-                  </ion-chip>
-                `
-        )}
-            </div>
-          `
-        : nothing}
+      ${this.internalValue.length > 0 ? html`
+        <div class="ion-padding-top">
+          ${this.internalValue.map(tag => html`
+            <ion-chip @click=${() => this.removeTag(tag)}>
+              ${tag}
+              <app-icon class="end" name="close" size="small"></app-icon>
+            </ion-chip>
+          `)}
+        </div>
+      ` : nothing}
       <slot></slot>
       <div class="ion-padding-bottom">
-        ${this.filteredSuggestions.map(
-          tag => html`
-            <ion-chip class="suggested" color="secondary" @click=${() => this.addTag(tag)}>
-              ${tag}
-              <app-icon class="end" name="add" size="small"></app-icon>
-            </ion-chip>
-          `
-        )}
+        ${this.filteredSuggestions.map(tag => html`
+          <ion-chip class="suggested" color="secondary" @click=${() => this.addTag(tag)}>
+            ${tag}
+            <app-icon class="end" name="add" size="small"></app-icon>
+          </ion-chip>
+        `)}
       </div>
     `;
   }

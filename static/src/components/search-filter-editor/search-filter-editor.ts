@@ -100,48 +100,42 @@ export class SearchFilterEditor extends LitElement {
 
       <ion-content>
         <form @submit=${(e: Event) => e.preventDefault()}>
-          ${this.showSavedLoader
-        ? html`
-                <ion-item id="savedSearchLoader" lines="full">
-                  <ion-select
-                    label="Load From Saved"
-                    label-placement="floating"
-                    interface="popover"
-                    .value=${this.selectedFilterId}
-                    @ionChange=${(e: SelectCustomEvent<number>) => this.selectedFilterId = e.detail.value}
-                  >
-                    ${this.filters?.map(
-          (item) => html`<ion-select-option .value=${item.id}>${item.name}</ion-select-option>`
-        )}
-                    <ion-button
-                      slot="end"
-                      fill="clear"
-                      ?disabled=${this.selectedFilterId == null}
-                      @click=${() => this.onLoadSearchClicked()}
-                    >
-                      <app-icon slot="start" name="open_in_new" size="small"></app-icon>
-                      Load
-                    </ion-button>
-                  </ion-select>
-                </ion-item>
-              `
-        : nothing}
-          ${this.showName
-        ? html`
-                <ion-item lines="full">
-                  <ion-input
-                    label="Name"
-                    label-placement="stacked"
-                    .value=${this.name}
-                    .autocorrect=${true}
-                    .spellcheck=${true}
-                    required
-                    autofocus
-                    @ionChange=${(e: InputCustomEvent) => this.name = e.detail.value ?? ''}
-                  ></ion-input>
-                </ion-item>
-              `
-        : nothing}
+          ${this.showSavedLoader ? html`
+            <ion-item id="savedSearchLoader" lines="full">
+              <ion-select
+                label="Load From Saved"
+                label-placement="floating"
+                interface="popover"
+                .value=${this.selectedFilterId}
+                @ionChange=${(e: SelectCustomEvent<number>) => this.selectedFilterId = e.detail.value}
+              >
+                ${this.filters?.map((item) => html`<ion-select-option .value=${item.id}>${item.name}</ion-select-option>`)}
+                <ion-button
+                  slot="end"
+                  fill="clear"
+                  ?disabled=${this.selectedFilterId == null}
+                  @click=${() => this.onLoadSearchClicked()}
+                >
+                  <app-icon slot="start" name="open_in_new" size="small"></app-icon>
+                  Load
+                </ion-button>
+              </ion-select>
+            </ion-item>
+          ` : nothing}
+          ${this.showName ? html`
+            <ion-item lines="full">
+              <ion-input
+                label="Name"
+                label-placement="stacked"
+                .value=${this.name}
+                .autocorrect=${true}
+                .spellcheck=${true}
+                required
+                autofocus
+                @ionChange=${(e: InputCustomEvent) => this.name = e.detail.value ?? ''}
+              ></ion-input>
+            </ion-item>
+          ` : nothing}
           <ion-item lines="full">
             <ion-input
               label="Search Terms"
@@ -153,9 +147,8 @@ export class SearchFilterEditor extends LitElement {
             ></ion-input>
           </ion-item>
           <ion-item lines="full">
+            <ion-label position="stacked">Tags</ion-label>
             <tags-input
-              label="Tags"
-              label-placement="stacked"
               .value=${this.searchFilter?.tags ?? []}
               .suggestions=${this.currentUserSettings?.favoriteTags ?? []}
               @valueChanged=${(e: CustomEvent<string[]>) => this.searchFilter = { ...this.searchFilter, tags: e.detail }}
@@ -171,13 +164,11 @@ export class SearchFilterEditor extends LitElement {
               .value=${this.searchFilter?.sortBy}
               @ionChange=${(e: SelectCustomEvent<SortBy>) => this.searchFilter = { ...this.searchFilter, sortBy: e.detail.value }}
             >
-              ${Object.keys(SortBy).map(
-          (item) => html`
-                  <ion-select-option .value=${SortBy[item as keyof typeof SortBy]}>
-                    ${insertSpacesBetweenWords(item)}
-                  </ion-select-option>
-                `
-        )}
+              ${Object.keys(SortBy).map((item) => html`
+                <ion-select-option .value=${SortBy[item as keyof typeof SortBy]}>
+                  ${insertSpacesBetweenWords(item)}
+                </ion-select-option>
+              `)}
             </ion-select>
           </ion-item>
           <ion-item lines="full">
@@ -188,13 +179,11 @@ export class SearchFilterEditor extends LitElement {
               .value=${this.searchFilter?.sortDir}
               @ionChange=${(e: SelectCustomEvent<SortDir>) => this.searchFilter = { ...this.searchFilter, sortDir: e.detail.value }}
             >
-              ${Object.keys(SortDir).map(
-          (item) => html`
-                  <ion-select-option .value=${SortDir[item as keyof typeof SortDir]}>
-                    ${insertSpacesBetweenWords(item)}
-                  </ion-select-option>
-                `
-        )}
+              ${Object.keys(SortDir).map((item) => html`
+                <ion-select-option .value=${SortDir[item as keyof typeof SortDir]}>
+                  ${insertSpacesBetweenWords(item)}
+                </ion-select-option>
+              `)}
             </ion-select>
           </ion-item>
           <ion-item lines="full">
@@ -205,13 +194,11 @@ export class SearchFilterEditor extends LitElement {
               .value=${toYesNoAny(this.searchFilter?.withPictures)}
               @ionChange=${(e: SelectCustomEvent<YesNoAny>) => this.searchFilter = { ...this.searchFilter, withPictures: fromYesNoAny(e.detail.value) }}
             >
-              ${Object.keys(YesNoAny).map(
-          (item) => html`
-                  <ion-select-option .value=${YesNoAny[item as keyof typeof YesNoAny]}>
-                    ${insertSpacesBetweenWords(item)}
-                  </ion-select-option>
-                `
-        )}
+              ${Object.keys(YesNoAny).map((item) => html`
+                <ion-select-option .value=${YesNoAny[item as keyof typeof YesNoAny]}>
+                  ${insertSpacesBetweenWords(item)}
+                </ion-select-option>
+              `)}
             </ion-select>
           </ion-item>
           <ion-item lines="full">
@@ -223,13 +210,11 @@ export class SearchFilterEditor extends LitElement {
               .value=${this.searchFilter?.states}
               @ionChange=${(e: SelectCustomEvent<RecipeState[]>) => this.searchFilter = { ...this.searchFilter, states: e.detail.value }}
             >
-              ${Object.keys(RecipeState).map(
-          (item) => html`
-                  <ion-select-option .value=${RecipeState[item as keyof typeof RecipeState]}>
-                    ${insertSpacesBetweenWords(item)}
-                  </ion-select-option>
-                `
-        )}
+              ${Object.keys(RecipeState).map((item) => html`
+                <ion-select-option .value=${RecipeState[item as keyof typeof RecipeState]}>
+                  ${insertSpacesBetweenWords(item)}
+                </ion-select-option>
+              `)}
             </ion-select>
           </ion-item>
           <ion-item lines="full">
@@ -241,13 +226,11 @@ export class SearchFilterEditor extends LitElement {
               .value=${this.searchFilter?.fields}
               @ionChange=${(e: SelectCustomEvent<SearchField[]>) => this.searchFilter = { ...this.searchFilter, fields: e.detail.value }}
             >
-              ${Object.keys(SearchField).map(
-          (item) => html`
-                  <ion-select-option .value=${SearchField[item as keyof typeof SearchField]}>
-                    ${insertSpacesBetweenWords(item)}
-                  </ion-select-option>
-                `
-        )}
+              ${Object.keys(SearchField).map((item) => html`
+                <ion-select-option .value=${SearchField[item as keyof typeof SearchField]}>
+                  ${insertSpacesBetweenWords(item)}
+                </ion-select-option>
+              `)}
             </ion-select>
           </ion-item>
         </form>

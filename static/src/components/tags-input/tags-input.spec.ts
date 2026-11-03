@@ -10,13 +10,6 @@ describe('tags-input', () => {
     expect(label).toBeNull();
   });
 
-  it('renders label and label placement', async () => {
-    const el = await fixture<TagsInput>(html`<tags-input label="My Label" label-placement="fixed"></tags-input>`);
-    const label = el.renderRoot.querySelector('ion-label');
-    expect(label?.textContent?.trim()).toBe('My Label');
-    expect(label?.getAttribute('position')).toBe('fixed');
-  });
-
   it('renders initial tags', async () => {
     const el = await fixture<TagsInput>(html`<tags-input .value=${['tag1', 'tag2']}></tags-input>`);
     const chips = el.renderRoot.querySelectorAll('ion-chip:not(.suggested)');

@@ -141,7 +141,7 @@ describe('search-filter-editor', () => {
       expect(queryInput).not.toBeNull();
       expect(queryInput?.value).toBe(defaultSearchFilter.query);
 
-      const tagsInput = root.renderRoot.querySelector<TagsInput>('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector<TagsInput>('tags-input');
       expect(tagsInput).not.toBeNull();
       expect(tagsInput?.value).toEqual([]);
 
@@ -205,7 +205,7 @@ describe('search-filter-editor', () => {
       const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
       expect(queryInput?.value).toBe('tacos');
 
-      const tagsInput = root.renderRoot.querySelector<TagsInput>('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector<TagsInput>('tags-input');
       expect(tagsInput?.value).toEqual(['mexican']);
 
       const sortBySelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
@@ -255,7 +255,7 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const tagsInput = root.renderRoot.querySelector<TagsInput>('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector<TagsInput>('tags-input');
       expect(tagsInput?.suggestions).toEqual(['breakfast', 'quick', 'dinner']);
     });
 
@@ -266,7 +266,7 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const tagsInput = root.renderRoot.querySelector<TagsInput>('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector<TagsInput>('tags-input');
       expect(tagsInput?.suggestions).toEqual([]);
     });
 
@@ -282,7 +282,7 @@ describe('search-filter-editor', () => {
       await new Promise((r) => setTimeout(r, 10));
       await root.updateComplete;
 
-      const tagsInput = root.renderRoot.querySelector<TagsInput>('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector<TagsInput>('tags-input');
       expect(tagsInput?.suggestions).toEqual([]);
     });
   });
@@ -403,7 +403,7 @@ describe('search-filter-editor', () => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const tagsInput = root.renderRoot.querySelector('tags-input[label="Tags"]');
+      const tagsInput = root.renderRoot.querySelector('tags-input');
       tagsInput?.dispatchEvent(new CustomEvent('valueChanged', { detail: ['asian', 'spicy'] }));
       await root.updateComplete;
 

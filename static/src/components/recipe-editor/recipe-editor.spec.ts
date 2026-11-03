@@ -121,7 +121,7 @@ describe('recipe-editor', () => {
       expect(sourceInput).not.toBeNull();
       expect(sourceInput?.value).toBe('');
 
-      const tagsInput = el.renderRoot.querySelector('tags-input[label="Tags"]');
+      const tagsInput = el.renderRoot.querySelector('tags-input');
       expect(tagsInput).not.toBeNull();
     });
 
@@ -171,7 +171,7 @@ describe('recipe-editor', () => {
       const sourceInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Source"]');
       expect(sourceInput?.value).toBe(mockRecipe.sourceUrl);
 
-      const tagsInput = el.renderRoot.querySelector<TagsInput>('tags-input[label="Tags"]');
+      const tagsInput = el.renderRoot.querySelector<TagsInput>('tags-input');
       expect(tagsInput).not.toBeNull();
       expect(tagsInput?.value).toEqual(mockRecipe.tags);
     });
@@ -204,7 +204,7 @@ describe('recipe-editor', () => {
     it('populates tag suggestions from user settings', async () => {
       const { el } = await createRecipeEditor();
 
-      const tagsInput = el.renderRoot.querySelector<TagsInput>('tags-input[label="Tags"]');
+      const tagsInput = el.renderRoot.querySelector<TagsInput>('tags-input');
       expect(tagsInput?.suggestions).toEqual(['breakfast', 'quick']);
     });
 
@@ -213,7 +213,7 @@ describe('recipe-editor', () => {
 
       const { el } = await createRecipeEditor();
 
-      const tagsInput = el.renderRoot.querySelector<TagsInput>('tags-input[label="Tags"]');
+      const tagsInput = el.renderRoot.querySelector<TagsInput>('tags-input');
       expect(tagsInput?.suggestions).toEqual([]);
     });
   });
@@ -283,7 +283,7 @@ describe('recipe-editor', () => {
       expect(el.recipe.nutritionInfo).toBe('450 kcal');
 
       // Tags valueChanged
-      const tagsInput = el.renderRoot.querySelector('tags-input[label="Tags"]');
+      const tagsInput = el.renderRoot.querySelector('tags-input');
       tagsInput?.dispatchEvent(new CustomEvent('valueChanged', { detail: ['breakfast', 'waffle'] }));
       await el.updateComplete;
       expect(el.recipe.tags).toEqual(['breakfast', 'waffle']);
