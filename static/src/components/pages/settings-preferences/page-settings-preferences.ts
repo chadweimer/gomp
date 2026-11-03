@@ -3,7 +3,7 @@ import { customElement, state, query } from 'lit/decorators.js';
 import { UserSettings } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showLoading, showToast } from '../../../helpers/modals';
-import { ComponentWithActivatedCallback, isNull, isNullOrEmpty, trap } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, isNullOrEmpty, trap } from '../../../helpers/utils';
 import '../../tags-input/tags-input';
 import '../../app-icon/app-icon';
 import './page-settings-preferences.css';
@@ -93,7 +93,7 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
   }
 
   private async saveUserSettings() {
-    if (isNull(this.settings)) {
+    if (this.settings == null) {
       console.error('Cannot save settings: settings are null.');
       return;
     }

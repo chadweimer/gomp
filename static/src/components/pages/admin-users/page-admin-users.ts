@@ -3,7 +3,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { AccessLevel, User } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showAlert, showModal, showToast } from '../../../helpers/modals';
-import { ComponentWithActivatedCallback, enumKeyFromValue, isNull } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, enumKeyFromValue } from '../../../helpers/utils';
 import '../../page-navigator/page-navigator';
 import '../../user-editor/user-editor';
 import '../../app-icon/app-icon';
@@ -118,7 +118,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
 
   private async saveExistingUser(user: User) {
     try {
-      if (isNull(user.id)) {
+      if (user.id == null) {
         throw new Error('Cannot save user: user ID is null.');
       }
 
@@ -138,7 +138,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
 
   private async deleteUser(user: User) {
     try {
-      if (isNull(user.id)) {
+      if (user.id == null) {
         throw new Error('Cannot delete user: user ID is null.');
       }
 
@@ -160,7 +160,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
       presentingElement: this,
       component: 'user-editor',
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNewUser(data.user, data.password);
       await this.loadUsers();
     }
@@ -174,7 +174,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
         user: user
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveExistingUser({
         ...user,
         ...data.user

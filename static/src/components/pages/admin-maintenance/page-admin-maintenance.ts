@@ -3,7 +3,7 @@ import { customElement, state } from 'lit/decorators.js';
 import { Backup } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
-import { ComponentWithActivatedCallback, isNull, scaleValue } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, scaleValue } from '../../../helpers/utils';
 import '../../file-upload-browser/file-upload-browser';
 import '../../app-icon/app-icon';
 import './page-admin-maintenance.css';
@@ -251,7 +251,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
         accept: 'application/zip,application/x-zip,application/x-zip-compressed,.zip',
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.uploadBackup(data.file);
       await this.loadBackups();
     }

@@ -5,7 +5,7 @@ import { consume } from '@lit/context';
 import { SortDir, Tag, TagSortBy } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { DEFAULT_RESULTS_PER_PAGE_OPTIONS, ResultsPerPage } from '../../../helpers/modals';
-import { ComponentWithActivatedCallback, createSwipeGesture, isNull } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, createSwipeGesture } from '../../../helpers/utils';
 import { getDefaultSearchFilter, SwipeDirection } from '../../../models';
 import { searchContext, SearchContextValue } from '../../../context';
 import '../../page-navigator/page-navigator';
@@ -142,7 +142,7 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
         }
       });
 
-      if (error != null || isNull(data)) {
+      if (error != null || data == null) {
         throw new Error('Failed to load tags.', { cause: error });
       }
 

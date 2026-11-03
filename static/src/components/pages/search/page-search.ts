@@ -11,7 +11,6 @@ import {
   createSwipeGesture,
   enumKeyFromValue,
   insertSpacesBetweenWords,
-  isNull,
   isNullOrEmpty,
   isAuthorized,
   getRecipeThumbnailUrl,
@@ -70,7 +69,7 @@ export class PageSearch extends LitElement {
   }
 
   updated() {
-    if (!isNull(this.searchCtx?.scrollPosition) && typeof this.content?.scrollToPoint === 'function') {
+    if (this.searchCtx?.scrollPosition != null && typeof this.content?.scrollToPoint === 'function') {
       this.content.scrollToPoint(0, this.searchCtx.scrollPosition).catch(console.error);
     }
   }
@@ -322,9 +321,9 @@ export class PageSearch extends LitElement {
         throw new Error('Failed to create new recipe', { cause: error });
       }
 
-      if (!isNull(file)) {
+      if (file != null) {
         await showLoading(async () => {
-          if (isNull(newRecipe.id)) {
+          if (newRecipe.id == null) {
             throw new Error('Failed to upload image: recipe ID is null.');
           }
 
@@ -364,7 +363,7 @@ export class PageSearch extends LitElement {
       presentingElement: this,
       component: 'recipe-editor',
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNewRecipe(data.recipe, data.file);
     }
   }

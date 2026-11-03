@@ -3,7 +3,7 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { RecipeCompact, RecipeState } from '../../helpers/schema.gen';
-import { getRecipeThumbnailUrl, isNull, isNullOrEmpty } from '../../helpers/utils';
+import { getRecipeThumbnailUrl, isNullOrEmpty } from '../../helpers/utils';
 import { globalStyles } from '../../global/shared-styles';
 
 import '../five-star-rating/five-star-rating';
@@ -138,7 +138,7 @@ export class RecipeCard extends LitElement {
     const hiddenTags = tags.slice(count);
 
     return html`
-      <ion-card class="card" href=${ifDefined(isNull(this.recipe?.id) ? undefined : `/recipes/${this.recipe?.id}`)}>
+      <ion-card class="card" href=${ifDefined(this.recipe?.id == null ? undefined : `/recipes/${this.recipe?.id}`)}>
         <div class="image-container">
           <img
             loading="lazy"

@@ -7,7 +7,7 @@ import { ContextRoot, provide } from '@lit/context';
 import { api } from '../../helpers/api';
 import { showModal } from '../../helpers/modals';
 import { AccessLevel, AppConfiguration, AppInfo, RecipeCompact, SearchFilter, User } from '../../helpers/schema.gen';
-import { isAuthorized, isNull, isNullOrEmpty, redirect, sendActivatedCallback } from '../../helpers/utils';
+import { isAuthorized, isNullOrEmpty, redirect, sendActivatedCallback } from '../../helpers/utils';
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../../models';
 import { StorageController } from '../../helpers/storage-controller';
 import {
@@ -319,7 +319,7 @@ export class AppRoot extends LitElement {
                         <app-icon name=${link.icon}></app-icon>
                       </ion-text>
                       <ion-label color=${isParentOfActive ? 'secondary' : nothing}>${link.title}</ion-label>
-                      ${!isNull(link.detail) ? html`<ion-label slot="end">${link.detail()}</ion-label>` : nothing}
+                      ${link.detail != null ? html`<ion-label slot="end">${link.detail()}</ion-label>` : nothing}
                     </ion-item>
                   `;
         })}
@@ -454,11 +454,11 @@ export class AppRoot extends LitElement {
 
       document.title = this.appConfigData.title;
       const appName = document.querySelector('meta[name="application-name"]');
-      if (!isNull(appName)) {
+      if (appName != null) {
         appName.setAttribute('content', document.title);
       }
       const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-      if (!isNull(appTitle)) {
+      if (appTitle != null) {
         appTitle.setAttribute('content', document.title);
       }
     } catch (ex) {
@@ -542,7 +542,7 @@ export class AppRoot extends LitElement {
   }
 
   isLoggedIn() {
-    return !isNull(this.userStorage.get());
+    return this.userStorage.get() != null;
   }
 
   private requireLogin() {
@@ -589,7 +589,7 @@ export class AppRoot extends LitElement {
 
     // Set the page title based on the active page
     const link = this.appLinks.get(route);
-    if (!isNull(link)) {
+    if (link != null) {
       if (!isNullOrEmpty(link.parentUrl)) {
         const parentLink = this.appLinks.get(link.parentUrl);
         this.pageTitle = parentLink?.title ?? '';
@@ -605,7 +605,7 @@ export class AppRoot extends LitElement {
 
     if (this.isLoggedIn()) {
       // Make sure there are search results on initial load
-      if (isNull(this.searchResults)) {
+      if (this.searchResults == null) {
         await this.executeSearch().catch(console.error);
       }
     }
@@ -678,7 +678,7 @@ export class AppRoot extends LitElement {
         searchFilter: this.searchFilterStorage.get()
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       this.searchFilterStorage.set(data.searchFilter);
       await redirect('/recipes');
     }

@@ -1,5 +1,4 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
-import { isNull } from './utils';
 
 export interface StorageControllerOptions<T> {
   syncCrossTabs?: boolean;
@@ -72,7 +71,7 @@ export class StorageController<T> implements ReactiveController {
   }
 
   private parse(raw: string | null): T | null {
-    if (isNull(raw)) {
+    if (raw == null) {
       return null;
     }
     try {
@@ -88,7 +87,7 @@ export class StorageController<T> implements ReactiveController {
     if (typeof window === 'undefined' || this.storage == null) {
       return;
     }
-    if (isNull(val) || val === undefined) {
+    if (val == null) {
       this.storage?.removeItem(this.key);
     } else {
       this.storage?.setItem(this.key, JSON.stringify(val));

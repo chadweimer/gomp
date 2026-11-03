@@ -12,7 +12,7 @@ import {
 } from '../../helpers/schema.gen';
 import { api } from '../../helpers/api';
 import { configureModalCanDismiss, configureModalSelectsWorkaround, getContainingModal } from '../../helpers/modals';
-import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords, isNull } from '../../helpers/utils';
+import { fromYesNoAny, toYesNoAny, insertSpacesBetweenWords } from '../../helpers/utils';
 import { getDefaultSearchFilter } from '../../models';
 import { globalStyles } from '../../global/shared-styles';
 import { InputCustomEvent, SelectCustomEvent } from '@ionic/core';
@@ -116,7 +116,7 @@ export class SearchFilterEditor extends LitElement {
                     <ion-button
                       slot="end"
                       fill="clear"
-                      ?disabled=${isNull(this.selectedFilterId)}
+                      ?disabled=${this.selectedFilterId == null}
                       @click=${() => this.onLoadSearchClicked()}
                     >
                       <app-icon slot="start" name="open_in_new" size="small"></app-icon>
@@ -275,7 +275,7 @@ export class SearchFilterEditor extends LitElement {
   }
 
   private async onLoadSearchClicked() {
-    if (isNull(this.selectedFilterId)) {
+    if (this.selectedFilterId == null) {
       return;
     }
 

@@ -4,7 +4,7 @@ import { consume } from '@lit/context';
 import { SavedSearchFilter, SavedSearchFilterCompact, SearchFilter } from '../../../helpers/schema.gen';
 import { api } from '../../../helpers/api';
 import { showAlert, showModal, showToast } from '../../../helpers/modals';
-import { ComponentWithActivatedCallback, isNull, redirect } from '../../../helpers/utils';
+import { ComponentWithActivatedCallback, redirect } from '../../../helpers/utils';
 import { searchContext, SearchContextValue } from '../../../context';
 import '../../page-navigator/page-navigator';
 import '../../search-filter-editor/search-filter-editor';
@@ -127,7 +127,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
 
   private async saveExistingSearchFilter(searchFilter: SavedSearchFilter) {
     try {
-      if (isNull(searchFilter.id)) {
+      if (searchFilter.id == null) {
         throw new Error('Cannot save search filter: filter ID is null.');
       }
       const { error } = await api.client.PUT('/users/current/filters/{filterId}', {
@@ -145,7 +145,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
   }
 
   private async deleteSearchFilter(id: number | null | undefined) {
-    if (isNull(id)) {
+    if (id == null) {
       return;
     }
 
@@ -172,7 +172,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         showName: true,
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNewSearchFilter({
         ...data.searchFilter,
         name: data.name
@@ -182,7 +182,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
   }
 
   private async onEditFilterClicked(id: number | null | undefined) {
-    if (isNull(id)) {
+    if (id == null) {
       return;
     }
 
@@ -204,7 +204,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         showName: true,
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveExistingSearchFilter({
         ...searchFilter,
         ...data.searchFilter,
@@ -231,7 +231,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
   }
 
   private async onLoadSearchClicked(id: number | null | undefined) {
-    if (isNull(id)) {
+    if (id == null) {
       return;
     }
 

@@ -7,16 +7,12 @@ export interface ComponentWithActivatedCallback {
   activatedCallback?: () => Promise<void>;
 }
 
-export function isNull<T>(val: T | null | undefined): val is null | undefined {
-  return val == null;
-}
-
 export function isNullOrEmpty(val: string | null | undefined): val is '' | null | undefined {
-  return isNull(val) || val === '';
+  return val == null || val === '';
 }
 
 export function formatDate(date: string | Date | null | undefined) {
-  if (isNull(date)) {
+  if (date == null) {
     return '';
   }
 
@@ -37,7 +33,7 @@ export function formatDate(date: string | Date | null | undefined) {
 }
 
 export function isAuthorized(user: User | null | undefined, accessLevel: AccessLevel) {
-  if (isNull(user)) {
+  if (user == null) {
     return false;
   }
 
@@ -59,7 +55,7 @@ export async function redirect(route: string) {
 }
 
 export function insertSpacesBetweenWords(val: string | null | undefined) {
-  if (isNull(val)) {
+  if (val == null) {
     return '';
   }
 
@@ -67,7 +63,7 @@ export function insertSpacesBetweenWords(val: string | null | undefined) {
 }
 
 export function enumKeyFromValue(keys: Record<string, string>, val: string | null | undefined) {
-  if (isNull(val)) {
+  if (val == null) {
     return '';
   }
 
@@ -146,13 +142,13 @@ function getSwipe(e: GestureDetail): SwipeDirection | undefined {
 
 async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   const routeId = await router.getRouteId();
-  if (isNull(routeId)) {
+  if (routeId == null) {
     return undefined;
   }
 
   if ('getTab' in router) {
     const tab = await router.getTab(routeId.id);
-    if (!isNull(tab?.component)) {
+    if (tab?.component != null) {
       if (tab.component instanceof HTMLElement) {
         return tab.component;
       } else if (typeof tab.component === 'string') {
@@ -172,7 +168,7 @@ async function getActiveComponent(router: HTMLIonRouterOutletElement | HTMLIonTa
 export async function sendActivatedCallback(router: HTMLIonRouterOutletElement | HTMLIonTabsElement) {
   // Let the current page know it's being deactivated
   const el = await getActiveComponent(router) as ComponentWithActivatedCallback | null | undefined;
-  if (!isNull(el)) {
+  if (el != null) {
     await el.activatedCallback?.();
   }
 }
@@ -182,7 +178,7 @@ export function preProcessMultilineText(text: string | null | undefined) {
   // Before the introduction of the WYSIWYG edtior,
   // all text was rendered as the original text with whitespace preserved.
 
-  if (isNull(text)) {
+  if (text == null) {
     return '';
   }
 
@@ -345,7 +341,7 @@ export function scaleValue(value: number | null | undefined, divider: number, de
 }
 
 export function getRecipeImageUrl(recipeId: number | null | undefined, imageName: string | null | undefined) {
-  if (isNull(recipeId) || isNull(imageName)) {
+  if (recipeId == null || imageName == null) {
     return '';
   }
 
@@ -354,7 +350,7 @@ export function getRecipeImageUrl(recipeId: number | null | undefined, imageName
 }
 
 export function getRecipeThumbnailUrl(recipeId: number | null | undefined, imageName: string | null | undefined) {
-  if (isNull(recipeId) || isNull(imageName)) {
+  if (recipeId == null || imageName == null) {
     return '';
   }
 

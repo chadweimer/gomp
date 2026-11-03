@@ -10,7 +10,6 @@ import {
   getRecipeImageUrl,
   getRecipeThumbnailUrl,
   isAuthorized,
-  isNull,
   redirect,
 } from '../../../helpers/utils';
 import { getDefaultSearchFilter } from '../../../models';
@@ -375,7 +374,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async deleteLink(link: RecipeCompact) {
     try {
-      if (isNull(link.id)) {
+      if (link.id == null) {
         throw new Error('Cannot delete link: linked recipe ID is null.');
       }
 
@@ -394,7 +393,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async saveNote(note: Note) {
     try {
-      if (isNull(note.id)) {
+      if (note.id == null) {
         const { error } = await api.client.POST('/recipes/{recipeId}/notes', {
           params: { path: { recipeId: this.recipeId } },
           body: note,
@@ -421,7 +420,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
   private async deleteNote(note: Note) {
     try {
-      if (isNull(note.id)) {
+      if (note.id == null) {
         throw new Error('Cannot delete note: note ID is null.');
       }
 
@@ -520,7 +519,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         recipeImages: this.images,
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveRecipe({
         ...this.recipe,
         ...data.recipe
@@ -578,7 +577,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         parentRecipeId: this.recipeId,
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.addLink(data.recipeId);
       await this.loadLinks();
     }
@@ -604,7 +603,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       presentingElement: this,
       component: 'note-editor',
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNote(data.note);
       await this.loadNotes();
     }
@@ -616,7 +615,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
       component: 'note-editor',
       componentProps: { note },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.saveNote({
         ...note,
         ...data.note
@@ -650,7 +649,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         accept: 'image/*',
       },
     });
-    if (!isNull(data)) {
+    if (data != null) {
       await this.uploadImage(data.file);
       await this.loadRecipe();
       await this.loadImages();
