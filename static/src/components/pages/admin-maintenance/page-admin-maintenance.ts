@@ -96,7 +96,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     try {
       const { data: backups, error } = await api.client.GET('/backups');
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load backups.', { cause: error });
       }
 
@@ -118,7 +118,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
             }
           });
 
-          if (error) {
+          if (error != null) {
             throw new Error('Failed to create backup.', { cause: error });
           }
         },
@@ -154,7 +154,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
             params: { path: { name: backup.fileName } }
           });
 
-          if (error) {
+          if (error != null) {
             throw new Error('Failed to delete backup.', { cause: error });
           }
         },
@@ -190,7 +190,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
             params: { path: { name: backupFileName } }
           });
 
-          if (error) {
+          if (error != null) {
             throw new Error('Failed to restore from backup.', { cause: error });
           }
         },
@@ -229,7 +229,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
             }
           });
 
-          if (error) {
+          if (error != null) {
             throw new Error('Failed to upload backup.', { cause: error });
           }
         },

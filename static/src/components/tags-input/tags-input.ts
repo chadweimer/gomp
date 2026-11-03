@@ -94,7 +94,7 @@ export class TagsInput extends LitElement {
 
   private handleKeyDown(e: KeyboardEvent) {
     const target = e.target as HTMLElement | null;
-    if (!target) return;
+    if (target == null) return;
 
     const tagName = target.tagName.toLowerCase();
     if (tagName !== 'input' && tagName !== 'ion-input') {

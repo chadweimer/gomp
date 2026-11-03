@@ -145,7 +145,7 @@ export class RecipeLinkEditor extends LitElement {
       native?.setCustomValidity('');
     }
 
-    if (this.form && !this.form.reportValidity()) {
+    if (this.form != null && !this.form.reportValidity()) {
       return;
     }
 

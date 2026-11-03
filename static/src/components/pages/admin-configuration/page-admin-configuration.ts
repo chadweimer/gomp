@@ -73,7 +73,7 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
     try {
       const { data: config, error } = await api.client.GET('/app/configuration');
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load configuration.', { cause: error });
       }
 
@@ -84,7 +84,7 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
   }
 
   private async onSaveConfigurationClicked() {
-    if (this.form && !this.form.reportValidity()) {
+    if (this.form != null && !this.form.reportValidity()) {
       return;
     }
 
@@ -93,7 +93,7 @@ export class PageAdminConfiguration extends LitElement implements ComponentWithA
         body: this.appConfig
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save configuration.', { cause: error });
       }
 

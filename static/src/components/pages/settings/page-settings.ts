@@ -23,7 +23,7 @@ export class PageSettings extends LitElement {
     super.connectedCallback();
     this.gesture = createSwipeGesture(this, swipe => {
       const tabs = this.tabs;
-      if (!tabs) return;
+      if (tabs == null) return;
 
       tabs.getSelected()
         .then(async selectedTab => {
@@ -88,7 +88,7 @@ export class PageSettings extends LitElement {
 
   private async onTabsDidChange() {
     const tabs = this.tabs;
-    if (tabs) {
+    if (tabs != null) {
       await sendActivatedCallback(tabs);
     }
   }

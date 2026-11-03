@@ -43,7 +43,7 @@ export class UserEditor extends LitElement {
       }
 
       // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-      if (this.usernameInput) {
+      if (this.usernameInput != null) {
         this.user = {
           ...this.user,
           username: this.usernameInput.value as string
@@ -142,7 +142,7 @@ export class UserEditor extends LitElement {
       const native = await this.repeatPasswordInput?.getInputElement();
       native?.setCustomValidity(this.password === this.repeatPassword ? '' : 'Passwords must match');
 
-      if (this.form && !this.form.reportValidity()) {
+      if (this.form != null && !this.form.reportValidity()) {
         return;
       }
 

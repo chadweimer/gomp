@@ -112,7 +112,7 @@ describe('page-home', () => {
   function defaultFetchResponse(req: Request, customSettings: UserSettings | null = mockUserSettings) {
     const url = req.url;
     if (url.match(/\/users\/current\/settings$/) && req.method === 'GET') {
-      if (customSettings === null) {
+      if (customSettings == null) {
         return Promise.resolve({ status: 404, body: '' });
       }
       return Promise.resolve(JSON.stringify(customSettings));

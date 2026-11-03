@@ -212,7 +212,7 @@ export class RecipeViewer extends LitElement {
   }
 
   private getSourceLink(source: string | null | undefined) {
-    if (source?.startsWith('http')) {
+    if (source?.startsWith('http') === true) {
       return html`<a href=${source} target="_blank" rel="noopener noreferrer">${source}</a>`;
     }
     return source;

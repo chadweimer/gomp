@@ -125,11 +125,11 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
           params: { path: { filterId: savedFilter.id } }
         });
 
-        if (error) {
+        if (error != null) {
           throw new Error('Failed to load saved search filter.', { cause: error });
         }
 
-        if (!savedSearchFilter) {
+        if (savedSearchFilter == null) {
           return null;
         }
 
@@ -141,7 +141,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
           results: filterRecipes ?? []
         };
       }));
-      searches.push(...results.filter(r => r !== null));
+      searches.push(...results.filter(r => r != null));
 
       this.searches = searches;
     } catch (ex) {
@@ -170,7 +170,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
         body: recipe
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to create new recipe.', { cause: error });
       }
 
@@ -189,7 +189,7 @@ export class PageHome extends LitElement implements ComponentWithActivatedCallba
               }
             });
 
-            if (imgError) {
+            if (imgError != null) {
               throw new Error('Failed to create new recipe.', { cause: imgError });
             }
           },

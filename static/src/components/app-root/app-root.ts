@@ -439,12 +439,12 @@ export class AppRoot extends LitElement {
   async loadAppConfiguration() {
     try {
       const { data: info, error: infoError } = await api.client.GET('/app/info');
-      if (infoError) {
+      if (infoError != null) {
         throw new Error('Failed to load app info', { cause: infoError });
       }
 
       const { data: config, error: configError } = await api.client.GET('/app/configuration');
-      if (configError) {
+      if (configError != null) {
         throw new Error('Failed to load app configuration', { cause: configError });
       }
 
@@ -531,7 +531,7 @@ export class AppRoot extends LitElement {
 
     try {
       const { error } = await api.client.DELETE('/auth');
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to logout.', { cause: error });
       }
     } catch (ex) {
@@ -583,7 +583,7 @@ export class AppRoot extends LitElement {
     let route = e.detail.to;
     const idRouteMatcher = /^(?<base>\/[\w-]+)\/\d+\/?$/;
     const match = idRouteMatcher.exec(e.detail.to);
-    if (match) {
+    if (match != null) {
       route = match.groups?.base ?? route;
     }
 
@@ -611,7 +611,7 @@ export class AppRoot extends LitElement {
     }
 
     // Let the new page know it's been activated
-    if (this.routerOutlet) {
+    if (this.routerOutlet != null) {
       await sendActivatedCallback(this.routerOutlet);
     }
 

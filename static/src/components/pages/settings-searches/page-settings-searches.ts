@@ -92,7 +92,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         params: { query: { page: this.page, count: this.resultsPerPage } }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load search filters.', { cause: error });
       }
 
@@ -116,7 +116,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         body: searchFilter
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to create search filter.', { cause: error });
       }
     } catch (ex) {
@@ -135,7 +135,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         body: searchFilter
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save search filter.', { cause: error });
       }
     } catch (ex) {
@@ -154,7 +154,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         params: { path: { filterId: id } }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete search filter.', { cause: error });
       }
     } catch (ex) {
@@ -190,7 +190,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
       params: { path: { filterId: id } }
     });
 
-    if (error || !searchFilter) {
+    if (error != null || searchFilter == null) {
       return;
     }
 
@@ -240,7 +240,7 @@ export class PageSettingsSearches extends LitElement implements ComponentWithAct
         params: { path: { filterId: id } }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load search filter.', { cause: error });
       }
 

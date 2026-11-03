@@ -13,23 +13,23 @@ export class StorageController<T> implements ReactiveController {
   constructor(
     private readonly host: ReactiveControllerHost,
     private readonly key: string,
-    private readonly storage: Storage,
-    defaultValue: T,
+    private readonly storage?: Storage,
+    defaultValue?: T,
     private readonly options?: StorageControllerOptions<T>
   ) {
-    this.defaultValue = defaultValue;
+    this.defaultValue = defaultValue as T;
     this.host.addController(this);
-    this.value = this.read() ?? defaultValue;
+    this.value = this.read() ?? (defaultValue as T);
   }
 
   hostConnected() {
-    if (this.options?.syncCrossTabs && typeof window !== 'undefined') {
+    if (this.options?.syncCrossTabs === true && typeof window !== 'undefined') {
       window.addEventListener('storage', this.handleStorageEvent);
     }
   }
 
   hostDisconnected() {
-    if (this.options?.syncCrossTabs && typeof window !== 'undefined') {
+    if (this.options?.syncCrossTabs === true && typeof window !== 'undefined') {
       window.removeEventListener('storage', this.handleStorageEvent);
     }
   }
@@ -52,7 +52,7 @@ export class StorageController<T> implements ReactiveController {
     this.set(this.defaultValue);
   }
 
-  private handleStorageEvent = (event: StorageEvent) => {
+  private readonly handleStorageEvent = (event: StorageEvent) => {
     if (event.storageArea === this.storage && event.key === this.key) {
       const parsed = this.parse(event.newValue) ?? this.defaultValue;
       if (!Object.is(this.value, parsed)) {
@@ -64,7 +64,7 @@ export class StorageController<T> implements ReactiveController {
   };
 
   private read(): T | null {
-    if (typeof window === 'undefined' || !this.storage) {
+    if (typeof window === 'undefined' || this.storage == null) {
       return null;
     }
     const raw = this.storage.getItem(this.key);
@@ -78,20 +78,20 @@ export class StorageController<T> implements ReactiveController {
     try {
       return JSON.parse(raw) as T;
     } catch (e) {
-      this.storage.removeItem(this.key);
+      this.storage?.removeItem(this.key);
       console.warn(`Failed to parse stored value for ${this.key}: ${raw}`, e);
       return null;
     }
   }
 
   private write(val: T) {
-    if (typeof window === 'undefined' || !this.storage) {
+    if (typeof window === 'undefined' || this.storage == null) {
       return;
     }
     if (isNull(val) || val === undefined) {
-      this.storage.removeItem(this.key);
+      this.storage?.removeItem(this.key);
     } else {
-      this.storage.setItem(this.key, JSON.stringify(val));
+      this.storage?.setItem(this.key, JSON.stringify(val));
     }
   }
 }

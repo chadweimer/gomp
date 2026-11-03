@@ -142,7 +142,7 @@ export class PageTags extends LitElement implements ComponentWithActivatedCallba
         }
       });
 
-      if (error || isNull(data)) {
+      if (error != null || isNull(data)) {
         throw new Error('Failed to load tags.', { cause: error });
       }
 

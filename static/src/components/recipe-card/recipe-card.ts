@@ -109,7 +109,7 @@ export class RecipeCard extends LitElement {
   private readonly tagWidths: Map<string, number> = new Map();
 
   firstUpdated() {
-    if (typeof ResizeObserver !== 'undefined' && this.tagsContainer) {
+    if (typeof ResizeObserver !== 'undefined' && this.tagsContainer != null) {
       this.resizeObserver = new ResizeObserver(() => {
         this.calculateVisibleTags();
       });
@@ -197,7 +197,7 @@ export class RecipeCard extends LitElement {
   }
 
   private getBadgeWidth(hiddenCount: number): number {
-    if (!this.probeBadgeElement) return DEFAULT_BADGE_WIDTH;
+    if (this.probeBadgeElement == null) return DEFAULT_BADGE_WIDTH;
     this.probeBadgeElement.textContent = `+${hiddenCount}`;
     const width = this.probeBadgeElement.getBoundingClientRect().width;
     return width > 0 ? width : DEFAULT_BADGE_WIDTH;
@@ -218,7 +218,7 @@ export class RecipeCard extends LitElement {
     badges?.forEach((el) => {
       const tag = el.dataset.tag;
       const width = el.getBoundingClientRect().width;
-      if (tag && width > 0) {
+      if (tag != null && tag !== '' && width > 0) {
         this.tagWidths.set(tag, width);
       }
     });

@@ -87,7 +87,7 @@ export class PageLogin extends LitElement {
         body: { username, password, rememberMe: this.rememberMe }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to login.', { cause: error });
       }
 
@@ -101,7 +101,7 @@ export class PageLogin extends LitElement {
       }
 
       // Clear the username so it's not left around when the next login is needed
-      if (this.usernameInput) {
+      if (this.usernameInput != null) {
         this.usernameInput.value = '';
       }
 
@@ -111,7 +111,7 @@ export class PageLogin extends LitElement {
       console.error(ex);
     } finally {
       // Clear password no matter what, success or failure
-      if (this.passwordInput) {
+      if (this.passwordInput != null) {
         this.passwordInput.value = '';
       }
     }

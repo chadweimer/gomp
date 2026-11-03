@@ -209,7 +209,7 @@ export class RecipeEditor extends LitElement {
   }
 
   private async onSaveClicked() {
-    if (this.form && !this.form.reportValidity()) {
+    if (this.form != null && !this.form.reportValidity()) {
       return;
     }
 

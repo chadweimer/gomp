@@ -103,7 +103,7 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
         body: this.settings
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save preferences.', { cause: error });
       }
     } catch (ex) {
@@ -113,7 +113,7 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
   }
 
   private async onSaveSettingsClicked() {
-    if (this.form && !this.form.reportValidity()) {
+    if (this.form != null && !this.form.reportValidity()) {
       return;
     }
 
@@ -129,7 +129,7 @@ export class PageSettingsPreferences extends LitElement implements ComponentWith
               }
             });
 
-            if (error) {
+            if (error != null) {
               throw new Error('Failed to upload image.', { cause: error });
             }
 

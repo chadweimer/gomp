@@ -60,10 +60,10 @@ export class SearchFilterEditor extends LitElement {
       }
 
       // A blur event is not always guaranteed (e.g., if the user clicked the browser back button)
-      if (this.nameInput) {
+      if (this.nameInput != null) {
         this.name = this.nameInput.value as string;
       }
-      if (this.queryInput) {
+      if (this.queryInput != null) {
         this.searchFilter = {
           ...this.searchFilter,
           query: this.queryInput.value as string,
@@ -256,7 +256,7 @@ export class SearchFilterEditor extends LitElement {
   }
 
   private async onSaveClicked() {
-    if (this.form && !this.form.reportValidity()) {
+    if (this.form != null && !this.form.reportValidity()) {
       return;
     }
 
@@ -284,11 +284,11 @@ export class SearchFilterEditor extends LitElement {
         params: { path: { filterId: this.selectedFilterId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load search filter.', { cause: error });
       }
 
-      if (filter) {
+      if (filter != null) {
         this.searchFilter = filter;
         this.selectedFilterId = null;
       }

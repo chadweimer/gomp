@@ -83,7 +83,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
         params: { query: { page: this.page, count: this.resultsPerPage } }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load users.', { cause: error });
       }
 
@@ -107,7 +107,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
         body: { ...user, password }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to create new user.', { cause: error });
       }
     } catch (ex) {
@@ -127,7 +127,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
         body: user
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save user.', { cause: error });
       }
     } catch (ex) {
@@ -146,7 +146,7 @@ export class PageAdminUsers extends LitElement implements ComponentWithActivated
         params: { path: { userId: user.id } }
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete user.', { cause: error });
       }
     } catch (ex) {

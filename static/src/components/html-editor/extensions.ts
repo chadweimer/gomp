@@ -9,17 +9,17 @@ export const GompImage = Image.extend({
         parseHTML: element => element.dataset.image,
         renderHTML: (attributes: Record<string, string | null>) => {
           const dataImage = attributes['data-image'];
-          return dataImage ? { 'data-image': dataImage } : {};
+          return dataImage != null && dataImage !== '' ? { 'data-image': dataImage } : {};
         },
       },
       height: {
         default: null,
         parseHTML: element => {
-          return element.dataset.height || element.style.height;
+          return element.dataset.height != null && element.dataset.height !== '' ? element.dataset.height : element.style.height;
         },
         renderHTML: (attributes: Record<string, string | null>) => {
-          let heightStr = attributes.height || attributes['data-height'];
-          if (!heightStr) {
+          let heightStr = attributes.height != null && attributes.height !== '' ? attributes.height : attributes['data-height'];
+          if (heightStr == null || heightStr === '') {
             return {};
           }
           heightStr = String(heightStr);

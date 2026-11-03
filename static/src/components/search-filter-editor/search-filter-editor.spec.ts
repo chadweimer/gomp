@@ -94,19 +94,19 @@ describe('search-filter-editor', () => {
 
     fetchMocker.mockResponse((req: Request) => {
       if (req.url.match(/\/users\/current\/settings$/) && req.method === 'GET') {
-        if (currentSettings === null) {
+        if (currentSettings == null) {
           return { status: 500, body: JSON.stringify({ message: 'Error' }) };
         }
         return { status: 200, body: JSON.stringify(currentSettings) };
       }
       if (req.url.match(/\/users\/current\/filters\/\d+$/) && req.method === 'GET') {
-        if (currentFilterDetail === null) {
+        if (currentFilterDetail == null) {
           return { status: 500, body: JSON.stringify({ message: 'Error' }) };
         }
         return { status: 200, body: JSON.stringify(currentFilterDetail) };
       }
       if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-        if (currentFilters === null) {
+        if (currentFilters == null) {
           return { status: 500, body: JSON.stringify({ message: 'Error' }) };
         }
         return { status: 200, body: JSON.stringify({ total: currentFilters.length, filters: currentFilters }) };

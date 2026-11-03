@@ -318,7 +318,7 @@ export class PageSearch extends LitElement {
         body: recipe,
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to create new recipe', { cause: error });
       }
 
@@ -336,7 +336,7 @@ export class PageSearch extends LitElement {
             },
           });
 
-          if (uploadError) {
+          if (uploadError != null) {
             throw new Error('Failed to create new recipe.', { cause: uploadError });
           }
         }, 'Uploading picture...');

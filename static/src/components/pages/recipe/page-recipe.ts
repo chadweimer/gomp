@@ -251,7 +251,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load recipe.', { cause: error });
       }
 
@@ -268,7 +268,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load links.', { cause: error });
       }
       this.links = links ?? [];
@@ -284,7 +284,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load images.', { cause: error });
       }
 
@@ -301,7 +301,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to load notes.', { cause: error });
       }
       this.notes = notes ?? [];
@@ -318,7 +318,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         body: recipe,
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save recipe.', { cause: error });
       }
     } catch (ex) {
@@ -333,7 +333,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete recipe.', { cause: error });
       }
     } catch (ex) {
@@ -349,7 +349,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         body: { state },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save recipe state.', { cause: error });
       }
     } catch (ex) {
@@ -364,7 +364,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId, destRecipeId: recipeId } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to add link to recipe.', { cause: error });
       }
     } catch (ex) {
@@ -383,7 +383,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId, destRecipeId: link.id } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete linked recipe.', { cause: error });
       }
     } catch (ex) {
@@ -400,7 +400,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
           body: note,
         });
 
-        if (error) {
+        if (error != null) {
           throw new Error('Failed to create new note.', { cause: error });
         }
       } else {
@@ -409,7 +409,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
           body: note,
         });
 
-        if (error) {
+        if (error != null) {
           throw new Error('Failed to save note.', { cause: error });
         }
       }
@@ -429,7 +429,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         params: { path: { recipeId: this.recipeId, noteId: note.id } },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete note.', { cause: error });
       }
     } catch (ex) {
@@ -449,7 +449,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
           },
         });
 
-        if (error) {
+        if (error != null) {
           throw new Error('Failed to upload picture.', { cause: error });
         }
       } catch (ex) {
@@ -470,7 +470,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         return;
       }
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to delete picture.', { cause: error });
       }
     } catch (ex) {
@@ -486,7 +486,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         body: { rating },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save recipe rating.', { cause: error });
       }
     } catch (ex) {
@@ -502,7 +502,7 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
         body: { mainImageName: image },
       });
 
-      if (error) {
+      if (error != null) {
         throw new Error('Failed to save main image for recipe.', { cause: error });
       }
     } catch (ex) {

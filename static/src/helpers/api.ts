@@ -37,7 +37,7 @@ class Api {
   readonly loadUserSettings = async (): Promise<UserSettings | null> => {
     const { data: settings, error } = await this.client.GET('/users/current/settings');
 
-    if (error) {
+    if (error != null) {
       throw new Error('Failed to load user settings.', { cause: error });
     }
 
@@ -49,7 +49,7 @@ class Api {
       params: { query: { page, count } }
     });
 
-    if (error) {
+    if (error != null) {
       throw new Error('Failed to load search filters.', { cause: error });
     }
 
@@ -77,7 +77,7 @@ class Api {
       }
     });
 
-    if (error) {
+    if (error != null) {
       throw new Error('Failed to perform recipe search.', { cause: error });
     }
 
@@ -87,7 +87,7 @@ class Api {
   readonly fetchTotalRecipeCount = async (): Promise<number> => {
     const { data: results, error } = await this.client.GET('/recipes', { params: { query: { count: 0 } } });
 
-    if (error) {
+    if (error != null) {
       throw new Error('Failed to fetch total recipe count.', { cause: error });
     }
 
@@ -97,7 +97,7 @@ class Api {
   readonly fetchTotalTagsCount = async (): Promise<number> => {
     const { data: tagResults, error: tagError } = await this.client.GET('/tags', { params: { query: { count: 0 } } });
 
-    if (tagError) {
+    if (tagError != null) {
       throw new Error('Failed to fetch total tags count.', { cause: tagError });
     }
 
@@ -112,7 +112,7 @@ export function fileContentSerializer(_body: { file_content?: string } | undefin
   // so that we know we're using the right part name in the form data
 
   const fd = new FormData();
-  if (file) {
+  if (file != null) {
     fd.append('file_content', file);
   }
   return fd;

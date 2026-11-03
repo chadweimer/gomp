@@ -8,7 +8,7 @@ export interface ComponentWithActivatedCallback {
 }
 
 export function isNull<T>(val: T | null | undefined): val is null | undefined {
-  return val === undefined || val === null;
+  return val == null;
 }
 
 export function isNullOrEmpty(val: string | null | undefined): val is '' | null | undefined {
@@ -107,7 +107,7 @@ export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirect
     gestureName: 'swipe',
     canStart: detail => {
       // 1. Prevent tab swipe if the touch started on or inside an ion-item-sliding
-      const path = detail.event?.composedPath ? detail.event.composedPath() : [];
+      const path = typeof detail.event?.composedPath === 'function' ? detail.event.composedPath() : [];
       const isInsideSlidingItem = path.some(
         node => node instanceof HTMLElement && node.tagName.toLowerCase() === 'ion-item-sliding'
       );
@@ -115,9 +115,9 @@ export function createSwipeGesture(el: HTMLElement, handler: (swipe: SwipeDirect
         return false;
       }
       // 2. Prevent tab swipe if any ion-item-sliding is currently open (swiped open)
-      const hasOpenSlidingItem = !!document.querySelector(
+      const hasOpenSlidingItem = document.querySelector(
         'ion-item-sliding.item-sliding-active-slide, ion-item-sliding.item-sliding-active-options-end, ion-item-sliding.item-sliding-active-options-start'
-      );
+      ) != null;
       if (hasOpenSlidingItem) {
         return false;
       }
@@ -248,14 +248,14 @@ export function toStorageHtml(host: Element, value: string | null | undefined): 
   const images = template.content.querySelectorAll('img');
   images.forEach(img => {
     const imageName = img.dataset.image;
-    if (imageName) {
+    if (imageName != null && imageName !== '') {
       const parts = [`image:${imageName}`];
-      const width = img.dataset.width || img.style.width;
-      if (width) {
+      const width = img.dataset.width ?? img.style.width;
+      if (width != null && width !== '') {
         parts.push(`width=${width}`);
       }
-      const height = img.dataset.height || img.style.height;
-      if (height) {
+      const height = img.dataset.height ?? img.style.height;
+      if (height != null && height !== '') {
         parts.push(`height=${height}`);
       }
       const token = `{{${parts.join('|')}}}`;
@@ -287,13 +287,13 @@ export function toPresentationHtml(
 
     let width: string | null = null;
     let height: string | null = null;
-    if (attrString) {
+    if (attrString != null && attrString !== '') {
       for (const part of attrString.split('|')) {
         const [k, v] = part.split('=');
-        if (k === 'width' && v) {
+        if (k === 'width' && v != null && v !== '') {
           width = v;
         }
-        if (k === 'height' && v) {
+        if (k === 'height' && v != null && v !== '') {
           height = v;
         }
       }
@@ -329,11 +329,11 @@ export function createImageElement(
   img.src = src;
   img.alt = imageName;
   img.dataset.image = imageName;
-  if (width) {
+  if (width != null && width !== '') {
     img.dataset.width = width;
     img.style.width = width.endsWith('%') || width.endsWith('px') ? width : `${width}px`;
   }
-  if (height) {
+  if (height != null && height !== '') {
     img.dataset.height = height;
     img.style.height = height.endsWith('%') || height.endsWith('px') ? height : `${height}px`;
   }
