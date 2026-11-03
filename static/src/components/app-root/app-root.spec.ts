@@ -324,7 +324,7 @@ describe('app-root', () => {
       await new Promise((r) => setTimeout(r, 50));
 
       // State should be cleared and redirect triggered
-      expect(el.userStorage.get()).toBeUndefined();
+      expect(el.userCtx.user).toBeUndefined();
       expect(routerEl.push).toHaveBeenCalledWith('/login');
     });
   });
@@ -398,11 +398,11 @@ describe('app-root', () => {
         searchbar.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
       }
 
-      expect(el.searchFilterStorage.get()).toEqual(initialFilter);
+      expect(el.searchCtx.filter).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
       searchbar?.dispatchEvent(new CustomEvent('ionClear', { bubbles: true }));
-      expect(el.searchFilterStorage.get()).toEqual(initialFilter);
+      expect(el.searchCtx.filter).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
       const resetItem = Array.from(
@@ -410,7 +410,7 @@ describe('app-root', () => {
       ).find((item) => item.textContent?.includes('Reset Search'));
       expect(resetItem).toBeDefined();
       resetItem?.click();
-      expect(el.searchFilterStorage.get()).toEqual(initialFilter);
+      expect(el.searchCtx.filter).toEqual(initialFilter);
       expect(routerEl.push).not.toHaveBeenCalled();
 
       const settingsItem = Array.from(
@@ -439,7 +439,7 @@ describe('app-root', () => {
         searchbar.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
       }
 
-      expect(el.searchFilterStorage.get().query).toBe('pasta');
+      expect(el.searchCtx.filter.query).toBe('pasta');
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
@@ -455,7 +455,7 @@ describe('app-root', () => {
       expect(searchbar).not.toBeNull();
       searchbar?.dispatchEvent(new CustomEvent('ionClear', { bubbles: true }));
 
-      expect(el.searchFilterStorage.get().query).toBe('');
+      expect(el.searchCtx.filter.query).toBe('');
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
@@ -474,7 +474,7 @@ describe('app-root', () => {
       expect(resetItem).toBeDefined();
       resetItem?.click();
 
-      expect(el.searchFilterStorage.get()).toEqual(getDefaultSearchFilter());
+      expect(el.searchCtx.filter).toEqual(getDefaultSearchFilter());
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
@@ -762,7 +762,7 @@ describe('app-root', () => {
       logoutItem?.click();
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      expect(el.userStorage.get()).toBeUndefined();
+      expect(el.userCtx.user).toBeUndefined();
     });
   });
 

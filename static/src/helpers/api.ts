@@ -6,7 +6,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 
 class Api {
   readonly client: Client<paths, `${string}/${string}`>;
-  readonly responses: Subject<{ request: Request, response: Response }>;
+  readonly responses$: Subject<{ request: Request, response: Response }>;
   readonly loading$: BehaviorSubject<number>;
   private activeRequests = 0;
 
@@ -15,7 +15,7 @@ class Api {
       baseUrl: `${globalThis.location.origin}/api/v1`,
       fetch: this.fetch
     });
-    this.responses = new Subject<{ request: Request, response: Response }>();
+    this.responses$ = new Subject<{ request: Request, response: Response }>();
     this.loading$ = new BehaviorSubject<number>(0);
   }
 
@@ -24,7 +24,7 @@ class Api {
     this.loading$.next(this.activeRequests);
     try {
       const response = await globalThis.fetch(input, init);
-      this.responses.next({ request: input, response });
+      this.responses$.next({ request: input, response });
       return response;
     } finally {
       if (this.activeRequests > 0) {

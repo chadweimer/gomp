@@ -47,7 +47,7 @@ export class AppRoot extends LitElement {
   private readonly subscriptions: Subscription[] = [];
 
   // Storage Controllers for persistence
-  readonly userStorage = new StorageController<User | undefined>(
+  private readonly userStorage = new StorageController<User | undefined>(
     this,
     'currentUser',
     localStorage,
@@ -55,7 +55,7 @@ export class AppRoot extends LitElement {
     { syncCrossTabs: true, onUpdate: () => this.updateUserContext() }
   );
 
-  readonly searchFilterStorage = new StorageController<SearchFilter>(
+  private readonly searchFilterStorage = new StorageController<SearchFilter>(
     this,
     'searchFilter',
     sessionStorage,
@@ -63,7 +63,7 @@ export class AppRoot extends LitElement {
     { onUpdate: () => this.onSearchParamChanged(false) }
   );
 
-  readonly searchSettingsStorage = new StorageController<SearchSettings>(
+  private readonly searchSettingsStorage = new StorageController<SearchSettings>(
     this,
     'searchSettings',
     sessionStorage,
@@ -71,7 +71,7 @@ export class AppRoot extends LitElement {
     { onUpdate: () => this.onSearchParamChanged(false) }
   );
 
-  readonly searchPageStorage = new StorageController<number>(
+  private readonly searchPageStorage = new StorageController<number>(
     this,
     'searchPage',
     sessionStorage,
@@ -79,7 +79,7 @@ export class AppRoot extends LitElement {
     { onUpdate: () => this.onSearchParamChanged(true) }
   );
 
-  readonly searchResultsPerPageStorage = new StorageController<24 | 36 | 60 | 96 | 120>(
+  private readonly searchResultsPerPageStorage = new StorageController<24 | 36 | 60 | 96 | 120>(
     this,
     'searchResultsPerPage',
     sessionStorage,
@@ -165,7 +165,7 @@ export class AppRoot extends LitElement {
         this.updateStatusContext();
       }),
       // Automatically trigger a logout if an API returns a 401
-      api.responses.subscribe(async ({ request, response }) => {
+      api.responses$.subscribe(async ({ request, response }) => {
         if (response.status === 401) {
           // Make sure we don't recursively call ourselves if the logout also triggers a 401
           if (!request.url.endsWith('/auth') || request.method.toLowerCase() !== 'delete') {
@@ -383,9 +383,9 @@ export class AppRoot extends LitElement {
                 .autocorrect=${true}
                 .spellcheck=${true}
                 .disabled=${!this.isLoggedIn()}
-                .value=${this.searchFilterStorage.get()?.query ?? ''}
+                .value=${this.searchCtx.filter?.query ?? ''}
                 @keydown=${(e: KeyboardEvent) => this.onSearchKeyDown(e)}
-                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = this.searchFilterStorage.get()?.query ?? '')}
+                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = this.searchCtx.filter?.query ?? '')}
                 @ionClear=${() => this.onSearchClearClicked()}
               ></ion-searchbar>
               <ion-buttons slot="end" class="ion-display-none ion-display-lg-flex">
@@ -401,9 +401,9 @@ export class AppRoot extends LitElement {
                 .autocorrect=${true}
                 .spellcheck=${true}
                 .disabled=${!this.isLoggedIn()}
-                .value=${this.searchFilterStorage.get()?.query ?? ''}
+                .value=${this.searchCtx.filter?.query ?? ''}
                 @keydown=${(e: KeyboardEvent) => this.onSearchKeyDown(e)}
-                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = this.searchFilterStorage.get()?.query ?? '')}
+                @ionBlur=${(e: Event) => ((e.currentTarget as HTMLIonSearchbarElement).value = this.searchCtx.filter?.query ?? '')}
                 @ionClear=${() => this.onSearchClearClicked()}
               ></ion-searchbar>
               <ion-buttons slot="end">
@@ -468,7 +468,7 @@ export class AppRoot extends LitElement {
 
   private onSearchParamChanged(isPageOnly: boolean) {
     if (!isPageOnly) {
-      this.searchPageStorage.set(1);
+      this.searchCtx.setPage(1);
       this.searchScrollPosition = 0;
     }
     this.updateSearchContext();
@@ -480,9 +480,9 @@ export class AppRoot extends LitElement {
   private async executeSearch() {
     if (!this.isLoggedIn()) return;
 
-    const filter = this.searchFilterStorage.get();
-    const page = this.searchPageStorage.get();
-    const count = this.searchResultsPerPageStorage.get();
+    const filter = this.searchCtx.filter;
+    const page = this.searchCtx.page;
+    const count = this.searchCtx.resultsPerPage;
 
     try {
       const { total, recipes } = await api.performRecipeSearch(filter, page, count);
@@ -496,7 +496,7 @@ export class AppRoot extends LitElement {
       this.searchNumPages = 1;
     } finally {
       if (page > this.searchNumPages) {
-        this.searchPageStorage.set(this.searchNumPages);
+        this.searchCtx.setPage(this.searchNumPages);
       }
       this.updateSearchContext();
     }
@@ -542,7 +542,7 @@ export class AppRoot extends LitElement {
   }
 
   isLoggedIn() {
-    return this.userStorage.get() != null;
+    return this.userCtx.user != null;
   }
 
   private requireLogin() {
@@ -553,7 +553,7 @@ export class AppRoot extends LitElement {
   }
 
   private isAdmin() {
-    return this.isLoggedIn() && isAuthorized(this.userStorage.get(), AccessLevel.Admin);
+    return this.isLoggedIn() && isAuthorized(this.userCtx.user, AccessLevel.Admin);
   }
 
   private requireAdmin() {
@@ -625,8 +625,8 @@ export class AppRoot extends LitElement {
 
     if (e.key === 'Enter') {
       const searchBar = e.target as HTMLIonInputElement;
-      this.searchFilterStorage.set({
-        ...this.searchFilterStorage.get(),
+      this.searchCtx.setFilter({
+        ...this.searchCtx.filter,
         query: searchBar.value?.toString() ?? ''
       });
       await redirect('/recipes');
@@ -646,8 +646,8 @@ export class AppRoot extends LitElement {
       return;
     }
 
-    this.searchFilterStorage.set({
-      ...this.searchFilterStorage.get(),
+    this.searchCtx.setFilter({
+      ...this.searchCtx.filter,
       query: ''
     });
     await redirect('/recipes');
@@ -658,7 +658,7 @@ export class AppRoot extends LitElement {
       return;
     }
 
-    this.searchFilterStorage.set(getDefaultSearchFilter());
+    this.searchCtx.setFilter(getDefaultSearchFilter());
     await redirect('/recipes');
   }
 
@@ -675,11 +675,11 @@ export class AppRoot extends LitElement {
         prompt: 'Search',
         showName: false,
         showSavedLoader: true,
-        searchFilter: this.searchFilterStorage.get()
+        searchFilter: this.searchCtx.filter
       },
     });
     if (data != null) {
-      this.searchFilterStorage.set(data.searchFilter);
+      this.searchCtx.setFilter(data.searchFilter);
       await redirect('/recipes');
     }
   }
@@ -688,7 +688,7 @@ export class AppRoot extends LitElement {
     const defaultFilter = getDefaultSearchFilter();
     const currentFilter = {
       ...defaultFilter,
-      ...this.searchFilterStorage.get()
+      ...this.searchCtx.filter
     };
     return JSON.stringify(defaultFilter) === JSON.stringify(currentFilter);
   }
