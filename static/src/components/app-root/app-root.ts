@@ -447,9 +447,7 @@ export class AppRoot extends LitElement {
       this.searchScrollPosition = 0;
     }
     this.updateSearchContext();
-    if (this.isLoggedIn()) {
-      this.executeSearch().catch(console.error);
-    }
+    this.executeSearch().catch(console.error);
   }
 
   private async executeSearch() {
