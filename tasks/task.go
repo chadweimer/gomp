@@ -27,7 +27,7 @@ var (
 // TaskFilter specifies criteria for filtering tasks when listing.
 type TaskFilter struct {
 	States []models.TaskState
-	Type   *models.TaskType
+	Types  []models.TaskType
 }
 
 // Store defines persistence operations for background tasks.

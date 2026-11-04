@@ -585,10 +585,8 @@ components:
         - cancelled
     taskType:
       type: string
-      description: Type of asynchronous background task.
-      enum:
-        - backup
-        - restore
+      description: Type of asynchronous background task (e.g. backup, restore).
+      example: backup
     task:
       description: An asynchronous background task.
       type: object
@@ -644,4 +642,7 @@ components:
         - state
       properties:
         state:
-          $ref: '#/components/schemas/taskState'
+          type: string
+          description: Target state requested by client. Only cancellation is allowed.
+          enum:
+            - cancelled

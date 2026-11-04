@@ -80,45 +80,41 @@ func TestTaskManager_Submit_Failure(t *testing.T) {
 	}
 }
 
-func TestTaskManager_MutualExclusion(t *testing.T) {
+func TestTaskManager_ConcurrentTasks(t *testing.T) {
 	store := tasks.NewMemoryStore()
 	manager := tasks.NewManager(store)
 	defer manager.Close()
 
-	started := make(chan struct{})
-	release := make(chan struct{})
+	started1 := make(chan struct{})
+	release1 := make(chan struct{})
+	started2 := make(chan struct{})
+	release2 := make(chan struct{})
 
 	_, err := manager.Submit(models.TaskTypeBackup, true, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
-		close(started)
-		<-release
+		close(started1)
+		<-release1
 		return nil, nil
 	})
 	if err != nil {
 		t.Fatalf("failed to start first task: %v", err)
 	}
 
-	<-started
+	<-started1
 
-	// Second maintenance task (Backup or Restore) should fail with ErrConflict
+	// Second task should also start concurrently
 	_, err = manager.Submit(models.TaskTypeRestore, false, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
-		return nil, nil
-	})
-	if !errors.Is(err, tasks.ErrConflict) {
-		t.Errorf("expected ErrConflict for concurrent maintenance task, got %v", err)
-	}
-
-	close(release)
-
-	// Wait for first task to finish
-	time.Sleep(50 * time.Millisecond)
-
-	// Now submitting should succeed
-	_, err = manager.Submit(models.TaskTypeRestore, false, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+		close(started2)
+		<-release2
 		return nil, nil
 	})
 	if err != nil {
-		t.Errorf("expected success after first task completed, got %v", err)
+		t.Fatalf("failed to start second task: %v", err)
 	}
+
+	<-started2
+
+	close(release1)
+	close(release2)
 }
 
 func TestTaskManager_Cancellation(t *testing.T) {
@@ -224,39 +220,7 @@ func TestTaskManager_Delete(t *testing.T) {
 	}
 }
 
-func TestTaskManager_IsRestoring(t *testing.T) {
-	store := tasks.NewMemoryStore()
-	manager := tasks.NewManager(store)
-	defer manager.Close()
 
-	started := make(chan struct{})
-	release := make(chan struct{})
-
-	if manager.IsRestoring() {
-		t.Error("expected IsRestoring to be false initially")
-	}
-
-	_, err := manager.Submit(models.TaskTypeRestore, false, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
-		close(started)
-		<-release
-		return nil, nil
-	})
-	if err != nil {
-		t.Fatalf("failed to submit restore: %v", err)
-	}
-
-	<-started
-	if !manager.IsRestoring() {
-		t.Error("expected IsRestoring to be true while restore is running")
-	}
-
-	close(release)
-	time.Sleep(50 * time.Millisecond)
-
-	if manager.IsRestoring() {
-		t.Error("expected IsRestoring to be false after restore completed")
-	}
-}
 
 func TestMemoryStore_Pruning(t *testing.T) {
 	store := tasks.NewMemoryStore()
@@ -323,8 +287,7 @@ func TestMemoryStore_ListFiltering(t *testing.T) {
 	}
 
 	// Filter by type
-	backupType := models.TaskTypeBackup
-	res, err = store.List(t.Context(), tasks.TaskFilter{Type: &backupType})
+	res, err = store.List(t.Context(), tasks.TaskFilter{Types: []models.TaskType{models.TaskTypeBackup}})
 	if err != nil || len(res) != 2 {
 		t.Errorf("expected 2 backup tasks, got %d", len(res))
 	}
@@ -332,7 +295,7 @@ func TestMemoryStore_ListFiltering(t *testing.T) {
 	// Filter by both
 	res, err = store.List(t.Context(), tasks.TaskFilter{
 		States: []models.TaskState{models.Completed},
-		Type:   &backupType,
+		Types:  []models.TaskType{models.TaskTypeBackup},
 	})
 	if err != nil || len(res) != 1 {
 		t.Errorf("expected 1 task matching both, got %d", len(res))

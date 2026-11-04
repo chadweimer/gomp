@@ -11,7 +11,7 @@ import (
 	"github.com/chadweimer/gomp/tasks"
 )
 
-func TestGetTasks(t *testing.T) {
+func TestListTasks(t *testing.T) {
 	store := tasks.NewMemoryStore()
 	manager := tasks.NewManager(store)
 	defer manager.Close()
@@ -21,7 +21,7 @@ func TestGetTasks(t *testing.T) {
 		taskManager:  manager,
 	}
 
-	// Create test tasks sequentially (since maintenance tasks are mutually exclusive)
+	// Create test tasks
 	t1, err := manager.Submit(models.TaskTypeBackup, true, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
 		return nil, nil
 	})
@@ -53,24 +53,24 @@ func TestGetTasks(t *testing.T) {
 	}
 
 	// List all
-	resp, err := api.GetTasks(t.Context(), GetTasksRequestObject{})
+	resp, err := api.ListTasks(t.Context(), ListTasksRequestObject{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	taskList, ok := resp.(GetTasks200JSONResponse)
+	taskList, ok := resp.(ListTasks200JSONResponse)
 	if !ok || len(taskList) < 2 {
 		t.Fatalf("expected at least 2 tasks, got %v", resp)
 	}
 
 	// Filter by state
 	completedState := []models.TaskState{models.Completed}
-	resp, err = api.GetTasks(t.Context(), GetTasksRequestObject{
-		Params: GetTasksParams{States: &completedState},
+	resp, err = api.ListTasks(t.Context(), ListTasksRequestObject{
+		Params: ListTasksParams{States: &completedState},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	taskList, ok = resp.(GetTasks200JSONResponse)
+	taskList, ok = resp.(ListTasks200JSONResponse)
 	if !ok {
 		t.Fatalf("expected 200 response, got %T", resp)
 	}
@@ -80,15 +80,15 @@ func TestGetTasks(t *testing.T) {
 		}
 	}
 
-	// Filter by type
-	bType := models.TaskTypeBackup
-	resp, err = api.GetTasks(t.Context(), GetTasksRequestObject{
-		Params: GetTasksParams{Type: &bType},
+	// Filter by types
+	bTypes := []models.TaskType{models.TaskTypeBackup}
+	resp, err = api.ListTasks(t.Context(), ListTasksRequestObject{
+		Params: ListTasksParams{Types: &bTypes},
 	})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	taskList, ok = resp.(GetTasks200JSONResponse)
+	taskList, ok = resp.(ListTasks200JSONResponse)
 	if !ok {
 		t.Fatalf("expected 200 response, got %T", resp)
 	}
@@ -158,7 +158,7 @@ func TestUpdateTaskStateByID(t *testing.T) {
 	<-started
 
 	// Cancel success
-	cancelledState := models.Cancelled
+	cancelledState := models.TaskStateUpdateStateCancelled
 	resp, err := api.UpdateTaskStateByID(t.Context(), UpdateTaskStateByIDRequestObject{
 		TaskID: cancellableTask.ID,
 		Body:   &UpdateTaskStateByIDJSONRequestBody{State: cancelledState},

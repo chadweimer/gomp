@@ -735,5 +735,61 @@ describe('page-admin-maintenance', () => {
         expect.objectContaining({ message: 'Operation cancelled.' })
       );
     });
+
+    it('shows Dismiss button when task completes and clears card when dismissed', async () => {
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: '[]' };
+        }
+        if (req.url.match(/\/tasks\/completed-task$/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify({
+              id: 'completed-task',
+              type: 'backup',
+              state: 'completed',
+              stage: 'Completed successfully',
+              progress: 100,
+              cancellable: false
+            })
+          };
+        }
+        if (req.url.match(/\/tasks/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify([
+              {
+                id: 'completed-task',
+                type: 'backup',
+                state: 'running',
+                stage: 'Finishing...',
+                progress: 99,
+                cancellable: false
+              }
+            ])
+          };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      await new Promise((r) => setTimeout(r, 30));
+      await root.updateComplete;
+
+      const activeCard = root.renderRoot.querySelector('.active-task-card');
+      expect(activeCard).toBeDefined();
+      expect(activeCard?.textContent).toContain('Backup Completed');
+
+      const dismissBtn = activeCard?.querySelector<HTMLIonButtonElement>('ion-button');
+      expect(dismissBtn?.textContent?.trim()).toBe('Dismiss');
+
+      dismissBtn?.click();
+      await root.updateComplete;
+
+      expect(root.renderRoot.querySelector('.active-task-card')).toBeNull();
+    });
   });
 });

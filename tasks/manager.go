@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log/slog"
 	"sync"
-	"sync/atomic"
 	"time"
 	"uuid"
 
@@ -16,11 +15,9 @@ import (
 type Manager struct {
 	store Store
 
-	mu                    sync.Mutex
-	runningTasks          map[uuid.UUID]context.CancelCauseFunc
-	activeMaintenanceTask *uuid.UUID
-	isRestoring           atomic.Bool
-	stopPruning           chan struct{}
+	mu           sync.Mutex
+	runningTasks map[uuid.UUID]context.CancelCauseFunc
+	stopPruning  chan struct{}
 }
 
 // NewManager creates a new background TaskManager.
@@ -53,21 +50,9 @@ func (m *Manager) Close() {
 	}
 }
 
-// IsRestoring returns true if a database restore task is currently actively executing.
-func (m *Manager) IsRestoring() bool {
-	return m.isRestoring.Load()
-}
-
 // Submit enqueues and asynchronously launches a new background task.
 func (m *Manager) Submit(taskType models.TaskType, cancellable bool, fn TaskFunc) (*models.Task, error) {
 	m.mu.Lock()
-
-	// Mutual exclusion for maintenance operations (Backup and Restore)
-	isMaintenance := (taskType == models.TaskTypeBackup || taskType == models.TaskTypeRestore)
-	if isMaintenance && m.activeMaintenanceTask != nil {
-		m.mu.Unlock()
-		return nil, ErrConflict
-	}
 
 	id := uuid.New()
 	now := time.Now()
@@ -88,20 +73,14 @@ func (m *Manager) Submit(taskType models.TaskType, cancellable bool, fn TaskFunc
 	}
 
 	m.runningTasks[id] = cancel
-	if isMaintenance {
-		m.activeMaintenanceTask = &id
-		if taskType == models.TaskTypeRestore {
-			m.isRestoring.Store(true)
-		}
-	}
 	m.mu.Unlock()
 
-	go m.runWorker(id, ctx, fn, isMaintenance, taskType == models.TaskTypeRestore)
+	go m.runWorker(id, ctx, fn)
 
 	return &task, nil
 }
 
-func (m *Manager) runWorker(id uuid.UUID, ctx context.Context, fn TaskFunc, isMaintenance bool, isRestore bool) {
+func (m *Manager) runWorker(id uuid.UUID, ctx context.Context, fn TaskFunc) {
 	startedAt := time.Now()
 	initialProgress := 0
 	initialStage := "Starting"
@@ -136,12 +115,6 @@ func (m *Manager) runWorker(id uuid.UUID, ctx context.Context, fn TaskFunc, isMa
 	defer m.mu.Unlock()
 
 	delete(m.runningTasks, id)
-	if isMaintenance && m.activeMaintenanceTask != nil && *m.activeMaintenanceTask == id {
-		m.activeMaintenanceTask = nil
-		if isRestore {
-			m.isRestoring.Store(false)
-		}
-	}
 
 	t, err := m.store.Get(ctx, id)
 	if err != nil {

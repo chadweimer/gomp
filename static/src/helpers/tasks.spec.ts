@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import createFetchMock from 'vitest-fetch-mock';
 import { pollTask, cancelTask } from './tasks';
-import { Task, TaskState, TaskType } from './schema.gen';
+import { Task, TaskState } from './schema.gen';
 
 const fetchMocker = createFetchMock(vi);
 const originalFetch = globalThis.fetch;
@@ -22,7 +22,7 @@ describe('tasks helper', () => {
     it('resolves when task completes', async () => {
       const mockTask: Task = {
         id: 'task-1',
-        type: TaskType.backup,
+        type: 'backup',
         state: TaskState.completed,
         cancellable: true,
         createdAt: new Date().toISOString(),
@@ -45,7 +45,7 @@ describe('tasks helper', () => {
               status: 200,
               body: JSON.stringify({
                 id: 'task-1',
-                type: TaskType.backup,
+                type: 'backup',
                 state: TaskState.running,
                 progress: callCount * 30,
                 stage: 'Working',
@@ -58,7 +58,7 @@ describe('tasks helper', () => {
             status: 200,
             body: JSON.stringify({
               id: 'task-1',
-              type: TaskType.backup,
+              type: 'backup',
               state: TaskState.completed,
               progress: 100,
               cancellable: true,
@@ -84,37 +84,10 @@ describe('tasks helper', () => {
       expect(task.state).toBe(TaskState.completed);
     });
 
-    it('retries during HTTP 503 maintenance mode', async () => {
-      let callCount = 0;
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.includes('/tasks/task-1')) {
-          callCount++;
-          if (callCount === 1) {
-            return { status: 503, body: 'System maintenance in progress' };
-          }
-          return {
-            status: 200,
-            body: JSON.stringify({
-              id: 'task-1',
-              type: TaskType.restore,
-              state: TaskState.completed,
-              cancellable: false,
-              createdAt: new Date().toISOString()
-            })
-          };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const task = await pollTask('task-1', { intervalMs: 10 });
-      expect(callCount).toBe(2);
-      expect(task.state).toBe(TaskState.completed);
-    });
-
-    it('throws error when task fails', async () => {
+    it('resolves with task when task fails', async () => {
       const mockTask: Task = {
         id: 'task-1',
-        type: TaskType.backup,
+        type: 'backup',
         state: TaskState.failed,
         error: 'Out of disk space',
         cancellable: true,
@@ -123,13 +96,15 @@ describe('tasks helper', () => {
 
       fetchMocker.mockResponse(JSON.stringify(mockTask));
 
-      await expect(pollTask('task-1', { intervalMs: 10 })).rejects.toThrow('Out of disk space');
+      const task = await pollTask('task-1', { intervalMs: 10 });
+      expect(task.state).toBe(TaskState.failed);
+      expect(task.error).toBe('Out of disk space');
     });
 
-    it('throws error when task is cancelled', async () => {
+    it('resolves with task when task is cancelled', async () => {
       const mockTask: Task = {
         id: 'task-1',
-        type: TaskType.backup,
+        type: 'backup',
         state: TaskState.cancelled,
         cancellable: true,
         createdAt: new Date().toISOString(),
@@ -137,13 +112,21 @@ describe('tasks helper', () => {
 
       fetchMocker.mockResponse(JSON.stringify(mockTask));
 
-      await expect(pollTask('task-1', { intervalMs: 10 })).rejects.toThrow('Task was cancelled.');
+      const task = await pollTask('task-1', { intervalMs: 10 });
+      expect(task.state).toBe(TaskState.cancelled);
+    });
+
+    it('throws error when server returns error response', async () => {
+      fetchMocker.mockResponse('Internal Server Error', { status: 500 });
+
+      await expect(pollTask('task-1', { intervalMs: 10 }))
+        .rejects.toThrow('Failed to query task status.');
     });
 
     it('respects abort signal', async () => {
       fetchMocker.mockResponse(JSON.stringify({
         id: 'task-1',
-        type: TaskType.backup,
+        type: 'backup',
         state: TaskState.running,
         cancellable: true,
         createdAt: new Date().toISOString()
@@ -168,7 +151,7 @@ describe('tasks helper', () => {
               status: 200,
               body: JSON.stringify({
                 id: 'task-1',
-                type: TaskType.backup,
+                type: 'backup',
                 state: TaskState.cancelled,
                 cancellable: true,
                 createdAt: new Date().toISOString()

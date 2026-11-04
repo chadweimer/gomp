@@ -2,12 +2,14 @@ package tasks
 
 import (
 	"context"
+	"maps"
 	"slices"
 	"sync"
 	"time"
 	"uuid"
 
 	"github.com/chadweimer/gomp/models"
+	"github.com/samber/lo"
 )
 
 type memoryStore struct {
@@ -29,7 +31,7 @@ func (s *memoryStore) Create(_ context.Context, task *models.Task) error {
 	defer s.mu.Unlock()
 
 	if _, exists := s.tasks[task.ID]; exists {
-		return errorsCopy(ErrConflict)
+		return ErrConflict
 	}
 
 	cloned := cloneTask(*task)
@@ -90,7 +92,7 @@ func (s *memoryStore) List(_ context.Context, filter TaskFilter) ([]models.Task,
 		if len(filter.States) > 0 && !slices.Contains(filter.States, task.State) {
 			continue
 		}
-		if filter.Type != nil && task.Type != *filter.Type {
+		if len(filter.Types) > 0 && !slices.Contains(filter.Types, task.Type) {
 			continue
 		}
 
@@ -164,35 +166,22 @@ func isTerminal(state models.TaskState) bool {
 func cloneTask(src models.Task) models.Task {
 	dst := src
 	if src.Stage != nil {
-		stage := *src.Stage
-		dst.Stage = &stage
+		dst.Stage = lo.ToPtr(*src.Stage)
 	}
 	if src.Progress != nil {
-		progress := *src.Progress
-		dst.Progress = &progress
+		dst.Progress = lo.ToPtr(*src.Progress)
 	}
 	if src.Error != nil {
-		errStr := *src.Error
-		dst.Error = &errStr
+		dst.Error = lo.ToPtr(*src.Error)
 	}
 	if src.StartedAt != nil {
-		started := *src.StartedAt
-		dst.StartedAt = &started
+		dst.StartedAt = lo.ToPtr(*src.StartedAt)
 	}
 	if src.CompletedAt != nil {
-		completed := *src.CompletedAt
-		dst.CompletedAt = &completed
+		dst.CompletedAt = lo.ToPtr(*src.CompletedAt)
 	}
 	if src.Result != nil {
-		res := make(map[string]any, len(*src.Result))
-		for k, v := range *src.Result {
-			res[k] = v
-		}
-		dst.Result = &res
+		dst.Result = lo.ToPtr(maps.Clone(*src.Result))
 	}
 	return dst
-}
-
-func errorsCopy(err error) error {
-	return err
 }

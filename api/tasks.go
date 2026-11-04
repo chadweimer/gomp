@@ -5,32 +5,33 @@ import (
 	"errors"
 
 	"github.com/chadweimer/gomp/infra"
+	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/tasks"
 )
 
-func (h apiHandler) GetTasks(ctx context.Context, request GetTasksRequestObject) (GetTasksResponseObject, error) {
+func (h apiHandler) ListTasks(ctx context.Context, request ListTasksRequestObject) (ListTasksResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
 
 	if h.taskManager == nil {
 		logger.ErrorContext(ctx, "Task manager is not configured")
-		return GetTasks500Response{}, nil
+		return ListTasks500Response{}, nil
 	}
 
 	filter := tasks.TaskFilter{}
 	if request.Params.States != nil {
 		filter.States = *request.Params.States
 	}
-	if request.Params.Type != nil {
-		filter.Type = request.Params.Type
+	if request.Params.Types != nil {
+		filter.Types = *request.Params.Types
 	}
 
 	taskList, err := h.taskManager.List(ctx, filter)
 	if err != nil {
 		logger.ErrorContext(ctx, "Failed to list tasks", "error", err)
-		return GetTasks500Response{}, nil
+		return ListTasks500Response{}, nil
 	}
 
-	return GetTasks200JSONResponse(taskList), nil
+	return ListTasks200JSONResponse(taskList), nil
 }
 
 func (h apiHandler) GetTaskByID(ctx context.Context, request GetTaskByIDRequestObject) (GetTaskByIDResponseObject, error) {
@@ -65,7 +66,7 @@ func (h apiHandler) UpdateTaskStateByID(ctx context.Context, request UpdateTaskS
 		return UpdateTaskStateByID400Response{}, nil
 	}
 
-	task, err := h.taskManager.UpdateState(ctx, request.TaskID, request.Body.State)
+	task, err := h.taskManager.UpdateState(ctx, request.TaskID, models.TaskState(request.Body.State))
 	if err != nil {
 		if errors.Is(err, tasks.ErrNotFound) {
 			return UpdateTaskStateByID404Response{}, nil

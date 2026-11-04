@@ -4,7 +4,20 @@ import "strings"
 
 //go:generate go tool oapi-codegen --config cfg.yaml ../models.yaml
 
-// RowData represents a generic row of data, typically used for database rows
+// TaskType constants for common tasks
+const (
+	TaskTypeBackup  TaskType = "backup"
+	TaskTypeRestore TaskType = "restore"
+)
+
+// TaskState aliases for cleaner reference
+const (
+	Queued    = TaskStateQueued
+	Running   = TaskStateRunning
+	Completed = TaskStateCompleted
+	Failed    = TaskStateFailed
+	Cancelled = TaskStateCancelled
+)
 type RowData map[string]any
 
 // TableData represents a table's data, including its name and the rows it contains

@@ -202,7 +202,8 @@ func Test_createMux(t *testing.T) {
 			// Act
 			taskManager := tasks.NewManager(tasks.NewMemoryStore())
 			defer taskManager.Close()
-			mux, _ := createMux(tokenHandler, uploader, dbDriver, uplDriver, taskManager, tt.assetsFS)
+			maintenanceLock := infra.NewMaintenanceLock()
+			mux, _ := createMux(tokenHandler, uploader, dbDriver, uplDriver, taskManager, maintenanceLock, tt.assetsFS)
 			r := middleware.Wrap(
 				mux,
 				middleware.Authenticate(tokenHandler, dbDriver.Users()),

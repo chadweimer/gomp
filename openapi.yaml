@@ -216,7 +216,7 @@ paths:
       tags: [app]
       summary: Get list of tasks
       description: get list of asynchronous background tasks
-      operationId: getTasks
+      operationId: listTasks
       parameters:
         - name: states
           in: query
@@ -226,12 +226,14 @@ paths:
             type: array
             items:
               $ref: './models.yaml#/components/schemas/taskState'
-        - name: type
+        - name: types
           in: query
           required: false
-          description: filter by task type
+          description: filter by task types
           schema:
-            $ref: './models.yaml#/components/schemas/taskType'
+            type: array
+            items:
+              $ref: './models.yaml#/components/schemas/taskType'
       responses:
         '200':
           description: OK

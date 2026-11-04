@@ -54,6 +54,20 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 		return CreateBackup500Response{}, nil
 	}
 
+	if h.maintenanceLock != nil && h.maintenanceLock.IsActive() {
+		logger.WarnContext(ctx, "Cannot create backup while system maintenance is in progress")
+		return CreateBackup409Response{}, nil
+	}
+
+	activeTasks, err := h.taskManager.List(ctx, tasks.TaskFilter{
+		States: []models.TaskState{models.Queued, models.Running},
+		Types:  []models.TaskType{models.TaskTypeBackup, models.TaskTypeRestore},
+	})
+	if err == nil && len(activeTasks) > 0 {
+		logger.WarnContext(ctx, "A backup or restore task is already in progress")
+		return CreateBackup409Response{}, nil
+	}
+
 	task, err := h.taskManager.Submit(models.TaskTypeBackup, true, func(taskCtx context.Context, report tasks.ProgressReporter) (map[string]any, error) {
 		logger.DebugContext(taskCtx, "Starting background backup task", "name", name)
 		report(10, "Exporting database data")
@@ -176,8 +190,30 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 		return RestoreFromBackup500Response{}, nil
 	}
 
+	activeTasks, err := h.taskManager.List(ctx, tasks.TaskFilter{
+		States: []models.TaskState{models.Queued, models.Running},
+		Types:  []models.TaskType{models.TaskTypeBackup, models.TaskTypeRestore},
+	})
+	if err == nil && len(activeTasks) > 0 {
+		logger.WarnContext(ctx, "A backup or restore task is already in progress")
+		return RestoreFromBackup409Response{}, nil
+	}
+
+	var unlock func()
+	if h.maintenanceLock != nil {
+		var err error
+		unlock, err = h.maintenanceLock.TryAcquire()
+		if err != nil {
+			logger.WarnContext(ctx, "Maintenance lock already active")
+			return RestoreFromBackup409Response{}, nil
+		}
+	}
+
 	backupName := request.Name
 	task, err := h.taskManager.Submit(models.TaskTypeRestore, false, func(taskCtx context.Context, report tasks.ProgressReporter) (map[string]any, error) {
+		if unlock != nil {
+			defer unlock()
+		}
 		logger.InfoContext(taskCtx, "Starting background database restore task", "name", backupName)
 		report(10, "Validating backup archive")
 
@@ -237,6 +273,9 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 		}, nil
 	})
 	if err != nil {
+		if unlock != nil {
+			unlock()
+		}
 		if errors.Is(err, tasks.ErrConflict) {
 			logger.WarnContext(ctx, "Maintenance task already in progress")
 			return RestoreFromBackup409Response{}, nil

@@ -1,6 +1,6 @@
 import { LitElement, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { Backup, Task, TaskState, TaskType } from '../../../helpers/schema.gen';
+import { Backup, Task, TaskState } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, scaleValue } from '../../../helpers/utils';
@@ -39,18 +39,24 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
               ${this.activeTask != null ? html`
                 <ion-card color="light" class="active-task-card">
                   <ion-card-content>
-                    <div class="active-task-header">
+                    <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
                       <ion-label>
-                        <strong>${this.activeTask.type === TaskType.backup ? 'Backup in Progress' : 'Restore in Progress'}</strong>
+                        <strong>${this.getTaskTitle(this.activeTask)}</strong>
                         <ion-note class="ion-display-block">${this.activeTask.stage ?? 'Processing...'}</ion-note>
                       </ion-label>
-                      ${this.activeTask.cancellable ? html`
+                      ${this.isTaskActive(this.activeTask) ? (this.activeTask.cancellable ? html`
                         <ion-button color="danger" size="small" fill="outline" @click=${() => this.cancelActiveTask()}>
                           Cancel
                         </ion-button>
-                      ` : ''}
+                      ` : '') : html`
+                        <ion-button size="small" fill="outline" @click=${() => this.dismissActiveTask()}>
+                          Dismiss
+                        </ion-button>
+                      `}
                     </div>
-                    <ion-progress-bar class="ion-margin-top" .value=${(this.activeTask.progress ?? 0) / 100}></ion-progress-bar>
+                    ${this.isTaskActive(this.activeTask) ? html`
+                      <ion-progress-bar class="ion-margin-top" .value=${(this.activeTask.progress ?? 0) / 100}></ion-progress-bar>
+                    ` : ''}
                   </ion-card-content>
                 </ion-card>
               ` : ''}
@@ -115,6 +121,43 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     `;
   }
 
+  private isTaskActive(task: Task): boolean {
+    return task.state === TaskState.queued || task.state === TaskState.running;
+  }
+
+  private getTaskTitle(task: Task): string {
+    switch (task.type) {
+      case 'backup':
+        return task.state === TaskState.completed
+          ? 'Backup Completed'
+          : task.state === TaskState.failed
+            ? 'Backup Failed'
+            : task.state === TaskState.cancelled
+              ? 'Backup Cancelled'
+              : 'Backup in Progress';
+      case 'restore':
+        return task.state === TaskState.completed
+          ? 'Restore Completed'
+          : task.state === TaskState.failed
+            ? 'Restore Failed'
+            : task.state === TaskState.cancelled
+              ? 'Restore Cancelled'
+              : 'Restore in Progress';
+      default:
+        return task.state === TaskState.completed
+          ? `${task.type} Completed`
+          : task.state === TaskState.failed
+            ? `${task.type} Failed`
+            : task.state === TaskState.cancelled
+              ? `${task.type} Cancelled`
+              : `${task.type} in Progress`;
+    }
+  }
+
+  private dismissActiveTask() {
+    this.activeTask = undefined;
+  }
+
   private async loadBackups() {
     try {
       const { data: backups, error } = await api.client.GET('/backups');
@@ -135,42 +178,46 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
       const { data, error } = await api.client.GET('/tasks', {
         params: {
           query: {
-            states: [TaskState.running, TaskState.queued]
+            states: [TaskState.running, TaskState.queued],
+            types: ['backup', 'restore']
           }
         }
       });
 
       if (error == null && data != null && data.length > 0) {
-        this.activeTask = data[0];
-        this.resumeActiveTaskPolling(this.activeTask.id).catch(console.error);
+        this.trackActiveTask(data[0]).catch(console.error);
       }
     } catch (ex) {
       console.warn('Failed to check active tasks', ex);
     }
   }
 
-  private async resumeActiveTaskPolling(taskId: string) {
+  private async trackActiveTask(initialTask: Task) {
+    this.activeTask = initialTask;
     try {
-      await pollTask(taskId, {
+      const finalTask = await pollTask(initialTask.id, {
         onUpdate: (task) => {
           this.activeTask = task;
         }
       });
-      this.activeTask = undefined;
-      await this.loadBackups();
+      this.activeTask = finalTask;
+      if (finalTask.state === TaskState.completed) {
+        await this.loadBackups();
+      } else if (finalTask.state === TaskState.failed) {
+        await showToast(finalTask.error ?? 'Operation failed.');
+      }
     } catch (ex) {
-      this.activeTask = undefined;
       console.error(ex);
+      await showToast('Failed to monitor operation.');
     }
   }
 
   private async cancelActiveTask() {
     if (this.activeTask == null) return;
     try {
-      await cancelTask(this.activeTask.id);
+      const updated = await cancelTask(this.activeTask.id);
+      this.activeTask = updated;
       await showToast('Operation cancelled.');
-      this.activeTask = undefined;
-      await this.loadBackups();
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to cancel operation.');
@@ -190,15 +237,8 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
         throw new Error('Failed to create backup.', { cause: error });
       }
 
-      this.activeTask = data;
-      await pollTask(data.id, {
-        onUpdate: (task) => {
-          this.activeTask = task;
-        }
-      });
-      this.activeTask = undefined;
+      await this.trackActiveTask(data);
     } catch (ex) {
-      this.activeTask = undefined;
       console.error(ex);
       await showToast('Failed to create backup.');
     }
@@ -216,7 +256,6 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
 
     if (role === 'confirm') {
       await this.createBackup();
-      await this.loadBackups();
     }
   }
 
@@ -266,15 +305,8 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
         throw new Error('Failed to restore from backup.', { cause: error });
       }
 
-      this.activeTask = data;
-      await pollTask(data.id, {
-        onUpdate: (task) => {
-          this.activeTask = task;
-        }
-      });
-      this.activeTask = undefined;
+      await this.trackActiveTask(data);
     } catch (ex) {
-      this.activeTask = undefined;
       console.error(ex);
       await showToast('Failed to restore from backup.');
     }
@@ -292,7 +324,6 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
 
     if (role === 'destructive') {
       await this.restoreBackup(backup.fileName);
-      await this.loadBackups();
     }
   }
 
