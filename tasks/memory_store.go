@@ -159,7 +159,7 @@ func (s *memoryStore) deleteTasks(toDelete []uuid.UUID) {
 }
 
 func isTerminal(state models.TaskState) bool {
-	return state == models.Completed || state == models.Failed || state == models.Cancelled
+	return state == models.TaskStateCompleted || state == models.TaskStateFailed || state == models.TaskStateCancelled
 }
 
 func cloneTask(src models.Task) models.Task {
@@ -172,9 +172,6 @@ func cloneTask(src models.Task) models.Task {
 	}
 	if src.Error != nil {
 		dst.Error = new(*src.Error)
-	}
-	if src.StartedAt != nil {
-		dst.StartedAt = new(*src.StartedAt)
 	}
 	if src.CompletedAt != nil {
 		dst.CompletedAt = new(*src.CompletedAt)

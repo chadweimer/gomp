@@ -578,7 +578,6 @@ components:
       type: string
       description: Lifecycle state of an asynchronous background task.
       enum:
-        - queued
         - running
         - completed
         - failed
@@ -617,10 +616,6 @@ components:
           type: string
           description: Human-readable description of current stage
         createdAt:
-          type: string
-          format: date-time
-          x-go-type: time.Time
-        startedAt:
           type: string
           format: date-time
           x-go-type: time.Time

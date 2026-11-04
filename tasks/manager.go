@@ -15,21 +15,24 @@ import (
 type Manager struct {
 	store Store
 
-	mu           sync.Mutex
-	runningTasks map[uuid.UUID]context.CancelCauseFunc
-	stopPruning  chan struct{}
+	mu            sync.Mutex
+	runningTasks  map[uuid.UUID]context.CancelCauseFunc
+	pruningCtx    context.Context
+	pruningCancel context.CancelFunc
 }
 
 // NewManager creates a new background TaskManager.
 func NewManager(store Store) *Manager {
+	pruningCtx, pruningCancel := context.WithCancel(context.Background())
 	m := &Manager{
-		store:        store,
-		runningTasks: make(map[uuid.UUID]context.CancelCauseFunc),
-		stopPruning:  make(chan struct{}),
+		store:         store,
+		runningTasks:  make(map[uuid.UUID]context.CancelCauseFunc),
+		pruningCtx:    pruningCtx,
+		pruningCancel: pruningCancel,
 	}
 
 	// Start a background pruner that periodically removes stale completed tasks
-	go m.startPruner(10*time.Minute, 1*time.Hour, 500)
+	go m.startPruner(10*time.Minute, 1*time.Hour, 20)
 
 	return m
 }
@@ -37,10 +40,10 @@ func NewManager(store Store) *Manager {
 // Close gracefully stops the TaskManager pruner and cancels running cancellable tasks.
 func (m *Manager) Close() {
 	select {
-	case <-m.stopPruning:
+	case <-m.pruningCtx.Done():
 		// already closed
 	default:
-		close(m.stopPruning)
+		m.pruningCancel()
 	}
 
 	m.mu.Lock()
@@ -52,56 +55,49 @@ func (m *Manager) Close() {
 
 // Submit enqueues and asynchronously launches a new background task.
 func (m *Manager) Submit(taskType models.TaskType, cancellable bool, fn TaskFunc) (*models.Task, error) {
+	task, ctx, err := m.createTask(taskType, cancellable)
+	if err != nil {
+		return nil, err
+	}
+
+	go m.runWorker(ctx, task.ID, fn)
+
+	return task, nil
+}
+
+func (m *Manager) createTask(taskType models.TaskType, cancellable bool) (*models.Task, context.Context, error) {
 	m.mu.Lock()
+	defer m.mu.Unlock()
 
 	id := uuid.New()
-	now := time.Now()
 	task := models.Task{
 		ID:          id,
 		Type:        taskType,
-		State:       models.Queued,
+		State:       models.TaskStateRunning,
+		Stage:       new("Starting"),
+		Progress:    new(0),
 		Cancellable: cancellable,
-		CreatedAt:   now,
+		CreatedAt:   time.Now(),
 	}
 
 	ctx, cancel := context.WithCancelCause(context.Background())
 
 	if err := m.store.Create(ctx, &task); err != nil {
-		m.mu.Unlock()
-		cancel(nil)
-		return nil, err
+		cancel(err)
+		return nil, nil, err
 	}
 
 	m.runningTasks[id] = cancel
-	m.mu.Unlock()
-
-	go m.runWorker(id, ctx, fn)
-
-	return &task, nil
+	return &task, ctx, nil
 }
 
-func (m *Manager) runWorker(id uuid.UUID, ctx context.Context, fn TaskFunc) {
-	startedAt := time.Now()
-	initialProgress := 0
-	initialStage := "Starting"
-
-	m.mu.Lock()
-	task, err := m.store.Get(ctx, id)
-	if err == nil {
-		task.State = models.Running
-		task.StartedAt = &startedAt
-		task.Progress = &initialProgress
-		task.Stage = &initialStage
-		_ = m.store.Update(ctx, task)
-	}
-	m.mu.Unlock()
-
+func (m *Manager) runWorker(ctx context.Context, id uuid.UUID, fn TaskFunc) {
 	report := func(percent int, stage string) {
 		m.mu.Lock()
 		defer m.mu.Unlock()
 
 		t, err := m.store.Get(ctx, id)
-		if err == nil && t.State == models.Running {
+		if err == nil && t.State == models.TaskStateRunning {
 			t.Progress = &percent
 			t.Stage = &stage
 			_ = m.store.Update(ctx, t)
@@ -125,7 +121,7 @@ func (m *Manager) runWorker(id uuid.UUID, ctx context.Context, fn TaskFunc) {
 
 	// Check cancellation first
 	if ctx.Err() != nil {
-		t.State = models.Cancelled
+		t.State = models.TaskStateCancelled
 		cause := context.Cause(ctx)
 		var errMsg string
 		if cause != nil {
@@ -135,15 +131,13 @@ func (m *Manager) runWorker(id uuid.UUID, ctx context.Context, fn TaskFunc) {
 		}
 		t.Error = &errMsg
 	} else if execErr != nil {
-		t.State = models.Failed
+		t.State = models.TaskStateFailed
 		errMsg := execErr.Error()
 		t.Error = &errMsg
 	} else {
-		t.State = models.Completed
-		p := 100
-		t.Progress = &p
-		stage := "Completed"
-		t.Stage = &stage
+		t.State = models.TaskStateCompleted
+		t.Progress = new(100)
+		t.Stage = new("Completed")
 		if result != nil {
 			t.Result = &result
 		}
@@ -164,7 +158,7 @@ func (m *Manager) List(ctx context.Context, filter TaskFilter) ([]models.Task, e
 
 // UpdateState transitions a task's state, specifically supporting cancellation.
 func (m *Manager) UpdateState(ctx context.Context, id uuid.UUID, newState models.TaskState) (*models.Task, error) {
-	if newState != models.Cancelled {
+	if newState != models.TaskStateCancelled {
 		return nil, errors.New("unsupported state transition")
 	}
 
@@ -195,7 +189,7 @@ func (m *Manager) UpdateState(ctx context.Context, id uuid.UUID, newState models
 	deadline := time.Now().Add(500 * time.Millisecond)
 	for time.Now().Before(deadline) {
 		updated, err := m.store.Get(ctx, id)
-		if err == nil && updated.State == models.Cancelled {
+		if err == nil && updated.State == models.TaskStateCancelled {
 			return updated, nil
 		}
 		time.Sleep(20 * time.Millisecond)
@@ -228,7 +222,7 @@ func (m *Manager) startPruner(interval time.Duration, maxAge time.Duration, maxC
 
 	for {
 		select {
-		case <-m.stopPruning:
+		case <-m.pruningCtx.Done():
 			return
 		case <-ticker.C:
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

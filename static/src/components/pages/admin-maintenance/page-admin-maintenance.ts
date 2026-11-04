@@ -1,4 +1,4 @@
-import { LitElement, html } from 'lit';
+import { LitElement, html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { Backup, Task, TaskState } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
@@ -39,27 +39,27 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
               ${this.activeTask != null ? html`
                 <ion-card color="light" class="active-task-card">
                   <ion-card-content>
-                    <div class="ion-display-flex ion-justify-content-between ion-align-items-center">
+                    <ion-item>
                       <ion-label>
-                        <strong>${this.getTaskTitle(this.activeTask)}</strong>
-                        <ion-note class="ion-display-block">${this.activeTask.stage ?? 'Processing...'}</ion-note>
+                        <h3>${this.getTaskTitle(this.activeTask)}</h3>
+                        <p>${this.activeTask.stage ?? 'Processing...'}</p>
                       </ion-label>
                       ${this.isTaskActive(this.activeTask) ? (this.activeTask.cancellable ? html`
-                        <ion-button color="danger" size="small" fill="outline" @click=${() => this.cancelActiveTask()}>
+                        <ion-button slot="end" color="danger" size="small" fill="outline" @click=${() => this.cancelActiveTask()}>
                           Cancel
                         </ion-button>
-                      ` : '') : html`
-                        <ion-button size="small" fill="outline" @click=${() => this.dismissActiveTask()}>
+                      ` : nothing) : html`
+                        <ion-button slot="end" size="small" fill="outline" @click=${() => this.dismissActiveTask()}>
                           Dismiss
                         </ion-button>
                       `}
-                    </div>
+                    </ion-item>
                     ${this.isTaskActive(this.activeTask) ? html`
                       <ion-progress-bar class="ion-margin-top" .value=${(this.activeTask.progress ?? 0) / 100}></ion-progress-bar>
-                    ` : ''}
+                    ` : nothing}
                   </ion-card-content>
                 </ion-card>
-              ` : ''}
+              ` : nothing}
               <ion-card>
                 <ion-card-header>
                   <ion-card-title>Backup & Restore</ion-card-title>
@@ -122,35 +122,32 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
   }
 
   private isTaskActive(task: Task): boolean {
-    return task.state === TaskState.queued || task.state === TaskState.running;
+    return task.state === TaskState.running;
   }
 
   private getTaskTitle(task: Task): string {
+    let taskName: string;
     switch (task.type) {
       case 'backup':
-        return task.state === TaskState.completed
-          ? 'Backup Completed'
-          : task.state === TaskState.failed
-            ? 'Backup Failed'
-            : task.state === TaskState.cancelled
-              ? 'Backup Cancelled'
-              : 'Backup in Progress';
+        taskName = "Backup";
+        break;
       case 'restore':
-        return task.state === TaskState.completed
-          ? 'Restore Completed'
-          : task.state === TaskState.failed
-            ? 'Restore Failed'
-            : task.state === TaskState.cancelled
-              ? 'Restore Cancelled'
-              : 'Restore in Progress';
+        taskName = "Restore";
+        break;
       default:
-        return task.state === TaskState.completed
-          ? `${task.type} Completed`
-          : task.state === TaskState.failed
-            ? `${task.type} Failed`
-            : task.state === TaskState.cancelled
-              ? `${task.type} Cancelled`
-              : `${task.type} in Progress`;
+        taskName = task.type;
+        break;
+    }
+
+    switch (task.state) {
+      case TaskState.completed:
+        return `${taskName} Completed`
+      case TaskState.failed:
+        return `${taskName} Failed`
+      case TaskState.cancelled:
+        return `${taskName} Cancelled`
+      default:
+        return `${taskName} in Progress`
     }
   }
 
@@ -178,7 +175,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
       const { data, error } = await api.client.GET('/tasks', {
         params: {
           query: {
-            states: [TaskState.running, TaskState.queued],
+            states: [TaskState.running],
             types: ['backup', 'restore']
           }
         }

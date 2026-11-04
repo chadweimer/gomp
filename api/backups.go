@@ -60,7 +60,7 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 	}
 
 	activeTasks, err := h.taskManager.List(ctx, tasks.TaskFilter{
-		States: []models.TaskState{models.Queued, models.Running},
+		States: []models.TaskState{models.TaskStateRunning},
 		Types:  []models.TaskType{models.TaskTypeBackup, models.TaskTypeRestore},
 	})
 	if err == nil && len(activeTasks) > 0 {
@@ -191,7 +191,7 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 	}
 
 	activeTasks, err := h.taskManager.List(ctx, tasks.TaskFilter{
-		States: []models.TaskState{models.Queued, models.Running},
+		States: []models.TaskState{models.TaskStateRunning},
 		Types:  []models.TaskType{models.TaskTypeBackup, models.TaskTypeRestore},
 	})
 	if err == nil && len(activeTasks) > 0 {
