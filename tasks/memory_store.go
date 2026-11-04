@@ -34,10 +34,8 @@ func (s *memoryStore) Create(_ context.Context, task *models.Task) error {
 		return ErrConflict
 	}
 
-	cloned := cloneTask(*task)
-	s.tasks[task.ID] = cloned
-	// Insert newest at beginning
-	s.order = append([]uuid.UUID{task.ID}, s.order...)
+	s.tasks[task.ID] = cloneTask(*task)
+	s.order = append(s.order, task.ID)
 	return nil
 }
 
@@ -71,10 +69,7 @@ func (s *memoryStore) Delete(_ context.Context, id uuid.UUID) error {
 	if _, exists := s.tasks[id]; !exists {
 		return ErrNotFound
 	}
-	delete(s.tasks, id)
-	s.order = slices.DeleteFunc(s.order, func(u uuid.UUID) bool {
-		return u == id
-	})
+	s.deleteTasks([]uuid.UUID{id})
 	return nil
 }
 
@@ -83,7 +78,7 @@ func (s *memoryStore) List(_ context.Context, filter TaskFilter) ([]models.Task,
 	defer s.mu.RUnlock()
 
 	result := make([]models.Task, 0, len(s.order))
-	for _, id := range s.order {
+	for _, id := range slices.Backward(s.order) {
 		task, ok := s.tasks[id]
 		if !ok {
 			continue
@@ -105,12 +100,15 @@ func (s *memoryStore) Prune(_ context.Context, maxAge time.Duration, maxCapacity
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	now := time.Now()
-	prunedCount := 0
+	prunedCount := s.pruneByAge(maxAge) + s.pruneByCapacity(maxCapacity)
+	return prunedCount, nil
+}
 
-	// 1. Prune by age for terminal states
-	toDelete := make([]uuid.UUID, 0)
-	for _, id := range s.order {
+// pruneByAge deletes records of tasks that are terminal and older than maxAge
+func (s *memoryStore) pruneByAge(maxAge time.Duration) int {
+	now := time.Now()
+
+	toDelete := lo.Filter(s.order, func(id uuid.UUID, _ int) bool {
 		task := s.tasks[id]
 		if isTerminal(task.State) {
 			endTime := task.CreatedAt
@@ -118,45 +116,46 @@ func (s *memoryStore) Prune(_ context.Context, maxAge time.Duration, maxCapacity
 				endTime = *task.CompletedAt
 			}
 			if maxAge > 0 && now.Sub(endTime) > maxAge {
-				toDelete = append(toDelete, id)
+				return true
 			}
 		}
+		return false
+	})
+
+	prunedCount := len(toDelete)
+	s.deleteTasks(toDelete)
+
+	return prunedCount
+}
+
+// pruneByCapacity deletes records of tasks that are terminal (oldest first)
+// in order to get the store below the maxCapacity
+func (s *memoryStore) pruneByCapacity(maxCapacity int) int {
+	if maxCapacity <= 0 || len(s.order) <= maxCapacity {
+		return 0
 	}
 
+	excess := len(s.order) - maxCapacity
+
+	// Iterate from oldest to newest
+	capacityPruned := lo.TakeFilter(s.order, excess, func(id uuid.UUID, _ int) bool {
+		return isTerminal(s.tasks[id].State)
+	})
+
+	prunedCount := len(capacityPruned)
+	s.deleteTasks(capacityPruned)
+
+	return prunedCount
+}
+
+func (s *memoryStore) deleteTasks(toDelete []uuid.UUID) {
 	for _, id := range toDelete {
 		delete(s.tasks, id)
-		prunedCount++
 	}
 
 	s.order = slices.DeleteFunc(s.order, func(u uuid.UUID) bool {
 		return slices.Contains(toDelete, u)
 	})
-
-	// 2. Prune by capacity (oldest finished tasks first) if still exceeding maxCapacity
-	if maxCapacity > 0 && len(s.order) > maxCapacity {
-		excess := len(s.order) - maxCapacity
-		capacityPruned := make([]uuid.UUID, 0, excess)
-
-		// Iterate backwards (from oldest to newest)
-		for i := len(s.order) - 1; i >= 0 && len(capacityPruned) < excess; i-- {
-			id := s.order[i]
-			task := s.tasks[id]
-			if isTerminal(task.State) {
-				capacityPruned = append(capacityPruned, id)
-			}
-		}
-
-		for _, id := range capacityPruned {
-			delete(s.tasks, id)
-			prunedCount++
-		}
-
-		s.order = slices.DeleteFunc(s.order, func(u uuid.UUID) bool {
-			return slices.Contains(capacityPruned, u)
-		})
-	}
-
-	return prunedCount, nil
 }
 
 func isTerminal(state models.TaskState) bool {
@@ -166,22 +165,22 @@ func isTerminal(state models.TaskState) bool {
 func cloneTask(src models.Task) models.Task {
 	dst := src
 	if src.Stage != nil {
-		dst.Stage = lo.ToPtr(*src.Stage)
+		dst.Stage = new(*src.Stage)
 	}
 	if src.Progress != nil {
-		dst.Progress = lo.ToPtr(*src.Progress)
+		dst.Progress = new(*src.Progress)
 	}
 	if src.Error != nil {
-		dst.Error = lo.ToPtr(*src.Error)
+		dst.Error = new(*src.Error)
 	}
 	if src.StartedAt != nil {
-		dst.StartedAt = lo.ToPtr(*src.StartedAt)
+		dst.StartedAt = new(*src.StartedAt)
 	}
 	if src.CompletedAt != nil {
-		dst.CompletedAt = lo.ToPtr(*src.CompletedAt)
+		dst.CompletedAt = new(*src.CompletedAt)
 	}
 	if src.Result != nil {
-		dst.Result = lo.ToPtr(maps.Clone(*src.Result))
+		dst.Result = new(maps.Clone(*src.Result))
 	}
 	return dst
 }
