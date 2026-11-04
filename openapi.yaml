@@ -146,8 +146,20 @@ paths:
             Location:
               schema:
                 type: string
+        '202':
+          description: Accepted
+          headers:
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: './models.yaml#/components/schemas/task'
         '400':
           description: Bad Request
+        '409':
+          description: Conflict
         '500':
           description: Internal Server Error
       security:
@@ -165,12 +177,24 @@ paths:
       description: restore from an existing backup
       operationId: restoreFromBackup
       responses:
-        '204':
-          description: No Content
+        '202':
+          description: Accepted
+          headers:
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: './models.yaml#/components/schemas/task'
         '400':
           description: Bad Request
         '404':
           description: Not Found
+        '409':
+          description: Conflict
+        '500':
+          description: Internal Server Error
       security:
         - Cookie: [admin]
     delete:
@@ -185,6 +209,118 @@ paths:
           description: Bad Request
         '404':
           description: Not Found
+      security:
+        - Cookie: [admin]
+  /tasks:
+    get:
+      tags: [app]
+      summary: Get list of tasks
+      description: get list of asynchronous background tasks
+      operationId: getTasks
+      parameters:
+        - name: states
+          in: query
+          required: false
+          description: filter by task state
+          schema:
+            type: array
+            items:
+              $ref: './models.yaml#/components/schemas/taskState'
+        - name: type
+          in: query
+          required: false
+          description: filter by task type
+          schema:
+            $ref: './models.yaml#/components/schemas/taskType'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './models.yaml#/components/schemas/task'
+        '500':
+          description: Internal Server Error
+      security:
+        - Cookie: [admin]
+  /tasks/{taskId}:
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [app]
+      summary: Get task by ID
+      description: get an asynchronous background task by its ID
+      operationId: getTaskById
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './models.yaml#/components/schemas/task'
+        '404':
+          description: Not Found
+        '500':
+          description: Internal Server Error
+      security:
+        - Cookie: [admin]
+    delete:
+      tags: [app]
+      summary: Delete task record
+      description: remove a finished task record
+      operationId: deleteTaskById
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+        '500':
+          description: Internal Server Error
+      security:
+        - Cookie: [admin]
+  /tasks/{taskId}/state:
+    parameters:
+      - name: taskId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    put:
+      tags: [app]
+      summary: Update task state
+      description: transition task state (e.g. cancel)
+      operationId: updateTaskStateById
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './models.yaml#/components/schemas/taskStateUpdate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: './models.yaml#/components/schemas/task'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+        '500':
+          description: Internal Server Error
       security:
         - Cookie: [admin]
   /recipes:

@@ -20,6 +20,7 @@ import (
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/middleware"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/tasks"
 	"github.com/urfave/cli/v3"
 )
 
@@ -64,11 +65,16 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 
 		tokenHandler := infra.NewTokenHandler(cfg.Server.SecureKeys)
 
+		taskStore := tasks.NewMemoryStore()
+		taskManager := tasks.NewManager(taskStore)
+		defer taskManager.Close()
+
 		mux, err := createMux(
 			tokenHandler,
 			uploader,
 			dbDriver,
 			fsDriver,
+			taskManager,
 			baseAssetsRoot.FS(),
 		)
 		if err != nil {
@@ -80,6 +86,7 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 			middleware.LogRequests(slog.Default(), cfg.Server.GetTrustedProxies()),
 			middleware.Recover("Recovered from panic"),
 			middleware.CacheControl(),
+			middleware.Maintenance(taskManager.IsRestoring, "/api/v1/tasks", "/api/v1/auth", "/static", "/favicon.ico"),
 			middleware.Authenticate(tokenHandler, dbDriver.Users()),
 			middleware.AutoRefreshToken(tokenHandler),
 		)
@@ -102,6 +109,7 @@ func createMux(
 	uploader *fileaccess.ImageUploader,
 	dbDriver db.Driver,
 	fsDriver fileaccess.Driver,
+	taskManager *tasks.Manager,
 	assetsFS fs.FS) (*http.ServeMux, error) {
 	handlePrefixed := func(mux *http.ServeMux, prefix string, handler http.Handler) {
 		mux.Handle(fmt.Sprintf("/%s/", prefix), handler)
@@ -110,7 +118,7 @@ func createMux(
 		handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
 	}
 
-	apiHandler, err := api.NewHandler(tokenHandler, uploader, dbDriver, fsDriver)
+	apiHandler, err := api.NewHandler(tokenHandler, uploader, dbDriver, fsDriver, taskManager)
 	if err != nil {
 		return nil, fmt.Errorf("creating API handler: %w", err)
 	}

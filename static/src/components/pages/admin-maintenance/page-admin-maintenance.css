@@ -2,3 +2,9 @@ page-admin-maintenance {
   display: block;
 }
 
+page-admin-maintenance .active-task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+

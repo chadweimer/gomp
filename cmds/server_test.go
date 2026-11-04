@@ -17,6 +17,7 @@ import (
 	"github.com/chadweimer/gomp/middleware"
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/tasks"
 	"go.uber.org/mock/gomock"
 )
 
@@ -199,7 +200,9 @@ func Test_createMux(t *testing.T) {
 			resp := httptest.NewRecorder()
 
 			// Act
-			mux, _ := createMux(tokenHandler, uploader, dbDriver, uplDriver, tt.assetsFS)
+			taskManager := tasks.NewManager(tasks.NewMemoryStore())
+			defer taskManager.Close()
+			mux, _ := createMux(tokenHandler, uploader, dbDriver, uplDriver, taskManager, tt.assetsFS)
 			r := middleware.Wrap(
 				mux,
 				middleware.Authenticate(tokenHandler, dbDriver.Users()),

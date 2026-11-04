@@ -1,9 +1,10 @@
 import { LitElement, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { Backup } from '../../../helpers/schema.gen';
+import { Backup, Task, TaskState, TaskType } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, scaleValue } from '../../../helpers/utils';
+import { cancelTask, pollTask } from '../../../helpers/tasks';
 import '../../file-upload-browser/file-upload-browser';
 import '../../app-icon/app-icon';
 import './page-admin-maintenance.css';
@@ -11,6 +12,7 @@ import './page-admin-maintenance.css';
 @customElement('page-admin-maintenance')
 export class PageAdminMaintenance extends LitElement implements ComponentWithActivatedCallback {
   @state() backups: Backup[] = [];
+  @state() activeTask?: Task;
 
   protected createRenderRoot() {
     return this;
@@ -22,7 +24,10 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
   }
 
   async activatedCallback() {
-    await this.loadBackups();
+    await Promise.all([
+      this.loadBackups(),
+      this.loadActiveTasks(),
+    ]);
   }
 
   render() {
@@ -31,6 +36,24 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
         <ion-grid class="no-pad" fixed>
           <ion-row>
             <ion-col>
+              ${this.activeTask != null ? html`
+                <ion-card color="light" class="active-task-card">
+                  <ion-card-content>
+                    <div class="active-task-header">
+                      <ion-label>
+                        <strong>${this.activeTask.type === TaskType.backup ? 'Backup in Progress' : 'Restore in Progress'}</strong>
+                        <ion-note class="ion-display-block">${this.activeTask.stage ?? 'Processing...'}</ion-note>
+                      </ion-label>
+                      ${this.activeTask.cancellable ? html`
+                        <ion-button color="danger" size="small" fill="outline" @click=${() => this.cancelActiveTask()}>
+                          Cancel
+                        </ion-button>
+                      ` : ''}
+                    </div>
+                    <ion-progress-bar class="ion-margin-top" .value=${(this.activeTask.progress ?? 0) / 100}></ion-progress-bar>
+                  </ion-card-content>
+                </ion-card>
+              ` : ''}
               <ion-card>
                 <ion-card-header>
                   <ion-card-title>Backup & Restore</ion-card-title>
@@ -107,24 +130,75 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     }
   }
 
+  private async loadActiveTasks() {
+    try {
+      const { data, error } = await api.client.GET('/tasks', {
+        params: {
+          query: {
+            states: [TaskState.running, TaskState.queued]
+          }
+        }
+      });
+
+      if (error == null && data != null && data.length > 0) {
+        this.activeTask = data[0];
+        this.resumeActiveTaskPolling(this.activeTask.id).catch(console.error);
+      }
+    } catch (ex) {
+      console.warn('Failed to check active tasks', ex);
+    }
+  }
+
+  private async resumeActiveTaskPolling(taskId: string) {
+    try {
+      await pollTask(taskId, {
+        onUpdate: (task) => {
+          this.activeTask = task;
+        }
+      });
+      this.activeTask = undefined;
+      await this.loadBackups();
+    } catch (ex) {
+      this.activeTask = undefined;
+      console.error(ex);
+    }
+  }
+
+  private async cancelActiveTask() {
+    if (this.activeTask == null) return;
+    try {
+      await cancelTask(this.activeTask.id);
+      await showToast('Operation cancelled.');
+      this.activeTask = undefined;
+      await this.loadBackups();
+    } catch (ex) {
+      console.error(ex);
+      await showToast('Failed to cancel operation.');
+    }
+  }
+
   private async createBackup() {
     try {
-      await showLoading(
-        async () => {
-          const { error } = await api.client.POST('/backups', {
-            body: {},
-            bodySerializer(body) {
-              return fileContentSerializer(body);
-            }
-          });
+      const { data, error } = await api.client.POST('/backups', {
+        body: {},
+        bodySerializer(body) {
+          return fileContentSerializer(body);
+        }
+      });
 
-          if (error != null) {
-            throw new Error('Failed to create backup.', { cause: error });
-          }
-        },
-        'Creating backup...'
-      );
+      if (error != null || data == null) {
+        throw new Error('Failed to create backup.', { cause: error });
+      }
+
+      this.activeTask = data;
+      await pollTask(data.id, {
+        onUpdate: (task) => {
+          this.activeTask = task;
+        }
+      });
+      this.activeTask = undefined;
     } catch (ex) {
+      this.activeTask = undefined;
       console.error(ex);
       await showToast('Failed to create backup.');
     }
@@ -184,19 +258,23 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
 
   private async restoreBackup(backupFileName: string) {
     try {
-      await showLoading(
-        async () => {
-          const { error } = await api.client.POST('/backups/{name}', {
-            params: { path: { name: backupFileName } }
-          });
+      const { data, error } = await api.client.POST('/backups/{name}', {
+        params: { path: { name: backupFileName } }
+      });
 
-          if (error != null) {
-            throw new Error('Failed to restore from backup.', { cause: error });
-          }
-        },
-        'Restoring backup...'
-      );
+      if (error != null || data == null) {
+        throw new Error('Failed to restore from backup.', { cause: error });
+      }
+
+      this.activeTask = data;
+      await pollTask(data.id, {
+        onUpdate: (task) => {
+          this.activeTask = task;
+        }
+      });
+      this.activeTask = undefined;
     } catch (ex) {
+      this.activeTask = undefined;
       console.error(ex);
       await showToast('Failed to restore from backup.');
     }

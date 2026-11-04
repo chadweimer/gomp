@@ -172,7 +172,10 @@ describe('page-admin-maintenance', () => {
           return { status: 200, body: JSON.stringify(mockBackups) };
         }
         if (req.url.match(/\/backups$/) && req.method === 'POST') {
-          return { status: 201, body: JSON.stringify({}) };
+          return { status: 202, body: JSON.stringify({ id: 'task-123', state: 'completed', type: 'backup' }) };
+        }
+        if (req.url.match(/\/tasks\/task-123$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify({ id: 'task-123', state: 'completed', type: 'backup' }) };
         }
         return { status: 404, body: '' };
       });
@@ -189,11 +192,7 @@ describe('page-admin-maintenance', () => {
       expect(createAlertSpy).toHaveBeenCalledWith(
         expect.objectContaining({ header: 'Create Backup?' })
       );
-      expect(createLoadingSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Creating backup...' })
-      );
-      expect(loading.present).toHaveBeenCalled();
-      expect(loading.dismiss).toHaveBeenCalled();
+      expect(createLoadingSpy).not.toHaveBeenCalled();
 
       const postReq = requests.find((r) => r.url.match(/\/backups$/) && r.method === 'POST');
       expect(postReq).toBeDefined();
@@ -408,7 +407,10 @@ describe('page-admin-maintenance', () => {
           return { status: 200, body: JSON.stringify(mockBackups) };
         }
         if (req.url.match(/\/backups\/backup-2026-09-01\.zip$/) && req.method === 'POST') {
-          return { status: 200, body: '' };
+          return { status: 202, body: JSON.stringify({ id: 'task-456', state: 'completed', type: 'restore' }) };
+        }
+        if (req.url.match(/\/tasks\/task-456$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify({ id: 'task-456', state: 'completed', type: 'restore' }) };
         }
         return { status: 404, body: '' };
       });
@@ -425,9 +427,7 @@ describe('page-admin-maintenance', () => {
       expect(createAlertSpy).toHaveBeenCalledWith(
         expect.objectContaining({ header: 'Restore Backup?' })
       );
-      expect(createLoadingSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Restoring backup...' })
-      );
+      expect(createLoadingSpy).not.toHaveBeenCalled();
 
       const restoreReq = requests.find((r) => r.url.match(/\/backups\/backup-2026-09-01\.zip$/) && r.method === 'POST');
       expect(restoreReq).toBeDefined();
@@ -615,6 +615,125 @@ describe('page-admin-maintenance', () => {
       await root.updateComplete;
 
       expect(clickSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Active Background Tasks', () => {
+    it('displays active task banner when task is running on page load', async () => {
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: '[]' };
+        }
+        if (req.url.match(/\/tasks\/active-task-1$/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify({
+              id: 'active-task-1',
+              type: 'backup',
+              state: 'running',
+              stage: 'Compressing files...',
+              progress: 45,
+              cancellable: true
+            })
+          };
+        }
+        if (req.url.match(/\/tasks/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify([
+              {
+                id: 'active-task-1',
+                type: 'backup',
+                state: 'running',
+                stage: 'Compressing files...',
+                progress: 45,
+                cancellable: true
+              }
+            ])
+          };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      const activeCard = root.renderRoot.querySelector('.active-task-card');
+      expect(activeCard).toBeDefined();
+      expect(activeCard?.textContent).toContain('Backup in Progress');
+      expect(activeCard?.textContent).toContain('Compressing files...');
+
+      const cancelBtn = activeCard?.querySelector('ion-button');
+      expect(cancelBtn?.textContent?.trim()).toBe('Cancel');
+    });
+
+    it('cancels active task when Cancel button is clicked', async () => {
+      const toast = mockToast();
+      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
+
+      const requests: Request[] = [];
+      fetchMocker.mockResponse((req: Request) => {
+        requests.push(req);
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: '[]' };
+        }
+        if (req.url.match(/\/tasks\/active-task-1$/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify({
+              id: 'active-task-1',
+              type: 'backup',
+              state: 'running',
+              stage: 'Compressing files...',
+              progress: 45,
+              cancellable: true
+            })
+          };
+        }
+        if (req.url.match(/\/tasks/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify([
+              {
+                id: 'active-task-1',
+                type: 'backup',
+                state: 'running',
+                stage: 'Exporting database...',
+                progress: 20,
+                cancellable: true
+              }
+            ])
+          };
+        }
+        if (req.url.match(/\/tasks\/active-task-1\/state$/) && req.method === 'PUT') {
+          return {
+            status: 200,
+            body: JSON.stringify({
+              id: 'active-task-1',
+              type: 'backup',
+              state: 'cancelled',
+              cancellable: true
+            })
+          };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      const cancelBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('.active-task-card ion-button');
+      cancelBtn?.click();
+      await new Promise((r) => setTimeout(r, 20));
+      await root.updateComplete;
+
+      const cancelReq = requests.find((r) => r.url.match(/\/tasks\/active-task-1\/state$/) && r.method === 'PUT');
+      expect(cancelReq).toBeDefined();
+      expect(createToastSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'Operation cancelled.' })
+      );
     });
   });
 });
