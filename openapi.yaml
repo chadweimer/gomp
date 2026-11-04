@@ -253,6 +253,7 @@ paths:
         schema:
           type: string
           format: uuid
+          x-go-type: uuid.UUID
     get:
       tags: [app]
       summary: Get task by ID
@@ -295,6 +296,7 @@ paths:
         schema:
           type: string
           format: uuid
+          x-go-type: uuid.UUID
     put:
       tags: [app]
       summary: Update task state
