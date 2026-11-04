@@ -10,14 +10,7 @@ const (
 	TaskTypeRestore TaskType = "restore"
 )
 
-// TaskState aliases for cleaner reference
-const (
-	Queued    = TaskStateQueued
-	Running   = TaskStateRunning
-	Completed = TaskStateCompleted
-	Failed    = TaskStateFailed
-	Cancelled = TaskStateCancelled
-)
+// RowData represents a generic row of data, typically used for database rows
 type RowData map[string]any
 
 // TableData represents a table's data, including its name and the rows it contains
