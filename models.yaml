@@ -602,6 +602,7 @@ components:
         id:
           type: string
           format: uuid
+          x-go-type: uuid.UUID
         type:
           $ref: '#/components/schemas/taskType'
         state:

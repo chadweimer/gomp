@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"time"
+	"uuid"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/google/uuid"
 )
 
 var (

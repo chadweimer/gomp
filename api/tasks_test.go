@@ -4,11 +4,11 @@ import (
 	"context"
 	"testing"
 	"time"
+	"uuid"
 
 	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/tasks"
-	"github.com/google/uuid"
 )
 
 func TestGetTasks(t *testing.T) {

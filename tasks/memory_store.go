@@ -5,9 +5,9 @@ import (
 	"slices"
 	"sync"
 	"time"
+	"uuid"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/google/uuid"
 )
 
 type memoryStore struct {

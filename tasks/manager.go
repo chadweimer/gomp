@@ -7,9 +7,9 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"uuid"
 
 	"github.com/chadweimer/gomp/models"
-	"github.com/google/uuid"
 )
 
 // Manager coordinates the creation, execution, state updates, and cancellation of background tasks.
