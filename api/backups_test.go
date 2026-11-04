@@ -130,7 +130,7 @@ func TestCreateBackup(t *testing.T) {
 				// Wait for background task to complete before ending test
 				for range 50 {
 					task, err := taskManager.Get(t.Context(), r202.Body.ID)
-					if err == nil && (task.State == models.Completed || task.State == models.Failed) {
+					if err == nil && (task.State == models.TaskStateCompleted || task.State == models.TaskStateFailed) {
 						break
 					}
 					time.Sleep(10 * time.Millisecond)
@@ -471,7 +471,7 @@ func TestRestoreFromBackup(t *testing.T) {
 				var finalTask *models.Task
 				for range 50 {
 					task, err := taskManager.Get(t.Context(), r202.Body.ID)
-					if err == nil && (task.State == models.Completed || task.State == models.Failed) {
+					if err == nil && (task.State == models.TaskStateCompleted || task.State == models.TaskStateFailed) {
 						finalTask = task
 						break
 					}
@@ -479,11 +479,11 @@ func TestRestoreFromBackup(t *testing.T) {
 				}
 
 				if tt.expectTaskFail {
-					if finalTask == nil || finalTask.State != models.Failed {
+					if finalTask == nil || finalTask.State != models.TaskStateFailed {
 						t.Errorf("expected task to fail, got %v", finalTask)
 					}
 				} else {
-					if finalTask == nil || finalTask.State != models.Completed {
+					if finalTask == nil || finalTask.State != models.TaskStateCompleted {
 						t.Errorf("expected task to succeed, got %v", finalTask)
 					}
 				}

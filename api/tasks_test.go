@@ -31,7 +31,7 @@ func TestListTasks(t *testing.T) {
 
 	for range 50 {
 		task, err := manager.Get(t.Context(), t1.ID)
-		if err == nil && task.State == models.Completed {
+		if err == nil && task.State == models.TaskStateCompleted {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
@@ -46,7 +46,7 @@ func TestListTasks(t *testing.T) {
 
 	for range 50 {
 		task, err := manager.Get(t.Context(), t2.ID)
-		if err == nil && task.State == models.Completed {
+		if err == nil && task.State == models.TaskStateCompleted {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
@@ -63,7 +63,7 @@ func TestListTasks(t *testing.T) {
 	}
 
 	// Filter by state
-	completedState := []models.TaskState{models.Completed}
+	completedState := []models.TaskState{models.TaskStateCompleted}
 	resp, err = api.ListTasks(t.Context(), ListTasksRequestObject{
 		Params: ListTasksParams{States: &completedState},
 	})
@@ -75,7 +75,7 @@ func TestListTasks(t *testing.T) {
 		t.Fatalf("expected 200 response, got %T", resp)
 	}
 	for _, task := range taskList {
-		if task.State != models.Completed {
+		if task.State != models.TaskStateCompleted {
 			t.Errorf("expected Completed state, got %v", task.State)
 		}
 	}
@@ -167,7 +167,7 @@ func TestUpdateTaskStateByID(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	updatedResp, ok := resp.(UpdateTaskStateByID200JSONResponse)
-	if !ok || updatedResp.State != models.Cancelled {
+	if !ok || updatedResp.State != models.TaskStateCancelled {
 		t.Fatalf("expected 200 Cancelled response, got %T", resp)
 	}
 
