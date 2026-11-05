@@ -69,15 +69,12 @@ func serveApplication(cfg config.Config) func(ctx context.Context, _ *cli.Comman
 		taskManager := tasks.NewManager(taskStore)
 		defer taskManager.Close()
 
-		maintenanceLock := infra.NewMaintenanceLock()
-
 		mux, err := createMux(
 			tokenHandler,
 			uploader,
 			dbDriver,
 			fsDriver,
 			taskManager,
-			maintenanceLock,
 			baseAssetsRoot.FS(),
 		)
 		if err != nil {
@@ -112,7 +109,6 @@ func createMux(
 	dbDriver db.Driver,
 	fsDriver fileaccess.Driver,
 	taskManager *tasks.Manager,
-	maintenanceLock *infra.MaintenanceLock,
 	assetsFS fs.FS) (*http.ServeMux, error) {
 	handlePrefixed := func(mux *http.ServeMux, prefix string, handler http.Handler) {
 		mux.Handle(fmt.Sprintf("/%s/", prefix), handler)
@@ -121,17 +117,15 @@ func createMux(
 		handlePrefixed(mux, prefix, http.StripPrefix(fmt.Sprintf("/%s", prefix), handler))
 	}
 
-	apiHandler, err := api.NewHandler(tokenHandler, uploader, dbDriver, fsDriver, taskManager, maintenanceLock)
+	apiHandler, err := api.NewHandler(tokenHandler, uploader, dbDriver, fsDriver, taskManager)
 	if err != nil {
 		return nil, fmt.Errorf("creating API handler: %w", err)
 	}
 
-	apiWithMaintenance := middleware.Maintenance(maintenanceLock.IsActive, "/v1/tasks", "/v1/auth")(apiHandler)
-
 	fileServer := http.FileServerFS(fileaccess.OnlyFiles(fsDriver))
 
 	mux := http.NewServeMux()
-	handlePrefixStripped(mux, "api", apiWithMaintenance)
+	handlePrefixStripped(mux, "api", apiHandler)
 	handlePrefixStripped(mux, "static", http.FileServerFS(fileaccess.OnlyFiles(assetsFS)))
 	// Uploaded files require authentication
 	handlePrefixed(mux, fileaccess.UploadDirectoryName, middleware.VerifyScopes(
