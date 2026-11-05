@@ -1,5 +1,5 @@
 import { LitElement, html, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, query, state } from 'lit/decorators.js';
 import { Backup, Task, TaskState } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
@@ -13,6 +13,8 @@ import './page-admin-maintenance.css';
 export class PageAdminMaintenance extends LitElement implements ComponentWithActivatedCallback {
   @state() backups: Backup[] = [];
   @state() activeTask?: Task;
+
+  @query('.backup-list') private backupList?: HTMLIonListElement;
 
   private pollAbortController?: AbortController;
 
@@ -48,17 +50,17 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
                   <ion-card-content>
                     <ion-item color="light" lines="none">
                       <ion-label>
-                        <h3>${this.getTaskTitle(this.activeTask)}</h3>
+                        <h2>${this.getTaskTitle(this.activeTask)}</h2>
                         <p>${this.activeTask.stage ?? 'Processing...'}</p>
                       </ion-label>
                       ${!this.isTaskActive(this.activeTask) ? html`
-                        <ion-button slot="end" size="small" fill="outline" @click=${() => this.dismissActiveTask()}>
+                        <ion-button slot="end" fill="clear" @click=${() => this.dismissActiveTask()}>
                           Dismiss
                         </ion-button>
                       ` : nothing}
                     </ion-item>
                     ${this.isTaskActive(this.activeTask) ? html`
-                      <ion-progress-bar class="ion-margin-top" .value=${(this.activeTask.progress ?? 0) / 100}></ion-progress-bar>
+                      <ion-progress-bar .value=${(this.activeTask.progress ?? 0) / 100}></ion-progress-bar>
                     ` : nothing}
                   </ion-card-content>
                 </ion-card>
@@ -73,7 +75,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
                     Restoring a backup will replace all current data with the data from the backup file; this is a destructive operation and cannot be undone.
                     These operations may take a while depending on the amount of data.
                   </ion-note>
-                  <ion-list lines="full">
+                  <ion-list lines="full" class="backup-list">
                     <ion-list-header>
                       <ion-label>Backups</ion-label>
                     </ion-list-header>
@@ -289,6 +291,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     });
 
     if (role === 'destructive') {
+      await this.backupList?.closeSlidingItems();
       await this.deleteBackup(backup);
       await this.loadBackups();
     }
@@ -322,6 +325,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     });
 
     if (role === 'destructive') {
+      await this.backupList?.closeSlidingItems();
       await this.restoreBackup(backup.fileName);
     }
   }
@@ -365,12 +369,14 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     }
   }
 
-  private onDownloadBackupClicked(backup: Backup) {
+  private async onDownloadBackupClicked(backup: Backup) {
     const link = document.createElement('a');
     link.href = backup.fileUrl;
     link.download = backup.fileName;
     document.body.appendChild(link);
     link.click();
     link.remove();
+
+    await this.backupList?.closeSlidingItems();
   }
 }
