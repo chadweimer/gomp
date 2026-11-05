@@ -14,14 +14,8 @@ var (
 	ErrConflict = errors.New("a conflicting task is already in progress")
 	// ErrNotFound is returned when a requested task does not exist.
 	ErrNotFound = errors.New("task not found")
-	// ErrNotCancellable is returned when attempting to cancel a task that does not allow cancellation.
-	ErrNotCancellable = errors.New("task cannot be cancelled")
-	// ErrCannotCancelFinished is returned when attempting to cancel a task that is already finished.
-	ErrCannotCancelFinished = errors.New("cannot cancel a task that has already finished")
 	// ErrCannotDeleteActive is returned when attempting to delete a task that is still active.
 	ErrCannotDeleteActive = errors.New("cannot delete an active task")
-	// ErrTaskCancelled is returned or passed as cancellation cause when a task was cancelled by the user.
-	ErrTaskCancelled = errors.New("task was cancelled by user")
 )
 
 // TaskFilter specifies criteria for filtering tasks when listing.

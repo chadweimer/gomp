@@ -4,7 +4,7 @@ import { Backup, Task, TaskState } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, scaleValue } from '../../../helpers/utils';
-import { cancelTask, pollTask } from '../../../helpers/tasks';
+import { pollTask } from '../../../helpers/tasks';
 import '../../file-upload-browser/file-upload-browser';
 import '../../app-icon/app-icon';
 import './page-admin-maintenance.css';
@@ -51,15 +51,11 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
                         <h3>${this.getTaskTitle(this.activeTask)}</h3>
                         <p>${this.activeTask.stage ?? 'Processing...'}</p>
                       </ion-label>
-                      ${this.isTaskActive(this.activeTask) ? (this.activeTask.cancellable ? html`
-                        <ion-button slot="end" color="danger" size="small" fill="outline" @click=${() => this.cancelActiveTask()}>
-                          Cancel
-                        </ion-button>
-                      ` : nothing) : html`
+                      ${!this.isTaskActive(this.activeTask) ? html`
                         <ion-button slot="end" size="small" fill="outline" @click=${() => this.dismissActiveTask()}>
                           Dismiss
                         </ion-button>
-                      `}
+                      ` : nothing}
                     </ion-item>
                     ${this.isTaskActive(this.activeTask) ? html`
                       <ion-progress-bar class="ion-margin-top" .value=${(this.activeTask.progress ?? 0) / 100}></ion-progress-bar>
@@ -151,8 +147,6 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
         return `${taskName} Completed`
       case TaskState.failed:
         return `${taskName} Failed`
-      case TaskState.cancelled:
-        return `${taskName} Cancelled`
       default:
         return `${taskName} in Progress`
     }
@@ -226,18 +220,6 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to monitor operation.');
-    }
-  }
-
-  private async cancelActiveTask() {
-    if (this.activeTask == null) return;
-    try {
-      const updated = await cancelTask(this.activeTask.id);
-      this.activeTask = updated;
-      await showToast('Operation cancelled.');
-    } catch (ex) {
-      console.error(ex);
-      await showToast('Failed to cancel operation.');
     }
   }
 

@@ -37,7 +37,7 @@ func NewManager(store Store) *Manager {
 	return m
 }
 
-// Close gracefully stops the TaskManager pruner and cancels running cancellable tasks.
+// Close gracefully stops the TaskManager pruner and cancels running tasks.
 func (m *Manager) Close() {
 	select {
 	case <-m.pruningCtx.Done():
@@ -54,8 +54,8 @@ func (m *Manager) Close() {
 }
 
 // Submit enqueues and asynchronously launches a new background task.
-func (m *Manager) Submit(taskType models.TaskType, cancellable bool, fn TaskFunc) (*models.Task, error) {
-	task, ctx, err := m.createTask(taskType, cancellable)
+func (m *Manager) Submit(taskType models.TaskType, fn TaskFunc) (*models.Task, error) {
+	task, ctx, err := m.createTask(taskType)
 	if err != nil {
 		return nil, err
 	}
@@ -65,19 +65,18 @@ func (m *Manager) Submit(taskType models.TaskType, cancellable bool, fn TaskFunc
 	return task, nil
 }
 
-func (m *Manager) createTask(taskType models.TaskType, cancellable bool) (*models.Task, context.Context, error) {
+func (m *Manager) createTask(taskType models.TaskType) (*models.Task, context.Context, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	id := uuid.New()
 	task := models.Task{
-		ID:          id,
-		Type:        taskType,
-		State:       models.TaskStateRunning,
-		Stage:       new("Starting"),
-		Progress:    new(0),
-		Cancellable: cancellable,
-		CreatedAt:   time.Now(),
+		ID:        id,
+		Type:      taskType,
+		State:     models.Running,
+		Stage:     new("Starting"),
+		Progress:  new(0),
+		CreatedAt: time.Now(),
 	}
 
 	ctx, cancel := context.WithCancelCause(context.Background())
@@ -97,7 +96,7 @@ func (m *Manager) runWorker(ctx context.Context, id uuid.UUID, fn TaskFunc) {
 		defer m.mu.Unlock()
 
 		t, err := m.store.Get(ctx, id)
-		if err == nil && t.State == models.TaskStateRunning {
+		if err == nil && t.State == models.Running {
 			t.Progress = &percent
 			t.Stage = &stage
 			_ = m.store.Update(ctx, t)
@@ -119,9 +118,9 @@ func (m *Manager) runWorker(ctx context.Context, id uuid.UUID, fn TaskFunc) {
 
 	t.CompletedAt = &completedAt
 
-	// Check cancellation first
+	// Check context cancellation first (e.g. server shutdown)
 	if ctx.Err() != nil {
-		t.State = models.TaskStateCancelled
+		t.State = models.Failed
 		cause := context.Cause(ctx)
 		var errMsg string
 		if cause != nil {
@@ -131,11 +130,11 @@ func (m *Manager) runWorker(ctx context.Context, id uuid.UUID, fn TaskFunc) {
 		}
 		t.Error = &errMsg
 	} else if execErr != nil {
-		t.State = models.TaskStateFailed
+		t.State = models.Failed
 		errMsg := execErr.Error()
 		t.Error = &errMsg
 	} else {
-		t.State = models.TaskStateCompleted
+		t.State = models.Completed
 		t.Progress = new(100)
 		t.Stage = new("Completed")
 		if result != nil {
@@ -154,48 +153,6 @@ func (m *Manager) Get(ctx context.Context, id uuid.UUID) (*models.Task, error) {
 // List returns tasks matching the specified filter criteria.
 func (m *Manager) List(ctx context.Context, filter TaskFilter) ([]models.Task, error) {
 	return m.store.List(ctx, filter)
-}
-
-// UpdateState transitions a task's state, specifically supporting cancellation.
-func (m *Manager) UpdateState(ctx context.Context, id uuid.UUID, newState models.TaskState) (*models.Task, error) {
-	if newState != models.TaskStateCancelled {
-		return nil, errors.New("unsupported state transition")
-	}
-
-	m.mu.Lock()
-	task, err := m.store.Get(ctx, id)
-	if err != nil {
-		m.mu.Unlock()
-		return nil, err
-	}
-
-	if isTerminal(task.State) {
-		m.mu.Unlock()
-		return nil, ErrCannotCancelFinished
-	}
-
-	if !task.Cancellable {
-		m.mu.Unlock()
-		return nil, ErrNotCancellable
-	}
-
-	cancel, running := m.runningTasks[id]
-	if running {
-		cancel(ErrTaskCancelled)
-	}
-	m.mu.Unlock()
-
-	// Wait briefly for worker to complete transition or query updated task
-	deadline := time.Now().Add(500 * time.Millisecond)
-	for time.Now().Before(deadline) {
-		updated, err := m.store.Get(ctx, id)
-		if err == nil && updated.State == models.TaskStateCancelled {
-			return updated, nil
-		}
-		time.Sleep(20 * time.Millisecond)
-	}
-
-	return m.store.Get(ctx, id)
 }
 
 // Delete permanently removes a finished task record from the store.

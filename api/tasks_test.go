@@ -22,7 +22,7 @@ func TestListTasks(t *testing.T) {
 	}
 
 	// Create test tasks
-	t1, err := manager.Submit(models.TaskTypeBackup, true, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+	t1, err := manager.Submit(models.TaskTypeBackup, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
 		return nil, nil
 	})
 	if err != nil {
@@ -31,13 +31,13 @@ func TestListTasks(t *testing.T) {
 
 	for range 50 {
 		task, err := manager.Get(t.Context(), t1.ID)
-		if err == nil && task.State == models.TaskStateCompleted {
+		if err == nil && task.State == models.Completed {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
 
-	t2, err := manager.Submit(models.TaskTypeRestore, false, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+	t2, err := manager.Submit(models.TaskTypeRestore, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
 		return nil, nil
 	})
 	if err != nil {
@@ -46,7 +46,7 @@ func TestListTasks(t *testing.T) {
 
 	for range 50 {
 		task, err := manager.Get(t.Context(), t2.ID)
-		if err == nil && task.State == models.TaskStateCompleted {
+		if err == nil && task.State == models.Completed {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
@@ -63,7 +63,7 @@ func TestListTasks(t *testing.T) {
 	}
 
 	// Filter by state
-	completedState := []models.TaskState{models.TaskStateCompleted}
+	completedState := []models.TaskState{models.Completed}
 	resp, err = api.ListTasks(t.Context(), ListTasksRequestObject{
 		Params: ListTasksParams{States: &completedState},
 	})
@@ -75,7 +75,7 @@ func TestListTasks(t *testing.T) {
 		t.Fatalf("expected 200 response, got %T", resp)
 	}
 	for _, task := range taskList {
-		if task.State != models.TaskStateCompleted {
+		if task.State != models.Completed {
 			t.Errorf("expected Completed state, got %v", task.State)
 		}
 	}
@@ -112,7 +112,7 @@ func TestGetTaskByID(t *testing.T) {
 		taskManager:  manager,
 	}
 
-	task, _ := manager.Submit(models.TaskTypeBackup, true, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+	task, _ := manager.Submit(models.TaskTypeBackup, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
 		return nil, nil
 	})
 
@@ -136,100 +136,6 @@ func TestGetTaskByID(t *testing.T) {
 	}
 }
 
-func TestUpdateTaskStateByID(t *testing.T) {
-	store := tasks.NewMemoryStore()
-	manager := tasks.NewManager(store)
-	defer manager.Close()
-
-	api := apiHandler{
-		tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
-		taskManager:  manager,
-	}
-
-	started := make(chan struct{})
-	release := make(chan struct{})
-
-	cancellableTask, _ := manager.Submit(models.TaskTypeBackup, true, func(ctx context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
-		close(started)
-		<-ctx.Done()
-		return nil, ctx.Err()
-	})
-
-	<-started
-
-	// Cancel success
-	cancelledState := models.TaskStateUpdateStateCancelled
-	resp, err := api.UpdateTaskStateByID(t.Context(), UpdateTaskStateByIDRequestObject{
-		TaskID: cancellableTask.ID,
-		Body:   &UpdateTaskStateByIDJSONRequestBody{State: cancelledState},
-	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	updatedResp, ok := resp.(UpdateTaskStateByID200JSONResponse)
-	if !ok || updatedResp.State != models.TaskStateCancelled {
-		t.Fatalf("expected 200 Cancelled response, got %T", resp)
-	}
-
-	// Already finished -> 409
-	resp, err = api.UpdateTaskStateByID(t.Context(), UpdateTaskStateByIDRequestObject{
-		TaskID: cancellableTask.ID,
-		Body:   &UpdateTaskStateByIDJSONRequestBody{State: cancelledState},
-	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if _, ok := resp.(UpdateTaskStateByID409Response); !ok {
-		t.Errorf("expected 409 response for finished task, got %T", resp)
-	}
-
-	// Non-cancellable task
-	startedRestore := make(chan struct{})
-	nonCancellableTask, _ := manager.Submit(models.TaskTypeRestore, false, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
-		close(startedRestore)
-		<-release
-		return nil, nil
-	})
-	<-startedRestore
-
-	resp, err = api.UpdateTaskStateByID(t.Context(), UpdateTaskStateByIDRequestObject{
-		TaskID: nonCancellableTask.ID,
-		Body:   &UpdateTaskStateByIDJSONRequestBody{State: cancelledState},
-	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if _, ok := resp.(UpdateTaskStateByID409Response); !ok {
-		t.Errorf("expected 409 response for non-cancellable task, got %T", resp)
-	}
-
-	close(release)
-
-	// Invalid state in body -> 400
-	resp, err = api.UpdateTaskStateByID(t.Context(), UpdateTaskStateByIDRequestObject{
-		TaskID: cancellableTask.ID,
-		Body:   &UpdateTaskStateByIDJSONRequestBody{State: "invalid_state"},
-	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if _, ok := resp.(UpdateTaskStateByID400Response); !ok {
-		t.Errorf("expected 400 response for invalid state, got %T", resp)
-	}
-
-	// Not found -> 404
-	resp, err = api.UpdateTaskStateByID(t.Context(), UpdateTaskStateByIDRequestObject{
-		TaskID: uuid.New(),
-		Body:   &UpdateTaskStateByIDJSONRequestBody{State: cancelledState},
-	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if _, ok := resp.(UpdateTaskStateByID404Response); !ok {
-		t.Errorf("expected 404 response for unknown task, got %T", resp)
-	}
-}
-
 func TestDeleteTaskByID(t *testing.T) {
 	store := tasks.NewMemoryStore()
 	manager := tasks.NewManager(store)
@@ -243,7 +149,7 @@ func TestDeleteTaskByID(t *testing.T) {
 	started := make(chan struct{})
 	release := make(chan struct{})
 
-	activeTask, _ := manager.Submit(models.TaskTypeBackup, true, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+	activeTask, _ := manager.Submit(models.TaskTypeBackup, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
 		close(started)
 		<-release
 		return nil, nil

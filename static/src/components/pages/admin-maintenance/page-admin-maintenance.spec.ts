@@ -694,8 +694,7 @@ describe('page-admin-maintenance', () => {
               type: 'backup',
               state: 'running',
               stage: 'Compressing files...',
-              progress: 45,
-              cancellable: true
+              progress: 45
             })
           };
         }
@@ -708,8 +707,7 @@ describe('page-admin-maintenance', () => {
                 type: 'backup',
                 state: 'running',
                 stage: 'Compressing files...',
-                progress: 45,
-                cancellable: true
+                progress: 45
               }
             ])
           };
@@ -726,76 +724,7 @@ describe('page-admin-maintenance', () => {
       expect(activeCard?.textContent).toContain('Backup in Progress');
       expect(activeCard?.textContent).toContain('Compressing files...');
 
-      const cancelBtn = activeCard?.querySelector('ion-button');
-      expect(cancelBtn?.textContent?.trim()).toBe('Cancel');
-    });
-
-    it('cancels active task when Cancel button is clicked', async () => {
-      const toast = mockToast();
-      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
-
-      const requests: Request[] = [];
-      fetchMocker.mockResponse((req: Request) => {
-        requests.push(req);
-        if (req.url.match(/\/backups$/) && req.method === 'GET') {
-          return { status: 200, body: '[]' };
-        }
-        if (req.url.match(/\/tasks\/active-task-1$/) && req.method === 'GET') {
-          return {
-            status: 200,
-            body: JSON.stringify({
-              id: 'active-task-1',
-              type: 'backup',
-              state: 'running',
-              stage: 'Compressing files...',
-              progress: 45,
-              cancellable: true
-            })
-          };
-        }
-        if (req.url.match(/\/tasks/) && req.method === 'GET') {
-          return {
-            status: 200,
-            body: JSON.stringify([
-              {
-                id: 'active-task-1',
-                type: 'backup',
-                state: 'running',
-                stage: 'Exporting database...',
-                progress: 20,
-                cancellable: true
-              }
-            ])
-          };
-        }
-        if (req.url.match(/\/tasks\/active-task-1\/state$/) && req.method === 'PUT') {
-          return {
-            status: 200,
-            body: JSON.stringify({
-              id: 'active-task-1',
-              type: 'backup',
-              state: 'cancelled',
-              cancellable: true
-            })
-          };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
-      await root.activatedCallback();
-      await root.updateComplete;
-
-      const cancelBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('.active-task-card ion-button');
-      cancelBtn?.click();
-      await new Promise((r) => setTimeout(r, 20));
-      await root.updateComplete;
-
-      const cancelReq = requests.find((r) => r.url.match(/\/tasks\/active-task-1\/state$/) && r.method === 'PUT');
-      expect(cancelReq).toBeDefined();
-      expect(createToastSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Operation cancelled.' })
-      );
+      expect(activeCard?.querySelector('ion-button')).toBeNull();
     });
 
     it('shows Dismiss button when task completes and clears card when dismissed', async () => {
@@ -811,8 +740,7 @@ describe('page-admin-maintenance', () => {
               type: 'backup',
               state: 'completed',
               stage: 'Completed successfully',
-              progress: 100,
-              cancellable: false
+              progress: 100
             })
           };
         }
@@ -825,8 +753,7 @@ describe('page-admin-maintenance', () => {
                 type: 'backup',
                 state: 'running',
                 stage: 'Finishing...',
-                progress: 99,
-                cancellable: false
+                progress: 99
               }
             ])
           };
@@ -868,8 +795,7 @@ describe('page-admin-maintenance', () => {
               id: 'dup-task',
               type: 'backup',
               state: 'running',
-              progress: 50,
-              cancellable: true
+              progress: 50
             })
           };
         }
@@ -881,8 +807,7 @@ describe('page-admin-maintenance', () => {
                 id: 'dup-task',
                 type: 'backup',
                 state: 'running',
-                progress: 50,
-                cancellable: true
+                progress: 50
               }
             ])
           };
@@ -918,8 +843,7 @@ describe('page-admin-maintenance', () => {
               id: 'disconnect-task',
               type: 'backup',
               state: 'running',
-              progress: 10,
-              cancellable: true
+              progress: 10
             })
           };
         }
@@ -931,8 +855,7 @@ describe('page-admin-maintenance', () => {
                 id: 'disconnect-task',
                 type: 'backup',
                 state: 'running',
-                progress: 10,
-                cancellable: true
+                progress: 10
               }
             ])
           };

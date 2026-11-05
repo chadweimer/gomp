@@ -55,7 +55,7 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 	}
 
 	activeTasks, err := h.taskManager.List(ctx, tasks.TaskFilter{
-		States: []models.TaskState{models.TaskStateRunning},
+		States: []models.TaskState{models.Running},
 		Types:  []models.TaskType{models.TaskTypeBackup, models.TaskTypeRestore},
 	})
 	if err == nil && len(activeTasks) > 0 {
@@ -63,7 +63,7 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 		return CreateBackup409Response{}, nil
 	}
 
-	task, err := h.taskManager.Submit(models.TaskTypeBackup, true, func(taskCtx context.Context, report tasks.ProgressReporter) (map[string]any, error) {
+	task, err := h.taskManager.Submit(models.TaskTypeBackup, func(taskCtx context.Context, report tasks.ProgressReporter) (map[string]any, error) {
 		logger.DebugContext(taskCtx, "Starting background backup task", "name", name)
 		report(10, "Exporting database data")
 
@@ -186,7 +186,7 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 	}
 
 	activeTasks, err := h.taskManager.List(ctx, tasks.TaskFilter{
-		States: []models.TaskState{models.TaskStateRunning},
+		States: []models.TaskState{models.Running},
 		Types:  []models.TaskType{models.TaskTypeBackup, models.TaskTypeRestore},
 	})
 	if err == nil && len(activeTasks) > 0 {
@@ -195,7 +195,7 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 	}
 
 	backupName := request.Name
-	task, err := h.taskManager.Submit(models.TaskTypeRestore, false, func(taskCtx context.Context, report tasks.ProgressReporter) (map[string]any, error) {
+	task, err := h.taskManager.Submit(models.TaskTypeRestore, func(taskCtx context.Context, report tasks.ProgressReporter) (map[string]any, error) {
 		logger.InfoContext(taskCtx, "Starting background database restore task", "name", backupName)
 		report(10, "Validating backup archive")
 

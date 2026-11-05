@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import createFetchMock from 'vitest-fetch-mock';
-import { pollTask, cancelTask } from './tasks';
+import { pollTask } from './tasks';
 import { Task, TaskState } from './schema.gen';
 
 const fetchMocker = createFetchMock(vi);
@@ -24,7 +24,6 @@ describe('tasks helper', () => {
         id: 'task-1',
         type: 'backup',
         state: TaskState.completed,
-        cancellable: true,
         createdAt: new Date().toISOString(),
       };
 
@@ -50,7 +49,6 @@ describe('tasks helper', () => {
                 state: TaskState.running,
                 progress: callCount * 30,
                 stage: 'Working',
-                cancellable: true,
                 createdAt: new Date().toISOString()
               })
             };
@@ -62,7 +60,6 @@ describe('tasks helper', () => {
               type: 'backup',
               state: TaskState.completed,
               progress: 100,
-              cancellable: true,
               createdAt: new Date().toISOString()
             })
           };
@@ -92,7 +89,6 @@ describe('tasks helper', () => {
         type: 'backup',
         state: TaskState.failed,
         error: 'Out of disk space',
-        cancellable: true,
         createdAt: new Date().toISOString(),
       };
 
@@ -102,22 +98,6 @@ describe('tasks helper', () => {
       expect(task).not.toBeNull();
       expect(task?.state).toBe(TaskState.failed);
       expect(task?.error).toBe('Out of disk space');
-    });
-
-    it('resolves with task when task is cancelled', async () => {
-      const mockTask: Task = {
-        id: 'task-1',
-        type: 'backup',
-        state: TaskState.cancelled,
-        cancellable: true,
-        createdAt: new Date().toISOString(),
-      };
-
-      fetchMocker.mockResponse(JSON.stringify(mockTask));
-
-      const task = await pollTask('task-1', { intervalMs: 10 });
-      expect(task).not.toBeNull();
-      expect(task?.state).toBe(TaskState.cancelled);
     });
 
     it('throws error when server returns error response', async () => {
@@ -132,7 +112,6 @@ describe('tasks helper', () => {
         id: 'task-1',
         type: 'backup',
         state: TaskState.running,
-        cancellable: true,
         createdAt: new Date().toISOString()
       }));
 
@@ -141,34 +120,6 @@ describe('tasks helper', () => {
 
       const result = await pollTask('task-1', { intervalMs: 10, signal: controller.signal });
       expect(result).toBeNull();
-    });
-  });
-
-  describe('cancelTask', () => {
-    it('sends PUT to /tasks/{taskId}/state', async () => {
-      let putBody: string | undefined;
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.includes('/tasks/task-1/state') && req.method === 'PUT') {
-          return req.text().then((body) => {
-            putBody = body;
-            return {
-              status: 200,
-              body: JSON.stringify({
-                id: 'task-1',
-                type: 'backup',
-                state: TaskState.cancelled,
-                cancellable: true,
-                createdAt: new Date().toISOString()
-              })
-            };
-          });
-        }
-        return { status: 404, body: '' };
-      });
-
-      const result = await cancelTask('task-1');
-      expect(result.state).toBe(TaskState.cancelled);
-      expect(putBody).toContain('"state":"cancelled"');
     });
   });
 });

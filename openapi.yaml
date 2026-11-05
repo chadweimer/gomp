@@ -290,43 +290,6 @@ paths:
           description: Internal Server Error
       security:
         - Cookie: [admin]
-  /tasks/{taskId}/state:
-    parameters:
-      - name: taskId
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-          x-go-type: uuid.UUID
-    put:
-      tags: [app]
-      summary: Update task state
-      description: transition task state (e.g. cancel)
-      operationId: updateTaskStateById
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: './models.yaml#/components/schemas/taskStateUpdate'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: './models.yaml#/components/schemas/task'
-        '400':
-          description: Bad Request
-        '404':
-          description: Not Found
-        '409':
-          description: Conflict
-        '500':
-          description: Internal Server Error
-      security:
-        - Cookie: [admin]
   /recipes:
     get:
       tags: [recipes]

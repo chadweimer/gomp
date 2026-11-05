@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/chadweimer/gomp/infra"
-	"github.com/chadweimer/gomp/models"
 	"github.com/chadweimer/gomp/tasks"
 )
 
@@ -52,34 +51,6 @@ func (h apiHandler) GetTaskByID(ctx context.Context, request GetTaskByIDRequestO
 	}
 
 	return GetTaskByID200JSONResponse(*task), nil
-}
-
-func (h apiHandler) UpdateTaskStateByID(ctx context.Context, request UpdateTaskStateByIDRequestObject) (UpdateTaskStateByIDResponseObject, error) {
-	logger := infra.GetLoggerFromContext(ctx)
-
-	if h.taskManager == nil {
-		logger.ErrorContext(ctx, "Task manager is not configured")
-		return UpdateTaskStateByID500Response{}, nil
-	}
-
-	if request.Body == nil || !request.Body.State.Valid() {
-		return UpdateTaskStateByID400Response{}, nil
-	}
-
-	task, err := h.taskManager.UpdateState(ctx, request.TaskID, models.TaskState(request.Body.State))
-	if err != nil {
-		if errors.Is(err, tasks.ErrNotFound) {
-			return UpdateTaskStateByID404Response{}, nil
-		}
-		if errors.Is(err, tasks.ErrNotCancellable) || errors.Is(err, tasks.ErrCannotCancelFinished) {
-			logger.WarnContext(ctx, "Cannot cancel task", "error", err, "taskId", request.TaskID)
-			return UpdateTaskStateByID409Response{}, nil
-		}
-		logger.ErrorContext(ctx, "Failed to update task state", "error", err, "taskId", request.TaskID)
-		return UpdateTaskStateByID400Response{}, nil
-	}
-
-	return UpdateTaskStateByID200JSONResponse(*task), nil
 }
 
 func (h apiHandler) DeleteTaskByID(ctx context.Context, request DeleteTaskByIDRequestObject) (DeleteTaskByIDResponseObject, error) {

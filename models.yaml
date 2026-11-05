@@ -581,7 +581,6 @@ components:
         - running
         - completed
         - failed
-        - cancelled
     taskType:
       type: string
       description: Type of asynchronous background task (e.g. backup, restore).
@@ -593,7 +592,6 @@ components:
         - id
         - type
         - state
-        - cancellable
         - createdAt
       properties:
         id:
@@ -604,9 +602,6 @@ components:
           $ref: '#/components/schemas/taskType'
         state:
           $ref: '#/components/schemas/taskState'
-        cancellable:
-          type: boolean
-          description: Whether this task can be cancelled while running
         progress:
           type: integer
           minimum: 0
@@ -630,14 +625,3 @@ components:
         error:
           type: string
           description: Error message if failed
-    taskStateUpdate:
-      description: Update the state of an asynchronous task (e.g. to cancel).
-      type: object
-      required:
-        - state
-      properties:
-        state:
-          type: string
-          description: Target state requested by client. Only cancellation is allowed.
-          enum:
-            - cancelled

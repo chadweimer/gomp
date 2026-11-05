@@ -18,7 +18,7 @@ func TestTaskManager_Submit_Success(t *testing.T) {
 	defer manager.Close()
 
 	done := make(chan struct{})
-	task, err := manager.Submit(models.TaskTypeBackup, true, func(_ context.Context, report tasks.ProgressReporter) (map[string]any, error) {
+	task, err := manager.Submit(models.TaskTypeBackup, func(_ context.Context, report tasks.ProgressReporter) (map[string]any, error) {
 		report(50, "Halfway")
 		close(done)
 		return map[string]any{"url": "/file.zip"}, nil
@@ -33,13 +33,13 @@ func TestTaskManager_Submit_Success(t *testing.T) {
 	var finalTask *models.Task
 	for range 50 {
 		finalTask, err = manager.Get(t.Context(), task.ID)
-		if err == nil && finalTask.State == models.TaskStateCompleted {
+		if err == nil && finalTask.State == models.Completed {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
 
-	if finalTask.State != models.TaskStateCompleted {
+	if finalTask.State != models.Completed {
 		t.Errorf("expected task state Completed, got %v", finalTask.State)
 	}
 	if finalTask.Progress == nil || *finalTask.Progress != 100 {
@@ -56,7 +56,7 @@ func TestTaskManager_Submit_Failure(t *testing.T) {
 	defer manager.Close()
 
 	expectedErr := errors.New("boom")
-	task, err := manager.Submit(models.TaskTypeBackup, true, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+	task, err := manager.Submit(models.TaskTypeBackup, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
 		return nil, expectedErr
 	})
 	if err != nil {
@@ -66,13 +66,13 @@ func TestTaskManager_Submit_Failure(t *testing.T) {
 	var finalTask *models.Task
 	for range 50 {
 		finalTask, err = manager.Get(t.Context(), task.ID)
-		if err == nil && finalTask.State == models.TaskStateFailed {
+		if err == nil && finalTask.State == models.Failed {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
 
-	if finalTask.State != models.TaskStateFailed {
+	if finalTask.State != models.Failed {
 		t.Errorf("expected task state Failed, got %v", finalTask.State)
 	}
 	if finalTask.Error == nil || *finalTask.Error != "boom" {
@@ -90,7 +90,7 @@ func TestTaskManager_ConcurrentTasks(t *testing.T) {
 	started2 := make(chan struct{})
 	release2 := make(chan struct{})
 
-	_, err := manager.Submit(models.TaskTypeBackup, true, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+	_, err := manager.Submit(models.TaskTypeBackup, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
 		close(started1)
 		<-release1
 		return nil, nil
@@ -102,7 +102,7 @@ func TestTaskManager_ConcurrentTasks(t *testing.T) {
 	<-started1
 
 	// Second task should also start concurrently
-	_, err = manager.Submit(models.TaskTypeRestore, false, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+	_, err = manager.Submit(models.TaskTypeRestore, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
 		close(started2)
 		<-release2
 		return nil, nil
@@ -117,18 +117,14 @@ func TestTaskManager_ConcurrentTasks(t *testing.T) {
 	close(release2)
 }
 
-func TestTaskManager_Cancellation(t *testing.T) {
+func TestTaskManager_Shutdown_MarksFailed(t *testing.T) {
 	store := tasks.NewMemoryStore()
 	manager := tasks.NewManager(store)
-	defer manager.Close()
 
 	started := make(chan struct{})
-	cancelled := make(chan struct{})
-
-	task, err := manager.Submit(models.TaskTypeBackup, true, func(ctx context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+	task, err := manager.Submit(models.TaskTypeBackup, func(ctx context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
 		close(started)
 		<-ctx.Done()
-		close(cancelled)
 		return nil, ctx.Err()
 	})
 	if err != nil {
@@ -137,47 +133,24 @@ func TestTaskManager_Cancellation(t *testing.T) {
 
 	<-started
 
-	updatedTask, err := manager.UpdateState(t.Context(), task.ID, models.TaskStateCancelled)
-	if err != nil {
-		t.Fatalf("failed to cancel task: %v", err)
-	}
-	if updatedTask.State != models.TaskStateCancelled {
-		t.Errorf("expected Cancelled state, got %v", updatedTask.State)
-	}
+	// Closing the manager triggers shutdown context cancellation
+	manager.Close()
 
-	select {
-	case <-cancelled:
-		// success
-	case <-time.After(1 * time.Second):
-		t.Error("worker was not notified of cancellation")
-	}
-}
-
-func TestTaskManager_NotCancellable(t *testing.T) {
-	store := tasks.NewMemoryStore()
-	manager := tasks.NewManager(store)
-	defer manager.Close()
-
-	started := make(chan struct{})
-	release := make(chan struct{})
-
-	task, err := manager.Submit(models.TaskTypeRestore, false, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
-		close(started)
-		<-release
-		return nil, nil
-	})
-	if err != nil {
-		t.Fatalf("failed to submit: %v", err)
+	var finalTask *models.Task
+	for range 50 {
+		finalTask, err = manager.Get(t.Context(), task.ID)
+		if err == nil && finalTask.State == models.Failed {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
 
-	<-started
-
-	_, err = manager.UpdateState(t.Context(), task.ID, models.TaskStateCancelled)
-	if !errors.Is(err, tasks.ErrNotCancellable) {
-		t.Errorf("expected ErrNotCancellable, got %v", err)
+	if finalTask.State != models.Failed {
+		t.Errorf("expected task state Failed on shutdown, got %v", finalTask.State)
 	}
-
-	close(release)
+	if finalTask.Error == nil || *finalTask.Error != "server shutting down" {
+		t.Errorf("expected error 'server shutting down', got %v", finalTask.Error)
+	}
 }
 
 func TestTaskManager_Delete(t *testing.T) {
@@ -188,7 +161,7 @@ func TestTaskManager_Delete(t *testing.T) {
 	started := make(chan struct{})
 	release := make(chan struct{})
 
-	task, err := manager.Submit(models.TaskTypeBackup, true, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+	task, err := manager.Submit(models.TaskTypeBackup, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
 		close(started)
 		<-release
 		return nil, nil
@@ -230,7 +203,7 @@ func TestMemoryStore_Pruning(t *testing.T) {
 		task := &models.Task{
 			ID:          uuid.New(),
 			Type:        models.TaskTypeBackup,
-			State:       models.TaskStateCompleted,
+			State:       models.Completed,
 			CreatedAt:   now.Add(-3 * time.Hour),
 			CompletedAt: &completedAt,
 		}
@@ -244,7 +217,7 @@ func TestMemoryStore_Pruning(t *testing.T) {
 	activeTask := &models.Task{
 		ID:        uuid.New(),
 		Type:      models.TaskTypeBackup,
-		State:     models.TaskStateRunning,
+		State:     models.Running,
 		CreatedAt: now,
 	}
 	if err := store.Create(t.Context(), activeTask); err != nil {
@@ -270,16 +243,16 @@ func TestMemoryStore_Pruning(t *testing.T) {
 func TestMemoryStore_ListFiltering(t *testing.T) {
 	store := tasks.NewMemoryStore()
 
-	t1 := &models.Task{ID: uuid.New(), Type: models.TaskTypeBackup, State: models.TaskStateRunning, CreatedAt: time.Now()}
-	t2 := &models.Task{ID: uuid.New(), Type: models.TaskTypeRestore, State: models.TaskStateCompleted, CreatedAt: time.Now()}
-	t3 := &models.Task{ID: uuid.New(), Type: models.TaskTypeBackup, State: models.TaskStateCompleted, CreatedAt: time.Now()}
+	t1 := &models.Task{ID: uuid.New(), Type: models.TaskTypeBackup, State: models.Running, CreatedAt: time.Now()}
+	t2 := &models.Task{ID: uuid.New(), Type: models.TaskTypeRestore, State: models.Completed, CreatedAt: time.Now()}
+	t3 := &models.Task{ID: uuid.New(), Type: models.TaskTypeBackup, State: models.Completed, CreatedAt: time.Now()}
 
 	_ = store.Create(t.Context(), t1)
 	_ = store.Create(t.Context(), t2)
 	_ = store.Create(t.Context(), t3)
 
 	// Filter by state
-	res, err := store.List(t.Context(), tasks.TaskFilter{States: []models.TaskState{models.TaskStateCompleted}})
+	res, err := store.List(t.Context(), tasks.TaskFilter{States: []models.TaskState{models.Completed}})
 	if err != nil || len(res) != 2 {
 		t.Errorf("expected 2 completed tasks, got %d", len(res))
 	}
@@ -292,7 +265,7 @@ func TestMemoryStore_ListFiltering(t *testing.T) {
 
 	// Filter by both
 	res, err = store.List(t.Context(), tasks.TaskFilter{
-		States: []models.TaskState{models.TaskStateCompleted},
+		States: []models.TaskState{models.Completed},
 		Types:  []models.TaskType{models.TaskTypeBackup},
 	})
 	if err != nil || len(res) != 1 {
@@ -310,11 +283,11 @@ func TestMemoryStore_ThreadSafety(t *testing.T) {
 			task := &models.Task{
 				ID:        id,
 				Type:      models.TaskTypeBackup,
-				State:     models.TaskStateRunning,
+				State:     models.Running,
 				CreatedAt: time.Now(),
 			}
 			_ = store.Create(context.Background(), task)
-			task.State = models.TaskStateFailed
+			task.State = models.Failed
 			_ = store.Update(context.Background(), task)
 			_, _ = store.Get(context.Background(), id)
 			_, _ = store.List(context.Background(), tasks.TaskFilter{})
