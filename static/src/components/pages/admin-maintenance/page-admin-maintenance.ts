@@ -225,17 +225,12 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
 
   private async createBackup() {
     try {
-      const { data, error, response } = await api.client.POST('/backups', {
+      const { data, error } = await api.client.POST('/backups', {
         body: {},
         bodySerializer(body) {
           return fileContentSerializer(body);
         }
       });
-
-      if (response?.status === 409) {
-        await showToast('An operation is already in progress.');
-        return;
-      }
 
       if (error != null || data == null) {
         throw new Error('Failed to create backup.', { cause: error });
@@ -301,14 +296,9 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
 
   private async restoreBackup(backupFileName: string) {
     try {
-      const { data, error, response } = await api.client.POST('/backups/{name}', {
+      const { data, error } = await api.client.POST('/backups/{name}', {
         params: { path: { name: backupFileName } }
       });
-
-      if (response?.status === 409) {
-        await showToast('An operation is already in progress.');
-        return;
-      }
 
       if (error != null || data == null) {
         throw new Error('Failed to restore from backup.', { cause: error });

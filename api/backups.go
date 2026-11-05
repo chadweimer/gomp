@@ -63,10 +63,6 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 		}, nil
 	})
 	if err != nil {
-		if errors.Is(err, tasks.ErrConflict) {
-			logger.WarnContext(ctx, "A backup or restore task is already in progress")
-			return CreateBackup409Response{}, nil
-		}
 		logger.ErrorContext(ctx, "Failed to submit backup task", "error", err)
 		return CreateBackup500Response{}, nil
 	}
@@ -194,10 +190,6 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 		}, nil
 	})
 	if err != nil {
-		if errors.Is(err, tasks.ErrConflict) {
-			logger.WarnContext(ctx, "A backup or restore task is already in progress")
-			return RestoreFromBackup409Response{}, nil
-		}
 		logger.ErrorContext(ctx, "Failed to submit restore task", "error", err)
 		return RestoreFromBackup500Response{}, nil
 	}

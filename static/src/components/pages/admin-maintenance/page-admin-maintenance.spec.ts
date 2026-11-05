@@ -255,37 +255,6 @@ describe('page-admin-maintenance', () => {
       );
       expect(toast.present).toHaveBeenCalled();
     });
-
-    it('displays toast warning when backup creation conflicts with another active task', async () => {
-      const toast = mockToast();
-      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
-      const alert = mockAlert('confirm');
-      vi.spyOn(alertController, 'create').mockResolvedValue(alert);
-
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/backups$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockBackups) };
-        }
-        if (req.url.match(/\/backups$/) && req.method === 'POST') {
-          return { status: 409, body: 'Conflict' };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
-      await root.activatedCallback();
-      await root.updateComplete;
-
-      const backupNowBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[0];
-      backupNowBtn?.click();
-      await new Promise((r) => setTimeout(r, 20));
-      await root.updateComplete;
-
-      expect(createToastSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'An operation is already in progress.' })
-      );
-      expect(toast.present).toHaveBeenCalled();
-    });
   });
 
   describe('Delete Backup', () => {
@@ -518,37 +487,6 @@ describe('page-admin-maintenance', () => {
 
       expect(createToastSpy).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'Failed to restore from backup.' })
-      );
-      expect(toast.present).toHaveBeenCalled();
-    });
-
-    it('displays toast warning when backup restore conflicts with another active task', async () => {
-      const toast = mockToast();
-      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
-      const alert = mockAlert('destructive');
-      vi.spyOn(alertController, 'create').mockResolvedValue(alert);
-
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/backups$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockBackups) };
-        }
-        if (req.url.match(/\/backups\/.+$/) && req.method === 'POST') {
-          return { status: 409, body: 'Conflict' };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
-      await root.activatedCallback();
-      await root.updateComplete;
-
-      const restoreOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
-      restoreOption?.click();
-      await new Promise((r) => setTimeout(r, 20));
-      await root.updateComplete;
-
-      expect(createToastSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'An operation is already in progress.' })
       );
       expect(toast.present).toHaveBeenCalled();
     });
