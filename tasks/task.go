@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// ErrConflict is returned when a task cannot be started due to another conflicting task already running.
-	ErrConflict = errors.New("a conflicting task is already in progress")
+	// ErrTaskExists is returned when a task with the specified ID already exists in the store.
+	ErrTaskExists = errors.New("task with ID already exists")
 	// ErrNotFound is returned when a requested task does not exist.
 	ErrNotFound = errors.New("task not found")
 	// ErrCannotDeleteActive is returned when attempting to delete a task that is still active.

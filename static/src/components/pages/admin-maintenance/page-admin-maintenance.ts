@@ -291,7 +291,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     });
 
     if (role === 'destructive') {
-      await this.backupList?.closeSlidingItems();
+      await this.backupList?.closeSlidingItems?.();
       await this.deleteBackup(backup);
       await this.loadBackups();
     }
@@ -325,7 +325,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     });
 
     if (role === 'destructive') {
-      await this.backupList?.closeSlidingItems();
+      await this.backupList?.closeSlidingItems?.();
       await this.restoreBackup(backup.fileName);
     }
   }
@@ -377,6 +377,6 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     link.click();
     link.remove();
 
-    await this.backupList?.closeSlidingItems();
+    await this.backupList?.closeSlidingItems?.();
   }
 }

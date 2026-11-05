@@ -3,10 +3,12 @@ package api
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"io/fs"
+	"log/slog"
 	"mime/multipart"
 	"path/filepath"
 	"testing"
@@ -614,6 +616,76 @@ func createTestBackupZip(name string) *bytes.Buffer {
 
 	_ = zw.Close()
 	return buf
+}
+
+func TestGenerateNewBackup_CancelledContext_CleansUpFile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockFS := fileaccessmock.NewMockDriver(ctrl)
+	mockDB := db.NewMockDriver(ctrl)
+	mockBackupDriver := db.NewMockBackupDriver(ctrl)
+	mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
+
+	ctx, cancel := context.WithCancel(t.Context())
+
+	mockBackupDriver.EXPECT().Export(gomock.Any()).DoAndReturn(func(_ context.Context) (*models.BackupData, error) {
+		cancel() // cancel context during export
+		return &models.BackupData{}, nil
+	})
+
+	mockWriter := bytes.NewBuffer([]byte{})
+	mockFS.EXPECT().Create(gomock.Any()).Return(bufferCloser{mockWriter}, nil)
+	mockFS.EXPECT().Delete(gomock.Any()).Return(nil).Times(1)
+
+	api := apiHandler{
+		db: mockDB,
+		fs: mockFS,
+	}
+
+	path, err := api.generateNewBackup(ctx, slog.Default(), nil, "test")
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("expected context.Canceled, got %v", err)
+	}
+	if path != "" {
+		t.Fatalf("expected empty path on error, got %s", path)
+	}
+}
+
+func TestGenerateNewBackup_CancelledContextDuringMedia_CleansUpFile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockFS := fileaccessmock.NewMockDriver(ctrl)
+	mockDB := db.NewMockDriver(ctrl)
+	mockBackupDriver := db.NewMockBackupDriver(ctrl)
+	mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
+
+	ctx, cancel := context.WithCancel(t.Context())
+
+	mockBackupDriver.EXPECT().Export(gomock.Any()).Return(&models.BackupData{}, nil)
+
+	mockWriter := bytes.NewBuffer([]byte{})
+	mockFS.EXPECT().Create(gomock.Any()).Return(bufferCloser{mockWriter}, nil)
+	// When Stat is called for uploads directory in CopyDirectoryToZip, cancel the context:
+	mockFS.EXPECT().Stat(gomock.Any()).DoAndReturn(func(_ string) (fs.FileInfo, error) {
+		cancel()
+		return nil, fs.ErrNotExist
+	})
+	mockFS.EXPECT().Delete(gomock.Any()).Return(nil).Times(1)
+
+	api := apiHandler{
+		db: mockDB,
+		fs: mockFS,
+	}
+
+	path, err := api.generateNewBackup(ctx, slog.Default(), nil, "test")
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("expected context.Canceled, got %v", err)
+	}
+	if path != "" {
+		t.Fatalf("expected empty path on error, got %s", path)
+	}
 }
 
 func createMultipartBackupReader(name string) *multipart.Reader {

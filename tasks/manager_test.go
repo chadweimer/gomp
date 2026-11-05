@@ -357,6 +357,25 @@ func TestMemoryStore_ListFiltering(t *testing.T) {
 	}
 }
 
+func TestMemoryStore_Create_DuplicateID(t *testing.T) {
+	store := tasks.NewMemoryStore()
+	id := uuid.New()
+	task := &models.Task{
+		ID:        id,
+		Type:      models.TaskTypeBackup,
+		State:     models.Running,
+		CreatedAt: time.Now(),
+	}
+	if err := store.Create(t.Context(), task); err != nil {
+		t.Fatalf("unexpected error creating task: %v", err)
+	}
+
+	err := store.Create(t.Context(), task)
+	if !errors.Is(err, tasks.ErrTaskExists) {
+		t.Fatalf("expected ErrTaskExists, got %v", err)
+	}
+}
+
 func TestMemoryStore_ThreadSafety(t *testing.T) {
 	store := tasks.NewMemoryStore()
 

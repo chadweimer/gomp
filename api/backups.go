@@ -226,7 +226,9 @@ func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupReques
 
 func (h apiHandler) generateNewBackup(ctx context.Context, logger *slog.Logger, report tasks.ProgressReporter, name string) (string, error) {
 	logger.DebugContext(ctx, "Creating backup from database export")
-	report(10, "Exporting database data")
+	if report != nil {
+		report(10, "Exporting database data")
+	}
 
 	// Export all data from the database
 	exportedData, err := h.db.Backups().Export(ctx)
@@ -237,9 +239,14 @@ func (h apiHandler) generateNewBackup(ctx context.Context, logger *slog.Logger, 
 
 	// Save the backup file
 	// Generate a name based on the current timestamp in UTC
-	report(30, "Creating backup archive")
+	if report != nil {
+		report(30, "Creating backup archive")
+	}
 	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, fmt.Sprintf("gomp-backup-%s.zip", name))
 	err = h.writeBackup(ctx, logger, report, name, backupFilePath, exportedData)
+	if err == nil {
+		err = ctx.Err()
+	}
 	if err != nil {
 		logger.ErrorContext(ctx, "Failed to create backup file", "error", err, "file", backupFilePath)
 
@@ -339,7 +346,10 @@ func (h apiHandler) writeBackup(ctx context.Context, logger *slog.Logger, report
 		}
 
 		// Copy all uploads to the backup directory
-		return fileaccess.CopyDirectoryToZip(h.fs, fileaccess.UploadDirectoryName, writer)
+		if err := fileaccess.CopyDirectoryToZip(h.fs, fileaccess.UploadDirectoryName, writer); err != nil {
+			return err
+		}
+		return ctx.Err()
 	})
 }
 

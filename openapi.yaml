@@ -158,8 +158,6 @@ paths:
                 $ref: './models.yaml#/components/schemas/task'
         '400':
           description: Bad Request
-        '409':
-          description: Conflict
         '500':
           description: Internal Server Error
       security:
@@ -191,8 +189,6 @@ paths:
           description: Bad Request
         '404':
           description: Not Found
-        '409':
-          description: Conflict
         '500':
           description: Internal Server Error
       security:

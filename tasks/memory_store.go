@@ -31,7 +31,7 @@ func (s *memoryStore) Create(_ context.Context, task *models.Task) error {
 	defer s.mu.Unlock()
 
 	if _, exists := s.tasks[task.ID]; exists {
-		return ErrConflict
+		return ErrTaskExists
 	}
 
 	s.tasks[task.ID] = cloneTask(*task)
