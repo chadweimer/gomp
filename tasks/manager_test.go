@@ -3,6 +3,7 @@ package tasks_test
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -77,6 +78,35 @@ func TestTaskManager_Submit_Failure(t *testing.T) {
 	}
 	if finalTask.Error == nil || *finalTask.Error != "boom" {
 		t.Errorf("expected error 'boom', got %v", finalTask.Error)
+	}
+}
+
+func TestTaskManager_Submit_Panic(t *testing.T) {
+	store := tasks.NewMemoryStore()
+	manager := tasks.NewManager(store)
+	defer manager.Close()
+
+	task, err := manager.Submit(models.TaskTypeBackup, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
+		panic("something went wrong")
+	})
+	if err != nil {
+		t.Fatalf("unexpected error submitting task: %v", err)
+	}
+
+	var finalTask *models.Task
+	for range 50 {
+		finalTask, err = manager.Get(t.Context(), task.ID)
+		if err == nil && finalTask.State == models.Failed {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	if finalTask.State != models.Failed {
+		t.Errorf("expected task state Failed on panic, got %v", finalTask.State)
+	}
+	if finalTask.Error == nil || !strings.Contains(*finalTask.Error, "task panicked: something went wrong") {
+		t.Errorf("expected panic error message, got %v", finalTask.Error)
 	}
 }
 
@@ -193,12 +223,12 @@ func TestTaskManager_Delete(t *testing.T) {
 	}
 }
 
-func TestMemoryStore_Pruning(t *testing.T) {
+func TestMemoryStore_Pruning_Age(t *testing.T) {
 	store := tasks.NewMemoryStore()
 
 	now := time.Now()
 	// Insert completed tasks
-	for i := range 5 {
+	for range 5 {
 		completedAt := now.Add(-2 * time.Hour)
 		task := &models.Task{
 			ID:          uuid.New(),
@@ -210,7 +240,6 @@ func TestMemoryStore_Pruning(t *testing.T) {
 		if err := store.Create(t.Context(), task); err != nil {
 			t.Fatalf("failed to create task: %v", err)
 		}
-		_ = i
 	}
 
 	// Insert 1 active task
@@ -231,6 +260,61 @@ func TestMemoryStore_Pruning(t *testing.T) {
 	}
 	if pruned != 5 {
 		t.Errorf("expected 5 pruned tasks, got %d", pruned)
+	}
+
+	// Active task must still be present
+	got, err := store.Get(t.Context(), activeTask.ID)
+	if err != nil || got == nil {
+		t.Errorf("expected active task to survive pruning, got %v", err)
+	}
+}
+
+func TestMemoryStore_Pruning_Capacity(t *testing.T) {
+	store := tasks.NewMemoryStore()
+
+	now := time.Now()
+	// Insert 5 completed tasks
+	for range 5 {
+		completedAt := now
+		task := &models.Task{
+			ID:          uuid.New(),
+			Type:        models.TaskTypeBackup,
+			State:       models.Completed,
+			CreatedAt:   now,
+			CompletedAt: &completedAt,
+		}
+		if err := store.Create(t.Context(), task); err != nil {
+			t.Fatalf("failed to create task: %v", err)
+		}
+	}
+
+	// Insert 1 active task
+	activeTask := &models.Task{
+		ID:        uuid.New(),
+		Type:      models.TaskTypeBackup,
+		State:     models.Running,
+		CreatedAt: now,
+	}
+	if err := store.Create(t.Context(), activeTask); err != nil {
+		t.Fatalf("failed to create active task: %v", err)
+	}
+
+	// Total tasks = 6. With maxAge = 0 (disabled) and maxCapacity = 3,
+	// it should prune 3 oldest finished tasks to reach capacity 3.
+	pruned, err := store.Prune(t.Context(), 0, 3)
+	if err != nil {
+		t.Fatalf("prune failed: %v", err)
+	}
+	if pruned != 3 {
+		t.Errorf("expected 3 pruned tasks, got %d", pruned)
+	}
+
+	taskList, err := store.List(t.Context(), tasks.TaskFilter{})
+	if err != nil {
+		t.Fatalf("list failed: %v", err)
+	}
+	if len(taskList) != 3 {
+		t.Errorf("expected 3 remaining tasks, got %d", len(taskList))
 	}
 
 	// Active task must still be present

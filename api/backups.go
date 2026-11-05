@@ -35,7 +35,7 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 	// This allows for restoring from a backup by uploading the backup file as the content of the request.
 	uploadedFileData, _, err := readFile(request.Body)
 	if err == nil {
-		backupFilePath, err := h.uploadBackup(ctx, logger, name, uploadedFileData, err)
+		backupFilePath, err := h.uploadBackup(ctx, logger, name, uploadedFileData)
 		if err != nil {
 			return CreateBackup400Response{}, nil
 		}
@@ -293,7 +293,7 @@ func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupReques
 	return DeleteBackup204Response{}, nil
 }
 
-func (h apiHandler) uploadBackup(ctx context.Context, logger *slog.Logger, name string, uploadedFileData []byte, err error) (string, error) {
+func (h apiHandler) uploadBackup(ctx context.Context, logger *slog.Logger, name string, uploadedFileData []byte) (string, error) {
 	logger.DebugContext(ctx, "Creating backup from uploaded file content")
 
 	backupFileName := fmt.Sprintf("gomp-backup-upload-%s.zip", name)

@@ -3,6 +3,7 @@ package tasks
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -103,46 +104,63 @@ func (m *Manager) runWorker(ctx context.Context, id uuid.UUID, fn TaskFunc) {
 		}
 	}
 
-	result, execErr := fn(ctx, report)
-	completedAt := time.Now()
+	var result map[string]any
+	var execErr error
 
-	m.mu.Lock()
-	defer m.mu.Unlock()
+	defer func() {
+		if r := recover(); r != nil {
+			execErr = fmt.Errorf("task panicked: %v", r)
+		}
 
-	delete(m.runningTasks, id)
+		completedAt := time.Now()
 
-	t, err := m.store.Get(ctx, id)
-	if err != nil {
-		return
-	}
+		m.mu.Lock()
+		cancel, ok := m.runningTasks[id]
+		if ok {
+			delete(m.runningTasks, id)
+		}
+		defer func() {
+			if ok {
+				cancel(nil)
+			}
+		}()
+		defer m.mu.Unlock()
 
-	t.CompletedAt = &completedAt
+		t, err := m.store.Get(ctx, id)
+		if err != nil {
+			return
+		}
 
-	// Check context cancellation first (e.g. server shutdown)
-	if ctx.Err() != nil {
-		t.State = models.Failed
-		cause := context.Cause(ctx)
-		var errMsg string
-		if cause != nil {
-			errMsg = cause.Error()
+		t.CompletedAt = &completedAt
+
+		// Check context cancellation first (e.g. server shutdown)
+		if ctx.Err() != nil {
+			t.State = models.Failed
+			cause := context.Cause(ctx)
+			var errMsg string
+			if cause != nil {
+				errMsg = cause.Error()
+			} else {
+				errMsg = ctx.Err().Error()
+			}
+			t.Error = &errMsg
+		} else if execErr != nil {
+			t.State = models.Failed
+			errMsg := execErr.Error()
+			t.Error = &errMsg
 		} else {
-			errMsg = ctx.Err().Error()
+			t.State = models.Completed
+			t.Progress = new(100)
+			t.Stage = new("Completed")
+			if result != nil {
+				t.Result = &result
+			}
 		}
-		t.Error = &errMsg
-	} else if execErr != nil {
-		t.State = models.Failed
-		errMsg := execErr.Error()
-		t.Error = &errMsg
-	} else {
-		t.State = models.Completed
-		t.Progress = new(100)
-		t.Stage = new("Completed")
-		if result != nil {
-			t.Result = &result
-		}
-	}
 
-	_ = m.store.Update(ctx, t)
+		_ = m.store.Update(ctx, t)
+	}()
+
+	result, execErr = fn(ctx, report)
 }
 
 // Get returns the task with the given ID.
