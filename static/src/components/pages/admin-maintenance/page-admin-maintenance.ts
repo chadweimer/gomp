@@ -64,7 +64,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
       }
     }
     const renderDismissButton = (task: Task) => {
-      if (this.isTaskActive(task)) {
+      if (!this.isTaskActive(task)) {
         return html`
         <ion-button slot="end" fill="clear" @click=${() => this.dismissActiveTask()}>
           Dismiss
