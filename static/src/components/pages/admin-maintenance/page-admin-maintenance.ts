@@ -14,7 +14,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
   @state() backups: Backup[] = [];
   @state() activeTask?: Task;
 
-  @query('.backup-list') private backupList?: HTMLIonListElement;
+  @query('.backup-list') private readonly backupList?: HTMLIonListElement;
 
   private pollAbortController?: AbortController;
 
@@ -40,6 +40,47 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
   }
 
   render() {
+    const renderTaskTitle = (task: Task) => {
+      let taskName: string;
+      switch (task.type) {
+        case 'backup':
+          taskName = "Backup";
+          break;
+        case 'restore':
+          taskName = "Restore";
+          break;
+        default:
+          taskName = task.type;
+          break;
+      }
+
+      switch (task.state) {
+        case TaskState.completed:
+          return `${taskName} Completed`
+        case TaskState.failed:
+          return `${taskName} Failed`
+        default:
+          return `${taskName} in Progress`
+      }
+    }
+    const renderDismissButton = (task: Task) => {
+      if (this.isTaskActive(task)) {
+        return html`
+        <ion-button slot="end" fill="clear" @click=${() => this.dismissActiveTask()}>
+          Dismiss
+        </ion-button>`
+      }
+      return nothing;
+    };
+    const renderProgressBar = (task: Task) => {
+      if (this.isTaskActive(task)) {
+        return html`
+          <ion-progress-bar .value=${(task.progress ?? 0) / 100}></ion-progress-bar>
+        `;
+      }
+      return nothing;
+    };
+
     return html`
       <ion-content>
         <ion-grid class="no-pad" fixed>
@@ -50,18 +91,12 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
                   <ion-card-content>
                     <ion-item color="light" lines="none">
                       <ion-label>
-                        <h2>${this.getTaskTitle(this.activeTask)}</h2>
+                        <h2>${renderTaskTitle(this.activeTask)}</h2>
                         <p>${this.activeTask.stage ?? 'Processing...'}</p>
                       </ion-label>
-                      ${!this.isTaskActive(this.activeTask) ? html`
-                        <ion-button slot="end" fill="clear" @click=${() => this.dismissActiveTask()}>
-                          Dismiss
-                        </ion-button>
-                      ` : nothing}
+                      ${renderDismissButton(this.activeTask)}
                     </ion-item>
-                    ${this.isTaskActive(this.activeTask) ? html`
-                      <ion-progress-bar .value=${(this.activeTask.progress ?? 0) / 100}></ion-progress-bar>
-                    ` : nothing}
+                    ${renderProgressBar(this.activeTask)}
                   </ion-card-content>
                 </ion-card>
               ` : nothing}
@@ -128,30 +163,6 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
 
   private isTaskActive(task: Task): boolean {
     return task.state === TaskState.running;
-  }
-
-  private getTaskTitle(task: Task): string {
-    let taskName: string;
-    switch (task.type) {
-      case 'backup':
-        taskName = "Backup";
-        break;
-      case 'restore':
-        taskName = "Restore";
-        break;
-      default:
-        taskName = task.type;
-        break;
-    }
-
-    switch (task.state) {
-      case TaskState.completed:
-        return `${taskName} Completed`
-      case TaskState.failed:
-        return `${taskName} Failed`
-      default:
-        return `${taskName} in Progress`
-    }
   }
 
   private dismissActiveTask() {
