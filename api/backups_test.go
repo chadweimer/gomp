@@ -619,72 +619,67 @@ func createTestBackupZip(name string) *bytes.Buffer {
 }
 
 func TestGenerateNewBackup_CancelledContext_CleansUpFile(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	tests := []struct {
+		name       string
+		setupMocks func(context.CancelFunc, *fileaccessmock.MockDriver, *db.MockBackupDriver)
+	}{
+		{
+			name: "Context cancelled after export",
+			setupMocks: func(cancel context.CancelFunc, _ *fileaccessmock.MockDriver, mockBackupDriver *db.MockBackupDriver) {
+				mockBackupDriver.EXPECT().Export(gomock.Any()).DoAndReturn(func(_ context.Context) (*models.BackupData, error) {
+					cancel()
+					return &models.BackupData{}, nil
+				})
+			},
+		},
+		{
+			name: "Context cancelled after backup file written",
+			setupMocks: func(cancel context.CancelFunc, mockFS *fileaccessmock.MockDriver, mockBackupDriver *db.MockBackupDriver) {
+				mockBackupDriver.EXPECT().Export(gomock.Any()).Return(&models.BackupData{}, nil)
 
-	mockFS := fileaccessmock.NewMockDriver(ctrl)
-	mockDB := db.NewMockDriver(ctrl)
-	mockBackupDriver := db.NewMockBackupDriver(ctrl)
-	mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
-
-	ctx, cancel := context.WithCancel(t.Context())
-
-	mockBackupDriver.EXPECT().Export(gomock.Any()).DoAndReturn(func(_ context.Context) (*models.BackupData, error) {
-		cancel() // cancel context during export
-		return &models.BackupData{}, nil
-	})
-
-	mockWriter := bytes.NewBuffer([]byte{})
-	mockFS.EXPECT().Create(gomock.Any()).Return(bufferCloser{mockWriter}, nil)
-	mockFS.EXPECT().Delete(gomock.Any()).Return(nil).Times(1)
-
-	api := apiHandler{
-		db: mockDB,
-		fs: mockFS,
+				mockWriter := bytes.NewBuffer([]byte{})
+				mockFS.EXPECT().Create(gomock.Any()).Return(bufferCloser{mockWriter}, nil)
+				mockFS.EXPECT().Stat(gomock.Any()).DoAndReturn(func(_ string) (fs.FileInfo, error) {
+					cancel()
+					return nil, fs.ErrNotExist
+				})
+				mockFS.EXPECT().Delete(gomock.Any()).Return(nil).Times(1)
+			},
+		},
 	}
 
-	path, err := api.generateNewBackup(ctx, slog.Default(), nil, "test")
-	if !errors.Is(err, context.Canceled) {
-		t.Fatalf("expected context.Canceled, got %v", err)
-	}
-	if path != "" {
-		t.Fatalf("expected empty path on error, got %s", path)
-	}
-}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-func TestGenerateNewBackup_CancelledContextDuringMedia_CleansUpFile(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+			mockFS := fileaccessmock.NewMockDriver(ctrl)
+			mockDB := db.NewMockDriver(ctrl)
+			mockBackupDriver := db.NewMockBackupDriver(ctrl)
+			mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
 
-	mockFS := fileaccessmock.NewMockDriver(ctrl)
-	mockDB := db.NewMockDriver(ctrl)
-	mockBackupDriver := db.NewMockBackupDriver(ctrl)
-	mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
 
-	ctx, cancel := context.WithCancel(t.Context())
+			tt.setupMocks(cancel, mockFS, mockBackupDriver)
 
-	mockBackupDriver.EXPECT().Export(gomock.Any()).Return(&models.BackupData{}, nil)
+			report := func(_ int, _ string) {
+				// Do nothing for report in this test
+			}
 
-	mockWriter := bytes.NewBuffer([]byte{})
-	mockFS.EXPECT().Create(gomock.Any()).Return(bufferCloser{mockWriter}, nil)
-	// When Stat is called for uploads directory in CopyDirectoryToZip, cancel the context:
-	mockFS.EXPECT().Stat(gomock.Any()).DoAndReturn(func(_ string) (fs.FileInfo, error) {
-		cancel()
-		return nil, fs.ErrNotExist
-	})
-	mockFS.EXPECT().Delete(gomock.Any()).Return(nil).Times(1)
+			api := apiHandler{
+				db: mockDB,
+				fs: mockFS,
+			}
 
-	api := apiHandler{
-		db: mockDB,
-		fs: mockFS,
-	}
-
-	path, err := api.generateNewBackup(ctx, slog.Default(), nil, "test")
-	if !errors.Is(err, context.Canceled) {
-		t.Fatalf("expected context.Canceled, got %v", err)
-	}
-	if path != "" {
-		t.Fatalf("expected empty path on error, got %s", path)
+			path, err := api.generateNewBackup(ctx, slog.Default(), report, "test")
+			if !errors.Is(err, context.Canceled) {
+				t.Fatalf("expected context.Canceled, got %v", err)
+			}
+			if path != "" {
+				t.Fatalf("expected empty path on error, got %s", path)
+			}
+		})
 	}
 }
 
