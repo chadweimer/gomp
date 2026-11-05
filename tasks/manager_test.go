@@ -183,46 +183,6 @@ func TestTaskManager_Shutdown_MarksFailed(t *testing.T) {
 	}
 }
 
-func TestTaskManager_Delete(t *testing.T) {
-	store := tasks.NewMemoryStore()
-	manager := tasks.NewManager(store)
-	defer manager.Close()
-
-	started := make(chan struct{})
-	release := make(chan struct{})
-
-	task, err := manager.Submit(models.TaskTypeBackup, func(_ context.Context, _ tasks.ProgressReporter) (map[string]any, error) {
-		close(started)
-		<-release
-		return nil, nil
-	})
-	if err != nil {
-		t.Fatalf("failed to submit: %v", err)
-	}
-
-	<-started
-
-	// Deleting active task should fail
-	err = manager.Delete(t.Context(), task.ID)
-	if !errors.Is(err, tasks.ErrCannotDeleteActive) {
-		t.Errorf("expected ErrCannotDeleteActive, got %v", err)
-	}
-
-	close(release)
-	time.Sleep(50 * time.Millisecond)
-
-	// Now delete should succeed
-	err = manager.Delete(t.Context(), task.ID)
-	if err != nil {
-		t.Errorf("expected delete to succeed, got %v", err)
-	}
-
-	_, err = manager.Get(t.Context(), task.ID)
-	if !errors.Is(err, tasks.ErrNotFound) {
-		t.Errorf("expected ErrNotFound after delete, got %v", err)
-	}
-}
-
 func TestMemoryStore_Pruning_Age(t *testing.T) {
 	store := tasks.NewMemoryStore()
 

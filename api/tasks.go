@@ -42,22 +42,3 @@ func (h apiHandler) GetTaskByID(ctx context.Context, request GetTaskByIDRequestO
 
 	return GetTaskByID200JSONResponse(*task), nil
 }
-
-func (h apiHandler) DeleteTaskByID(ctx context.Context, request DeleteTaskByIDRequestObject) (DeleteTaskByIDResponseObject, error) {
-	logger := infra.GetLoggerFromContext(ctx)
-
-	err := h.taskManager.Delete(ctx, request.TaskID)
-	if err != nil {
-		if errors.Is(err, tasks.ErrNotFound) {
-			return DeleteTaskByID404Response{}, nil
-		}
-		if errors.Is(err, tasks.ErrCannotDeleteActive) {
-			logger.WarnContext(ctx, "Cannot delete active task", "error", err, "taskId", request.TaskID)
-			return DeleteTaskByID409Response{}, nil
-		}
-		logger.ErrorContext(ctx, "Failed to delete task", "error", err, "taskId", request.TaskID)
-		return DeleteTaskByID500Response{}, nil
-	}
-
-	return DeleteTaskByID204Response{}, nil
-}

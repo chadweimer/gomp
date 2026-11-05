@@ -270,22 +270,6 @@ paths:
           description: Internal Server Error
       security:
         - Cookie: [admin]
-    delete:
-      tags: [app]
-      summary: Delete task record
-      description: remove a finished task record
-      operationId: deleteTaskById
-      responses:
-        '204':
-          description: No Content
-        '404':
-          description: Not Found
-        '409':
-          description: Conflict
-        '500':
-          description: Internal Server Error
-      security:
-        - Cookie: [admin]
   /recipes:
     get:
       tags: [recipes]

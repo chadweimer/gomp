@@ -183,24 +183,6 @@ func (m *Manager) List(ctx context.Context, filter TaskFilter) ([]models.Task, e
 	return m.store.List(ctx, filter)
 }
 
-// Delete permanently removes a finished task record from the store.
-func (m *Manager) Delete(ctx context.Context, id uuid.UUID) error {
-	m.mu.Lock()
-	task, err := m.store.Get(ctx, id)
-	if err != nil {
-		m.mu.Unlock()
-		return err
-	}
-
-	if !isTerminal(task.State) {
-		m.mu.Unlock()
-		return ErrCannotDeleteActive
-	}
-	m.mu.Unlock()
-
-	return m.store.Delete(ctx, id)
-}
-
 func (m *Manager) startPruner(interval time.Duration, maxAge time.Duration, maxCapacity int) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()

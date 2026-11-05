@@ -62,17 +62,6 @@ func (s *memoryStore) Update(_ context.Context, task *models.Task) error {
 	return nil
 }
 
-func (s *memoryStore) Delete(_ context.Context, id uuid.UUID) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if _, exists := s.tasks[id]; !exists {
-		return ErrNotFound
-	}
-	s.deleteTasks([]uuid.UUID{id})
-	return nil
-}
-
 func (s *memoryStore) List(_ context.Context, filter TaskFilter) ([]models.Task, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
