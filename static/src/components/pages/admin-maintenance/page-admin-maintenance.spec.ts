@@ -255,6 +255,37 @@ describe('page-admin-maintenance', () => {
       );
       expect(toast.present).toHaveBeenCalled();
     });
+
+    it('displays toast warning when backup creation conflicts with another active task', async () => {
+      const toast = mockToast();
+      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
+      const alert = mockAlert('confirm');
+      vi.spyOn(alertController, 'create').mockResolvedValue(alert);
+
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockBackups) };
+        }
+        if (req.url.match(/\/backups$/) && req.method === 'POST') {
+          return { status: 409, body: 'Conflict' };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      const backupNowBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card > ion-button')[0];
+      backupNowBtn?.click();
+      await new Promise((r) => setTimeout(r, 20));
+      await root.updateComplete;
+
+      expect(createToastSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'An operation is already in progress.' })
+      );
+      expect(toast.present).toHaveBeenCalled();
+    });
   });
 
   describe('Delete Backup', () => {
@@ -487,6 +518,37 @@ describe('page-admin-maintenance', () => {
 
       expect(createToastSpy).toHaveBeenCalledWith(
         expect.objectContaining({ message: 'Failed to restore from backup.' })
+      );
+      expect(toast.present).toHaveBeenCalled();
+    });
+
+    it('displays toast warning when backup restore conflicts with another active task', async () => {
+      const toast = mockToast();
+      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
+      const alert = mockAlert('destructive');
+      vi.spyOn(alertController, 'create').mockResolvedValue(alert);
+
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify(mockBackups) };
+        }
+        if (req.url.match(/\/backups\/.+$/) && req.method === 'POST') {
+          return { status: 409, body: 'Conflict' };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      const restoreOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="secondary"]');
+      restoreOption?.click();
+      await new Promise((r) => setTimeout(r, 20));
+      await root.updateComplete;
+
+      expect(createToastSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ message: 'An operation is already in progress.' })
       );
       expect(toast.present).toHaveBeenCalled();
     });
@@ -790,6 +852,107 @@ describe('page-admin-maintenance', () => {
       await root.updateComplete;
 
       expect(root.renderRoot.querySelector('.active-task-card')).toBeNull();
+    });
+
+    it('does not spawn duplicate polling loops if already tracking the same running task', async () => {
+      let pollCount = 0;
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: '[]' };
+        }
+        if (req.url.match(/\/tasks\/dup-task$/) && req.method === 'GET') {
+          pollCount++;
+          return {
+            status: 200,
+            body: JSON.stringify({
+              id: 'dup-task',
+              type: 'backup',
+              state: 'running',
+              progress: 50,
+              cancellable: true
+            })
+          };
+        }
+        if (req.url.match(/\/tasks/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify([
+              {
+                id: 'dup-task',
+                type: 'backup',
+                state: 'running',
+                progress: 50,
+                cancellable: true
+              }
+            ])
+          };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      const initialPolls = pollCount;
+
+      // Trigger activatedCallback again as if user navigated back
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      // Ensure no new duplicate polling loop was spawned
+      expect(pollCount).toBe(initialPolls);
+    });
+
+    it('aborts polling when component is disconnected', async () => {
+      let pollCalls = 0;
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: '[]' };
+        }
+        if (req.url.match(/\/tasks\/disconnect-task$/) && req.method === 'GET') {
+          pollCalls++;
+          return {
+            status: 200,
+            body: JSON.stringify({
+              id: 'disconnect-task',
+              type: 'backup',
+              state: 'running',
+              progress: 10,
+              cancellable: true
+            })
+          };
+        }
+        if (req.url.match(/\/tasks/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify([
+              {
+                id: 'disconnect-task',
+                type: 'backup',
+                state: 'running',
+                progress: 10,
+                cancellable: true
+              }
+            ])
+          };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      expect(pollCalls).toBeGreaterThan(0);
+
+      // Disconnect component
+      root.disconnectedCallback();
+
+      const callsAfterDisconnect = pollCalls;
+      await new Promise((r) => setTimeout(r, 50));
+
+      expect(pollCalls).toBe(callsAfterDisconnect);
     });
   });
 });

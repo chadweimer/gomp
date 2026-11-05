@@ -13,8 +13,9 @@ function isAborted(signal?: AbortSignal): boolean {
 
 /**
  * Polls a background task until it reaches a terminal state (completed, failed, or cancelled).
+ * Returns null if polling is aborted via the options.signal.
  */
-export async function pollTask(taskId: string, options?: PollTaskOptions): Promise<Task> {
+export async function pollTask(taskId: string, options?: PollTaskOptions): Promise<Task | null> {
   const interval = options?.intervalMs ?? 1500;
 
   while (!isAborted(options?.signal)) {
@@ -22,6 +23,10 @@ export async function pollTask(taskId: string, options?: PollTaskOptions): Promi
       params: { path: { taskId } },
       signal: options?.signal
     });
+
+    if (isAborted(options?.signal)) {
+      return null;
+    }
 
     if (error != null || data == null) {
       throw new Error('Failed to query task status.', { cause: error });
@@ -37,10 +42,10 @@ export async function pollTask(taskId: string, options?: PollTaskOptions): Promi
       return data;
     }
 
-    await delay(interval);
+    await delay(interval, options?.signal);
   }
 
-  throw new Error('Task polling aborted.');
+  return null;
 }
 
 /**
@@ -61,6 +66,20 @@ export async function cancelTask(taskId: string): Promise<Task> {
   return data;
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function delay(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    if (isAborted(signal)) {
+      resolve();
+      return;
+    }
+    const timeout = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timeout);
+        resolve();
+      },
+      { once: true }
+    );
+  });
 }

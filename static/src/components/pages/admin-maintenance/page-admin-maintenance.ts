@@ -14,6 +14,8 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
   @state() backups: Backup[] = [];
   @state() activeTask?: Task;
 
+  private pollAbortController?: AbortController;
+
   protected createRenderRoot() {
     return this;
   }
@@ -21,6 +23,11 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
   override connectedCallback() {
     super.connectedCallback();
     this.activatedCallback().catch(console.error);
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.pollAbortController?.abort();
   }
 
   async activatedCallback() {
@@ -152,6 +159,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
   }
 
   private dismissActiveTask() {
+    this.pollAbortController?.abort();
     this.activeTask = undefined;
   }
 
@@ -182,7 +190,11 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
       });
 
       if (error == null && data != null && data.length > 0) {
-        this.trackActiveTask(data[0]).catch(console.error);
+        const runningTask = data[0];
+        if (this.activeTask?.id === runningTask.id && this.isTaskActive(this.activeTask)) {
+          return;
+        }
+        this.trackActiveTask(runningTask).catch(console.error);
       }
     } catch (ex) {
       console.warn('Failed to check active tasks', ex);
@@ -190,13 +202,21 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
   }
 
   private async trackActiveTask(initialTask: Task) {
+    this.pollAbortController?.abort();
+    const abortController = new AbortController();
+    this.pollAbortController = abortController;
+
     this.activeTask = initialTask;
     try {
       const finalTask = await pollTask(initialTask.id, {
+        signal: abortController.signal,
         onUpdate: (task) => {
           this.activeTask = task;
         }
       });
+      if (finalTask == null) {
+        return;
+      }
       this.activeTask = finalTask;
       if (finalTask.state === TaskState.completed) {
         await this.loadBackups();
@@ -223,12 +243,17 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
 
   private async createBackup() {
     try {
-      const { data, error } = await api.client.POST('/backups', {
+      const { data, error, response } = await api.client.POST('/backups', {
         body: {},
         bodySerializer(body) {
           return fileContentSerializer(body);
         }
       });
+
+      if (response?.status === 409) {
+        await showToast('An operation is already in progress.');
+        return;
+      }
 
       if (error != null || data == null) {
         throw new Error('Failed to create backup.', { cause: error });
@@ -294,9 +319,14 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
 
   private async restoreBackup(backupFileName: string) {
     try {
-      const { data, error } = await api.client.POST('/backups/{name}', {
+      const { data, error, response } = await api.client.POST('/backups/{name}', {
         params: { path: { name: backupFileName } }
       });
+
+      if (response?.status === 409) {
+        await showToast('An operation is already in progress.');
+        return;
+      }
 
       if (error != null || data == null) {
         throw new Error('Failed to restore from backup.', { cause: error });

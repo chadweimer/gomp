@@ -31,8 +31,9 @@ describe('tasks helper', () => {
       fetchMocker.mockResponse(JSON.stringify(mockTask));
 
       const task = await pollTask('task-1', { intervalMs: 10 });
-      expect(task.state).toBe(TaskState.completed);
-      expect(task.id).toBe('task-1');
+      expect(task).not.toBeNull();
+      expect(task?.state).toBe(TaskState.completed);
+      expect(task?.id).toBe('task-1');
     });
 
     it('polls multiple times until terminal state', async () => {
@@ -81,7 +82,8 @@ describe('tasks helper', () => {
 
       expect(callCount).toBe(3);
       expect(updates).toEqual([30, 60, 100]);
-      expect(task.state).toBe(TaskState.completed);
+      expect(task).not.toBeNull();
+      expect(task?.state).toBe(TaskState.completed);
     });
 
     it('resolves with task when task fails', async () => {
@@ -97,8 +99,9 @@ describe('tasks helper', () => {
       fetchMocker.mockResponse(JSON.stringify(mockTask));
 
       const task = await pollTask('task-1', { intervalMs: 10 });
-      expect(task.state).toBe(TaskState.failed);
-      expect(task.error).toBe('Out of disk space');
+      expect(task).not.toBeNull();
+      expect(task?.state).toBe(TaskState.failed);
+      expect(task?.error).toBe('Out of disk space');
     });
 
     it('resolves with task when task is cancelled', async () => {
@@ -113,7 +116,8 @@ describe('tasks helper', () => {
       fetchMocker.mockResponse(JSON.stringify(mockTask));
 
       const task = await pollTask('task-1', { intervalMs: 10 });
-      expect(task.state).toBe(TaskState.cancelled);
+      expect(task).not.toBeNull();
+      expect(task?.state).toBe(TaskState.cancelled);
     });
 
     it('throws error when server returns error response', async () => {
@@ -123,7 +127,7 @@ describe('tasks helper', () => {
         .rejects.toThrow('Failed to query task status.');
     });
 
-    it('respects abort signal', async () => {
+    it('resolves to null when aborted by signal', async () => {
       fetchMocker.mockResponse(JSON.stringify({
         id: 'task-1',
         type: 'backup',
@@ -135,8 +139,8 @@ describe('tasks helper', () => {
       const controller = new AbortController();
       setTimeout(() => controller.abort(), 25);
 
-      await expect(pollTask('task-1', { intervalMs: 10, signal: controller.signal }))
-        .rejects.toThrow('Task polling aborted.');
+      const result = await pollTask('task-1', { intervalMs: 10, signal: controller.signal });
+      expect(result).toBeNull();
     });
   });
 
