@@ -46,7 +46,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
               ${this.activeTask != null ? html`
                 <ion-card color="light" class="active-task-card">
                   <ion-card-content>
-                    <ion-item>
+                    <ion-item color="light" lines="none">
                       <ion-label>
                         <h3>${this.getTaskTitle(this.activeTask)}</h3>
                         <p>${this.activeTask.stage ?? 'Processing...'}</p>
