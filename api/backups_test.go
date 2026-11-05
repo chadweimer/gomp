@@ -358,7 +358,8 @@ func TestRestoreFromBackup(t *testing.T) {
 				mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(1024), nil)
 				mockFS.EXPECT().Open(gomock.Any()).Return(nil, errors.New("permission denied"))
 			},
-			expectError: true,
+			expectError:    false,
+			expectTaskFail: true,
 		},
 		{
 			name:     "Error - invalid zip file",
@@ -375,7 +376,8 @@ func TestRestoreFromBackup(t *testing.T) {
 				mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(20), nil)
 				mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("corrupted.zip"))
 			},
-			expectError: true,
+			expectError:    false,
+			expectTaskFail: true,
 		},
 		{
 			name:     "Error - missing metadata in backup",
@@ -399,7 +401,8 @@ func TestRestoreFromBackup(t *testing.T) {
 				mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(int64(buf.Len())), nil)
 				mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("incomplete.zip"))
 			},
-			expectError: true,
+			expectError:    false,
+			expectTaskFail: true,
 		},
 		{
 			name:     "Task Failure - failed to import backup data",

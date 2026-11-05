@@ -11,11 +11,6 @@ import (
 func (h apiHandler) ListTasks(ctx context.Context, request ListTasksRequestObject) (ListTasksResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
 
-	if h.taskManager == nil {
-		logger.ErrorContext(ctx, "Task manager is not configured")
-		return ListTasks500Response{}, nil
-	}
-
 	filter := tasks.TaskFilter{}
 	if request.Params.States != nil {
 		filter.States = *request.Params.States
@@ -36,11 +31,6 @@ func (h apiHandler) ListTasks(ctx context.Context, request ListTasksRequestObjec
 func (h apiHandler) GetTaskByID(ctx context.Context, request GetTaskByIDRequestObject) (GetTaskByIDResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
 
-	if h.taskManager == nil {
-		logger.ErrorContext(ctx, "Task manager is not configured")
-		return GetTaskByID500Response{}, nil
-	}
-
 	task, err := h.taskManager.Get(ctx, request.TaskID)
 	if err != nil {
 		if errors.Is(err, tasks.ErrNotFound) {
@@ -55,11 +45,6 @@ func (h apiHandler) GetTaskByID(ctx context.Context, request GetTaskByIDRequestO
 
 func (h apiHandler) DeleteTaskByID(ctx context.Context, request DeleteTaskByIDRequestObject) (DeleteTaskByIDResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
-
-	if h.taskManager == nil {
-		logger.ErrorContext(ctx, "Task manager is not configured")
-		return DeleteTaskByID500Response{}, nil
-	}
 
 	err := h.taskManager.Delete(ctx, request.TaskID)
 	if err != nil {

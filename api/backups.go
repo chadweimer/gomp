@@ -49,40 +49,10 @@ func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupReques
 		return CreateBackup500Response{}, nil
 	}
 
-	if h.taskManager == nil {
-		logger.ErrorContext(ctx, "Task manager is not configured")
-		return CreateBackup500Response{}, nil
-	}
-
-	activeTasks, err := h.taskManager.List(ctx, tasks.TaskFilter{
-		States: []models.TaskState{models.Running},
-		Types:  []models.TaskType{models.TaskTypeBackup, models.TaskTypeRestore},
-	})
-	if err == nil && len(activeTasks) > 0 {
-		logger.WarnContext(ctx, "A backup or restore task is already in progress")
-		return CreateBackup409Response{}, nil
-	}
-
 	task, err := h.taskManager.Submit(models.TaskTypeBackup, func(taskCtx context.Context, report tasks.ProgressReporter) (map[string]any, error) {
-		logger.DebugContext(taskCtx, "Starting background backup task", "name", name)
-		report(10, "Exporting database data")
-
-		exportedData, err := h.db.Backups().Export(taskCtx)
+		backupFilePath, err := h.generateNewBackup(taskCtx, logger, report, name)
 		if err != nil {
-			logger.ErrorContext(taskCtx, "Failed to export backup data", "error", err)
-			return nil, err
-		}
-
-		if taskCtx.Err() != nil {
-			return nil, taskCtx.Err()
-		}
-
-		report(30, "Creating backup archive")
-		backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, fmt.Sprintf("gomp-backup-%s.zip", name))
-		err = h.writeBackup(taskCtx, logger, name, backupFilePath, exportedData, report)
-		if err != nil {
-			logger.ErrorContext(taskCtx, "Failed to create backup file", "error", err, "file", backupFilePath)
-			_ = h.fs.Delete(backupFilePath)
+			logger.ErrorContext(taskCtx, "Failed to generate new backup", "error", err)
 			return nil, err
 		}
 
@@ -161,37 +131,6 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 	if info.IsDir() {
 		logger.ErrorContext(ctx, "Backup file is a directory", "name", request.Name)
 		return RestoreFromBackup400Response{}, nil
-	}
-
-	// Pre-validate that the archive can be opened and contains valid metadata
-	validationFile, err := h.fs.Open(filepath.Join(fileaccess.BackupDirectoryName, info.Name()))
-	if err != nil {
-		logger.ErrorContext(ctx, "Failed to open backup file for validation", "error", err, "name", request.Name)
-		return RestoreFromBackup400Response{}, nil
-	}
-	defer validationFile.Close()
-
-	err = fileaccess.ReadZip(validationFile, info.Size(), func(reader *zip.Reader) error {
-		_, err := getMetadata(ctx, logger, reader, request.Name)
-		return err
-	})
-	if err != nil {
-		logger.ErrorContext(ctx, "Failed to validate backup archive", "error", err, "name", request.Name)
-		return RestoreFromBackup400Response{}, nil
-	}
-
-	if h.taskManager == nil {
-		logger.ErrorContext(ctx, "Task manager is not configured")
-		return RestoreFromBackup500Response{}, nil
-	}
-
-	activeTasks, err := h.taskManager.List(ctx, tasks.TaskFilter{
-		States: []models.TaskState{models.Running},
-		Types:  []models.TaskType{models.TaskTypeBackup, models.TaskTypeRestore},
-	})
-	if err == nil && len(activeTasks) > 0 {
-		logger.WarnContext(ctx, "A backup or restore task is already in progress")
-		return RestoreFromBackup409Response{}, nil
 	}
 
 	backupName := request.Name
@@ -293,6 +232,37 @@ func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupReques
 	return DeleteBackup204Response{}, nil
 }
 
+func (h apiHandler) generateNewBackup(ctx context.Context, logger *slog.Logger, report tasks.ProgressReporter, name string) (string, error) {
+	logger.DebugContext(ctx, "Creating backup from database export")
+	report(10, "Exporting database data")
+
+	// Export all data from the database
+	exportedData, err := h.db.Backups().Export(ctx)
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to export backup data", "error", err)
+		return "", err
+	}
+
+	// Save the backup file
+	// Generate a name based on the current timestamp in UTC
+	report(30, "Creating backup archive")
+	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, fmt.Sprintf("gomp-backup-%s.zip", name))
+	err = h.writeBackup(ctx, logger, report, name, backupFilePath, exportedData)
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to create backup file", "error", err, "file", backupFilePath)
+
+		// Attempt to clean up the backup file if it was created
+		innerErr := h.fs.Delete(backupFilePath)
+		if innerErr != nil {
+			logger.ErrorContext(ctx, "Failed to delete backup file after a previous error", "error", innerErr, "file", backupFilePath)
+		}
+
+		return "", err
+	}
+
+	return backupFilePath, nil
+}
+
 func (h apiHandler) uploadBackup(ctx context.Context, logger *slog.Logger, name string, uploadedFileData []byte) (string, error) {
 	logger.DebugContext(ctx, "Creating backup from uploaded file content")
 
@@ -337,10 +307,10 @@ func (h apiHandler) uploadBackup(ctx context.Context, logger *slog.Logger, name 
 	return backupFilePath, nil
 }
 
-func (h apiHandler) writeBackup(ctx context.Context, logger *slog.Logger, name, filePath string, exportedData *models.BackupData, report tasks.ProgressReporter) error {
+func (h apiHandler) writeBackup(ctx context.Context, logger *slog.Logger, report tasks.ProgressReporter, name, filePath string, exportedData *models.BackupData) error {
 	backupFile, err := h.fs.Create(filePath)
 	if err != nil {
-		logger.ErrorContext(ctx, "Failed to create backup file", "error", err)
+		logger.ErrorContext(ctx, "Failed to create backup file", "error", err, "file", filePath)
 		return err
 	}
 	defer backupFile.Close()
@@ -352,7 +322,7 @@ func (h apiHandler) writeBackup(ctx context.Context, logger *slog.Logger, name, 
 			Version: metadata.BuildVersion,
 		}
 		if err := writeJSONFileToZip(writer, "metadata.json", metadata); err != nil {
-			logger.ErrorContext(ctx, "Failed to write backup metadata to zip", "error", err)
+			logger.ErrorContext(ctx, "Failed to write backup metadata to zip", "error", err, "file", filePath)
 			return err
 		}
 
@@ -362,7 +332,7 @@ func (h apiHandler) writeBackup(ctx context.Context, logger *slog.Logger, name, 
 
 		// Write the database backup to JSON
 		if err := writeJSONFileToZip(writer, "database.json", exportedData); err != nil {
-			logger.ErrorContext(ctx, "Failed to write backup data to zip", "error", err)
+			logger.ErrorContext(ctx, "Failed to write backup data to zip", "error", err, "file", filePath)
 			return err
 		}
 
@@ -370,7 +340,7 @@ func (h apiHandler) writeBackup(ctx context.Context, logger *slog.Logger, name, 
 			return ctx.Err()
 		}
 
-		logger.DebugContext(ctx, "Copied backup data to zip")
+		logger.DebugContext(ctx, "Copied backup data to zip", "file", filePath)
 
 		if report != nil {
 			report(60, "Archiving uploaded media files")

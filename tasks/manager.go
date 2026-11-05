@@ -96,11 +96,15 @@ func (m *Manager) runWorker(ctx context.Context, id uuid.UUID, fn TaskFunc) {
 		m.mu.Lock()
 		defer m.mu.Unlock()
 
-		t, err := m.store.Get(ctx, id)
-		if err == nil && t.State == models.Running {
-			t.Progress = &percent
-			t.Stage = &stage
-			_ = m.store.Update(ctx, t)
+		task, err := m.store.Get(ctx, id)
+		if err != nil {
+			slog.Warn("Failed to get task for progress update", "error", err)
+		} else if task.State == models.Running {
+			task.Progress = &percent
+			task.Stage = &stage
+			if updateErr := m.store.Update(ctx, task); updateErr != nil {
+				slog.Warn("Failed to update task progress", "error", updateErr)
+			}
 		}
 	}
 
@@ -112,55 +116,61 @@ func (m *Manager) runWorker(ctx context.Context, id uuid.UUID, fn TaskFunc) {
 			execErr = fmt.Errorf("task panicked: %v", r)
 		}
 
-		completedAt := time.Now()
-
-		m.mu.Lock()
-		cancel, ok := m.runningTasks[id]
-		if ok {
-			delete(m.runningTasks, id)
-		}
-		defer func() {
-			if ok {
-				cancel(nil)
-			}
-		}()
-		defer m.mu.Unlock()
-
-		t, err := m.store.Get(ctx, id)
-		if err != nil {
-			return
-		}
-
-		t.CompletedAt = &completedAt
-
-		// Check context cancellation first (e.g. server shutdown)
-		if ctx.Err() != nil {
-			t.State = models.Failed
-			cause := context.Cause(ctx)
-			var errMsg string
-			if cause != nil {
-				errMsg = cause.Error()
-			} else {
-				errMsg = ctx.Err().Error()
-			}
-			t.Error = &errMsg
-		} else if execErr != nil {
-			t.State = models.Failed
-			errMsg := execErr.Error()
-			t.Error = &errMsg
-		} else {
-			t.State = models.Completed
-			t.Progress = new(100)
-			t.Stage = new("Completed")
-			if result != nil {
-				t.Result = &result
-			}
-		}
-
-		_ = m.store.Update(ctx, t)
+		m.runWorkerComplete(ctx, id, result, execErr)
 	}()
 
 	result, execErr = fn(ctx, report)
+}
+
+func (m *Manager) runWorkerComplete(ctx context.Context, id uuid.UUID, result map[string]any, execErr error) {
+	completedAt := time.Now()
+
+	m.mu.Lock()
+	cancel, ok := m.runningTasks[id]
+	if ok {
+		delete(m.runningTasks, id)
+	}
+	defer func() {
+		if ok {
+			cancel(nil)
+		}
+	}()
+	defer m.mu.Unlock()
+
+	task, err := m.store.Get(ctx, id)
+	if err != nil {
+		return
+	}
+
+	task.CompletedAt = &completedAt
+
+	// Check context cancellation first (e.g. server shutdown)
+	if ctx.Err() != nil {
+		task.State = models.Failed
+		cause := context.Cause(ctx)
+		var errMsg string
+		if cause != nil {
+			errMsg = cause.Error()
+		} else {
+			errMsg = ctx.Err().Error()
+		}
+		task.Error = &errMsg
+	} else if execErr != nil {
+		task.State = models.Failed
+		errMsg := execErr.Error()
+		task.Error = &errMsg
+	} else {
+		task.State = models.Completed
+		task.Progress = new(100)
+		task.Stage = new("Completed")
+		if result != nil {
+			task.Result = &result
+		}
+	}
+
+	if updateErr := m.store.Update(ctx, task); updateErr != nil {
+		slog.Warn("Failed to update task after completion", "error", updateErr)
+	}
 }
 
 // Get returns the task with the given ID.
