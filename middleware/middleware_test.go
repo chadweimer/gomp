@@ -29,10 +29,10 @@ func TestRecover(t *testing.T) {
 			},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
-			sut := Recover(tt.args.msg)
+			sut := Recover(test.args.msg)
 			handler := sut(http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
 				panic("pretend to panic")
 			}))
@@ -119,21 +119,21 @@ func TestLogRequests(t *testing.T) {
 			),
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			buff := bytes.NewBufferString("")
 			logger := slog.New(slog.NewTextHandler(buff, &slog.HandlerOptions{
 				Level: slog.LevelDebug,
 			}))
-			sut := LogRequests(logger, tt.trustedProxies)
+			sut := LogRequests(logger, test.trustedProxies)
 			handler := sut(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				infra.GetLoggerFromContext(r.Context()).Debug(tt.args.msg)
-				w.Write([]byte(tt.args.msg))
+				infra.GetLoggerFromContext(r.Context()).Debug(test.args.msg)
+				w.Write([]byte(test.args.msg))
 			}))
 			req := httptest.NewRequest("GET", "/", nil)
-			if tt.headers != nil {
-				req.Header = tt.headers
+			if test.headers != nil {
+				req.Header = test.headers
 			}
 
 			// Act
@@ -141,8 +141,8 @@ func TestLogRequests(t *testing.T) {
 			got := strings.TrimSpace(buff.String())
 
 			// Assert
-			if !tt.want.MatchString(got) {
-				t.Errorf("expected: %s, actual: %s", tt.want, got)
+			if !test.want.MatchString(got) {
+				t.Errorf("expected: %s, actual: %s", test.want, got)
 			}
 		})
 	}
@@ -191,8 +191,8 @@ func TestCacheControl(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			sut := CacheControl()
 			nextCalled := false
 			handler := sut(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -201,7 +201,7 @@ func TestCacheControl(t *testing.T) {
 			}))
 
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest(http.MethodGet, tt.path, nil)
+			req := httptest.NewRequest(http.MethodGet, test.path, nil)
 
 			handler.ServeHTTP(w, req)
 
@@ -210,8 +210,8 @@ func TestCacheControl(t *testing.T) {
 			}
 
 			gotHeader := w.Header().Get("Cache-Control")
-			if gotHeader != tt.wantHeader {
-				t.Errorf("expected Cache-Control %q, got %q", tt.wantHeader, gotHeader)
+			if gotHeader != test.wantHeader {
+				t.Errorf("expected Cache-Control %q, got %q", test.wantHeader, gotHeader)
 			}
 		})
 	}
@@ -253,11 +253,11 @@ func TestWrap(t *testing.T) {
 			want: "Middleware1Middleware2Handler",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			w := httptest.NewRecorder()
-			sut := Wrap(tt.args.h, tt.args.middleware...)
+			sut := Wrap(test.args.h, test.args.middleware...)
 
 			// Act
 			sut.ServeHTTP(w, httptest.NewRequest("GET", "/", nil))
@@ -269,8 +269,8 @@ func TestWrap(t *testing.T) {
 			}
 			got := buff.String()
 
-			if got != tt.want {
-				t.Errorf("expected: %v, actual: %v", tt.want, got)
+			if got != test.want {
+				t.Errorf("expected: %v, actual: %v", test.want, got)
 			}
 		})
 	}

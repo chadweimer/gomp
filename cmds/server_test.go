@@ -175,8 +175,8 @@ func Test_createMux(t *testing.T) {
 			wantContent: "backup content",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -186,23 +186,23 @@ func Test_createMux(t *testing.T) {
 			dbDriver := dbmock.NewMockDriver(ctrl)
 			usersDriver := dbmock.NewMockUserDriver(ctrl)
 			dbDriver.EXPECT().Users().AnyTimes().Return(usersDriver)
-			req := httptest.NewRequest("GET", tt.requestPath, nil)
-			if tt.requestUser != nil {
-				usersDriver.EXPECT().Read(gomock.Any(), *tt.requestUser.ID).Return(&db.UserWithPasswordHash{User: *tt.requestUser}, nil)
+			req := httptest.NewRequest("GET", test.requestPath, nil)
+			if test.requestUser != nil {
+				usersDriver.EXPECT().Read(gomock.Any(), *test.requestUser.ID).Return(&db.UserWithPasswordHash{User: *test.requestUser}, nil)
 				jwt, _ := tokenHandler.Generate(
-					*tt.requestUser.ID, infra.GetScopes(tt.requestUser.AccessLevel), false)
+					*test.requestUser.ID, infra.GetScopes(test.requestUser.AccessLevel), false)
 				cookie, _ := tokenHandler.AsCookie(jwt)
 				req.AddCookie(cookie)
 			}
 			uplDriver.EXPECT().Open(gomock.Any()).AnyTimes().DoAndReturn(func(name string) (fs.File, error) {
-				return tt.assetsFS.Open(name)
+				return test.assetsFS.Open(name)
 			})
 			resp := httptest.NewRecorder()
 
 			// Act
 			taskManager := tasks.NewManager(tasks.NewMemoryStore())
 			defer taskManager.Close()
-			mux, _ := createMux(tokenHandler, uploader, dbDriver, uplDriver, taskManager, tt.assetsFS)
+			mux, _ := createMux(tokenHandler, uploader, dbDriver, uplDriver, taskManager, test.assetsFS)
 			r := middleware.Wrap(
 				mux,
 				middleware.Authenticate(tokenHandler, dbDriver.Users()),
@@ -210,15 +210,15 @@ func Test_createMux(t *testing.T) {
 			r.ServeHTTP(resp, req)
 
 			// Assert
-			if resp.Code != tt.wantCode {
-				t.Errorf("expected status %d, got %d", tt.wantCode, resp.Code)
+			if resp.Code != test.wantCode {
+				t.Errorf("expected status %d, got %d", test.wantCode, resp.Code)
 			}
 			if resp.Body == nil {
 				t.Fatal("expected non-nil body")
 			}
 			gotContent := resp.Body.String()
-			if gotContent != tt.wantContent {
-				t.Errorf("expected content '%s', got '%s'", tt.wantContent, gotContent)
+			if gotContent != test.wantContent {
+				t.Errorf("expected content '%s', got '%s'", test.wantContent, gotContent)
 			}
 		})
 	}
@@ -308,13 +308,13 @@ func TestListenAndServe(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
 			started := make(chan struct{})
-			mock := tt.mockSetup(started)
+			mock := test.mockSetup(started)
 
 			errChan := make(chan error, 1)
 			go func() {
@@ -332,8 +332,8 @@ func TestListenAndServe(t *testing.T) {
 
 			select {
 			case err := <-errChan:
-				if (err != nil) != tt.wantErr {
-					t.Errorf("listenAndServe() error = %v, wantErr %v", err, tt.wantErr)
+				if (err != nil) != test.wantErr {
+					t.Errorf("listenAndServe() error = %v, wantErr %v", err, test.wantErr)
 				}
 			case <-time.After(2 * time.Second):
 				t.Fatal("timed out waiting for listenAndServe to return")
@@ -341,13 +341,13 @@ func TestListenAndServe(t *testing.T) {
 
 			mock.mu.Lock()
 			defer mock.mu.Unlock()
-			if tt.checkShutdown && !mock.shutdownHit {
+			if test.checkShutdown && !mock.shutdownHit {
 				t.Error("expected Shutdown() to be called")
 			}
-			if tt.checkClose && !mock.closeHit {
+			if test.checkClose && !mock.closeHit {
 				t.Error("expected Close() to be called")
 			}
-			if !tt.checkClose && mock.closeHit {
+			if !test.checkClose && mock.closeHit {
 				t.Error("expected Close() NOT to be called")
 			}
 		})

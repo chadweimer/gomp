@@ -85,19 +85,19 @@ func Test_exportDatabase(t *testing.T) {
 			wantErr:   true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			buf := bytes.NewBuffer(nil)
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			mockDB := dbmock.NewMockDriver(ctrl)
 			mockBackupDriver := dbmock.NewMockBackupDriver(ctrl)
-			mockBackupDriver.EXPECT().Export(gomock.Any()).Return(tt.backupData, tt.dbErr).AnyTimes()
+			mockBackupDriver.EXPECT().Export(gomock.Any()).Return(test.backupData, test.dbErr).AnyTimes()
 			mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
 			creator := func(path string) (io.WriteCloser, error) {
-				if path != tt.output {
-					t.Errorf("Create() called with path = %v, want %v", path, tt.output)
+				if path != test.output {
+					t.Errorf("Create() called with path = %v, want %v", path, test.output)
 				}
 
 				return struct {
@@ -106,18 +106,18 @@ func Test_exportDatabase(t *testing.T) {
 				}{
 					Writer: buf,
 					Closer: io.NopCloser(buf),
-				}, tt.createErr
+				}, test.createErr
 			}
 
 			// Act
-			gotErr := exportDatabase(t.Context(), mockDB, creator, tt.output, tt.indent)
+			gotErr := exportDatabase(t.Context(), mockDB, creator, test.output, test.indent)
 
 			// Assert
-			if (gotErr != nil) != tt.wantErr {
-				t.Fatalf("exportDatabase() = %v, wantErr %v", gotErr, tt.wantErr)
+			if (gotErr != nil) != test.wantErr {
+				t.Fatalf("exportDatabase() = %v, wantErr %v", gotErr, test.wantErr)
 			}
-			if gotContent := buf.String(); gotContent != tt.wantContent {
-				t.Errorf("exportDatabase() wrote = %v, want %v", gotContent, tt.wantContent)
+			if gotContent := buf.String(); gotContent != test.wantContent {
+				t.Errorf("exportDatabase() wrote = %v, want %v", gotContent, test.wantContent)
 			}
 		})
 	}
@@ -176,26 +176,26 @@ func Test_importDatabase(t *testing.T) {
 			wantErr:        true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
-			buf := bytes.NewBufferString(tt.content)
+			buf := bytes.NewBufferString(test.content)
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			mockDB := dbmock.NewMockDriver(ctrl)
 			mockBackupDriver := dbmock.NewMockBackupDriver(ctrl)
-			mockBackupDriver.EXPECT().Import(gomock.Any(), tt.wantBackupData).Return(tt.dbErr).AnyTimes()
+			mockBackupDriver.EXPECT().Import(gomock.Any(), test.wantBackupData).Return(test.dbErr).AnyTimes()
 			mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
 			opener := func(_ string) (io.ReadCloser, error) {
-				return io.NopCloser(buf), tt.openErr
+				return io.NopCloser(buf), test.openErr
 			}
 
 			// Act
-			gotErr := importDatabase(t.Context(), mockDB, opener, tt.input)
+			gotErr := importDatabase(t.Context(), mockDB, opener, test.input)
 
 			// Assert
-			if (gotErr != nil) != tt.wantErr {
-				t.Fatalf("importDatabase() = %v, wantErr %v", gotErr, tt.wantErr)
+			if (gotErr != nil) != test.wantErr {
+				t.Fatalf("importDatabase() = %v, wantErr %v", gotErr, test.wantErr)
 			}
 		})
 	}
@@ -223,20 +223,20 @@ func Test_migrateDatabaseUp(t *testing.T) {
 			expectedErr: nil,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			dbDriver := dbmock.NewMockDriver(ctrl)
-			dbDriver.EXPECT().MigrateUp().Return(tt.err)
+			dbDriver.EXPECT().MigrateUp().Return(test.err)
 
 			// Act
 			gotErr := migrateDatabaseUp(t.Context(), nil, dbDriver)
 
 			// Assert
-			if !errors.Is(gotErr, tt.expectedErr) {
-				t.Errorf("migrateDatabaseUp() = %v, expectedErr %v", gotErr, tt.expectedErr)
+			if !errors.Is(gotErr, test.expectedErr) {
+				t.Errorf("migrateDatabaseUp() = %v, expectedErr %v", gotErr, test.expectedErr)
 			}
 		})
 	}
@@ -264,20 +264,20 @@ func Test_migrateDatabaseDown(t *testing.T) {
 			expectedErr: nil,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			dbDriver := dbmock.NewMockDriver(ctrl)
-			dbDriver.EXPECT().MigrateDown().Return(tt.err)
+			dbDriver.EXPECT().MigrateDown().Return(test.err)
 
 			// Act
 			gotErr := migrateDatabaseDown(t.Context(), nil, dbDriver)
 
 			// Assert
-			if !errors.Is(gotErr, tt.expectedErr) {
-				t.Errorf("migrateDatabaseDown() = %v, expectedErr %v", gotErr, tt.expectedErr)
+			if !errors.Is(gotErr, test.expectedErr) {
+				t.Errorf("migrateDatabaseDown() = %v, expectedErr %v", gotErr, test.expectedErr)
 			}
 		})
 	}
@@ -309,18 +309,18 @@ func Test_migrateDatabaseSteps(t *testing.T) {
 			expectedErr: nil,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			dbDriver := dbmock.NewMockDriver(ctrl)
-			dbDriver.EXPECT().MigrateSteps(tt.steps).Return(tt.err)
+			dbDriver.EXPECT().MigrateSteps(test.steps).Return(test.err)
 			cmd := &cli.Command{
 				Flags: []cli.Flag{
 					&cli.IntFlag{
 						Name:  "steps",
-						Value: tt.steps,
+						Value: test.steps,
 					},
 				},
 			}
@@ -329,8 +329,8 @@ func Test_migrateDatabaseSteps(t *testing.T) {
 			gotErr := migrateDatabaseSteps(t.Context(), cmd, dbDriver)
 
 			// Assert
-			if !errors.Is(gotErr, tt.expectedErr) {
-				t.Errorf("migrateDatabaseSteps() = %v, expectedErr %v", gotErr, tt.expectedErr)
+			if !errors.Is(gotErr, test.expectedErr) {
+				t.Errorf("migrateDatabaseSteps() = %v, expectedErr %v", gotErr, test.expectedErr)
 			}
 		})
 	}

@@ -45,14 +45,14 @@ func TestConfig_validate(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			c := &Config{
-				Driver: tt.fields.Driver,
-				URL:    tt.fields.URL,
+				Driver: test.fields.Driver,
+				URL:    test.fields.URL,
 			}
-			if got := c.validate(); tt.wantErr != (got != nil) {
-				t.Errorf("ImageConfig.validate() = %v, want error? %v", got, tt.wantErr)
+			if got := c.validate(); test.wantErr != (got != nil) {
+				t.Errorf("ImageConfig.validate() = %v, want error? %v", got, test.wantErr)
 			}
 		})
 	}

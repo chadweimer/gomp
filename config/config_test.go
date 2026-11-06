@@ -54,15 +54,15 @@ func TestServerConfig_Validate(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			c := &ServerConfig{
-				Port:           tt.fields.Port,
-				BaseAssetsPath: tt.fields.BaseAssetsPath,
-				SecureKeys:     tt.fields.SecureKeys,
+				Port:           test.fields.Port,
+				BaseAssetsPath: test.fields.BaseAssetsPath,
+				SecureKeys:     test.fields.SecureKeys,
 			}
-			if got := c.Validate(); tt.wantErr != (got != nil) {
-				t.Errorf("Config.validate() = %v, want error? %v", got, tt.wantErr)
+			if got := c.Validate(); test.wantErr != (got != nil) {
+				t.Errorf("Config.validate() = %v, want error? %v", got, test.wantErr)
 			}
 		})
 	}
@@ -99,21 +99,21 @@ func TestTrustedProxy_UnmarshalText(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			var tp TrustedProxy
-			gotErr := tp.UnmarshalText([]byte(tt.text))
+			gotErr := tp.UnmarshalText([]byte(test.text))
 			got := tp.IPNet
 			if gotErr != nil {
-				if !tt.wantErr {
+				if !test.wantErr {
 					t.Errorf("UnmarshalText() failed: %v", gotErr)
 				}
 				return
 			}
-			if got.String() != tt.want.String() {
-				t.Errorf("UnmarshalText() = %v, want %v", got.String(), tt.want.String())
+			if got.String() != test.want.String() {
+				t.Errorf("UnmarshalText() = %v, want %v", got.String(), test.want.String())
 			}
-			if tt.wantErr {
+			if test.wantErr {
 				t.Fatal("UnmarshalText() succeeded unexpectedly")
 			}
 		})

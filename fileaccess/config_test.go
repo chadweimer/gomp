@@ -37,13 +37,13 @@ func TestFilesConfig_validate(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			c := &FilesConfig{
-				Path: tt.fields.Path,
+				Path: test.fields.Path,
 			}
-			if got := c.validate(); tt.wantErr != (got != nil) {
-				t.Errorf("FilesConfig.validate() = %v, want error? %v", got, tt.wantErr)
+			if got := c.validate(); test.wantErr != (got != nil) {
+				t.Errorf("FilesConfig.validate() = %v, want error? %v", got, test.wantErr)
 			}
 		})
 	}
@@ -105,16 +105,16 @@ func TestImageConfig_validate(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			c := &ImageConfig{
-				ImageQuality:     tt.fields.ImageQuality,
-				ImageSize:        tt.fields.ImageSize,
-				ThumbnailQuality: tt.fields.ThumbnailQuality,
-				ThumbnailSize:    tt.fields.ThumbnailSize,
+				ImageQuality:     test.fields.ImageQuality,
+				ImageSize:        test.fields.ImageSize,
+				ThumbnailQuality: test.fields.ThumbnailQuality,
+				ThumbnailSize:    test.fields.ThumbnailSize,
 			}
-			if got := c.validate(); tt.wantErr != (got != nil) {
-				t.Errorf("ImageConfig.validate() = %v, want error? %v", got, tt.wantErr)
+			if got := c.validate(); test.wantErr != (got != nil) {
+				t.Errorf("ImageConfig.validate() = %v, want error? %v", got, test.wantErr)
 			}
 		})
 	}

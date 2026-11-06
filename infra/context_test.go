@@ -50,11 +50,11 @@ func TestGetLoggerFromContext(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := GetLoggerFromContext(tt.ctx(t.Context()))
-			if got != tt.want {
-				t.Errorf("GetLoggerFromContext() = %v, want %v", got, tt.want)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := GetLoggerFromContext(test.ctx(t.Context()))
+			if got != test.want {
+				t.Errorf("GetLoggerFromContext() = %v, want %v", got, test.want)
 			}
 		})
 	}

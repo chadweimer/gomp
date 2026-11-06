@@ -480,11 +480,11 @@ func Test_isImageReferencedInDirections(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := isImageReferencedInDirections(tt.directions, tt.imageName)
-			if got != tt.expected {
-				t.Errorf("isImageReferencedInDirections() = %v, want %v", got, tt.expected)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := isImageReferencedInDirections(test.directions, test.imageName)
+			if got != test.expected {
+				t.Errorf("isImageReferencedInDirections() = %v, want %v", got, test.expected)
 			}
 		})
 	}

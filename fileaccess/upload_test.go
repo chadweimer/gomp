@@ -402,19 +402,18 @@ func Test_ListAll(t *testing.T) {
 		{name: "Not Found", listErr: fs.ErrNotExist, expectError: false, expected: map[int64][]string{}},
 	}
 
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			drv := fileaccessmock.NewMockDriver(ctrl)
 			dirPath := getDirPathForRecipes()
 
-			if tt.listErr != nil {
-				drv.EXPECT().List(dirPath).Return(nil, tt.listErr).Times(1)
+			if test.listErr != nil {
+				drv.EXPECT().List(dirPath).Return(nil, test.listErr).Times(1)
 			} else {
-				mockFileSystemEntries(drv, dirPath, tt.entries)
+				mockFileSystemEntries(drv, dirPath, test.entries)
 			}
 
 			imgCfg := ImageConfig{
@@ -429,11 +428,11 @@ func Test_ListAll(t *testing.T) {
 			}
 
 			got, err := uploader.ListAll()
-			if tt.expectError {
+			if test.expectError {
 				if err == nil {
 					t.Fatal("expected error, got nil")
 				}
-				if !errors.Is(err, tt.listErr) {
+				if !errors.Is(err, test.listErr) {
 					t.Fatalf("expected wrapped error to be testErr, got: %v", err)
 				}
 				return
@@ -442,10 +441,10 @@ func Test_ListAll(t *testing.T) {
 			if err != nil {
 				t.Fatalf("List returned error: %v", err)
 			}
-			if len(got) != len(tt.expected) {
-				t.Fatalf("expected %d files, got %d: %v", len(tt.expected), len(got), got)
+			if len(got) != len(test.expected) {
+				t.Fatalf("expected %d files, got %d: %v", len(test.expected), len(got), got)
 			}
-			for recipeID, images := range tt.expected {
+			for recipeID, images := range test.expected {
 				if !reflect.DeepEqual(got[recipeID], images) {
 					t.Fatalf("unexpected file list for recipe %d: got %v, want %v", recipeID, got[recipeID], images)
 				}
@@ -494,19 +493,18 @@ func Test_List(t *testing.T) {
 		{name: "Not Found", recipeID: 7, listErr: fs.ErrNotExist, expectError: false, expected: []string{}},
 	}
 
-	for _, tt := range tests {
-		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			drv := fileaccessmock.NewMockDriver(ctrl)
-			dirPath := getDirPathForImage(tt.recipeID)
+			dirPath := getDirPathForImage(test.recipeID)
 
-			if tt.listErr != nil {
-				drv.EXPECT().List(dirPath).Return(nil, tt.listErr).Times(1)
+			if test.listErr != nil {
+				drv.EXPECT().List(dirPath).Return(nil, test.listErr).Times(1)
 			} else {
-				mockFileSystemEntries(drv, dirPath, tt.entries)
+				mockFileSystemEntries(drv, dirPath, test.entries)
 			}
 
 			imgCfg := ImageConfig{
@@ -520,12 +518,12 @@ func Test_List(t *testing.T) {
 				t.Fatalf("CreateImageUploader: %v", err)
 			}
 
-			got, err := uploader.List(tt.recipeID)
-			if tt.expectError {
+			got, err := uploader.List(test.recipeID)
+			if test.expectError {
 				if err == nil {
 					t.Fatal("expected error, got nil")
 				}
-				if !errors.Is(err, tt.listErr) {
+				if !errors.Is(err, test.listErr) {
 					t.Fatalf("expected wrapped error to be testErr, got: %v", err)
 				}
 				return
@@ -534,11 +532,11 @@ func Test_List(t *testing.T) {
 			if err != nil {
 				t.Fatalf("List returned error: %v", err)
 			}
-			if len(got) != len(tt.expected) {
-				t.Fatalf("expected %d files, got %d: %v", len(tt.expected), len(got), got)
+			if len(got) != len(test.expected) {
+				t.Fatalf("expected %d files, got %d: %v", len(test.expected), len(got), got)
 			}
-			for i := range tt.expected {
-				if got[i] != tt.expected[i] {
+			for i := range test.expected {
+				if got[i] != test.expected[i] {
 					t.Fatalf("unexpected file list: %v", got)
 				}
 			}
