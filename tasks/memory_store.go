@@ -68,8 +68,8 @@ func (s *memoryStore) List(_ context.Context, filter TaskFilter) ([]models.Task,
 
 	result := make([]models.Task, 0, len(s.order))
 	for _, id := range slices.Backward(s.order) {
-		task, ok := s.tasks[id]
-		if !ok {
+		task, exists := s.tasks[id]
+		if !exists {
 			continue
 		}
 
