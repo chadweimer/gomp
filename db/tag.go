@@ -55,11 +55,7 @@ func getTagOrderStmt(sortBy models.TagSortBy, sortDir models.SortDir) string {
 	default:
 		stmt += "tag"
 	}
-	if sortDir == models.Desc {
-		stmt += " DESC"
-	} else {
-		stmt += " ASC"
-	}
+	stmt += lo.Ternary(sortDir == models.Desc, " DESC", " ASC")
 	if sortBy == models.TagSortByCount {
 		stmt += ", tag ASC"
 	}

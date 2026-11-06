@@ -10,6 +10,7 @@ import (
 	"uuid"
 
 	"github.com/chadweimer/gomp/models"
+	"github.com/samber/lo"
 )
 
 // Manager coordinates the creation, execution, state updates, and cancellation of background tasks.
@@ -148,12 +149,7 @@ func (m *Manager) runWorkerComplete(ctx context.Context, id uuid.UUID, result ma
 	if ctx.Err() != nil {
 		task.State = models.Failed
 		cause := context.Cause(ctx)
-		var errMsg string
-		if cause != nil {
-			errMsg = cause.Error()
-		} else {
-			errMsg = ctx.Err().Error()
-		}
+		errMsg := lo.Ternary(cause != nil, cause.Error(), ctx.Err().Error())
 		task.Error = &errMsg
 	} else if execErr != nil {
 		task.State = models.Failed
