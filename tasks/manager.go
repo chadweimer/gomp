@@ -99,12 +99,12 @@ func (m *Manager) runWorker(ctx context.Context, id uuid.UUID, fn TaskFunc) {
 
 		task, err := m.store.Get(ctx, id)
 		if err != nil {
-			slog.Warn("Failed to get task for progress update", "error", err)
+			slog.Warn("Failed to get task for progress update", "taskId", id, "error", err)
 		} else if task.State == models.Running {
 			task.Progress = &percent
 			task.Stage = &stage
 			if updateErr := m.store.Update(ctx, task); updateErr != nil {
-				slog.Warn("Failed to update task progress", "error", updateErr)
+				slog.Warn("Failed to update task progress", "taskId", id, "error", updateErr)
 			}
 		}
 	}
@@ -165,7 +165,7 @@ func (m *Manager) runWorkerComplete(ctx context.Context, id uuid.UUID, result ma
 	}
 
 	if updateErr := m.store.Update(ctx, task); updateErr != nil {
-		slog.Warn("Failed to update task after completion", "error", updateErr)
+		slog.Warn("Failed to update task after completion", "taskId", id, "error", updateErr)
 	}
 }
 
