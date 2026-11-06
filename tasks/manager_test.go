@@ -340,7 +340,7 @@ func TestMemoryStore_ThreadSafety(t *testing.T) {
 	store := tasks.NewMemoryStore()
 
 	var wg sync.WaitGroup
-	for range 20 {
+	for i := range 20 {
 		wg.Go(func() {
 			id := uuid.New()
 			task := &models.Task{
@@ -349,11 +349,23 @@ func TestMemoryStore_ThreadSafety(t *testing.T) {
 				State:     models.Running,
 				CreatedAt: time.Now(),
 			}
-			_ = store.Create(context.Background(), task)
+			err := store.Create(context.Background(), task)
+			if err != nil {
+				t.Errorf("iteration %d: unexpected error creating task: %v", i, err)
+			}
 			task.State = models.Failed
-			_ = store.Update(context.Background(), task)
-			_, _ = store.Get(context.Background(), id)
-			_, _ = store.List(context.Background(), tasks.TaskFilter{})
+			err = store.Update(context.Background(), task)
+			if err != nil {
+				t.Errorf("iteration %d: unexpected error updating task: %v", i, err)
+			}
+			_, err = store.Get(context.Background(), id)
+			if err != nil {
+				t.Errorf("iteration %d: unexpected error getting task: %v", i, err)
+			}
+			_, err = store.List(context.Background(), tasks.TaskFilter{})
+			if err != nil {
+				t.Errorf("iteration %d: unexpected error listing tasks: %v", i, err)
+			}
 		})
 	}
 	wg.Wait()
