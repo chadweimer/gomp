@@ -12,7 +12,6 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	"github.com/jmoiron/sqlx"
-	"github.com/samber/lo"
 
 	// sqlite database driver
 	_ "modernc.org/sqlite"
@@ -30,19 +29,24 @@ type sqliteDriver struct {
 }
 
 func (sqliteDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
-	fieldStr := ""
-	fieldArgs := make([]any, 0)
-	for _, field := range supportedSearchFields {
-		if lo.Contains(filterFields, field) {
-			if fieldStr != "" {
-				fieldStr += " OR "
-			}
-			fieldStr += "r." + string(field) + " LIKE ?"
-			fieldArgs = append(fieldArgs, "%"+query+"%")
-		}
+	stmt, arg := buildSQLiteFTSQuery(filterFields, query)
+	if stmt == "" {
+		return "", make([]any, 0)
 	}
+	return stmt, []any{arg}
+}
 
-	return fieldStr, fieldArgs
+func (sqliteDriverAdapter) GetSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any) {
+	_, arg := buildSQLiteFTSQuery(filterFields, query)
+	if arg == "" {
+		return "ORDER BY r.modified_at DESC", nil
+	}
+	ftsOrder := "ASC"
+	if sortDir == models.Asc {
+		ftsOrder = "DESC"
+	}
+	stmt := fmt.Sprintf("ORDER BY (SELECT bm25(recipe_fts, 5.0, 1.0, 1.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) %s, r.modified_at DESC", ftsOrder)
+	return stmt, []any{arg}
 }
 
 func (sqliteDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext, _ *models.BackupData) error {
@@ -56,9 +60,16 @@ func (sqliteDriverAdapter) GetImportInsertStatement() string {
 	return "INSERT OR REPLACE"
 }
 
+func (sqliteDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerContext, _ *models.BackupData) error {
+	if _, err := db.ExecContext(ctx, "INSERT INTO recipe_fts(recipe_fts) VALUES('rebuild')"); err != nil {
+		return fmt.Errorf("rebuilding fts index: %w", err)
+	}
+	return nil
+}
+
 func (sqliteDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
 	tables := make([]string, 0)
-	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'"); err != nil {
+	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'recipe_fts%'"); err != nil {
 		return nil, err
 	}
 

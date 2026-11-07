@@ -32,28 +32,60 @@ func Test_sqlite_GetSearchFields(t *testing.T) {
 
 			// Assert
 			expectedFields := lo.Intersect(test.fields, supportedSearchFields[:])
-			if len(args) != len(expectedFields) {
-				t.Errorf("expected %d args, received %d", len(expectedFields), len(args))
-			}
-			for index, arg := range args {
-				strArg, ok := arg.(string)
-				if !ok {
-					t.Errorf("invalid argument type: %v", arg)
+			if len(expectedFields) == 0 {
+				if stmt != "" {
+					t.Errorf("expected empty stmt, got %s", stmt)
 				}
-				if strArg != "%"+test.query+"%" {
-					t.Errorf("arg at index %d, expected %v, received %v", index, test.query, arg)
-				}
-			}
-			if stmt == "" {
-				if len(expectedFields) > 0 {
-					t.Error("filter should not be empty")
+				if len(args) != 0 {
+					t.Errorf("expected 0 args, got %d", len(args))
 				}
 			} else {
-				segments := strings.Split(stmt, " OR ")
-				if len(segments) != len(expectedFields) {
-					t.Errorf("expected %d segments, received %d", len(expectedFields), len(segments))
+				if stmt != "r.id IN (SELECT rowid FROM recipe_fts WHERE recipe_fts MATCH ?)" {
+					t.Errorf("unexpected stmt: %s", stmt)
+				}
+				if len(args) != 1 {
+					t.Fatalf("expected 1 arg, got %d", len(args))
+				}
+				argStr, ok := args[0].(string)
+				if !ok {
+					t.Fatalf("arg is not string: %v", args[0])
+				}
+				colNames := make([]string, 0, len(expectedFields))
+				for _, f := range expectedFields {
+					colNames = append(colNames, string(f))
+				}
+				expectedPrefix := fmt.Sprintf("{%s} : ", strings.Join(colNames, " "))
+				if !strings.HasPrefix(argStr, expectedPrefix) {
+					t.Errorf("expected arg prefix %q, got %q", expectedPrefix, argStr)
 				}
 			}
 		})
+	}
+}
+
+func Test_sqlite_GetSearchOrder(t *testing.T) {
+	sut := sqliteDriverAdapter{}
+
+	// When query is non-empty, order by bm25
+	stmt, args := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Desc)
+	expectedStmt := "ORDER BY (SELECT bm25(recipe_fts, 5.0, 1.0, 1.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) ASC, r.modified_at DESC"
+	if stmt != expectedStmt {
+		t.Errorf("expected %q, got %q", expectedStmt, stmt)
+	}
+	if len(args) != 1 || args[0] != "{name} : cookie*" {
+		t.Errorf("unexpected args: %v", args)
+	}
+
+	// When sortDir is Asc
+	stmtAsc, _ := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Asc)
+	expectedStmtAsc := "ORDER BY (SELECT bm25(recipe_fts, 5.0, 1.0, 1.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) DESC, r.modified_at DESC"
+	if stmtAsc != expectedStmtAsc {
+		t.Errorf("expected %q, got %q", expectedStmtAsc, stmtAsc)
+	}
+
+	// When query is empty, fallback to modified_at
+	stmtEmpty, argsEmpty := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Desc)
+	if stmtEmpty != "ORDER BY r.modified_at DESC" || len(argsEmpty) != 0 {
+		t.Errorf("unexpected empty query result: stmt=%q, args=%v", stmtEmpty, argsEmpty)
 	}
 }

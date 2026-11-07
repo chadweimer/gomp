@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/chadweimer/gomp/models"
@@ -29,19 +30,56 @@ type postgresDriver struct {
 	*sqlDriver
 }
 
-func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
-	fieldStr := ""
-	fieldArgs := make([]any, 0)
-
-	for _, field := range lo.Intersect(filterFields, supportedSearchFields[:]) {
-		if fieldStr != "" {
-			fieldStr += " OR "
+func getPostgresSearchVector(filterFields []models.SearchField) string {
+	fields := lo.Intersect(filterFields, supportedSearchFields[:])
+	if len(fields) == 0 {
+		fields = supportedSearchFields[:]
+	}
+	tsvectors := make([]string, 0, len(fields))
+	for _, field := range fields {
+		switch field {
+		case models.SearchFieldName:
+			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.name, '')), 'A')")
+		case models.SearchFieldIngredients:
+			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.ingredients, '')), 'B')")
+		case models.SearchFieldDirections:
+			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.directions, '')), 'B')")
+		case models.SearchFieldStorageInstructions:
+			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.storage_instructions, '')), 'C')")
+		case models.SearchFieldNutrition:
+			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.nutrition_info, '')), 'D')")
 		}
-		fieldStr += fmt.Sprintf("to_tsvector('english', r.%s) @@ websearch_to_wildcard_tsquery('english', ?)", field)
-		fieldArgs = append(fieldArgs, query)
+	}
+	if len(tsvectors) == 1 {
+		return tsvectors[0]
+	}
+	return "(" + strings.Join(tsvectors, " || ") + ")"
+}
+
+func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+	fields := lo.Intersect(filterFields, supportedSearchFields[:])
+	if len(fields) == 0 {
+		return "", make([]any, 0)
 	}
 
-	return fieldStr, fieldArgs
+	vector := getPostgresSearchVector(fields)
+	stmt := fmt.Sprintf("%s @@ websearch_to_wildcard_tsquery('english', ?)", vector)
+	return stmt, []any{query}
+}
+
+func (postgresDriverAdapter) GetSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any) {
+	fields := lo.Intersect(filterFields, supportedSearchFields[:])
+	if len(fields) == 0 {
+		fields = supportedSearchFields[:]
+	}
+
+	vector := getPostgresSearchVector(fields)
+	rankOrder := "DESC"
+	if sortDir == models.Asc {
+		rankOrder = "ASC"
+	}
+	stmt := fmt.Sprintf("ORDER BY ts_rank(%s, websearch_to_wildcard_tsquery('english', ?)) %s, r.modified_at DESC", vector, rankOrder)
+	return stmt, []any{query}
 }
 
 func (postgresDriverAdapter) PostExport(_ context.Context, _ sqlx.ExecerContext, backup *models.BackupData) error {

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
@@ -13,6 +14,7 @@ import (
 
 type sqlRecipeDriverAdapter interface {
 	GetSearchFields(filterFields []models.SearchField, query string) (string, []any)
+	GetSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any)
 }
 
 type sqlRecipeDriver struct {
@@ -224,7 +226,7 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 		return nil, 0, err
 	}
 
-	orderStmt := getOrderStmt(filter.SortBy, filter.SortDir)
+	orderStmt, orderArgs := getOrderStmt(filter.SortBy, filter.SortDir, filter.Query, filter.Fields, d.adapter)
 
 	// Build the offset and limit
 	limitStmt := ""
@@ -240,7 +242,7 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
 			fmt.Sprintf("%s %s %s", whereStmt, orderStmt, limitStmt)
 
-	selectArgs := append(whereArgs, limitArgs...)
+	selectArgs := append(append(whereArgs, orderArgs...), limitArgs...)
 	selectStmt := d.Db.Rebind(combinedStr)
 
 	recipes := make([]*models.RecipeCompact, 0)
@@ -293,7 +295,18 @@ func getPicturesStmt(withPictures *bool) string {
 	return "r.main_image_name IS NOT NULL AND r.main_image_name != ''"
 }
 
-func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
+func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir, query string, filterFields []models.SearchField, adapter sqlRecipeDriverAdapter) (string, []any) {
+	if sortBy == models.SortByRelevance {
+		if strings.TrimSpace(query) == "" {
+			return "ORDER BY r.modified_at DESC", nil
+		}
+		fields := filterFields
+		if len(fields) == 0 {
+			fields = supportedSearchFields[:]
+		}
+		return adapter.GetSearchOrder(fields, query, sortDir)
+	}
+
 	stmt := "ORDER BY "
 	switch sortBy {
 	case models.SortByID:
@@ -323,5 +336,5 @@ func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir) string {
 		stmt += ", r.modified_at DESC"
 	}
 
-	return stmt
+	return stmt, nil
 }

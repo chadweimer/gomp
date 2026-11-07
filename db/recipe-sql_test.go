@@ -77,6 +77,10 @@ func (simpleSQLRecipeDriverAdapter) GetSearchFields(filterFields []models.Search
 	return stmt, args
 }
 
+func (simpleSQLRecipeDriverAdapter) GetSearchOrder(_ []models.SearchField, _ string, _ models.SortDir) (string, []any) {
+	return "ORDER BY relevance_score DESC", nil
+}
+
 func Test_Recipe_Create(t *testing.T) {
 	type testArgs struct {
 		recipe        models.Recipe
@@ -650,6 +654,9 @@ func Test_getOrderStmt(t *testing.T) {
 	type args struct {
 		sortBy  models.SortBy
 		sortDir models.SortDir
+		query   string
+		fields  []models.SearchField
+		adapter sqlRecipeDriverAdapter
 	}
 	tests := []struct {
 		name string
@@ -752,10 +759,29 @@ func Test_getOrderStmt(t *testing.T) {
 			},
 			want: "ORDER BY RANDOM() DESC",
 		},
+		{
+			name: "Relevance, empty query fallback",
+			args: args{
+				sortBy:  models.SortByRelevance,
+				sortDir: models.Desc,
+				query:   "",
+			},
+			want: "ORDER BY r.modified_at DESC",
+		},
+		{
+			name: "Relevance, with query calls adapter",
+			args: args{
+				sortBy:  models.SortByRelevance,
+				sortDir: models.Desc,
+				query:   "pie",
+				adapter: simpleSQLRecipeDriverAdapter{},
+			},
+			want: "ORDER BY relevance_score DESC",
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if got := getOrderStmt(test.args.sortBy, test.args.sortDir); got != test.want {
+			if got, _ := getOrderStmt(test.args.sortBy, test.args.sortDir, test.args.query, test.args.fields, test.args.adapter); got != test.want {
 				t.Errorf("getOrderStmt() = %v, want %v", got, test.want)
 			}
 		})

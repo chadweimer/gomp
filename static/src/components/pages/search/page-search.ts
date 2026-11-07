@@ -278,6 +278,8 @@ export class PageSearch extends LitElement {
         return 'shuffle';
       case SortBy.Rating:
         return 'star';
+      case SortBy.Relevance:
+        return 'saved_search';
       default:
         return 'sort';
     }

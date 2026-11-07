@@ -30,6 +30,10 @@ func (mockDriverAdapter) GetSearchFields(_ []models.SearchField, _ string) (stri
 	return "", make([]any, 0)
 }
 
+func (mockDriverAdapter) GetSearchOrder(_ []models.SearchField, _ string, _ models.SortDir) (string, []any) {
+	return "ORDER BY r.modified_at DESC", nil
+}
+
 func (m mockDriverAdapter) GetTableNames(_ context.Context, _ sqlx.QueryerContext) ([]string, error) {
 	return m.tableNames, nil
 }

@@ -38,29 +38,39 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 
 			// Assert
 			expectedFields := lo.Intersect(test.fields, supportedSearchFields[:])
-			if len(args) != len(expectedFields) {
-				t.Errorf("expected %d args, received %d", len(expectedFields), len(args))
-			}
-			for index, arg := range args {
-				strArg, ok := arg.(string)
-				if !ok {
-					t.Errorf("invalid argument type: %v", arg)
+			if len(expectedFields) == 0 {
+				if stmt != "" {
+					t.Errorf("expected empty stmt, got %s", stmt)
 				}
-				if strArg != test.query {
-					t.Errorf("arg at index %d, expected %v, received %v", index, test.query, arg)
-				}
-			}
-			if stmt == "" {
-				if len(expectedFields) > 0 {
-					t.Error("filter should not be empty")
+				if len(args) != 0 {
+					t.Errorf("expected 0 args, got %d", len(args))
 				}
 			} else {
-				segments := strings.Split(stmt, " OR ")
-				if len(segments) != len(expectedFields) {
-					t.Errorf("expected %d segments, received %d", len(expectedFields), len(segments))
+				if !strings.Contains(stmt, "@@ websearch_to_wildcard_tsquery('english', ?)") {
+					t.Errorf("unexpected stmt: %s", stmt)
+				}
+				if len(args) != 1 || args[0] != test.query {
+					t.Errorf("expected 1 arg with query, got %v", args)
 				}
 			}
 		})
+	}
+}
+
+func Test_postgres_GetSearchOrder(t *testing.T) {
+	sut := postgresDriverAdapter{}
+
+	stmt, args := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Desc)
+	if !strings.HasPrefix(stmt, "ORDER BY ts_rank(") || !strings.Contains(stmt, "DESC, r.modified_at DESC") {
+		t.Errorf("unexpected stmt: %s", stmt)
+	}
+	if len(args) != 1 || args[0] != "cookie" {
+		t.Errorf("unexpected args: %v", args)
+	}
+
+	stmtAsc, _ := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Asc)
+	if !strings.Contains(stmtAsc, "ASC, r.modified_at DESC") {
+		t.Errorf("unexpected asc stmt: %s", stmtAsc)
 	}
 }
 
