@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/samber/lo"
 )
 
 const cookieName = "auth_token"
@@ -27,12 +28,7 @@ func NewTokenHandler(secureKeys []string) *TokenHandler {
 // If rememberMe is true, the token is valid for 14 days; otherwise, it is valid for 24 hours.
 func (t *TokenHandler) Generate(userID int64, scopes []string, rememberMe bool) (*JwtToken, error) {
 	issuedAt := time.Now()
-	var expiresAt time.Time
-	if rememberMe {
-		expiresAt = issuedAt.AddDate(0, 0, 14)
-	} else {
-		expiresAt = issuedAt.Add(24 * time.Hour)
-	}
+	expiresAt := lo.Ternary(rememberMe, issuedAt.AddDate(0, 0, 14), issuedAt.Add(24*time.Hour))
 
 	return t.GenerateWithExpiration(userID, scopes, rememberMe, issuedAt, expiresAt)
 }

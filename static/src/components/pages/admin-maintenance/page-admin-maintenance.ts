@@ -1,9 +1,10 @@
-import { LitElement, html } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
-import { Backup } from '../../../helpers/schema.gen';
+import { LitElement, html, nothing } from 'lit';
+import { customElement, query, state } from 'lit/decorators.js';
+import { Backup, Task, TaskState } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showAlert, showLoading, showModal, showToast } from '../../../helpers/modals';
 import { ComponentWithActivatedCallback, scaleValue } from '../../../helpers/utils';
+import { pollTask } from '../../../helpers/tasks';
 import '../../file-upload-browser/file-upload-browser';
 import '../../app-icon/app-icon';
 import './page-admin-maintenance.css';
@@ -11,6 +12,11 @@ import './page-admin-maintenance.css';
 @customElement('page-admin-maintenance')
 export class PageAdminMaintenance extends LitElement implements ComponentWithActivatedCallback {
   @state() backups: Backup[] = [];
+  @state() activeTask?: Task;
+
+  @query('.backup-list') private readonly backupList?: HTMLIonListElement;
+
+  private pollAbortController?: AbortController;
 
   protected createRenderRoot() {
     return this;
@@ -21,16 +27,79 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     this.activatedCallback().catch(console.error);
   }
 
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.pollAbortController?.abort();
+  }
+
   async activatedCallback() {
-    await this.loadBackups();
+    await Promise.all([
+      this.loadBackups(),
+      this.loadActiveTasks(),
+    ]);
   }
 
   render() {
+    const renderTaskTitle = (task: Task) => {
+      let taskName: string;
+      switch (task.type) {
+        case 'backup':
+          taskName = "Backup";
+          break;
+        case 'restore':
+          taskName = "Restore";
+          break;
+        default:
+          taskName = task.type;
+          break;
+      }
+
+      switch (task.state) {
+        case TaskState.completed:
+          return `${taskName} Completed`
+        case TaskState.failed:
+          return `${taskName} Failed`
+        default:
+          return `${taskName} in Progress`
+      }
+    }
+    const renderDismissButton = (task: Task) => {
+      if (!this.isTaskActive(task)) {
+        return html`
+        <ion-button slot="end" fill="clear" @click=${() => this.dismissActiveTask()}>
+          Dismiss
+        </ion-button>`
+      }
+      return nothing;
+    };
+    const renderProgressBar = (task: Task) => {
+      if (this.isTaskActive(task)) {
+        return html`
+          <ion-progress-bar .value=${(task.progress ?? 0) / 100}></ion-progress-bar>
+        `;
+      }
+      return nothing;
+    };
+
     return html`
       <ion-content>
         <ion-grid class="no-pad" fixed>
           <ion-row>
             <ion-col>
+              ${this.activeTask != null ? html`
+                <ion-card color="light" class="active-task-card">
+                  <ion-card-content>
+                    <ion-item color="light" lines="none">
+                      <ion-label>
+                        <h2>${renderTaskTitle(this.activeTask)}</h2>
+                        <p>${this.activeTask.stage ?? 'Processing...'}</p>
+                      </ion-label>
+                      ${renderDismissButton(this.activeTask)}
+                    </ion-item>
+                    ${renderProgressBar(this.activeTask)}
+                  </ion-card-content>
+                </ion-card>
+              ` : nothing}
               <ion-card>
                 <ion-card-header>
                   <ion-card-title>Backup & Restore</ion-card-title>
@@ -41,7 +110,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
                     Restoring a backup will replace all current data with the data from the backup file; this is a destructive operation and cannot be undone.
                     These operations may take a while depending on the amount of data.
                   </ion-note>
-                  <ion-list lines="full">
+                  <ion-list lines="full" class="backup-list">
                     <ion-list-header>
                       <ion-label>Backups</ion-label>
                     </ion-list-header>
@@ -92,6 +161,15 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     `;
   }
 
+  private isTaskActive(task: Task): boolean {
+    return task.state === TaskState.running;
+  }
+
+  private dismissActiveTask() {
+    this.pollAbortController?.abort();
+    this.activeTask = undefined;
+  }
+
   private async loadBackups() {
     try {
       const { data: backups, error } = await api.client.GET('/backups');
@@ -107,23 +185,71 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     }
   }
 
+  private async loadActiveTasks() {
+    try {
+      const { data, error } = await api.client.GET('/tasks', {
+        params: {
+          query: {
+            states: [TaskState.running],
+            types: ['backup', 'restore']
+          }
+        }
+      });
+
+      if (error == null && data != null && data.length > 0) {
+        const runningTask = data[0];
+        if (this.activeTask?.id === runningTask.id && this.isTaskActive(this.activeTask)) {
+          return;
+        }
+        this.trackActiveTask(runningTask).catch(console.error);
+      }
+    } catch (ex) {
+      console.warn('Failed to check active tasks', ex);
+    }
+  }
+
+  private async trackActiveTask(initialTask: Task) {
+    this.pollAbortController?.abort();
+    const abortController = new AbortController();
+    this.pollAbortController = abortController;
+
+    this.activeTask = initialTask;
+    try {
+      const finalTask = await pollTask(initialTask.id, {
+        signal: abortController.signal,
+        onUpdate: (task) => {
+          this.activeTask = task;
+        }
+      });
+      if (finalTask == null) {
+        return;
+      }
+      this.activeTask = finalTask;
+      if (finalTask.state === TaskState.completed) {
+        await this.loadBackups();
+      } else if (finalTask.state === TaskState.failed) {
+        await showToast(finalTask.error ?? 'Operation failed.');
+      }
+    } catch (ex) {
+      console.error(ex);
+      await showToast('Failed to monitor operation.');
+    }
+  }
+
   private async createBackup() {
     try {
-      await showLoading(
-        async () => {
-          const { error } = await api.client.POST('/backups', {
-            body: {},
-            bodySerializer(body) {
-              return fileContentSerializer(body);
-            }
-          });
+      const { data, error } = await api.client.POST('/backups', {
+        body: {},
+        bodySerializer(body) {
+          return fileContentSerializer(body);
+        }
+      });
 
-          if (error != null) {
-            throw new Error('Failed to create backup.', { cause: error });
-          }
-        },
-        'Creating backup...'
-      );
+      if (error != null || data == null) {
+        throw new Error('Failed to create backup.', { cause: error });
+      }
+
+      await this.trackActiveTask(data);
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to create backup.');
@@ -142,7 +268,6 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
 
     if (role === 'confirm') {
       await this.createBackup();
-      await this.loadBackups();
     }
   }
 
@@ -177,6 +302,7 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     });
 
     if (role === 'destructive') {
+      await this.backupList?.closeSlidingItems?.();
       await this.deleteBackup(backup);
       await this.loadBackups();
     }
@@ -184,18 +310,15 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
 
   private async restoreBackup(backupFileName: string) {
     try {
-      await showLoading(
-        async () => {
-          const { error } = await api.client.POST('/backups/{name}', {
-            params: { path: { name: backupFileName } }
-          });
+      const { data, error } = await api.client.POST('/backups/{name}', {
+        params: { path: { name: backupFileName } }
+      });
 
-          if (error != null) {
-            throw new Error('Failed to restore from backup.', { cause: error });
-          }
-        },
-        'Restoring backup...'
-      );
+      if (error != null || data == null) {
+        throw new Error('Failed to restore from backup.', { cause: error });
+      }
+
+      await this.trackActiveTask(data);
     } catch (ex) {
       console.error(ex);
       await showToast('Failed to restore from backup.');
@@ -213,8 +336,8 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     });
 
     if (role === 'destructive') {
+      await this.backupList?.closeSlidingItems?.();
       await this.restoreBackup(backup.fileName);
-      await this.loadBackups();
     }
   }
 
@@ -257,12 +380,14 @@ export class PageAdminMaintenance extends LitElement implements ComponentWithAct
     }
   }
 
-  private onDownloadBackupClicked(backup: Backup) {
+  private async onDownloadBackupClicked(backup: Backup) {
     const link = document.createElement('a');
     link.href = backup.fileUrl;
     link.download = backup.fileName;
     document.body.appendChild(link);
     link.click();
     link.remove();
+
+    await this.backupList?.closeSlidingItems?.();
   }
 }

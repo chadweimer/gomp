@@ -31,20 +31,20 @@ func Test_getDbDriverFromURL(t *testing.T) {
 			wantErr:       true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, gotErr := getDbDriverFromURL(tt.connectionURL)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, gotErr := getDbDriverFromURL(test.connectionURL)
 			if gotErr != nil {
-				if !tt.wantErr {
+				if !test.wantErr {
 					t.Errorf("getDbDriver() failed: %v", gotErr)
 				}
 				return
 			}
-			if tt.wantErr {
+			if test.wantErr {
 				t.Fatal("getDbDriver() succeeded unexpectedly")
 			}
-			if got != tt.want {
-				t.Errorf("getDbDriver() = %v, want %v", got, tt.want)
+			if got != test.want {
+				t.Errorf("getDbDriver() = %v, want %v", got, test.want)
 			}
 		})
 	}

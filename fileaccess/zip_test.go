@@ -51,18 +51,18 @@ func TestCreateZip(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
-			err := CreateZip(buf, tt.writeContent)
+			err := CreateZip(buf, test.writeContent)
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CreateZip() error = %v, wantErr %v", err, tt.wantErr)
+			if (err != nil) != test.wantErr {
+				t.Errorf("CreateZip() error = %v, wantErr %v", err, test.wantErr)
 			}
 
-			if !tt.wantErr {
-				if buf.Len() != tt.wantContentLength {
-					t.Errorf("unexpected zip content length: got %d, want %d", buf.Len(), tt.wantContentLength)
+			if !test.wantErr {
+				if buf.Len() != test.wantContentLength {
+					t.Errorf("unexpected zip content length: got %d, want %d", buf.Len(), test.wantContentLength)
 				}
 			}
 		})
@@ -121,11 +121,11 @@ func TestReadZip(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			err := ReadZip(tt.reader, tt.size, tt.readContent)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadZip() error = %v, wantErr %v", err, tt.wantErr)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := ReadZip(test.reader, test.size, test.readContent)
+			if (err != nil) != test.wantErr {
+				t.Errorf("ReadZip() error = %v, wantErr %v", err, test.wantErr)
 			}
 		})
 	}
@@ -164,37 +164,37 @@ func TestWriteFileToZip(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
 			zw := zip.NewWriter(buf)
 			defer zw.Close()
 
-			err := WriteFileToZip(tt.fileName, bytes.NewReader(tt.content), zw)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("WriteFileToZip() error = %v, wantErr %v", err, tt.wantErr)
+			err := WriteFileToZip(test.fileName, bytes.NewReader(test.content), zw)
+			if (err != nil) != test.wantErr {
+				t.Errorf("WriteFileToZip() error = %v, wantErr %v", err, test.wantErr)
 				return
 			}
 
-			if !tt.wantErr {
+			if !test.wantErr {
 				_ = zw.Close()
 				// Verify the file was written
 				zr, _ := zip.NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len()))
 				found := false
 				for _, f := range zr.File {
-					if f.Name == tt.fileName {
+					if f.Name == test.fileName {
 						found = true
 						rc, _ := f.Open()
 						data, _ := io.ReadAll(rc)
 						_ = rc.Close()
-						if bytes.Equal(data, tt.content) {
+						if bytes.Equal(data, test.content) {
 							break
 						}
 						t.Fatal("file content mismatch")
 					}
 				}
 				if !found {
-					t.Errorf("file %s not found in zip", tt.fileName)
+					t.Errorf("file %s not found in zip", test.fileName)
 				}
 			}
 		})
@@ -252,21 +252,21 @@ func TestCopyDirectoryToZip(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			buf := new(bytes.Buffer)
 			zw := zip.NewWriter(buf)
 
-			err := CopyDirectoryToZip(tt.fs, tt.srcPath, zw)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CopyDirectoryToZip() error = %v, wantErr %v", err, tt.wantErr)
+			err := CopyDirectoryToZip(test.fs, test.srcPath, zw)
+			if (err != nil) != test.wantErr {
+				t.Errorf("CopyDirectoryToZip() error = %v, wantErr %v", err, test.wantErr)
 				return
 			}
 
-			if !tt.wantErr && tt.verify != nil {
+			if !test.wantErr && test.verify != nil {
 				_ = zw.Close()
 				zr, _ := zip.NewReader(bytes.NewReader(buf.Bytes()), int64(buf.Len()))
-				tt.verify(t, zr)
+				test.verify(t, zr)
 			}
 		})
 	}
@@ -301,16 +301,16 @@ func TestReadFileFromZip(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			data, err := ReadFileFromZip(zr, tt.fileName)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadFileFromZip() error = %v, wantErr %v", err, tt.wantErr)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			data, err := ReadFileFromZip(zr, test.fileName)
+			if (err != nil) != test.wantErr {
+				t.Errorf("ReadFileFromZip() error = %v, wantErr %v", err, test.wantErr)
 				return
 			}
 
-			if !tt.wantErr && !bytes.Equal(data, tt.wantBytes) {
-				t.Errorf("ReadFileFromZip() got %q, want %q", string(data), string(tt.wantBytes))
+			if !test.wantErr && !bytes.Equal(data, test.wantBytes) {
+				t.Errorf("ReadFileFromZip() got %q, want %q", string(data), string(test.wantBytes))
 			}
 		})
 	}
@@ -392,19 +392,19 @@ func TestCopyDirectoryFromZip(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockDriver := fileaccessmock.NewMockDriver(ctrl)
-			if tt.setupMock != nil {
-				tt.setupMock(mockDriver)
+			if test.setupMock != nil {
+				test.setupMock(mockDriver)
 			}
 
-			err := CopyDirectoryFromZip(mockDriver, tt.dirWithin, tt.destPath, zr)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("CopyDirectoryFromZip() error = %v, wantErr %v", err, tt.wantErr)
+			err := CopyDirectoryFromZip(mockDriver, test.dirWithin, test.destPath, zr)
+			if (err != nil) != test.wantErr {
+				t.Errorf("CopyDirectoryFromZip() error = %v, wantErr %v", err, test.wantErr)
 			}
 		})
 	}
@@ -452,19 +452,19 @@ func TestCopyFileFromZip(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockDriver := fileaccessmock.NewMockDriver(ctrl)
-			if tt.setupMock != nil {
-				tt.setupMock(mockDriver)
+			if test.setupMock != nil {
+				test.setupMock(mockDriver)
 			}
 
-			err := copyFileFromZip(mockDriver, tt.zipFile, tt.destPath)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("copyFileFromZip() error = %v, wantErr %v", err, tt.wantErr)
+			err := copyFileFromZip(mockDriver, test.zipFile, test.destPath)
+			if (err != nil) != test.wantErr {
+				t.Errorf("copyFileFromZip() error = %v, wantErr %v", err, test.wantErr)
 			}
 		})
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/chadweimer/gomp/db"
 	"github.com/chadweimer/gomp/fileaccess"
 	"github.com/chadweimer/gomp/infra"
+	"github.com/chadweimer/gomp/tasks"
 )
 
 // ---- Begin Standard Errors ----
@@ -23,15 +24,43 @@ type apiHandler struct {
 	fs           fileaccess.Driver
 	upl          *fileaccess.ImageUploader
 	db           db.Driver
+	taskManager  *tasks.Manager
 }
 
 // NewHandler returns a new instance of http.Handler
-func NewHandler(tokenHandler *infra.TokenHandler, upl *fileaccess.ImageUploader, drDriver db.Driver, fs fileaccess.Driver) (http.Handler, error) {
+func NewHandler(
+	tokenHandler *infra.TokenHandler,
+	upl *fileaccess.ImageUploader,
+	dbDriver db.Driver,
+	fs fileaccess.Driver,
+	taskManager *tasks.Manager,
+) (http.Handler, error) {
+	if tokenHandler == nil {
+		return nil, errors.New("token handler is required")
+	}
+
+	if upl == nil {
+		return nil, errors.New("image uploader is required")
+	}
+
+	if dbDriver == nil {
+		return nil, errors.New("database driver is required")
+	}
+
+	if fs == nil {
+		return nil, errors.New("file system driver is required")
+	}
+
+	if taskManager == nil {
+		return nil, errors.New("task manager is required")
+	}
+
 	h := apiHandler{
 		tokenHandler: tokenHandler,
 		fs:           fs,
 		upl:          upl,
-		db:           drDriver,
+		db:           dbDriver,
+		taskManager:  taskManager,
 	}
 
 	spec, err := GetSpec()

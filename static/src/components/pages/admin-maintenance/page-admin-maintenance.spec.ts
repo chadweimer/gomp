@@ -172,7 +172,10 @@ describe('page-admin-maintenance', () => {
           return { status: 200, body: JSON.stringify(mockBackups) };
         }
         if (req.url.match(/\/backups$/) && req.method === 'POST') {
-          return { status: 201, body: JSON.stringify({}) };
+          return { status: 202, body: JSON.stringify({ id: 'task-123', state: 'completed', type: 'backup' }) };
+        }
+        if (req.url.match(/\/tasks\/task-123$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify({ id: 'task-123', state: 'completed', type: 'backup' }) };
         }
         return { status: 404, body: '' };
       });
@@ -189,11 +192,7 @@ describe('page-admin-maintenance', () => {
       expect(createAlertSpy).toHaveBeenCalledWith(
         expect.objectContaining({ header: 'Create Backup?' })
       );
-      expect(createLoadingSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Creating backup...' })
-      );
-      expect(loading.present).toHaveBeenCalled();
-      expect(loading.dismiss).toHaveBeenCalled();
+      expect(createLoadingSpy).not.toHaveBeenCalled();
 
       const postReq = requests.find((r) => r.url.match(/\/backups$/) && r.method === 'POST');
       expect(postReq).toBeDefined();
@@ -408,7 +407,10 @@ describe('page-admin-maintenance', () => {
           return { status: 200, body: JSON.stringify(mockBackups) };
         }
         if (req.url.match(/\/backups\/backup-2026-09-01\.zip$/) && req.method === 'POST') {
-          return { status: 200, body: '' };
+          return { status: 202, body: JSON.stringify({ id: 'task-456', state: 'completed', type: 'restore' }) };
+        }
+        if (req.url.match(/\/tasks\/task-456$/) && req.method === 'GET') {
+          return { status: 200, body: JSON.stringify({ id: 'task-456', state: 'completed', type: 'restore' }) };
         }
         return { status: 404, body: '' };
       });
@@ -425,9 +427,7 @@ describe('page-admin-maintenance', () => {
       expect(createAlertSpy).toHaveBeenCalledWith(
         expect.objectContaining({ header: 'Restore Backup?' })
       );
-      expect(createLoadingSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Restoring backup...' })
-      );
+      expect(createLoadingSpy).not.toHaveBeenCalled();
 
       const restoreReq = requests.find((r) => r.url.match(/\/backups\/backup-2026-09-01\.zip$/) && r.method === 'POST');
       expect(restoreReq).toBeDefined();
@@ -615,6 +615,205 @@ describe('page-admin-maintenance', () => {
       await root.updateComplete;
 
       expect(clickSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Active Background Tasks', () => {
+    it('displays active task banner when task is running on page load', async () => {
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: '[]' };
+        }
+        if (req.url.match(/\/tasks\/active-task-1$/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify({
+              id: 'active-task-1',
+              type: 'backup',
+              state: 'running',
+              stage: 'Compressing files...',
+              progress: 45
+            })
+          };
+        }
+        if (req.url.match(/\/tasks/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify([
+              {
+                id: 'active-task-1',
+                type: 'backup',
+                state: 'running',
+                stage: 'Compressing files...',
+                progress: 45
+              }
+            ])
+          };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      const activeCard = root.renderRoot.querySelector('.active-task-card');
+      expect(activeCard).toBeDefined();
+      expect(activeCard?.textContent).toContain('Backup in Progress');
+      expect(activeCard?.textContent).toContain('Compressing files...');
+
+      expect(activeCard?.querySelector('ion-button')).toBeNull();
+    });
+
+    it('shows Dismiss button when task completes and clears card when dismissed', async () => {
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: '[]' };
+        }
+        if (req.url.match(/\/tasks\/completed-task$/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify({
+              id: 'completed-task',
+              type: 'backup',
+              state: 'completed',
+              stage: 'Completed successfully',
+              progress: 100
+            })
+          };
+        }
+        if (req.url.match(/\/tasks/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify([
+              {
+                id: 'completed-task',
+                type: 'backup',
+                state: 'running',
+                stage: 'Finishing...',
+                progress: 99
+              }
+            ])
+          };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      await new Promise((r) => setTimeout(r, 30));
+      await root.updateComplete;
+
+      const activeCard = root.renderRoot.querySelector('.active-task-card');
+      expect(activeCard).toBeDefined();
+      expect(activeCard?.textContent).toContain('Backup Completed');
+
+      const dismissBtn = activeCard?.querySelector<HTMLIonButtonElement>('ion-button');
+      expect(dismissBtn?.textContent?.trim()).toBe('Dismiss');
+
+      dismissBtn?.click();
+      await root.updateComplete;
+
+      expect(root.renderRoot.querySelector('.active-task-card')).toBeNull();
+    });
+
+    it('does not spawn duplicate polling loops if already tracking the same running task', async () => {
+      let pollCount = 0;
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: '[]' };
+        }
+        if (req.url.match(/\/tasks\/dup-task$/) && req.method === 'GET') {
+          pollCount++;
+          return {
+            status: 200,
+            body: JSON.stringify({
+              id: 'dup-task',
+              type: 'backup',
+              state: 'running',
+              progress: 50
+            })
+          };
+        }
+        if (req.url.match(/\/tasks/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify([
+              {
+                id: 'dup-task',
+                type: 'backup',
+                state: 'running',
+                progress: 50
+              }
+            ])
+          };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      const initialPolls = pollCount;
+
+      // Trigger activatedCallback again as if user navigated back
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      // Ensure no new duplicate polling loop was spawned
+      expect(pollCount).toBe(initialPolls);
+    });
+
+    it('aborts polling when component is disconnected', async () => {
+      let pollCalls = 0;
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.match(/\/backups$/) && req.method === 'GET') {
+          return { status: 200, body: '[]' };
+        }
+        if (req.url.match(/\/tasks\/disconnect-task$/) && req.method === 'GET') {
+          pollCalls++;
+          return {
+            status: 200,
+            body: JSON.stringify({
+              id: 'disconnect-task',
+              type: 'backup',
+              state: 'running',
+              progress: 10
+            })
+          };
+        }
+        if (req.url.match(/\/tasks/) && req.method === 'GET') {
+          return {
+            status: 200,
+            body: JSON.stringify([
+              {
+                id: 'disconnect-task',
+                type: 'backup',
+                state: 'running',
+                progress: 10
+              }
+            ])
+          };
+        }
+        return { status: 404, body: '' };
+      });
+
+      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
+      await root.activatedCallback();
+      await root.updateComplete;
+
+      expect(pollCalls).toBeGreaterThan(0);
+
+      // Disconnect component
+      root.disconnectedCallback();
+
+      const callsAfterDisconnect = pollCalls;
+      await new Promise((r) => setTimeout(r, 50));
+
+      expect(pollCalls).toBe(callsAfterDisconnect);
     });
   });
 });

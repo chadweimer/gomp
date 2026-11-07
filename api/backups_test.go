@@ -3,10 +3,12 @@ package api
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
 	"io/fs"
+	"log/slog"
 	"mime/multipart"
 	"path/filepath"
 	"testing"
@@ -18,16 +20,17 @@ import (
 	"github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/tasks"
 	"go.uber.org/mock/gomock"
 )
 
 func TestCreateBackup(t *testing.T) {
 	tests := []struct {
-		name           string
-		body           *multipart.Reader
-		setupMocks     func(*fileaccessmock.MockDriver, *db.MockBackupDriver, *bytes.Buffer)
-		expectError    bool
-		expectResponse any
+		name             string
+		body             *multipart.Reader
+		setupMocks       func(*fileaccessmock.MockDriver, *db.MockBackupDriver, *bytes.Buffer)
+		expectError      bool
+		expectedResponse any
 	}{
 		{
 			name: "Success - generate from database with nil body",
@@ -47,8 +50,8 @@ func TestCreateBackup(t *testing.T) {
 				mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(int64(mockWriter.Len())), nil).MinTimes(1)
 				mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("foo.zip"))
 			},
-			expectError:    false,
-			expectResponse: CreateBackup201Response{},
+			expectError:      false,
+			expectedResponse: CreateBackup202JSONResponse{},
 		},
 		{
 			name: "Success - upload backup file with multipart body",
@@ -71,13 +74,13 @@ func TestCreateBackup(t *testing.T) {
 					mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("foo.zip")),
 				)
 			},
-			expectError:    false,
-			expectResponse: CreateBackup201Response{},
+			expectError:      false,
+			expectedResponse: CreateBackup201Response{},
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -88,32 +91,54 @@ func TestCreateBackup(t *testing.T) {
 			mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
 
 			backupZip := createTestBackupZip("test-backup")
-			tt.setupMocks(mockFS, mockBackupDriver, backupZip)
+			test.setupMocks(mockFS, mockBackupDriver, backupZip)
+
+			taskManager := tasks.NewManager(tasks.NewMemoryStore())
+			defer taskManager.Close()
 
 			api := apiHandler{
 				tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
 				db:           mockDB,
 				fs:           mockFS,
+				taskManager:  taskManager,
 			}
 
 			request := CreateBackupRequestObject{
-				Body: tt.body,
+				Body: test.body,
 			}
 
 			// Act
 			resp, err := api.CreateBackup(t.Context(), request)
 
 			// Assert
-			if (err != nil) != tt.expectError {
-				t.Errorf("expected error: %v, got error: %v", tt.expectError, err)
+			if (err != nil) != test.expectError {
+				t.Errorf("expected error: %v, got error: %v", test.expectError, err)
 			}
 
 			if resp == nil {
 				t.Fatal("response is nil")
 			}
 
-			if _, ok := resp.(CreateBackup201Response); !ok {
-				t.Fatalf("expected CreateBackup201Response, got %T", resp)
+			switch test.expectedResponse.(type) {
+			case CreateBackup201Response:
+				if _, ok := resp.(CreateBackup201Response); !ok {
+					t.Fatalf("expected CreateBackup201Response, got %T", resp)
+				}
+			case CreateBackup202JSONResponse:
+				r202, ok := resp.(CreateBackup202JSONResponse)
+				if !ok {
+					t.Fatalf("expected CreateBackup202JSONResponse, got %T", resp)
+				}
+				// Wait for background task to complete before ending test
+				for range 50 {
+					task, err := taskManager.Get(t.Context(), r202.Body.ID)
+					if err == nil && (task.State == models.Completed || task.State == models.Failed) {
+						break
+					}
+					time.Sleep(10 * time.Millisecond)
+				}
+			default:
+				t.Fatalf("unexpected response type: %T", resp)
 			}
 		})
 	}
@@ -232,8 +257,8 @@ func TestGetBackups(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -241,7 +266,7 @@ func TestGetBackups(t *testing.T) {
 			mockFS := fileaccessmock.NewMockDriver(ctrl)
 			mockDB := db.NewMockDriver(ctrl)
 
-			tt.setupMocks(mockFS, tt.listErr)
+			test.setupMocks(mockFS, test.listErr)
 
 			api := apiHandler{
 				tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
@@ -262,15 +287,15 @@ func TestGetBackups(t *testing.T) {
 				t.Fatal("response is nil")
 			}
 
-			if !tt.expectError {
+			if !test.expectError {
 				backups, ok := resp.(GetBackups200JSONResponse)
 				if !ok {
 					t.Fatalf("expected GetBackups200JSONResponse, got %T", resp)
 					return
 				}
 
-				if len(backups) != tt.expectedCount {
-					t.Errorf("expected %d backups, got %d", tt.expectedCount, len(backups))
+				if len(backups) != test.expectedCount {
+					t.Errorf("expected %d backups, got %d", test.expectedCount, len(backups))
 				}
 			} else {
 				if _, ok := resp.(GetBackups500Response); !ok {
@@ -283,10 +308,11 @@ func TestGetBackups(t *testing.T) {
 
 func TestRestoreFromBackup(t *testing.T) {
 	tests := []struct {
-		name        string
-		fileName    string
-		setupMocks  func(*fileaccessmock.MockDriver, *db.MockBackupDriver)
-		expectError bool
+		name           string
+		fileName       string
+		setupMocks     func(*fileaccessmock.MockDriver, *db.MockBackupDriver)
+		expectError    bool
+		expectTaskFail bool
 	}{
 		{
 			name:     "Success - restore valid backup",
@@ -301,17 +327,10 @@ func TestRestoreFromBackup(t *testing.T) {
 					},
 				}
 
-				gomock.InOrder(
-					// Stat the file
-					mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(int64(backupZip.Len())), nil),
-					// Open the file
-					mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("test-backup.zip")),
-					// CopyDirectoryFromZip expects this method, but it's internal to fileaccess
-					// so we just expect the Import to be called
-					mockBackupDriver.EXPECT().Import(gomock.Any(), gomock.Any()).Return(nil),
-					// After successful import, the upload directory should be cleared
-					mockFS.EXPECT().DeleteAll(fileaccess.UploadDirectoryName).Return(nil),
-				)
+				mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(int64(backupZip.Len())), nil).AnyTimes()
+				mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("test-backup.zip")).AnyTimes()
+				mockBackupDriver.EXPECT().Import(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+				mockFS.EXPECT().DeleteAll(fileaccess.UploadDirectoryName).Return(nil).AnyTimes()
 			},
 			expectError: false,
 		},
@@ -343,7 +362,8 @@ func TestRestoreFromBackup(t *testing.T) {
 				mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(1024), nil)
 				mockFS.EXPECT().Open(gomock.Any()).Return(nil, errors.New("permission denied"))
 			},
-			expectError: true,
+			expectError:    false,
+			expectTaskFail: true,
 		},
 		{
 			name:     "Error - invalid zip file",
@@ -360,7 +380,8 @@ func TestRestoreFromBackup(t *testing.T) {
 				mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(20), nil)
 				mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("corrupted.zip"))
 			},
-			expectError: true,
+			expectError:    false,
+			expectTaskFail: true,
 		},
 		{
 			name:     "Error - missing metadata in backup",
@@ -384,10 +405,11 @@ func TestRestoreFromBackup(t *testing.T) {
 				mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(int64(buf.Len())), nil)
 				mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("incomplete.zip"))
 			},
-			expectError: true,
+			expectError:    false,
+			expectTaskFail: true,
 		},
 		{
-			name:     "Error - failed to import backup data",
+			name:     "Task Failure - failed to import backup data",
 			fileName: "test-backup.zip",
 			setupMocks: func(mockFS *fileaccessmock.MockDriver, mockBackupDriver *db.MockBackupDriver) {
 				backupZip := createTestBackupZip("test-backup")
@@ -399,18 +421,17 @@ func TestRestoreFromBackup(t *testing.T) {
 					},
 				}
 
-				gomock.InOrder(
-					mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(int64(backupZip.Len())), nil),
-					mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("test-backup.zip")),
-					mockBackupDriver.EXPECT().Import(gomock.Any(), gomock.Any()).Return(errors.New("import failed")),
-				)
+				mockFS.EXPECT().Stat(gomock.Any()).Return(createMockFileInfo(int64(backupZip.Len())), nil).AnyTimes()
+				mockFS.EXPECT().Open(gomock.Any()).Return(mapFS.Open("test-backup.zip")).AnyTimes()
+				mockBackupDriver.EXPECT().Import(gomock.Any(), gomock.Any()).Return(errors.New("import failed"))
 			},
-			expectError: true,
+			expectError:    false,
+			expectTaskFail: true,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -420,16 +441,20 @@ func TestRestoreFromBackup(t *testing.T) {
 			mockBackupDriver := db.NewMockBackupDriver(ctrl)
 			mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
 
-			tt.setupMocks(mockFS, mockBackupDriver)
+			test.setupMocks(mockFS, mockBackupDriver)
+
+			taskManager := tasks.NewManager(tasks.NewMemoryStore())
+			defer taskManager.Close()
 
 			api := apiHandler{
 				tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
 				db:           mockDB,
 				fs:           mockFS,
+				taskManager:  taskManager,
 			}
 
 			request := RestoreFromBackupRequestObject{
-				Name: tt.fileName,
+				Name: test.fileName,
 			}
 
 			// Act
@@ -443,13 +468,38 @@ func TestRestoreFromBackup(t *testing.T) {
 				t.Fatal("response is nil")
 			}
 
-			if !tt.expectError {
-				if _, ok := resp.(RestoreFromBackup204Response); !ok {
-					t.Fatalf("expected RestoreFromBackup204Response, got %T", resp)
+			if !test.expectError {
+				r202, ok := resp.(RestoreFromBackup202JSONResponse)
+				if !ok {
+					t.Fatalf("expected RestoreFromBackup202JSONResponse, got %T", resp)
+				}
+
+				// Wait for background restore task to finish before completing the test
+				var finalTask *models.Task
+				for range 50 {
+					task, err := taskManager.Get(t.Context(), r202.Body.ID)
+					if err == nil && (task.State == models.Completed || task.State == models.Failed) {
+						finalTask = task
+						break
+					}
+					time.Sleep(10 * time.Millisecond)
+				}
+
+				if test.expectTaskFail {
+					if finalTask == nil || finalTask.State != models.Failed {
+						t.Errorf("expected task to fail, got %v", finalTask)
+					}
+				} else {
+					if finalTask == nil || finalTask.State != models.Completed {
+						t.Errorf("expected task to succeed, got %v", finalTask)
+					}
 				}
 			} else {
-				if _, ok := resp.(RestoreFromBackup400Response); !ok {
-					t.Fatalf("expected RestoreFromBackup400Response, got %T", resp)
+				switch resp.(type) {
+				case RestoreFromBackup400Response, RestoreFromBackup404Response:
+					// expected
+				default:
+					t.Fatalf("expected RestoreFromBackup400Response or 404Response, got %T", resp)
 				}
 			}
 		})
@@ -489,8 +539,8 @@ func TestDeleteBackup(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -498,7 +548,7 @@ func TestDeleteBackup(t *testing.T) {
 			mockFS := fileaccessmock.NewMockDriver(ctrl)
 			mockDB := db.NewMockDriver(ctrl)
 
-			mockFS.EXPECT().Delete(gomock.Any()).Return(tt.deleteErr)
+			mockFS.EXPECT().Delete(gomock.Any()).Return(test.deleteErr)
 
 			api := apiHandler{
 				tokenHandler: infra.NewTokenHandler([]string{"secure-key"}),
@@ -507,7 +557,7 @@ func TestDeleteBackup(t *testing.T) {
 			}
 
 			request := DeleteBackupRequestObject{
-				Name: tt.fileName,
+				Name: test.fileName,
 			}
 
 			// Act
@@ -520,7 +570,7 @@ func TestDeleteBackup(t *testing.T) {
 			if resp == nil {
 				t.Fatal("response is nil")
 			}
-			if !tt.expectError {
+			if !test.expectError {
 				if _, ok := resp.(DeleteBackup204Response); !ok {
 					t.Fatalf("expected DeleteBackup204Response, got %T", resp)
 				}
@@ -568,6 +618,71 @@ func createTestBackupZip(name string) *bytes.Buffer {
 
 	_ = zw.Close()
 	return buf
+}
+
+func TestGenerateNewBackup_CancelledContext_CleansUpFile(t *testing.T) {
+	tests := []struct {
+		name       string
+		setupMocks func(context.CancelFunc, *fileaccessmock.MockDriver, *db.MockBackupDriver)
+	}{
+		{
+			name: "Context cancelled after export",
+			setupMocks: func(cancel context.CancelFunc, _ *fileaccessmock.MockDriver, mockBackupDriver *db.MockBackupDriver) {
+				mockBackupDriver.EXPECT().Export(gomock.Any()).DoAndReturn(func(_ context.Context) (*models.BackupData, error) {
+					cancel()
+					return &models.BackupData{}, nil
+				})
+			},
+		},
+		{
+			name: "Context cancelled after backup file written",
+			setupMocks: func(cancel context.CancelFunc, mockFS *fileaccessmock.MockDriver, mockBackupDriver *db.MockBackupDriver) {
+				mockBackupDriver.EXPECT().Export(gomock.Any()).Return(&models.BackupData{}, nil)
+
+				mockWriter := bytes.NewBuffer([]byte{})
+				mockFS.EXPECT().Create(gomock.Any()).Return(bufferCloser{mockWriter}, nil)
+				mockFS.EXPECT().Stat(gomock.Any()).DoAndReturn(func(_ string) (fs.FileInfo, error) {
+					cancel()
+					return nil, fs.ErrNotExist
+				})
+				mockFS.EXPECT().Delete(gomock.Any()).Return(nil).Times(1)
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockFS := fileaccessmock.NewMockDriver(ctrl)
+			mockDB := db.NewMockDriver(ctrl)
+			mockBackupDriver := db.NewMockBackupDriver(ctrl)
+			mockDB.EXPECT().Backups().Return(mockBackupDriver).AnyTimes()
+
+			ctx, cancel := context.WithCancel(t.Context())
+			defer cancel()
+
+			test.setupMocks(cancel, mockFS, mockBackupDriver)
+
+			report := func(_ int, _ string) {
+				// Do nothing for report in this test
+			}
+
+			api := apiHandler{
+				db: mockDB,
+				fs: mockFS,
+			}
+
+			path, err := api.generateNewBackup(ctx, slog.Default(), report, "test")
+			if !errors.Is(err, context.Canceled) {
+				t.Fatalf("expected context.Canceled, got %v", err)
+			}
+			if path != "" {
+				t.Fatalf("expected empty path on error, got %s", path)
+			}
+		})
+	}
 }
 
 func createMultipartBackupReader(name string) *multipart.Reader {

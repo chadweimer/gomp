@@ -209,21 +209,21 @@ func Test_pixelmappers(t *testing.T) {
 			wantMapper:  false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			for i, in := range tt.input {
-				mapper := getOrientationMapper(tt.orientation)
-				if tt.wantMapper && mapper == nil {
-					t.Errorf("%s() = nil mapper, want non-nil", tt.name)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			for i, in := range test.input {
+				mapper := getOrientationMapper(test.orientation)
+				if test.wantMapper && mapper == nil {
+					t.Errorf("%s() = nil mapper, want non-nil", test.name)
 					continue
-				} else if !tt.wantMapper && mapper != nil {
-					t.Errorf("%s() = non-nil mapper, want nil", tt.name)
+				} else if !test.wantMapper && mapper != nil {
+					t.Errorf("%s() = non-nil mapper, want nil", test.name)
 					continue
 				}
 				gotX, gotY, gotW, gotH := mapper(in[0], in[1], in[2], in[3])
-				want := tt.want[i]
+				want := test.want[i]
 				if gotX != want[0] || gotY != want[1] || gotW != want[2] || gotH != want[3] {
-					t.Errorf("%s() = (%v, %v, %v, %v), want (%v, %v, %v, %v)", tt.name, gotX, gotY, gotW, gotH, want[0], want[1], want[2], want[3])
+					t.Errorf("%s() = (%v, %v, %v, %v), want (%v, %v, %v, %v)", test.name, gotX, gotY, gotW, gotH, want[0], want[1], want[2], want[3])
 				}
 			}
 		})

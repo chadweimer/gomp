@@ -73,23 +73,23 @@ func TestOnlyFilesFileSystem_Open(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			jfs := &onlyFilesFileSystem{fs: tt.fs}
-			file, err := jfs.Open(tt.path)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			jfs := &onlyFilesFileSystem{fs: test.fs}
+			file, err := jfs.Open(test.path)
 
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Open() error = %v, wantErr %v", err, tt.wantErr)
+			if (err != nil) != test.wantErr {
+				t.Errorf("Open() error = %v, wantErr %v", err, test.wantErr)
 				return
 			}
 
-			if tt.wantErr && tt.wantErrIs != nil {
-				if !errors.Is(err, tt.wantErrIs) {
-					t.Errorf("Open() error = %v, want error matching %v", err, tt.wantErrIs)
+			if test.wantErr && test.wantErrIs != nil {
+				if !errors.Is(err, test.wantErrIs) {
+					t.Errorf("Open() error = %v, want error matching %v", err, test.wantErrIs)
 				}
 			}
 
-			if !tt.wantErr && file == nil {
+			if !test.wantErr && file == nil {
 				t.Error("Open() expected file, got nil")
 			}
 
@@ -126,16 +126,16 @@ func Test_fileSystemDriver_Open(t *testing.T) {
 			wantErr:      false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			root := fileaccess.NewMockRootFS(ctrl)
-			root.EXPECT().Open(tt.expectedPath).DoAndReturn(func(path string) (fs.File, error) {
-				if path != tt.expectedPath {
-					t.Errorf("Open() called with path = %v, want %v", path, tt.expectedPath)
+			root.EXPECT().Open(test.expectedPath).DoAndReturn(func(path string) (fs.File, error) {
+				if path != test.expectedPath {
+					t.Errorf("Open() called with path = %v, want %v", path, test.expectedPath)
 				}
 				if path == "missing.txt" {
 					return nil, fs.ErrNotExist
@@ -145,16 +145,16 @@ func Test_fileSystemDriver_Open(t *testing.T) {
 			u := fileSystemDriver{root}
 
 			// Act
-			_, gotErr := u.Open(tt.inputPath)
+			_, gotErr := u.Open(test.inputPath)
 
 			// Assert
 			if gotErr != nil {
-				if !tt.wantErr {
+				if !test.wantErr {
 					t.Errorf("Open() failed: %v", gotErr)
 				}
 				return
 			}
-			if tt.wantErr {
+			if test.wantErr {
 				t.Fatal("Open() succeeded unexpectedly")
 			}
 		})
@@ -212,26 +212,26 @@ func Test_fileSystemDriver_Create(t *testing.T) {
 			wantErr:          true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			root := fileaccess.NewMockRootFS(ctrl)
-			root.EXPECT().MkdirAll(tt.expectedDirPath, fs.FileMode(0750)).DoAndReturn(func(path string, _ fs.FileMode) error {
-				if path != tt.expectedDirPath {
-					t.Errorf("MkdirAll() called with path = %v, want %v", path, tt.expectedDirPath)
+			root.EXPECT().MkdirAll(test.expectedDirPath, fs.FileMode(0750)).DoAndReturn(func(path string, _ fs.FileMode) error {
+				if path != test.expectedDirPath {
+					t.Errorf("MkdirAll() called with path = %v, want %v", path, test.expectedDirPath)
 				}
 				if path == "fail" {
 					return fs.ErrPermission
 				}
 				return nil
 			}).Times(1)
-			if !tt.wantErr || tt.expectedDirPath != "fail" {
-				root.EXPECT().Create(tt.expectedFilePath).DoAndReturn(func(path string) (fs.File, error) {
-					if path != tt.expectedFilePath {
-						t.Errorf("Create() called with path = %v, want %v", path, tt.expectedFilePath)
+			if !test.wantErr || test.expectedDirPath != "fail" {
+				root.EXPECT().Create(test.expectedFilePath).DoAndReturn(func(path string) (fs.File, error) {
+					if path != test.expectedFilePath {
+						t.Errorf("Create() called with path = %v, want %v", path, test.expectedFilePath)
 					}
 					if path == "failfile.txt" {
 						return nil, fs.ErrPermission
@@ -242,16 +242,16 @@ func Test_fileSystemDriver_Create(t *testing.T) {
 			u := fileSystemDriver{root}
 
 			// Act
-			_, gotErr := u.Create(tt.inputPath)
+			_, gotErr := u.Create(test.inputPath)
 
 			// Assert
 			if gotErr != nil {
-				if !tt.wantErr {
+				if !test.wantErr {
 					t.Errorf("Create() failed: %v", gotErr)
 				}
 				return
 			}
-			if tt.wantErr {
+			if test.wantErr {
 				t.Fatal("Create() succeeded unexpectedly")
 			}
 		})
@@ -274,18 +274,18 @@ func Test_fileSystemDriver_Save(t *testing.T) {
 			want:            "file content",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			buf := bytes.NewBuffer(nil)
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			root := fileaccess.NewMockRootFS(ctrl)
-			root.EXPECT().MkdirAll(tt.expectedDirPath, fs.FileMode(0750)).Return(nil).Times(1)
-			root.EXPECT().Create(tt.filePath).DoAndReturn(func(path string) (io.WriteCloser, error) {
-				if path != tt.filePath {
-					t.Errorf("Create() called with path = %v, want %v", path, tt.filePath)
+			root.EXPECT().MkdirAll(test.expectedDirPath, fs.FileMode(0750)).Return(nil).Times(1)
+			root.EXPECT().Create(test.filePath).DoAndReturn(func(path string) (io.WriteCloser, error) {
+				if path != test.filePath {
+					t.Errorf("Create() called with path = %v, want %v", path, test.filePath)
 				}
 
 				return struct {
@@ -299,15 +299,15 @@ func Test_fileSystemDriver_Save(t *testing.T) {
 			u := fileSystemDriver{root}
 
 			// Act
-			gotErr := u.Save(tt.filePath, bytes.NewReader([]byte(tt.content)))
+			gotErr := u.Save(test.filePath, bytes.NewReader([]byte(test.content)))
 			// Assert
 			if gotErr != nil {
 				t.Fatalf("Save() failed: %v", gotErr)
 			}
 			// Verify the content was written correctly
 			gotContent := buf.String()
-			if gotContent != tt.want {
-				t.Errorf("Save() wrote content = '%v', want '%v'", gotContent, tt.want)
+			if gotContent != test.want {
+				t.Errorf("Save() wrote content = '%v', want '%v'", gotContent, test.want)
 			}
 		})
 	}
@@ -339,16 +339,16 @@ func Test_fileSystemDriver_Delete(t *testing.T) {
 			wantErr:      false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			root := fileaccess.NewMockRootFS(ctrl)
-			root.EXPECT().Remove(tt.expectedPath).DoAndReturn(func(path string) error {
-				if path != tt.expectedPath {
-					t.Errorf("Remove() called with path = %v, want %v", path, tt.expectedPath)
+			root.EXPECT().Remove(test.expectedPath).DoAndReturn(func(path string) error {
+				if path != test.expectedPath {
+					t.Errorf("Remove() called with path = %v, want %v", path, test.expectedPath)
 				}
 				if path == "missing.txt" {
 					return fs.ErrNotExist
@@ -359,16 +359,16 @@ func Test_fileSystemDriver_Delete(t *testing.T) {
 			u := fileSystemDriver{root}
 
 			// Act
-			gotErr := u.Delete(tt.inputPath)
+			gotErr := u.Delete(test.inputPath)
 
 			// Assert
 			if gotErr != nil {
-				if !tt.wantErr {
+				if !test.wantErr {
 					t.Errorf("Delete() failed: %v", gotErr)
 				}
 				return
 			}
-			if tt.wantErr {
+			if test.wantErr {
 				t.Fatal("Delete() succeeded unexpectedly")
 			}
 		})
@@ -407,16 +407,16 @@ func Test_fileSystemDriver_DeleteAll(t *testing.T) {
 			wantErr:      false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			root := fileaccess.NewMockRootFS(ctrl)
-			root.EXPECT().RemoveAll(tt.expectedPath).DoAndReturn(func(path string) error {
-				if path != tt.expectedPath {
-					t.Errorf("RemoveAll() called with path = %v, want %v", path, tt.expectedPath)
+			root.EXPECT().RemoveAll(test.expectedPath).DoAndReturn(func(path string) error {
+				if path != test.expectedPath {
+					t.Errorf("RemoveAll() called with path = %v, want %v", path, test.expectedPath)
 				}
 				if path == "/missing" {
 					return fs.ErrNotExist
@@ -426,16 +426,16 @@ func Test_fileSystemDriver_DeleteAll(t *testing.T) {
 			u := fileSystemDriver{root}
 
 			// Act
-			gotErr := u.DeleteAll(tt.inputPath)
+			gotErr := u.DeleteAll(test.inputPath)
 
 			// Assert
 			if gotErr != nil {
-				if !tt.wantErr {
+				if !test.wantErr {
 					t.Errorf("DeleteAll() failed: %v", gotErr)
 				}
 				return
 			}
-			if tt.wantErr {
+			if test.wantErr {
 				t.Fatal("DeleteAll() succeeded unexpectedly")
 			}
 		})
@@ -468,16 +468,16 @@ func Test_fileSystemDriver_Stat(t *testing.T) {
 			wantErr:      false,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			root := fileaccess.NewMockRootFS(ctrl)
-			root.EXPECT().Stat(tt.expectedPath).DoAndReturn(func(path string) (fs.FileInfo, error) {
-				if path != tt.expectedPath {
-					t.Errorf("Stat() called with path = %v, want %v", path, tt.expectedPath)
+			root.EXPECT().Stat(test.expectedPath).DoAndReturn(func(path string) (fs.FileInfo, error) {
+				if path != test.expectedPath {
+					t.Errorf("Stat() called with path = %v, want %v", path, test.expectedPath)
 				}
 				if path == "missing.txt" {
 					return nil, fs.ErrNotExist
@@ -487,16 +487,16 @@ func Test_fileSystemDriver_Stat(t *testing.T) {
 			u := fileSystemDriver{root}
 
 			// Act
-			_, gotErr := u.Stat(tt.inputPath)
+			_, gotErr := u.Stat(test.inputPath)
 
 			// Assert
 			if gotErr != nil {
-				if !tt.wantErr {
+				if !test.wantErr {
 					t.Errorf("Stat() failed: %v", gotErr)
 				}
 				return
 			}
-			if tt.wantErr {
+			if test.wantErr {
 				t.Fatal("Stat() succeeded unexpectedly")
 			}
 		})
@@ -574,16 +574,16 @@ func Test_fileSystemDriver_List(t *testing.T) {
 			wantErr:      true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			root := fileaccess.NewMockRootFS(ctrl)
-			root.EXPECT().Open(tt.expectedPath).DoAndReturn(func(name string) (fs.ReadDirFile, error) {
-				if name != tt.expectedPath {
-					t.Errorf("Open() called with path = %v, want %v", name, tt.expectedPath)
+			root.EXPECT().Open(test.expectedPath).DoAndReturn(func(name string) (fs.ReadDirFile, error) {
+				if name != test.expectedPath {
+					t.Errorf("Open() called with path = %v, want %v", name, test.expectedPath)
 				}
 				if name == "missing" {
 					return nil, fs.ErrNotExist
@@ -592,32 +592,32 @@ func Test_fileSystemDriver_List(t *testing.T) {
 					name:    name,
 					size:    0,
 					mode:    0,
-					isDir:   tt.isDir,
+					isDir:   test.isDir,
 					modTime: time.Now(),
-					dirs:    tt.entries,
+					dirs:    test.entries,
 				}, nil
 			}).Times(1)
 			u := fileSystemDriver{root}
 
 			// Act
-			got, gotErr := u.List(tt.dirPath)
+			got, gotErr := u.List(test.dirPath)
 
 			// Assert
 			if gotErr != nil {
-				if !tt.wantErr {
+				if !test.wantErr {
 					t.Errorf("List() failed: %v", gotErr)
 				}
 				return
 			}
-			if tt.wantErr {
+			if test.wantErr {
 				t.Fatal("List() succeeded unexpectedly")
 			}
 
 			gotNames := lo.Map(got, func(entry fs.DirEntry, _ int) string {
 				return entry.Name()
 			})
-			if !reflect.DeepEqual(gotNames, tt.want) {
-				t.Errorf("List() = %v, want %v", gotNames, tt.want)
+			if !reflect.DeepEqual(gotNames, test.want) {
+				t.Errorf("List() = %v, want %v", gotNames, test.want)
 			}
 		})
 	}

@@ -17,6 +17,7 @@ import (
 	"github.com/chadweimer/gomp/infra"
 	"github.com/chadweimer/gomp/metadata"
 	"github.com/chadweimer/gomp/models"
+	"github.com/chadweimer/gomp/tasks"
 )
 
 const (
@@ -28,30 +29,49 @@ const (
 func (h apiHandler) CreateBackup(ctx context.Context, request CreateBackupRequestObject) (CreateBackupResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
 
-	var backupFilePath string
 	name := time.Now().Format(backupFileNameTimeFormat)
 
 	// If the request includes file content, use it as the source for the backup instead of exporting from the database.
 	// This allows for restoring from a backup by uploading the backup file as the content of the request.
 	uploadedFileData, _, err := readFile(request.Body)
 	if err == nil {
-		backupFilePath, err = h.uploadBackup(ctx, logger, name, uploadedFileData, err)
+		backupFilePath, err := h.uploadBackup(ctx, logger, name, uploadedFileData)
 		if err != nil {
 			return CreateBackup400Response{}, nil
 		}
-	} else if errors.Is(err, io.EOF) {
-		backupFilePath, err = h.generateNewBackup(ctx, logger, name)
-		if err != nil {
-			return CreateBackup500Response{}, nil
-		}
-	} else {
+		return CreateBackup201Response{
+			Headers: CreateBackup201ResponseHeaders{
+				Location: new(filepath.ToSlash(filepath.Join("/", backupFilePath))),
+			},
+		}, nil
+	} else if !errors.Is(err, io.EOF) {
 		logger.ErrorContext(ctx, "Failed to read uploaded backup file content", "error", err)
 		return CreateBackup500Response{}, nil
 	}
 
-	return CreateBackup201Response{
-		Headers: CreateBackup201ResponseHeaders{
-			Location: new(filepath.ToSlash(filepath.Join("/", backupFilePath))),
+	task, err := h.taskManager.Submit(models.TaskTypeBackup, func(taskCtx context.Context, report tasks.ProgressReporter) (map[string]any, error) {
+		backupFilePath, err := h.generateNewBackup(taskCtx, logger, report, name)
+		if err != nil {
+			logger.ErrorContext(taskCtx, "Failed to generate new backup", "error", err)
+			return nil, err
+		}
+
+		location := filepath.ToSlash(filepath.Join("/", backupFilePath))
+		return map[string]any{
+			"location": location,
+			"fileName": filepath.Base(backupFilePath),
+		}, nil
+	})
+	if err != nil {
+		logger.ErrorContext(ctx, "Failed to submit backup task", "error", err)
+		return CreateBackup500Response{}, nil
+	}
+
+	location := fmt.Sprintf("/api/v1/tasks/%s", task.ID)
+	return CreateBackup202JSONResponse{
+		Body: *task,
+		Headers: CreateBackup202ResponseHeaders{
+			Location: &location,
 		},
 	}, nil
 }
@@ -109,53 +129,78 @@ func (h apiHandler) RestoreFromBackup(ctx context.Context, request RestoreFromBa
 		return RestoreFromBackup400Response{}, nil
 	}
 
-	file, err := h.fs.Open(filepath.Join(fileaccess.BackupDirectoryName, info.Name()))
-	if err != nil {
-		return RestoreFromBackup400Response{}, nil
-	}
-	defer file.Close()
+	backupName := request.Name
+	task, err := h.taskManager.Submit(models.TaskTypeRestore, func(taskCtx context.Context, report tasks.ProgressReporter) (map[string]any, error) {
+		logger.InfoContext(taskCtx, "Starting background database restore task", "name", backupName)
+		report(10, "Validating backup archive")
 
-	err = fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
-		_, err := getMetadata(ctx, logger, reader, request.Name)
+		file, err := h.fs.Open(filepath.Join(fileaccess.BackupDirectoryName, info.Name()))
 		if err != nil {
-			return err
+			logger.ErrorContext(taskCtx, "Failed to open backup archive", "error", err, "name", backupName)
+			return nil, err
 		}
+		defer file.Close()
 
-		// FUTURE CHECK: Confirm version compatibility between the backup file and
-		// the current application version before attempting to restore the database content.
+		err = fileaccess.ReadZip(file, info.Size(), func(reader *zip.Reader) error {
+			_, err := getMetadata(taskCtx, logger, reader, backupName)
+			if err != nil {
+				return err
+			}
 
-		// Restore the database first. Since this is done in a transaction, if it fails,
-		// the file copy won't be attempted and the database won't be left in a partially restored state.
-		databaseData, err := readJSONFileFromZip[models.BackupData](reader, databaseFileName)
+			// FUTURE CHECK: Confirm version compatibility between the backup file and
+			// the current application version before attempting to restore the database content.
+
+			// Restore the database first. Since this is done in a transaction, if it fails,
+			// the file copy won't be attempted and the database won't be left in a partially restored state.
+			report(30, "Restoring database data")
+			databaseData, err := readJSONFileFromZip[models.BackupData](reader, databaseFileName)
+			if err != nil {
+				logger.ErrorContext(taskCtx, "Failed to read backup data", "error", err, "name", backupName)
+				return err
+			}
+			err = h.db.Backups().Import(taskCtx, databaseData)
+			if err != nil {
+				logger.ErrorContext(taskCtx, "Failed to import backup data", "error", err, "name", backupName)
+				return err
+			}
+
+			// If the database restore succeeded, copy all the files from the backup to the upload directory.
+			report(60, "Clearing existing media files")
+			if err := h.fs.DeleteAll(fileaccess.UploadDirectoryName); err != nil {
+				logger.ErrorContext(taskCtx, "Failed to delete upload directory", "error", err)
+				return err
+			}
+			report(80, "Extracting media files from backup")
+			err = fileaccess.CopyDirectoryFromZip(h.fs, fileaccess.UploadDirectoryName, fileaccess.UploadDirectoryName, reader)
+			if err != nil {
+				logger.ErrorContext(taskCtx, "Failed to copy files from backup", "error", err, "name", backupName)
+				return err
+			}
+
+			report(100, "Restore completed successfully")
+			return nil
+		})
 		if err != nil {
-			logger.ErrorContext(ctx, "Failed to read backup data", "error", err, "name", request.Name)
-			return err
-		}
-		err = h.db.Backups().Import(ctx, databaseData)
-		if err != nil {
-			logger.ErrorContext(ctx, "Failed to import backup data", "error", err, "name", request.Name)
-			return err
+			logger.ErrorContext(taskCtx, "Failed to read backup zip file", "error", err, "name", backupName)
+			return nil, err
 		}
 
-		// If the database restore succeeded, copy all the files from the backup to the upload directory.
-		if err := h.fs.DeleteAll(fileaccess.UploadDirectoryName); err != nil {
-			logger.ErrorContext(ctx, "Failed to delete upload directory", "error", err)
-			return err
-		}
-		err = fileaccess.CopyDirectoryFromZip(h.fs, fileaccess.UploadDirectoryName, fileaccess.UploadDirectoryName, reader)
-		if err != nil {
-			logger.ErrorContext(ctx, "Failed to copy files from backup", "error", err, "name", request.Name)
-			return err
-		}
-
-		return nil
+		return map[string]any{
+			"backup": backupName,
+		}, nil
 	})
 	if err != nil {
-		logger.ErrorContext(ctx, "Failed to read backup zip file", "error", err, "name", request.Name)
-		return RestoreFromBackup400Response{}, nil
+		logger.ErrorContext(ctx, "Failed to submit restore task", "error", err)
+		return RestoreFromBackup500Response{}, nil
 	}
 
-	return RestoreFromBackup204Response{}, nil
+	location := fmt.Sprintf("/api/v1/tasks/%s", task.ID)
+	return RestoreFromBackup202JSONResponse{
+		Body: *task,
+		Headers: RestoreFromBackup202ResponseHeaders{
+			Location: &location,
+		},
+	}, nil
 }
 
 func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupRequestObject) (DeleteBackupResponseObject, error) {
@@ -179,11 +224,15 @@ func (h apiHandler) DeleteBackup(ctx context.Context, request DeleteBackupReques
 	return DeleteBackup204Response{}, nil
 }
 
-func (h apiHandler) generateNewBackup(ctx context.Context, logger *slog.Logger, name string) (string, error) {
+func (h apiHandler) generateNewBackup(ctx context.Context, logger *slog.Logger, report tasks.ProgressReporter, name string) (string, error) {
 	logger.DebugContext(ctx, "Creating backup from database export")
+	report(10, "Exporting database data")
 
 	// Export all data from the database
 	exportedData, err := h.db.Backups().Export(ctx)
+	if err == nil {
+		err = ctx.Err()
+	}
 	if err != nil {
 		logger.ErrorContext(ctx, "Failed to export backup data", "error", err)
 		return "", err
@@ -191,8 +240,12 @@ func (h apiHandler) generateNewBackup(ctx context.Context, logger *slog.Logger, 
 
 	// Save the backup file
 	// Generate a name based on the current timestamp in UTC
+	report(30, "Creating backup archive")
 	backupFilePath := filepath.Join(fileaccess.BackupDirectoryName, fmt.Sprintf("gomp-backup-%s.zip", name))
-	err = h.writeBackup(ctx, logger, name, backupFilePath, exportedData)
+	err = h.writeBackup(ctx, logger, report, name, backupFilePath, exportedData)
+	if err == nil {
+		err = ctx.Err()
+	}
 	if err != nil {
 		logger.ErrorContext(ctx, "Failed to create backup file", "error", err, "file", backupFilePath)
 
@@ -208,7 +261,7 @@ func (h apiHandler) generateNewBackup(ctx context.Context, logger *slog.Logger, 
 	return backupFilePath, nil
 }
 
-func (h apiHandler) uploadBackup(ctx context.Context, logger *slog.Logger, name string, uploadedFileData []byte, err error) (string, error) {
+func (h apiHandler) uploadBackup(ctx context.Context, logger *slog.Logger, name string, uploadedFileData []byte) (string, error) {
 	logger.DebugContext(ctx, "Creating backup from uploaded file content")
 
 	backupFileName := fmt.Sprintf("gomp-backup-upload-%s.zip", name)
@@ -252,10 +305,10 @@ func (h apiHandler) uploadBackup(ctx context.Context, logger *slog.Logger, name 
 	return backupFilePath, nil
 }
 
-func (h apiHandler) writeBackup(ctx context.Context, logger *slog.Logger, name, filePath string, exportedData *models.BackupData) error {
+func (h apiHandler) writeBackup(ctx context.Context, logger *slog.Logger, report tasks.ProgressReporter, name, filePath string, exportedData *models.BackupData) error {
 	backupFile, err := h.fs.Create(filePath)
 	if err != nil {
-		logger.ErrorContext(ctx, "Failed to create backup file", "error", err)
+		logger.ErrorContext(ctx, "Failed to create backup file", "error", err, "file", filePath)
 		return err
 	}
 	defer backupFile.Close()
@@ -267,20 +320,32 @@ func (h apiHandler) writeBackup(ctx context.Context, logger *slog.Logger, name, 
 			Version: metadata.BuildVersion,
 		}
 		if err := writeJSONFileToZip(writer, "metadata.json", metadata); err != nil {
-			logger.ErrorContext(ctx, "Failed to write backup metadata to zip", "error", err)
+			logger.ErrorContext(ctx, "Failed to write backup metadata to zip", "error", err, "file", filePath)
 			return err
+		}
+
+		if ctx.Err() != nil {
+			return ctx.Err()
 		}
 
 		// Write the database backup to JSON
 		if err := writeJSONFileToZip(writer, "database.json", exportedData); err != nil {
-			logger.ErrorContext(ctx, "Failed to write backup data to zip", "error", err)
+			logger.ErrorContext(ctx, "Failed to write backup data to zip", "error", err, "file", filePath)
 			return err
 		}
 
-		logger.DebugContext(ctx, "Copied backup data to zip")
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+
+		logger.DebugContext(ctx, "Copied backup data to zip", "file", filePath)
 
 		// Copy all uploads to the backup directory
-		return fileaccess.CopyDirectoryToZip(h.fs, fileaccess.UploadDirectoryName, writer)
+		report(60, "Archiving uploaded media files")
+		if err := fileaccess.CopyDirectoryToZip(h.fs, fileaccess.UploadDirectoryName, writer); err != nil {
+			return err
+		}
+		return ctx.Err()
 	})
 }
 

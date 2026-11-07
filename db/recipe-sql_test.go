@@ -549,14 +549,14 @@ func Test_getFieldsStmt(t *testing.T) {
 			wantArgs: []any{"foo", "foo", "foo", "foo", "foo"},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotStmt, gotArgs := getFieldsStmt(tt.args.query, tt.args.fields, tt.args.adapter)
-			if gotStmt != tt.wantStmt {
-				t.Errorf("getFieldsStmt() gotStmt = %v, wantStmt %v", gotStmt, tt.wantStmt)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotStmt, gotArgs := getFieldsStmt(test.args.query, test.args.fields, test.args.adapter)
+			if gotStmt != test.wantStmt {
+				t.Errorf("getFieldsStmt() gotStmt = %v, wantStmt %v", gotStmt, test.wantStmt)
 			}
-			if !reflect.DeepEqual(gotArgs, tt.wantArgs) {
-				t.Errorf("getFieldsStmt() gotArgs = %v, wantArgs %v", gotArgs, tt.wantArgs)
+			if !reflect.DeepEqual(gotArgs, test.wantArgs) {
+				t.Errorf("getFieldsStmt() gotArgs = %v, wantArgs %v", gotArgs, test.wantArgs)
 			}
 		})
 	}
@@ -589,17 +589,17 @@ func Test_getTagsStmt(t *testing.T) {
 			wantArgs: []any{"foo", "bar"},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			gotStmt, gotArgs, err := getTagsStmt(tt.args.tags)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			gotStmt, gotArgs, err := getTagsStmt(test.args.tags)
 			if err != nil {
 				t.Error(err)
 			}
-			if gotStmt != tt.wantStmt {
-				t.Errorf("getTagsStmt() gotStmt = %v, wantStmt %v", gotStmt, tt.wantStmt)
+			if gotStmt != test.wantStmt {
+				t.Errorf("getTagsStmt() gotStmt = %v, wantStmt %v", gotStmt, test.wantStmt)
 			}
-			if !reflect.DeepEqual(gotArgs, tt.wantArgs) {
-				t.Errorf("getTagsStmt() gotArgs = %v, wantArgs %v", gotArgs, tt.wantArgs)
+			if !reflect.DeepEqual(gotArgs, test.wantArgs) {
+				t.Errorf("getTagsStmt() gotArgs = %v, wantArgs %v", gotArgs, test.wantArgs)
 			}
 		})
 	}
@@ -636,11 +636,11 @@ func Test_getPicturesStmt(t *testing.T) {
 			want: "r.main_image_name IS NULL OR r.main_image_name = ''",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := getPicturesStmt(tt.args.withPictures)
-			if got != tt.want {
-				t.Errorf("getPicturesStmt() got = %v, want %v", got, tt.want)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got := getPicturesStmt(test.args.withPictures)
+			if got != test.want {
+				t.Errorf("getPicturesStmt() got = %v, want %v", got, test.want)
 			}
 		})
 	}
@@ -753,10 +753,10 @@ func Test_getOrderStmt(t *testing.T) {
 			want: "ORDER BY RANDOM() DESC",
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := getOrderStmt(tt.args.sortBy, tt.args.sortDir); got != tt.want {
-				t.Errorf("getOrderStmt() = %v, want %v", got, tt.want)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := getOrderStmt(test.args.sortBy, test.args.sortDir); got != test.want {
+				t.Errorf("getOrderStmt() = %v, want %v", got, test.want)
 			}
 		})
 	}
@@ -946,29 +946,29 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			sut, dbmock := getMockDb(t, nil)
 			defer sut.Close()
-			if tt.setupMock != nil {
-				tt.setupMock(dbmock)
+			if test.setupMock != nil {
+				test.setupMock(dbmock)
 			}
-			got, total, err := sut.Recipes().Find(t.Context(), tt.args.filter, tt.args.page, tt.args.count)
-			if !errors.Is(err, tt.expectedErr) {
-				t.Errorf("expected error: %v, got: %v", tt.expectedErr, err)
+			got, total, err := sut.Recipes().Find(t.Context(), test.args.filter, test.args.page, test.args.count)
+			if !errors.Is(err, test.expectedErr) {
+				t.Errorf("expected error: %v, got: %v", test.expectedErr, err)
 			}
 			if err := dbmock.ExpectationsWereMet(); err != nil {
 				t.Errorf("unfulfilled expectations: %v", err)
 			}
-			if tt.expectedResult != nil && got != nil {
-				if len(*got) != len(*tt.expectedResult) {
-					t.Errorf("expected %d results, got %d", len(*tt.expectedResult), len(*got))
+			if test.expectedResult != nil && got != nil {
+				if len(*got) != len(*test.expectedResult) {
+					t.Errorf("expected %d results, got %d", len(*test.expectedResult), len(*got))
 				}
-				for i := range *tt.expectedResult {
+				for i := range *test.expectedResult {
 					gotItem := (*got)[i]
-					wantItem := (*tt.expectedResult)[i]
+					wantItem := (*test.expectedResult)[i]
 					if (gotItem.ID == nil && wantItem.ID != nil) || (gotItem.ID != nil && wantItem.ID == nil) || (gotItem.ID != nil && wantItem.ID != nil && *gotItem.ID != *wantItem.ID) {
 						t.Errorf("result at index %d: ID mismatch: got %v, want %v", i, gotItem.ID, wantItem.ID)
 					}
@@ -989,10 +989,10 @@ func Test_sqlRecipeDriver_Find(t *testing.T) {
 					}
 				}
 			}
-			if total != tt.expectedTotal {
-				t.Errorf("expected total %d, got %d", tt.expectedTotal, total)
+			if total != test.expectedTotal {
+				t.Errorf("expected total %d, got %d", test.expectedTotal, total)
 			}
-			if tt.expectedResult == nil && got != nil {
+			if test.expectedResult == nil && got != nil {
 				t.Errorf("expected nil result, got %v", got)
 			}
 		})

@@ -167,34 +167,34 @@ func TestUnbufferedReaderAtReadAt(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange - wrap reader so it doesn't implement io.ReaderAt
-			reader := &readerOnlyAdapter{strings.NewReader(tt.data)}
+			reader := &readerOnlyAdapter{strings.NewReader(test.data)}
 			readerAt := ensureReaderAt(reader)
 
-			buf := make([]byte, tt.bufferSize)
+			buf := make([]byte, test.bufferSize)
 
 			// Act
-			n, err := readerAt.ReadAt(buf, tt.offset)
+			n, err := readerAt.ReadAt(buf, test.offset)
 
 			// Assert
-			if n != tt.expectN {
-				t.Errorf("expected %d bytes read, got %d", tt.expectN, n)
+			if n != test.expectN {
+				t.Errorf("expected %d bytes read, got %d", test.expectN, n)
 			}
 
-			if (err != nil) != tt.expectError {
-				t.Errorf("expected error: %v, got error: %v", tt.expectError, err)
+			if (err != nil) != test.expectError {
+				t.Errorf("expected error: %v, got error: %v", test.expectError, err)
 			}
 
-			if tt.expectError && tt.errorContains != "" && err != nil {
-				if !strings.Contains(err.Error(), tt.errorContains) {
-					t.Errorf("expected error containing '%s', got '%s'", tt.errorContains, err.Error())
+			if test.expectError && test.errorContains != "" && err != nil {
+				if !strings.Contains(err.Error(), test.errorContains) {
+					t.Errorf("expected error containing '%s', got '%s'", test.errorContains, err.Error())
 				}
 			}
 
-			if tt.validateBuffer != nil && n > 0 {
-				tt.validateBuffer(t, buf)
+			if test.validateBuffer != nil && n > 0 {
+				test.validateBuffer(t, buf)
 			}
 		})
 	}
@@ -230,14 +230,14 @@ func TestUnbufferedReaderAtMultipleReads(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			// Arrange - wrap reader so it doesn't implement io.ReaderAt
-			reader := &readerOnlyAdapter{strings.NewReader(tt.data)}
+			reader := &readerOnlyAdapter{strings.NewReader(test.data)}
 			readerAt := ensureReaderAt(reader)
 
 			// Act & Assert
-			for i, read := range tt.reads {
+			for i, read := range test.reads {
 				buf := make([]byte, read.bufferSize)
 				n, _ := readerAt.ReadAt(buf, read.offset)
 
@@ -381,11 +381,11 @@ func TestUnbufferedReaderAtContractCompliance(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
 			reader := &readerOnlyAdapter{strings.NewReader(data)}
 			readerAt := ensureReaderAt(reader)
-			tt.testFn(t, readerAt)
+			test.testFn(t, readerAt)
 		})
 	}
 }
@@ -433,20 +433,20 @@ func TestUnbufferedReaderAtEdgeCases(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			reader := &readerOnlyAdapter{strings.NewReader(tt.data)}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			reader := &readerOnlyAdapter{strings.NewReader(test.data)}
 			readerAt := ensureReaderAt(reader)
 
-			buf := make([]byte, tt.bufferSize)
-			n, err := readerAt.ReadAt(buf, tt.offset)
+			buf := make([]byte, test.bufferSize)
+			n, err := readerAt.ReadAt(buf, test.offset)
 
-			if n != tt.expectN {
-				t.Errorf("expected %d bytes, got %d", tt.expectN, n)
+			if n != test.expectN {
+				t.Errorf("expected %d bytes, got %d", test.expectN, n)
 			}
 
-			if (err != nil) != tt.shouldErr {
-				t.Errorf("expected error: %v, got error: %v", tt.shouldErr, err)
+			if (err != nil) != test.shouldErr {
+				t.Errorf("expected error: %v, got error: %v", test.shouldErr, err)
 			}
 		})
 	}

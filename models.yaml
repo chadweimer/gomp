@@ -574,3 +574,54 @@ components:
           type: string
         version:
           type: string
+    taskState:
+      type: string
+      description: Lifecycle state of an asynchronous background task.
+      enum:
+        - running
+        - completed
+        - failed
+    taskType:
+      type: string
+      description: Type of asynchronous background task (e.g. backup, restore).
+      example: backup
+    task:
+      description: An asynchronous background task.
+      type: object
+      required:
+        - id
+        - type
+        - state
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          x-go-type: uuid.UUID
+        type:
+          $ref: '#/components/schemas/taskType'
+        state:
+          $ref: '#/components/schemas/taskState'
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Progress percentage (0-100)
+        stage:
+          type: string
+          description: Human-readable description of current stage
+        createdAt:
+          type: string
+          format: date-time
+          x-go-type: time.Time
+        completedAt:
+          type: string
+          format: date-time
+          x-go-type: time.Time
+        result:
+          type: object
+          additionalProperties: true
+          description: Result payload upon completion (e.g., backup URL, file name)
+        error:
+          type: string
+          description: Error message if failed

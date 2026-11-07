@@ -4,6 +4,12 @@ import "strings"
 
 //go:generate go tool oapi-codegen --config cfg.yaml ../models.yaml
 
+// TaskType constants for common tasks
+const (
+	TaskTypeBackup  TaskType = "backup"
+	TaskTypeRestore TaskType = "restore"
+)
+
 // RowData represents a generic row of data, typically used for database rows
 type RowData map[string]any
 
