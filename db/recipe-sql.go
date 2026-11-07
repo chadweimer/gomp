@@ -30,6 +30,13 @@ var supportedSearchFields = [...]models.SearchField{
 	models.SearchFieldNutrition,
 }
 
+func normalizeSearchFields(filterFields []models.SearchField) []models.SearchField {
+	if len(filterFields) == 0 {
+		return supportedSearchFields[:]
+	}
+	return lo.Intersect(supportedSearchFields[:], filterFields)
+}
+
 func (d *sqlRecipeDriver) Create(ctx context.Context, recipe *models.Recipe) error {
 	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.createImpl(ctx, recipe, db)

@@ -1,5 +1,9 @@
 BEGIN;
 
+DROP INDEX IF EXISTS recipe_full_text_name_idx;
+DROP INDEX IF EXISTS recipe_full_text_ingredients_idx;
+DROP INDEX IF EXISTS recipe_full_text_directions_idx;
+
 CREATE INDEX recipe_full_text_combined_idx ON recipe USING GIN (
     (
         setweight(to_tsvector('english', coalesce(name, '')), 'A') ||

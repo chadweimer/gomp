@@ -77,6 +77,24 @@ func Test_postgres_GetSearchOrder(t *testing.T) {
 	if !strings.Contains(stmtAsc, "ASC, r.modified_at DESC") {
 		t.Errorf("unexpected asc stmt: %s", stmtAsc)
 	}
+
+	// Canonical field ordering even when fields are passed out of order
+	stmtOrder, _ := sut.GetSearchOrder([]models.SearchField{models.SearchFieldDirections, models.SearchFieldName}, "cookie", models.Desc)
+	nameIdx := strings.Index(stmtOrder, "r.name")
+	dirIdx := strings.Index(stmtOrder, "r.directions")
+	if nameIdx == -1 || dirIdx == -1 || nameIdx > dirIdx {
+		t.Errorf("expected canonical field order (r.name before r.directions), got: %s", stmtOrder)
+	}
+
+	// Empty query or invalid fields fall back to modified_at
+	stmtEmpty, argsEmpty := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Desc)
+	if stmtEmpty != "ORDER BY r.modified_at DESC" || len(argsEmpty) != 0 {
+		t.Errorf("unexpected empty query result: stmt=%q, args=%v", stmtEmpty, argsEmpty)
+	}
+	stmtInvalid, argsInvalid := sut.GetSearchOrder([]models.SearchField{"invalid"}, "cookie", models.Asc)
+	if stmtInvalid != "ORDER BY r.modified_at ASC" || len(argsInvalid) != 0 {
+		t.Errorf("unexpected invalid fields result: stmt=%q, args=%v", stmtInvalid, argsInvalid)
+	}
 }
 
 func Test_postgres_GetTableNames(t *testing.T) {

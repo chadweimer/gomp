@@ -30,12 +30,7 @@ type postgresDriver struct {
 	*sqlDriver
 }
 
-func getPostgresSearchVector(filterFields []models.SearchField) string {
-	fields := filterFields
-	if len(fields) == 0 {
-		fields = supportedSearchFields[:]
-	}
-	fields = lo.Intersect(fields, supportedSearchFields[:])
+func getPostgresSearchVector(fields []models.SearchField) string {
 	tsvectors := make([]string, 0, len(fields))
 	for _, field := range fields {
 		switch field {
@@ -49,6 +44,8 @@ func getPostgresSearchVector(filterFields []models.SearchField) string {
 			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.storage_instructions, '')), 'C')")
 		case models.SearchFieldNutrition:
 			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.nutrition_info, '')), 'D')")
+		default:
+			// Ignore unsupported search fields
 		}
 	}
 	if len(tsvectors) == 1 {
@@ -58,12 +55,8 @@ func getPostgresSearchVector(filterFields []models.SearchField) string {
 }
 
 func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
-	fields := filterFields
-	if len(fields) == 0 {
-		fields = supportedSearchFields[:]
-	}
-	fields = lo.Intersect(fields, supportedSearchFields[:])
-	if len(fields) == 0 {
+	fields := normalizeSearchFields(filterFields)
+	if len(fields) == 0 || strings.TrimSpace(query) == "" {
 		return "", make([]any, 0)
 	}
 
@@ -73,11 +66,10 @@ func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, 
 }
 
 func (postgresDriverAdapter) GetSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any) {
-	fields := filterFields
-	if len(fields) == 0 {
-		fields = supportedSearchFields[:]
+	fields := normalizeSearchFields(filterFields)
+	if len(fields) == 0 || strings.TrimSpace(query) == "" {
+		return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil
 	}
-	fields = lo.Intersect(fields, supportedSearchFields[:])
 
 	vector := getPostgresSearchVector(fields)
 	rankOrder := lo.Ternary(sortDir == models.Asc, "ASC", "DESC")
