@@ -3,7 +3,7 @@ import { LitElement, html, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { consume } from '@lit/context';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { AccessLevel, Recipe, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
+import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
 import { api, fileContentSerializer } from '../../../helpers/api';
 import { showToast, showLoading, showModal, DEFAULT_RESULTS_PER_PAGE_OPTIONS } from '../../../helpers/modals';
 import {
@@ -75,6 +75,25 @@ export class PageSearch extends LitElement {
   }
 
   render() {
+    const renderRecipeCard = (recipe: RecipeCompact) => html`
+      <ion-col size="6" size-md="4" size-lg="3" size-xl="2">
+        <recipe-card .recipe=${recipe} class="zoom"></recipe-card>
+      </ion-col>
+    `;
+    const renderRecipeItem = (recipe: RecipeCompact) => html`
+      <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
+        <ion-item class="recipe-item" href=${`/recipes/${recipe.id}`} title=${ifDefined(recipe.name)}>
+          <ion-thumbnail slot="start" class="preview">
+            ${!isNullOrEmpty(recipe.mainImageName) ? html`
+              <img loading="lazy" alt="" src=${ifDefined(getRecipeThumbnailUrl(recipe.id, recipe.mainImageName))} />
+            ` : nothing}
+          </ion-thumbnail>
+          <ion-label class="single-line">${recipe.name}</ion-label>
+          ${recipe.state === RecipeState.Archived ? html`<ion-badge color="medium" slot="end">Archived</ion-badge>` : nothing}
+        </ion-item>
+      </ion-col>
+    `;
+
     const filter = this.searchCtx?.filter;
     const settings = this.searchCtx?.settings;
     const resultsPerPage = this.searchCtx?.resultsPerPage ?? 36;
@@ -139,40 +158,16 @@ export class PageSearch extends LitElement {
       >
         <ion-grid class="no-pad">
           <ion-row>
-            ${results?.map((recipe) =>
-      viewMode === SearchViewMode.Card
-        ? html`
-                    <ion-col size="6" size-md="4" size-lg="3" size-xl="2">
-                      <recipe-card .recipe=${recipe} class="zoom"></recipe-card>
-                    </ion-col>
-                  `
-        : html`
-                    <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
-                      <ion-item class="recipe-item" href=${`/recipes/${recipe.id}`} title=${ifDefined(recipe.name)}>
-                        <ion-thumbnail slot="start" class="preview">
-                          ${!isNullOrEmpty(recipe.mainImageName)
-            ? html`<img loading="lazy" alt="" src=${ifDefined(getRecipeThumbnailUrl(recipe.id, recipe.mainImageName))} />`
-            : nothing}
-                        </ion-thumbnail>
-                        <ion-label class="single-line">${recipe.name}</ion-label>
-                        ${recipe.state === RecipeState.Archived
-            ? html`<ion-badge color="medium" slot="end">Archived</ion-badge>`
-            : nothing}
-                      </ion-item>
-                    </ion-col>
-                  `
-    )}
+            ${results?.map((recipe) => viewMode === SearchViewMode.Card ? renderRecipeCard(recipe) : renderRecipeItem(recipe))}
           </ion-row>
         </ion-grid>
 
-        ${isAuthorized(this.userCtx?.user, AccessLevel.Editor)
-        ? html`
-              <ion-fab horizontal="end" vertical="bottom" slot="fixed">
-                <ion-fab-button color="secondary" @click=${() => this.onNewRecipeClicked()}>
-                  <app-icon name="add"></app-icon>
-                </ion-fab-button>
-              </ion-fab>
-            `
+        ${isAuthorized(this.userCtx?.user, AccessLevel.Editor) ? html`
+          <ion-fab horizontal="end" vertical="bottom" slot="fixed">
+            <ion-fab-button color="secondary" @click=${() => this.onNewRecipeClicked()}>
+              <app-icon name="add"></app-icon>
+            </ion-fab-button>
+          </ion-fab>`
         : nothing}
       </ion-content>
 
@@ -217,33 +212,29 @@ export class PageSearch extends LitElement {
       </ion-popover>
       <ion-popover trigger="sort-menu" dismiss-on-select>
         <ion-list lines="none">
-        ${Object.keys(SortBy).map(
-          (item) => html`
-              <ion-item
-                button
-                color=${ifDefined(sortBy === SortBy[item as keyof typeof SortBy] ? 'secondary' : undefined)}
-                @click=${() => this.setSortBy(SortBy[item as keyof typeof SortBy])}
-              >
-                <app-icon slot="start" name=${this.getSortByIcon(SortBy[item as keyof typeof SortBy])}></app-icon>
-                ${insertSpacesBetweenWords(item)}
-              </ion-item>
-            `
-        )}
+        ${Object.keys(SortBy).map((item) => html`
+          <ion-item
+            button
+            color=${ifDefined(sortBy === SortBy[item as keyof typeof SortBy] ? 'secondary' : undefined)}
+            @click=${() => this.setSortBy(SortBy[item as keyof typeof SortBy])}
+          >
+            <app-icon slot="start" name=${this.getSortByIcon(SortBy[item as keyof typeof SortBy])}></app-icon>
+            ${insertSpacesBetweenWords(item)}
+          </ion-item>
+        `)}
         </ion-list>
       </ion-popover>
       <ion-popover trigger="results-per-page-menu" dismiss-on-select>
         <ion-list lines="none">
-          ${DEFAULT_RESULTS_PER_PAGE_OPTIONS.map(item =>
-          html`
-              <ion-item
-                button
-                color=${ifDefined(resultsPerPage === item ? 'secondary' : undefined)}
-                @click=${() => this.searchCtx?.setResultsPerPage(item)}
-              >
-                ${item}
-              </ion-item>
-            `
-        )}
+          ${DEFAULT_RESULTS_PER_PAGE_OPTIONS.map(item => html`
+            <ion-item
+              button
+              color=${ifDefined(resultsPerPage === item ? 'secondary' : undefined)}
+              @click=${() => this.searchCtx?.setResultsPerPage(item)}
+            >
+              ${item}
+            </ion-item>
+          `)}
         </ion-list>
     </ion-popover>
     `;
