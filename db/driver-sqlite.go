@@ -6,9 +6,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
+	"github.com/chadweimer/fts5query"
 	"github.com/chadweimer/gomp/models"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
@@ -30,23 +30,35 @@ type sqliteDriver struct {
 	*sqlDriver
 }
 
+func parseSQLiteFTSQuery(filterFields []models.SearchField, rawQuery string) *fts5query.Result {
+	fields := normalizeSearchFields(filterFields)
+	if len(fields) == 0 {
+		return nil
+	}
+	cols := make([]string, 0, len(fields))
+	for _, f := range fields {
+		cols = append(cols, string(f))
+	}
+	return fts5query.Parse(rawQuery, fts5query.WithColumns(cols...))
+}
+
 func (sqliteDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
-	stmt, arg := buildSQLiteFTSQuery(filterFields, query)
-	if stmt == "" {
+	res := parseSQLiteFTSQuery(filterFields, query)
+	if res.IsEmpty() {
 		return "", make([]any, 0)
 	}
-	return stmt, []any{arg}
+	return res.SQLCondition("recipe_fts", "r.id")
 }
 
 func (sqliteDriverAdapter) GetSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any) {
-	stmt, arg := buildSQLiteFTSQuery(filterFields, query)
-	if arg == "" || strings.HasPrefix(stmt, "r.id NOT IN") {
+	res := parseSQLiteFTSQuery(filterFields, query)
+	if res.IsEmpty() || res.IsPureNegation {
 		return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil
 	}
 	// SQLite weights are essentially inverted compared to the sort direction, so we flip ASC/DESC here.
 	ftsOrder := lo.Ternary(sortDir == models.Asc, "DESC", "ASC")
 	orderStmt := fmt.Sprintf("ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 4.0, 2.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) %s, r.modified_at DESC", ftsOrder)
-	return orderStmt, []any{arg}
+	return orderStmt, []any{res.MatchExpr}
 }
 
 func (sqliteDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext, _ *models.BackupData) error {

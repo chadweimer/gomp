@@ -310,11 +310,7 @@ func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir, query string, fi
 		if strings.TrimSpace(query) == "" {
 			return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil
 		}
-		fields := filterFields
-		if len(fields) == 0 {
-			fields = supportedSearchFields[:]
-		}
-		return adapter.GetSearchOrder(fields, query, sortDir)
+		return adapter.GetSearchOrder(filterFields, query, sortDir)
 	}
 
 	stmt := "ORDER BY "
