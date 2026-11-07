@@ -43,6 +43,7 @@ func (sqliteDriverAdapter) GetSearchOrder(filterFields []models.SearchField, que
 	if arg == "" || strings.HasPrefix(stmt, "r.id NOT IN") {
 		return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil
 	}
+	// SQLite weights are essentially inverted compared to the sort direction, so we flip ASC/DESC here.
 	ftsOrder := lo.Ternary(sortDir == models.Asc, "DESC", "ASC")
 	orderStmt := fmt.Sprintf("ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 4.0, 2.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) %s, r.modified_at DESC", ftsOrder)
 	return orderStmt, []any{arg}
