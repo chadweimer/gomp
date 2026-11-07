@@ -760,13 +760,22 @@ func Test_getOrderStmt(t *testing.T) {
 			want: "ORDER BY RANDOM() DESC",
 		},
 		{
-			name: "Relevance, empty query fallback",
+			name: "Relevance, empty query fallback (DESC)",
 			args: args{
 				sortBy:  models.SortByRelevance,
 				sortDir: models.Desc,
 				query:   "",
 			},
 			want: "ORDER BY r.modified_at DESC",
+		},
+		{
+			name: "Relevance, empty query fallback (ASC)",
+			args: args{
+				sortBy:  models.SortByRelevance,
+				sortDir: models.Asc,
+				query:   "",
+			},
+			want: "ORDER BY r.modified_at ASC",
 		},
 		{
 			name: "Relevance, with query calls adapter",

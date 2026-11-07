@@ -12,6 +12,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	"github.com/jmoiron/sqlx"
+	"github.com/samber/lo"
 
 	// sqlite database driver
 	_ "modernc.org/sqlite"
@@ -39,13 +40,10 @@ func (sqliteDriverAdapter) GetSearchFields(filterFields []models.SearchField, qu
 func (sqliteDriverAdapter) GetSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any) {
 	_, arg := buildSQLiteFTSQuery(filterFields, query)
 	if arg == "" {
-		return "ORDER BY r.modified_at DESC", nil
+		return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil
 	}
-	ftsOrder := "ASC"
-	if sortDir == models.Asc {
-		ftsOrder = "DESC"
-	}
-	stmt := fmt.Sprintf("ORDER BY (SELECT bm25(recipe_fts, 5.0, 1.0, 1.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) %s, r.modified_at DESC", ftsOrder)
+	ftsOrder := lo.Ternary(sortDir == models.Asc, "DESC", "ASC")
+	stmt := fmt.Sprintf("ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 4.0, 2.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) %s, r.modified_at DESC", ftsOrder)
 	return stmt, []any{arg}
 }
 

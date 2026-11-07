@@ -16,7 +16,11 @@ type parsedFTSQuery struct {
 
 // buildSQLiteFTSQuery transforms user-supplied search text and target fields into a safe FTS5 query.
 func buildSQLiteFTSQuery(filterFields []models.SearchField, rawQuery string) (string, string) {
-	fields := lo.Intersect(filterFields, supportedSearchFields[:])
+	fields := filterFields
+	if len(fields) == 0 {
+		fields = supportedSearchFields[:]
+	}
+	fields = lo.Intersect(fields, supportedSearchFields[:])
 	if len(fields) == 0 {
 		return "", ""
 	}

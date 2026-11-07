@@ -36,6 +36,20 @@ func Test_buildSQLiteFTSQuery(t *testing.T) {
 			expectedArg:  "",
 		},
 		{
+			name:         "empty fields defaults to all supported fields",
+			filterFields: []models.SearchField{},
+			rawQuery:     "cookie",
+			expectedStmt: "r.id IN (SELECT rowid FROM recipe_fts WHERE recipe_fts MATCH ?)",
+			expectedArg:  "{name ingredients directions storage_instructions nutrition_info} : cookie*",
+		},
+		{
+			name:         "nil fields defaults to all supported fields",
+			filterFields: nil,
+			rawQuery:     "cookie",
+			expectedStmt: "r.id IN (SELECT rowid FROM recipe_fts WHERE recipe_fts MATCH ?)",
+			expectedArg:  "{name ingredients directions storage_instructions nutrition_info} : cookie*",
+		},
+		{
 			name:         "single word",
 			filterFields: []models.SearchField{models.SearchFieldName},
 			rawQuery:     "cookie",

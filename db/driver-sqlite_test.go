@@ -22,6 +22,7 @@ func Test_sqlite_GetSearchFields(t *testing.T) {
 		{supportedSearchFields[:], "query"},
 		{[]models.SearchField{models.SearchFieldName, "invalid"}, "query"},
 		{[]models.SearchField{"invalid"}, "query"},
+		{[]models.SearchField{}, "query"},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -31,7 +32,11 @@ func Test_sqlite_GetSearchFields(t *testing.T) {
 			stmt, args := sut.GetSearchFields(test.fields, test.query)
 
 			// Assert
-			expectedFields := lo.Intersect(test.fields, supportedSearchFields[:])
+			expectedFields := test.fields
+			if len(expectedFields) == 0 {
+				expectedFields = supportedSearchFields[:]
+			}
+			expectedFields = lo.Intersect(expectedFields, supportedSearchFields[:])
 			if len(expectedFields) == 0 {
 				if stmt != "" {
 					t.Errorf("expected empty stmt, got %s", stmt)
@@ -68,7 +73,7 @@ func Test_sqlite_GetSearchOrder(t *testing.T) {
 
 	// When query is non-empty, order by bm25
 	stmt, args := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Desc)
-	expectedStmt := "ORDER BY (SELECT bm25(recipe_fts, 5.0, 1.0, 1.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) ASC, r.modified_at DESC"
+	expectedStmt := "ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 4.0, 2.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) ASC, r.modified_at DESC"
 	if stmt != expectedStmt {
 		t.Errorf("expected %q, got %q", expectedStmt, stmt)
 	}
@@ -78,14 +83,18 @@ func Test_sqlite_GetSearchOrder(t *testing.T) {
 
 	// When sortDir is Asc
 	stmtAsc, _ := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Asc)
-	expectedStmtAsc := "ORDER BY (SELECT bm25(recipe_fts, 5.0, 1.0, 1.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) DESC, r.modified_at DESC"
+	expectedStmtAsc := "ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 4.0, 2.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) DESC, r.modified_at DESC"
 	if stmtAsc != expectedStmtAsc {
 		t.Errorf("expected %q, got %q", expectedStmtAsc, stmtAsc)
 	}
 
-	// When query is empty, fallback to modified_at
-	stmtEmpty, argsEmpty := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Desc)
-	if stmtEmpty != "ORDER BY r.modified_at DESC" || len(argsEmpty) != 0 {
-		t.Errorf("unexpected empty query result: stmt=%q, args=%v", stmtEmpty, argsEmpty)
+	// When query is empty, fallback to modified_at respecting sortDir
+	stmtEmptyDesc, argsEmptyDesc := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Desc)
+	if stmtEmptyDesc != "ORDER BY r.modified_at DESC" || len(argsEmptyDesc) != 0 {
+		t.Errorf("unexpected empty query result (desc): stmt=%q, args=%v", stmtEmptyDesc, argsEmptyDesc)
+	}
+	stmtEmptyAsc, argsEmptyAsc := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Asc)
+	if stmtEmptyAsc != "ORDER BY r.modified_at ASC" || len(argsEmptyAsc) != 0 {
+		t.Errorf("unexpected empty query result (asc): stmt=%q, args=%v", stmtEmptyAsc, argsEmptyAsc)
 	}
 }

@@ -242,7 +242,10 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
 			fmt.Sprintf("%s %s %s", whereStmt, orderStmt, limitStmt)
 
-	selectArgs := append(append(whereArgs, orderArgs...), limitArgs...)
+	selectArgs := make([]any, 0, len(whereArgs)+len(orderArgs)+len(limitArgs))
+	selectArgs = append(selectArgs, whereArgs...)
+	selectArgs = append(selectArgs, orderArgs...)
+	selectArgs = append(selectArgs, limitArgs...)
 	selectStmt := d.Db.Rebind(combinedStr)
 
 	recipes := make([]*models.RecipeCompact, 0)
@@ -298,7 +301,7 @@ func getPicturesStmt(withPictures *bool) string {
 func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir, query string, filterFields []models.SearchField, adapter sqlRecipeDriverAdapter) (string, []any) {
 	if sortBy == models.SortByRelevance {
 		if strings.TrimSpace(query) == "" {
-			return "ORDER BY r.modified_at DESC", nil
+			return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil
 		}
 		fields := filterFields
 		if len(fields) == 0 {

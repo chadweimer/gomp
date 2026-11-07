@@ -28,6 +28,7 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 		{supportedSearchFields[:], "query"},
 		{[]models.SearchField{models.SearchFieldName, "invalid"}, "query"},
 		{[]models.SearchField{"invalid"}, "query"},
+		{[]models.SearchField{}, "query"},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
@@ -37,7 +38,11 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 			stmt, args := sut.GetSearchFields(test.fields, test.query)
 
 			// Assert
-			expectedFields := lo.Intersect(test.fields, supportedSearchFields[:])
+			expectedFields := test.fields
+			if len(expectedFields) == 0 {
+				expectedFields = supportedSearchFields[:]
+			}
+			expectedFields = lo.Intersect(expectedFields, supportedSearchFields[:])
 			if len(expectedFields) == 0 {
 				if stmt != "" {
 					t.Errorf("expected empty stmt, got %s", stmt)

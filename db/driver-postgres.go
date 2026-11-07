@@ -31,10 +31,11 @@ type postgresDriver struct {
 }
 
 func getPostgresSearchVector(filterFields []models.SearchField) string {
-	fields := lo.Intersect(filterFields, supportedSearchFields[:])
+	fields := filterFields
 	if len(fields) == 0 {
 		fields = supportedSearchFields[:]
 	}
+	fields = lo.Intersect(fields, supportedSearchFields[:])
 	tsvectors := make([]string, 0, len(fields))
 	for _, field := range fields {
 		switch field {
@@ -57,7 +58,11 @@ func getPostgresSearchVector(filterFields []models.SearchField) string {
 }
 
 func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
-	fields := lo.Intersect(filterFields, supportedSearchFields[:])
+	fields := filterFields
+	if len(fields) == 0 {
+		fields = supportedSearchFields[:]
+	}
+	fields = lo.Intersect(fields, supportedSearchFields[:])
 	if len(fields) == 0 {
 		return "", make([]any, 0)
 	}
@@ -68,16 +73,14 @@ func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, 
 }
 
 func (postgresDriverAdapter) GetSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any) {
-	fields := lo.Intersect(filterFields, supportedSearchFields[:])
+	fields := filterFields
 	if len(fields) == 0 {
 		fields = supportedSearchFields[:]
 	}
+	fields = lo.Intersect(fields, supportedSearchFields[:])
 
 	vector := getPostgresSearchVector(fields)
-	rankOrder := "DESC"
-	if sortDir == models.Asc {
-		rankOrder = "ASC"
-	}
+	rankOrder := lo.Ternary(sortDir == models.Asc, "ASC", "DESC")
 	stmt := fmt.Sprintf("ORDER BY ts_rank(%s, websearch_to_wildcard_tsquery('english', ?)) %s, r.modified_at DESC", vector, rankOrder)
 	return stmt, []any{query}
 }
