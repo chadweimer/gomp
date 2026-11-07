@@ -2,7 +2,7 @@ import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fetchMocker } from '../../../vitest.setup';
 import { api } from '../../helpers/api';
-import { AccessLevel, AppConfiguration, AppInfo, SearchFilter, User } from '../../helpers/schema.gen';
+import { AccessLevel, AppConfiguration, AppInfo, SearchFilter, SortBy, SortDir, User } from '../../helpers/schema.gen';
 import { getDefaultSearchFilter } from '../../models';
 import { clearTestStorage } from '../../testing/context-helpers';
 import './app-root';
@@ -429,7 +429,33 @@ describe('app-root', () => {
       expect(routerEl.push).not.toHaveBeenCalled();
     });
 
-    it('updates query and redirects to /recipes on Enter key press', async () => {
+    it('updates query, sorts by relevance on first search, and redirects to /recipes on Enter key press', async () => {
+      const el = await fixture<AppRoot>(html`<app-root></app-root>`);
+      await el.updateComplete;
+
+      expect(el.searchCtx.filter.sortBy).toBe(SortBy.Name);
+      expect(el.searchCtx.filter.sortDir).toBe(SortDir.Asc);
+
+      const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
+      expect(searchbar).not.toBeNull();
+      if (searchbar) {
+        searchbar.value = 'pasta';
+        searchbar.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      }
+
+      expect(el.searchCtx.filter.query).toBe('pasta');
+      expect(el.searchCtx.filter.sortBy).toBe(SortBy.Relevance);
+      expect(el.searchCtx.filter.sortDir).toBe(SortDir.Desc);
+      expect(routerEl.push).toHaveBeenCalledWith('/recipes');
+    });
+
+    it('preserves existing sort settings on Enter key press when search is already customized', async () => {
+      setSearchFilter({
+        ...getDefaultSearchFilter(),
+        tags: ['dinner'],
+        sortBy: SortBy.Rating,
+        sortDir: SortDir.Asc,
+      });
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
@@ -441,6 +467,25 @@ describe('app-root', () => {
       }
 
       expect(el.searchCtx.filter.query).toBe('pasta');
+      expect(el.searchCtx.filter.sortBy).toBe(SortBy.Rating);
+      expect(el.searchCtx.filter.sortDir).toBe(SortDir.Asc);
+      expect(routerEl.push).toHaveBeenCalledWith('/recipes');
+    });
+
+    it('preserves default sort settings on Enter key press when query is empty', async () => {
+      const el = await fixture<AppRoot>(html`<app-root></app-root>`);
+      await el.updateComplete;
+
+      const searchbar = el.renderRoot.querySelector<HTMLIonSearchbarElement>('ion-searchbar');
+      expect(searchbar).not.toBeNull();
+      if (searchbar) {
+        searchbar.value = '';
+        searchbar.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      }
+
+      expect(el.searchCtx.filter.query).toBe('');
+      expect(el.searchCtx.filter.sortBy).toBe(SortBy.Name);
+      expect(el.searchCtx.filter.sortDir).toBe(SortDir.Asc);
       expect(routerEl.push).toHaveBeenCalledWith('/recipes');
     });
 
