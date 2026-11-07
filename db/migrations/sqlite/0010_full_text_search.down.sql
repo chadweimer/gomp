@@ -1,0 +1,9 @@
+BEGIN;
+
+DROP TRIGGER IF EXISTS recipe_fts_ai;
+DROP TRIGGER IF EXISTS recipe_fts_ad;
+DROP TRIGGER IF EXISTS recipe_fts_au;
+
+DROP TABLE IF EXISTS recipe_fts;
+
+COMMIT;
