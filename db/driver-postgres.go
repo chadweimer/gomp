@@ -38,9 +38,9 @@ func getPostgresSearchVector(fields []models.SearchField) string {
 		case models.SearchFieldIngredients:
 			return "setweight(to_tsvector('english', coalesce(r.ingredients, '')), 'B')", true
 		case models.SearchFieldDirections:
-			return "setweight(to_tsvector('english', coalesce(r.directions, '')), 'B')", true
+			return "setweight(to_tsvector('english', coalesce(r.directions, '')), 'C')", true
 		case models.SearchFieldStorageInstructions:
-			return "setweight(to_tsvector('english', coalesce(r.storage_instructions, '')), 'C')", true
+			return "setweight(to_tsvector('english', coalesce(r.storage_instructions, '')), 'D')", true
 		case models.SearchFieldNutrition:
 			return "setweight(to_tsvector('english', coalesce(r.nutrition_info, '')), 'D')", true
 		default:
@@ -64,7 +64,8 @@ func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, 
 	return stmt, []any{query}
 }
 
-func (postgresDriverAdapter) GetSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any) {
+// GetRelevanceSearchOrder returns the PostgreSQL-specific ts_rank ORDER BY clause when sorting by relevance.
+func (postgresDriverAdapter) GetRelevanceSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any) {
 	fields := normalizeSearchFields(filterFields)
 	if len(fields) == 0 || strings.TrimSpace(query) == "" {
 		return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil

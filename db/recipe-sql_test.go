@@ -77,7 +77,7 @@ func (simpleSQLRecipeDriverAdapter) GetSearchFields(filterFields []models.Search
 	return stmt, args
 }
 
-func (simpleSQLRecipeDriverAdapter) GetSearchOrder(_ []models.SearchField, _ string, _ models.SortDir) (string, []any) {
+func (simpleSQLRecipeDriverAdapter) GetRelevanceSearchOrder(_ []models.SearchField, _ string, _ models.SortDir) (string, []any) {
 	return "ORDER BY relevance_score DESC", nil
 }
 

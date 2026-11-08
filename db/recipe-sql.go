@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
+	"slices"
 
 	"github.com/chadweimer/gomp/models"
 	"github.com/jmoiron/sqlx"
@@ -14,7 +14,8 @@ import (
 
 type sqlRecipeDriverAdapter interface {
 	GetSearchFields(filterFields []models.SearchField, query string) (string, []any)
-	GetSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any)
+	// GetRelevanceSearchOrder returns the database-specific SQL ORDER BY clause for ranking search results by relevance.
+	GetRelevanceSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any)
 }
 
 type sqlRecipeDriver struct {
@@ -249,10 +250,7 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
 			fmt.Sprintf("%s %s %s", whereStmt, orderStmt, limitStmt)
 
-	selectArgs := make([]any, 0, len(whereArgs)+len(orderArgs)+len(limitArgs))
-	selectArgs = append(selectArgs, whereArgs...)
-	selectArgs = append(selectArgs, orderArgs...)
-	selectArgs = append(selectArgs, limitArgs...)
+	selectArgs := slices.Concat(whereArgs, orderArgs, limitArgs)
 	selectStmt := d.Db.Rebind(combinedStr)
 
 	recipes := make([]*models.RecipeCompact, 0)
@@ -307,10 +305,10 @@ func getPicturesStmt(withPictures *bool) string {
 
 func getOrderStmt(sortBy models.SortBy, sortDir models.SortDir, query string, filterFields []models.SearchField, adapter sqlRecipeDriverAdapter) (string, []any) {
 	if sortBy == models.SortByRelevance {
-		if strings.TrimSpace(query) == "" {
+		if adapter == nil {
 			return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil
 		}
-		return adapter.GetSearchOrder(filterFields, query, sortDir)
+		return adapter.GetRelevanceSearchOrder(filterFields, query, sortDir)
 	}
 
 	stmt := "ORDER BY "

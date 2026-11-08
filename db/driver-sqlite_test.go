@@ -69,12 +69,12 @@ func Test_sqlite_GetSearchFields(t *testing.T) {
 	}
 }
 
-func Test_sqlite_GetSearchOrder(t *testing.T) {
+func Test_sqlite_GetRelevanceSearchOrder(t *testing.T) {
 	sut := sqliteDriverAdapter{}
 
 	// When query is non-empty, order by bm25
-	stmt, args := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Desc)
-	expectedStmt := "ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 4.0, 2.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) ASC, r.modified_at DESC"
+	stmt, args := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Desc)
+	expectedStmt := "ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 2.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) ASC, r.modified_at DESC"
 	if stmt != expectedStmt {
 		t.Errorf("expected %q, got %q", expectedStmt, stmt)
 	}
@@ -83,24 +83,24 @@ func Test_sqlite_GetSearchOrder(t *testing.T) {
 	}
 
 	// When sortDir is Asc
-	stmtAsc, _ := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Asc)
-	expectedStmtAsc := "ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 4.0, 2.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) DESC, r.modified_at DESC"
+	stmtAsc, _ := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Asc)
+	expectedStmtAsc := "ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 2.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) DESC, r.modified_at DESC"
 	if stmtAsc != expectedStmtAsc {
 		t.Errorf("expected %q, got %q", expectedStmtAsc, stmtAsc)
 	}
 
 	// When query is pure negation, fallback to modified_at
-	stmtNeg, argsNeg := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "-nuts", models.Desc)
+	stmtNeg, argsNeg := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "-nuts", models.Desc)
 	if stmtNeg != "ORDER BY r.modified_at DESC" || len(argsNeg) != 0 {
 		t.Errorf("unexpected pure negation result: stmt=%q, args=%v", stmtNeg, argsNeg)
 	}
 
 	// When query is empty, fallback to modified_at respecting sortDir
-	stmtEmptyDesc, argsEmptyDesc := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Desc)
+	stmtEmptyDesc, argsEmptyDesc := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Desc)
 	if stmtEmptyDesc != "ORDER BY r.modified_at DESC" || len(argsEmptyDesc) != 0 {
 		t.Errorf("unexpected empty query result (desc): stmt=%q, args=%v", stmtEmptyDesc, argsEmptyDesc)
 	}
-	stmtEmptyAsc, argsEmptyAsc := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Asc)
+	stmtEmptyAsc, argsEmptyAsc := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Asc)
 	if stmtEmptyAsc != "ORDER BY r.modified_at ASC" || len(argsEmptyAsc) != 0 {
 		t.Errorf("unexpected empty query result (asc): stmt=%q, args=%v", stmtEmptyAsc, argsEmptyAsc)
 	}

@@ -38,11 +38,7 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 			stmt, args := sut.GetSearchFields(test.fields, test.query)
 
 			// Assert
-			expectedFields := test.fields
-			if len(expectedFields) == 0 {
-				expectedFields = supportedSearchFields[:]
-			}
-			expectedFields = lo.Intersect(expectedFields, supportedSearchFields[:])
+			expectedFields := normalizeSearchFields(test.fields)
 			if len(expectedFields) == 0 {
 				if stmt != "" {
 					t.Errorf("expected empty stmt, got %s", stmt)
@@ -62,10 +58,10 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 	}
 }
 
-func Test_postgres_GetSearchOrder(t *testing.T) {
+func Test_postgres_GetRelevanceSearchOrder(t *testing.T) {
 	sut := postgresDriverAdapter{}
 
-	stmt, args := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Desc)
+	stmt, args := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Desc)
 	if !strings.HasPrefix(stmt, "ORDER BY ts_rank(") || !strings.Contains(stmt, "DESC, r.modified_at DESC") {
 		t.Errorf("unexpected stmt: %s", stmt)
 	}
@@ -73,13 +69,13 @@ func Test_postgres_GetSearchOrder(t *testing.T) {
 		t.Errorf("unexpected args: %v", args)
 	}
 
-	stmtAsc, _ := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Asc)
+	stmtAsc, _ := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Asc)
 	if !strings.Contains(stmtAsc, "ASC, r.modified_at DESC") {
 		t.Errorf("unexpected asc stmt: %s", stmtAsc)
 	}
 
 	// Canonical field ordering even when fields are passed out of order
-	stmtOrder, _ := sut.GetSearchOrder([]models.SearchField{models.SearchFieldDirections, models.SearchFieldName}, "cookie", models.Desc)
+	stmtOrder, _ := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldDirections, models.SearchFieldName}, "cookie", models.Desc)
 	nameIdx := strings.Index(stmtOrder, "r.name")
 	dirIdx := strings.Index(stmtOrder, "r.directions")
 	if nameIdx == -1 || dirIdx == -1 || nameIdx > dirIdx {
@@ -87,11 +83,11 @@ func Test_postgres_GetSearchOrder(t *testing.T) {
 	}
 
 	// Empty query or invalid fields fall back to modified_at
-	stmtEmpty, argsEmpty := sut.GetSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Desc)
+	stmtEmpty, argsEmpty := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Desc)
 	if stmtEmpty != "ORDER BY r.modified_at DESC" || len(argsEmpty) != 0 {
 		t.Errorf("unexpected empty query result: stmt=%q, args=%v", stmtEmpty, argsEmpty)
 	}
-	stmtInvalid, argsInvalid := sut.GetSearchOrder([]models.SearchField{"invalid"}, "cookie", models.Asc)
+	stmtInvalid, argsInvalid := sut.GetRelevanceSearchOrder([]models.SearchField{"invalid"}, "cookie", models.Asc)
 	if stmtInvalid != "ORDER BY r.modified_at ASC" || len(argsInvalid) != 0 {
 		t.Errorf("unexpected invalid fields result: stmt=%q, args=%v", stmtInvalid, argsInvalid)
 	}
