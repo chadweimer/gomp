@@ -13,7 +13,7 @@ import (
 )
 
 type sqlRecipeDriverAdapter interface {
-	GetSearchFields(filterFields []models.SearchField, query string) (string, []any)
+	GetSearchFilter(filterFields []models.SearchField, query string) (joinClause string, whereClause string, args []any)
 	// GetRelevanceSearchOrder returns the database-specific SQL ORDER BY clause for ranking search results by relevance.
 	GetRelevanceSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any)
 }
@@ -210,7 +210,8 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 
 	const appendFmtStr = " AND (%s)"
 
-	if fieldsStmt, fieldsArgs := getFieldsStmt(filter.Query, filter.Fields, d.adapter); fieldsStmt != "" {
+	searchJoinStmt, fieldsStmt, fieldsArgs := getSearchFilterStmt(filter.Query, filter.Fields, d.adapter)
+	if fieldsStmt != "" {
 		whereStmt += fmt.Sprintf(appendFmtStr, fieldsStmt)
 		whereArgs = append(whereArgs, fieldsArgs...)
 	}
@@ -229,7 +230,12 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 	}
 
 	var total int64
-	countStmt := d.Db.Rebind("SELECT count(r.id) FROM recipe AS r " + whereStmt)
+	countQuery := "SELECT count(r.id) FROM recipe AS r "
+	if searchJoinStmt != "" {
+		countQuery += searchJoinStmt + " "
+	}
+	countQuery += whereStmt
+	countStmt := d.Db.Rebind(countQuery)
 	if err := sqlx.Get(d.Db, &total, countStmt, whereArgs...); err != nil {
 		return nil, 0, err
 	}
@@ -246,8 +252,12 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 
 	combinedStr :=
 		"SELECT r.id, r.name, r.current_state, r.created_at, r.modified_at, COALESCE(g.rating, 0) AS rating, r.main_image_name " +
-			"FROM recipe AS r " +
-			"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
+			"FROM recipe AS r "
+	if searchJoinStmt != "" {
+		combinedStr += searchJoinStmt + " "
+	}
+	combinedStr +=
+		"LEFT OUTER JOIN recipe_rating as g ON r.id = g.recipe_id " +
 			fmt.Sprintf("%s %s %s", whereStmt, orderStmt, limitStmt)
 
 	selectArgs := slices.Concat(whereArgs, orderArgs, limitArgs)
@@ -269,18 +279,13 @@ func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter,
 	return &result, total, nil
 }
 
-func getFieldsStmt(query string, fields []models.SearchField, adapter sqlRecipeDriverAdapter) (string, []any) {
-	if query == "" {
-		return "", nil
+func getSearchFilterStmt(query string, fields []models.SearchField, adapter sqlRecipeDriverAdapter) (joinClause string, whereClause string, args []any) {
+	if query == "" || adapter == nil {
+		return "", "", nil
 	}
 
-	// If the filter didn't specify the fields to search on, use all of them
-	filterFields := fields
-	if len(filterFields) == 0 {
-		filterFields = supportedSearchFields[:]
-	}
-
-	return adapter.GetSearchFields(filterFields, query)
+	filterFields := normalizeSearchFields(fields)
+	return adapter.GetSearchFilter(filterFields, query)
 }
 
 func getTagsStmt(tags []string) (string, []any, error) {

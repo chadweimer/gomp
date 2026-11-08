@@ -21,7 +21,7 @@ CREATE TRIGGER recipe_fts_ad AFTER DELETE ON recipe BEGIN
     VALUES ('delete', old.id, old.name, old.ingredients, old.directions, old.storage_instructions, old.nutrition_info);
 END;
 
-CREATE TRIGGER recipe_fts_au AFTER UPDATE ON recipe BEGIN
+CREATE TRIGGER recipe_fts_au AFTER UPDATE OF name, ingredients, directions, storage_instructions, nutrition_info ON recipe BEGIN
     INSERT INTO recipe_fts(recipe_fts, rowid, name, ingredients, directions, storage_instructions, nutrition_info)
     VALUES ('delete', old.id, old.name, old.ingredients, old.directions, old.storage_instructions, old.nutrition_info);
     INSERT INTO recipe_fts(rowid, name, ingredients, directions, storage_instructions, nutrition_info)

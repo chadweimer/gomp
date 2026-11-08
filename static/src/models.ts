@@ -18,7 +18,7 @@ export function getDefaultSearchFilter(): SearchFilter {
   return {
     query: '',
     withPictures: null,
-    fields: [SearchField.Name, SearchField.Ingredients, SearchField.Directions],
+    fields: [SearchField.Name, SearchField.Ingredients, SearchField.Directions, SearchField.StorageInstructions, SearchField.Nutrition],
     states: [RecipeState.Active],
     tags: [],
     sortBy: SortBy.Name,
@@ -31,4 +31,3 @@ export function getDefaultSearchSettings(): SearchSettings {
     viewMode: SearchViewMode.Card
   };
 }
-

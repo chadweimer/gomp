@@ -15,7 +15,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_postgres_GetSearchFields(t *testing.T) {
+func Test_postgres_GetSearchFilter(t *testing.T) {
 	type testArgs struct {
 		fields []models.SearchField
 		query  string
@@ -27,6 +27,7 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 		{[]models.SearchField{models.SearchFieldName, models.SearchFieldDirections}, "query"},
 		{supportedSearchFields[:], "query"},
 		{[]models.SearchField{models.SearchFieldName, "invalid"}, "query"},
+		{[]models.SearchField{models.SearchFieldName}, "query -nuts"},
 		{[]models.SearchField{"invalid"}, "query"},
 		{[]models.SearchField{}, "query"},
 	}
@@ -35,9 +36,12 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 			sut := postgresDriverAdapter{}
 
 			// Act
-			stmt, args := sut.GetSearchFields(test.fields, test.query)
+			joinStmt, stmt, args := sut.GetSearchFilter(test.fields, test.query)
 
 			// Assert
+			if joinStmt != "" {
+				t.Errorf("expected empty joinStmt, got %s", joinStmt)
+			}
 			expectedFields := normalizeSearchFields(test.fields)
 			if len(expectedFields) == 0 {
 				if stmt != "" {
@@ -46,8 +50,15 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 				if len(args) != 0 {
 					t.Errorf("expected 0 args, got %d", len(args))
 				}
+			} else if len(expectedFields) < len(supportedSearchFields) && !strings.Contains(test.query, "-") {
+				if !strings.Contains(stmt, "@@ websearch_to_wildcard_tsquery('english', ?)") || !strings.Contains(stmt, " AND ") {
+					t.Errorf("unexpected pre-filtered subset stmt: %s", stmt)
+				}
+				if len(args) != 2 || args[0] != test.query || args[1] != test.query {
+					t.Errorf("expected 2 args with query for pre-filtered subset, got %v", args)
+				}
 			} else {
-				if !strings.Contains(stmt, "@@ websearch_to_wildcard_tsquery('english', ?)") {
+				if !strings.Contains(stmt, "@@ websearch_to_wildcard_tsquery('english', ?)") || strings.Contains(stmt, " AND ") {
 					t.Errorf("unexpected stmt: %s", stmt)
 				}
 				if len(args) != 1 || args[0] != test.query {

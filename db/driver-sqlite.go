@@ -42,24 +42,20 @@ func parseSQLiteFTSQuery(filterFields []models.SearchField, rawQuery string) *ft
 	return fts5query.Parse(rawQuery, fts5query.WithColumns(cols...))
 }
 
-func (sqliteDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+func (sqliteDriverAdapter) GetSearchFilter(filterFields []models.SearchField, query string) (joinClause string, whereClause string, args []any) {
 	res := parseSQLiteFTSQuery(filterFields, query)
-	if res.IsEmpty() {
-		return "", make([]any, 0)
-	}
-	return res.SQLCondition("recipe_fts", "r.id")
+	return res.SQLJoin("recipe_fts", "r.id")
 }
 
 // GetRelevanceSearchOrder returns the SQLite-specific BM25 ORDER BY clause when sorting by relevance.
 func (sqliteDriverAdapter) GetRelevanceSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any) {
 	res := parseSQLiteFTSQuery(filterFields, query)
-	if res.IsEmpty() || res.IsPureNegation {
-		return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil
+	if bm25 := res.BM25("recipe_fts", 10.0, 4.0, 2.0, 1.0, 1.0); bm25 != "" {
+		// SQLite BM25 scores are lower for better matches (higher relevance), so we flip ASC/DESC here.
+		ftsOrder := lo.Ternary(sortDir == models.Asc, "DESC", "ASC")
+		return fmt.Sprintf("ORDER BY %s %s, r.modified_at DESC", bm25, ftsOrder), nil
 	}
-	// SQLite weights are essentially inverted compared to the sort direction, so we flip ASC/DESC here.
-	ftsOrder := lo.Ternary(sortDir == models.Asc, "DESC", "ASC")
-	orderStmt := fmt.Sprintf("ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 2.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) %s, r.modified_at DESC", ftsOrder)
-	return orderStmt, []any{res.MatchExpr}
+	return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil
 }
 
 func (sqliteDriverAdapter) PreImport(ctx context.Context, db sqlx.ExecerContext, _ *models.BackupData) error {
@@ -82,7 +78,8 @@ func (sqliteDriverAdapter) PostImport(ctx context.Context, db sqlx.ExecerContext
 
 func (sqliteDriverAdapter) GetTableNames(ctx context.Context, db sqlx.QueryerContext) ([]string, error) {
 	tables := make([]string, 0)
-	if err := sqlx.SelectContext(ctx, db, &tables, "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'recipe_fts%'"); err != nil {
+	query := "SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\' AND name != 'recipe_fts' AND name NOT LIKE 'recipe\\_fts\\_%' ESCAPE '\\'"
+	if err := sqlx.SelectContext(ctx, db, &tables, query); err != nil {
 		return nil, err
 	}
 

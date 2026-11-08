@@ -26,8 +26,8 @@ type mockDriverAdapter struct {
 	tableNames []string
 }
 
-func (mockDriverAdapter) GetSearchFields(_ []models.SearchField, _ string) (string, []any) {
-	return "", make([]any, 0)
+func (mockDriverAdapter) GetSearchFilter(_ []models.SearchField, _ string) (string, string, []any) {
+	return "", "", make([]any, 0)
 }
 
 func (mockDriverAdapter) GetRelevanceSearchOrder(_ []models.SearchField, _ string, _ models.SortDir) (string, []any) {

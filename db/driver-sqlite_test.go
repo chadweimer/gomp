@@ -5,6 +5,7 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -14,7 +15,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_sqlite_GetSearchFields(t *testing.T) {
+func Test_sqlite_GetSearchFilter(t *testing.T) {
 	type testArgs struct {
 		fields []models.SearchField
 		query  string
@@ -26,6 +27,7 @@ func Test_sqlite_GetSearchFields(t *testing.T) {
 		{[]models.SearchField{models.SearchFieldName, models.SearchFieldDirections}, "query"},
 		{supportedSearchFields[:], "query"},
 		{[]models.SearchField{models.SearchFieldName, "invalid"}, "query"},
+		{[]models.SearchField{models.SearchFieldName}, "-nuts"},
 		{[]models.SearchField{"invalid"}, "query"},
 		{[]models.SearchField{}, "query"},
 	}
@@ -34,19 +36,35 @@ func Test_sqlite_GetSearchFields(t *testing.T) {
 			sut := sqliteDriverAdapter{}
 
 			// Act
-			stmt, args := sut.GetSearchFields(test.fields, test.query)
+			joinStmt, stmt, args := sut.GetSearchFilter(test.fields, test.query)
 
 			// Assert
 			expectedFields := normalizeSearchFields(test.fields)
 			if len(expectedFields) == 0 {
+				if joinStmt != "" {
+					t.Errorf("expected empty joinStmt, got %s", joinStmt)
+				}
 				if stmt != "" {
 					t.Errorf("expected empty stmt, got %s", stmt)
 				}
 				if len(args) != 0 {
 					t.Errorf("expected 0 args, got %d", len(args))
 				}
+			} else if test.query == "-nuts" {
+				if joinStmt != "" {
+					t.Errorf("expected empty joinStmt for pure negation, got %s", joinStmt)
+				}
+				if stmt != "r.id NOT IN (SELECT rowid FROM recipe_fts WHERE recipe_fts MATCH ?)" {
+					t.Errorf("unexpected negation stmt: %s", stmt)
+				}
+				if len(args) != 1 {
+					t.Fatalf("expected 1 arg, got %d", len(args))
+				}
 			} else {
-				if stmt != "r.id IN (SELECT rowid FROM recipe_fts WHERE recipe_fts MATCH ?)" {
+				if joinStmt != "JOIN recipe_fts ON recipe_fts.rowid = r.id" {
+					t.Errorf("unexpected joinStmt: %s", joinStmt)
+				}
+				if stmt != "recipe_fts MATCH ?" {
 					t.Errorf("unexpected stmt: %s", stmt)
 				}
 				if len(args) != 1 {
@@ -74,19 +92,22 @@ func Test_sqlite_GetRelevanceSearchOrder(t *testing.T) {
 
 	// When query is non-empty, order by bm25
 	stmt, args := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Desc)
-	expectedStmt := "ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 2.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) ASC, r.modified_at DESC"
+	expectedStmt := "ORDER BY bm25(recipe_fts, 10, 4, 2, 1, 1) ASC, r.modified_at DESC"
 	if stmt != expectedStmt {
 		t.Errorf("expected %q, got %q", expectedStmt, stmt)
 	}
-	if len(args) != 1 || args[0] != `{name} : ("cookie"*)` {
-		t.Errorf("unexpected args: %v", args)
+	if len(args) != 0 {
+		t.Errorf("expected 0 args, got: %v", args)
 	}
 
 	// When sortDir is Asc
-	stmtAsc, _ := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Asc)
-	expectedStmtAsc := "ORDER BY (SELECT bm25(recipe_fts, 10.0, 4.0, 2.0, 1.0, 1.0) FROM recipe_fts WHERE recipe_fts.rowid = r.id AND recipe_fts MATCH ?) DESC, r.modified_at DESC"
+	stmtAsc, argsAsc := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Asc)
+	expectedStmtAsc := "ORDER BY bm25(recipe_fts, 10, 4, 2, 1, 1) DESC, r.modified_at DESC"
 	if stmtAsc != expectedStmtAsc {
 		t.Errorf("expected %q, got %q", expectedStmtAsc, stmtAsc)
+	}
+	if len(argsAsc) != 0 {
+		t.Errorf("expected 0 args, got: %v", argsAsc)
 	}
 
 	// When query is pure negation, fallback to modified_at
@@ -135,7 +156,7 @@ func Test_sqlite_GetTableNames(t *testing.T) {
 			dbDriver, dbmock := getMockDb(t, nil)
 			defer dbDriver.Close()
 
-			query := dbmock.ExpectQuery("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'recipe_fts%'")
+			query := dbmock.ExpectQuery(regexp.QuoteMeta("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\' AND name != 'recipe_fts' AND name NOT LIKE 'recipe\\_fts\\_%' ESCAPE '\\'"))
 			if test.dbError == nil {
 				rows := sqlmock.NewRows([]string{"name"})
 				for _, tableName := range test.wantTableNames {

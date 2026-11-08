@@ -53,15 +53,24 @@ func getPostgresSearchVector(fields []models.SearchField) string {
 	return "(" + strings.Join(tsvectors, " || ") + ")"
 }
 
-func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+func (postgresDriverAdapter) GetSearchFilter(filterFields []models.SearchField, query string) (joinClause string, whereClause string, args []any) {
 	fields := normalizeSearchFields(filterFields)
 	if len(fields) == 0 || strings.TrimSpace(query) == "" {
-		return "", make([]any, 0)
+		return "", "", make([]any, 0)
 	}
 
 	vector := getPostgresSearchVector(fields)
+	// If a subset of fields is searched and the query has no negative terms,
+	// pre-filter using the full field vector so PostgreSQL can utilize the
+	// GIN expression index (recipe_full_text_combined_idx) before checking the subset.
+	if len(fields) < len(supportedSearchFields) && !strings.Contains(query, "-") {
+		fullVector := getPostgresSearchVector(supportedSearchFields[:])
+		stmt := fmt.Sprintf("%s @@ websearch_to_wildcard_tsquery('english', ?) AND %s @@ websearch_to_wildcard_tsquery('english', ?)", fullVector, vector)
+		return "", stmt, []any{query, query}
+	}
+
 	stmt := fmt.Sprintf("%s @@ websearch_to_wildcard_tsquery('english', ?)", vector)
-	return stmt, []any{query}
+	return "", stmt, []any{query}
 }
 
 // GetRelevanceSearchOrder returns the PostgreSQL-specific ts_rank ORDER BY clause when sorting by relevance.
