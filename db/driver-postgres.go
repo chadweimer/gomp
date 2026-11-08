@@ -31,23 +31,22 @@ type postgresDriver struct {
 }
 
 func getPostgresSearchVector(fields []models.SearchField) string {
-	tsvectors := make([]string, 0, len(fields))
-	for _, field := range fields {
+	tsvectors := lo.FilterMap(fields, func(field models.SearchField, _ int) (string, bool) {
 		switch field {
 		case models.SearchFieldName:
-			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.name, '')), 'A')")
+			return "setweight(to_tsvector('english', coalesce(r.name, '')), 'A')", true
 		case models.SearchFieldIngredients:
-			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.ingredients, '')), 'B')")
+			return "setweight(to_tsvector('english', coalesce(r.ingredients, '')), 'B')", true
 		case models.SearchFieldDirections:
-			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.directions, '')), 'B')")
+			return "setweight(to_tsvector('english', coalesce(r.directions, '')), 'B')", true
 		case models.SearchFieldStorageInstructions:
-			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.storage_instructions, '')), 'C')")
+			return "setweight(to_tsvector('english', coalesce(r.storage_instructions, '')), 'C')", true
 		case models.SearchFieldNutrition:
-			tsvectors = append(tsvectors, "setweight(to_tsvector('english', coalesce(r.nutrition_info, '')), 'D')")
+			return "setweight(to_tsvector('english', coalesce(r.nutrition_info, '')), 'D')", true
 		default:
-			// Ignore unsupported search fields
+			return "", false
 		}
-	}
+	})
 	if len(tsvectors) == 1 {
 		return tsvectors[0]
 	}
