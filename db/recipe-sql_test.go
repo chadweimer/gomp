@@ -66,7 +66,7 @@ func recipeFixtureChickpeaSaladWraps() models.Recipe {
 
 type simpleSQLRecipeDriverAdapter struct{}
 
-func (simpleSQLRecipeDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
+func (simpleSQLRecipeDriverAdapter) GetSearchFilter(filterFields []models.SearchField, query string) (string, string, []any) {
 	stmt := ""
 	args := make([]any, 0)
 	for _, field := range filterFields {
@@ -74,7 +74,11 @@ func (simpleSQLRecipeDriverAdapter) GetSearchFields(filterFields []models.Search
 		args = append(args, query)
 	}
 
-	return stmt, args
+	return "", stmt, args
+}
+
+func (simpleSQLRecipeDriverAdapter) GetRelevanceSearchOrder(_ []models.SearchField, _ string, _ models.SortDir) (string, []any) {
+	return "ORDER BY relevance_score DESC", nil
 }
 
 func Test_Recipe_Create(t *testing.T) {
@@ -456,17 +460,18 @@ func Test_Recipe_Delete(t *testing.T) {
 	}
 }
 
-func Test_getFieldsStmt(t *testing.T) {
+func Test_getSearchFilterStmt(t *testing.T) {
 	type args struct {
 		query   string
 		fields  []models.SearchField
 		adapter sqlRecipeDriverAdapter
 	}
 	tests := []struct {
-		name     string
-		args     args
-		wantStmt string
-		wantArgs []any
+		name         string
+		args         args
+		wantJoinStmt string
+		wantStmt     string
+		wantArgs     []any
 	}{
 		{
 			name: "Empty",
@@ -535,7 +540,7 @@ func Test_getFieldsStmt(t *testing.T) {
 				fields:  []models.SearchField{models.SearchFieldName, models.SearchFieldDirections, models.SearchFieldIngredients},
 				adapter: new(simpleSQLRecipeDriverAdapter),
 			},
-			wantStmt: "name = ? directions = ? ingredients = ? ",
+			wantStmt: "name = ? ingredients = ? directions = ? ",
 			wantArgs: []any{"foo", "foo", "foo"},
 		},
 		{
@@ -551,12 +556,15 @@ func Test_getFieldsStmt(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			gotStmt, gotArgs := getFieldsStmt(test.args.query, test.args.fields, test.args.adapter)
+			gotJoinStmt, gotStmt, gotArgs := getSearchFilterStmt(test.args.query, test.args.fields, test.args.adapter)
+			if gotJoinStmt != test.wantJoinStmt {
+				t.Errorf("getSearchFilterStmt() gotJoinStmt = %v, wantJoinStmt %v", gotJoinStmt, test.wantJoinStmt)
+			}
 			if gotStmt != test.wantStmt {
-				t.Errorf("getFieldsStmt() gotStmt = %v, wantStmt %v", gotStmt, test.wantStmt)
+				t.Errorf("getSearchFilterStmt() gotStmt = %v, wantStmt %v", gotStmt, test.wantStmt)
 			}
 			if !reflect.DeepEqual(gotArgs, test.wantArgs) {
-				t.Errorf("getFieldsStmt() gotArgs = %v, wantArgs %v", gotArgs, test.wantArgs)
+				t.Errorf("getSearchFilterStmt() gotArgs = %v, wantArgs %v", gotArgs, test.wantArgs)
 			}
 		})
 	}
@@ -650,6 +658,9 @@ func Test_getOrderStmt(t *testing.T) {
 	type args struct {
 		sortBy  models.SortBy
 		sortDir models.SortDir
+		query   string
+		fields  []models.SearchField
+		adapter sqlRecipeDriverAdapter
 	}
 	tests := []struct {
 		name string
@@ -752,10 +763,38 @@ func Test_getOrderStmt(t *testing.T) {
 			},
 			want: "ORDER BY RANDOM() DESC",
 		},
+		{
+			name: "Relevance, empty query fallback (DESC)",
+			args: args{
+				sortBy:  models.SortByRelevance,
+				sortDir: models.Desc,
+				query:   "",
+			},
+			want: "ORDER BY r.modified_at DESC",
+		},
+		{
+			name: "Relevance, empty query fallback (ASC)",
+			args: args{
+				sortBy:  models.SortByRelevance,
+				sortDir: models.Asc,
+				query:   "",
+			},
+			want: "ORDER BY r.modified_at ASC",
+		},
+		{
+			name: "Relevance, with query calls adapter",
+			args: args{
+				sortBy:  models.SortByRelevance,
+				sortDir: models.Desc,
+				query:   "pie",
+				adapter: simpleSQLRecipeDriverAdapter{},
+			},
+			want: "ORDER BY relevance_score DESC",
+		},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if got := getOrderStmt(test.args.sortBy, test.args.sortDir); got != test.want {
+			if got, _ := getOrderStmt(test.args.sortBy, test.args.sortDir, test.args.query, test.args.fields, test.args.adapter); got != test.want {
 				t.Errorf("getOrderStmt() = %v, want %v", got, test.want)
 			}
 		})

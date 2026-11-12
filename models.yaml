@@ -59,6 +59,7 @@ components:
         - created
         - modified
         - random
+        - relevance
       x-enum-varnames:
         - Name
         - Id
@@ -66,6 +67,7 @@ components:
         - Created
         - Modified
         - Random
+        - Relevance
       x-go-custom-tag: db:"sort_by"
       x-oapi-codegen-extra-tags:
         db: sort_by

@@ -3,6 +3,7 @@ module github.com/chadweimer/gomp
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/bep/imagemeta v1.0.1
+	github.com/chadweimer/fts5query v0.3.0
 	github.com/chadweimer/vary/v2 v2.2.0
 	github.com/getkin/kin-openapi v0.142.0
 	github.com/golang-jwt/jwt/v4 v4.5.2
@@ -17,7 +18,7 @@ require (
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.58.0
 	golang.org/x/image v0.46.0
-	modernc.org/sqlite v1.59.0
+	modernc.org/sqlite v1.62.0
 )
 
 require (
@@ -94,7 +95,7 @@ require (
 	google.golang.org/grpc v1.83.2 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	modernc.org/libc v1.79.1 // indirect
+	modernc.org/libc v1.80.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 )

@@ -15,7 +15,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func Test_postgres_GetSearchFields(t *testing.T) {
+func Test_postgres_GetSearchFilter(t *testing.T) {
 	type testArgs struct {
 		fields []models.SearchField
 		query  string
@@ -27,40 +27,80 @@ func Test_postgres_GetSearchFields(t *testing.T) {
 		{[]models.SearchField{models.SearchFieldName, models.SearchFieldDirections}, "query"},
 		{supportedSearchFields[:], "query"},
 		{[]models.SearchField{models.SearchFieldName, "invalid"}, "query"},
+		{[]models.SearchField{models.SearchFieldName}, "query -nuts"},
 		{[]models.SearchField{"invalid"}, "query"},
+		{[]models.SearchField{}, "query"},
 	}
 	for i, test := range tests {
 		t.Run(fmt.Sprint(i), func(t *testing.T) {
 			sut := postgresDriverAdapter{}
 
 			// Act
-			stmt, args := sut.GetSearchFields(test.fields, test.query)
+			joinStmt, stmt, args := sut.GetSearchFilter(test.fields, test.query)
 
 			// Assert
-			expectedFields := lo.Intersect(test.fields, supportedSearchFields[:])
-			if len(args) != len(expectedFields) {
-				t.Errorf("expected %d args, received %d", len(expectedFields), len(args))
+			if joinStmt != "" {
+				t.Errorf("expected empty joinStmt, got %s", joinStmt)
 			}
-			for index, arg := range args {
-				strArg, ok := arg.(string)
-				if !ok {
-					t.Errorf("invalid argument type: %v", arg)
+			expectedFields := normalizeSearchFields(test.fields)
+			if len(expectedFields) == 0 {
+				if stmt != "" {
+					t.Errorf("expected empty stmt, got %s", stmt)
 				}
-				if strArg != test.query {
-					t.Errorf("arg at index %d, expected %v, received %v", index, test.query, arg)
+				if len(args) != 0 {
+					t.Errorf("expected 0 args, got %d", len(args))
 				}
-			}
-			if stmt == "" {
-				if len(expectedFields) > 0 {
-					t.Error("filter should not be empty")
+			} else if len(expectedFields) < len(supportedSearchFields) && !strings.Contains(test.query, "-") {
+				if !strings.Contains(stmt, "@@ websearch_to_wildcard_tsquery('english', ?)") || !strings.Contains(stmt, " AND ") {
+					t.Errorf("unexpected pre-filtered subset stmt: %s", stmt)
+				}
+				if len(args) != 2 || args[0] != test.query || args[1] != test.query {
+					t.Errorf("expected 2 args with query for pre-filtered subset, got %v", args)
 				}
 			} else {
-				segments := strings.Split(stmt, " OR ")
-				if len(segments) != len(expectedFields) {
-					t.Errorf("expected %d segments, received %d", len(expectedFields), len(segments))
+				if !strings.Contains(stmt, "@@ websearch_to_wildcard_tsquery('english', ?)") || strings.Contains(stmt, " AND ") {
+					t.Errorf("unexpected stmt: %s", stmt)
+				}
+				if len(args) != 1 || args[0] != test.query {
+					t.Errorf("expected 1 arg with query, got %v", args)
 				}
 			}
 		})
+	}
+}
+
+func Test_postgres_GetRelevanceSearchOrder(t *testing.T) {
+	sut := postgresDriverAdapter{}
+
+	stmt, args := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Desc)
+	if !strings.HasPrefix(stmt, "ORDER BY ts_rank(") || !strings.Contains(stmt, "DESC, r.modified_at DESC") {
+		t.Errorf("unexpected stmt: %s", stmt)
+	}
+	if len(args) != 1 || args[0] != "cookie" {
+		t.Errorf("unexpected args: %v", args)
+	}
+
+	stmtAsc, _ := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "cookie", models.Asc)
+	if !strings.Contains(stmtAsc, "ASC, r.modified_at DESC") {
+		t.Errorf("unexpected asc stmt: %s", stmtAsc)
+	}
+
+	// Canonical field ordering even when fields are passed out of order
+	stmtOrder, _ := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldDirections, models.SearchFieldName}, "cookie", models.Desc)
+	nameIdx := strings.Index(stmtOrder, "r.name")
+	dirIdx := strings.Index(stmtOrder, "r.directions")
+	if nameIdx == -1 || dirIdx == -1 || nameIdx > dirIdx {
+		t.Errorf("expected canonical field order (r.name before r.directions), got: %s", stmtOrder)
+	}
+
+	// Empty query or invalid fields fall back to modified_at
+	stmtEmpty, argsEmpty := sut.GetRelevanceSearchOrder([]models.SearchField{models.SearchFieldName}, "", models.Desc)
+	if stmtEmpty != "ORDER BY r.modified_at DESC" || len(argsEmpty) != 0 {
+		t.Errorf("unexpected empty query result: stmt=%q, args=%v", stmtEmpty, argsEmpty)
+	}
+	stmtInvalid, argsInvalid := sut.GetRelevanceSearchOrder([]models.SearchField{"invalid"}, "cookie", models.Asc)
+	if stmtInvalid != "ORDER BY r.modified_at ASC" || len(argsInvalid) != 0 {
+		t.Errorf("unexpected invalid fields result: stmt=%q, args=%v", stmtInvalid, argsInvalid)
 	}
 }
 

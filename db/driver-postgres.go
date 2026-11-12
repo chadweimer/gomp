@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/chadweimer/gomp/models"
@@ -29,19 +30,60 @@ type postgresDriver struct {
 	*sqlDriver
 }
 
-func (postgresDriverAdapter) GetSearchFields(filterFields []models.SearchField, query string) (string, []any) {
-	fieldStr := ""
-	fieldArgs := make([]any, 0)
-
-	for _, field := range lo.Intersect(filterFields, supportedSearchFields[:]) {
-		if fieldStr != "" {
-			fieldStr += " OR "
+func getPostgresSearchVector(fields []models.SearchField) string {
+	tsvectors := lo.FilterMap(fields, func(field models.SearchField, _ int) (string, bool) {
+		switch field {
+		case models.SearchFieldName:
+			return "setweight(to_tsvector('english', coalesce(r.name, '')), 'A')", true
+		case models.SearchFieldIngredients:
+			return "setweight(to_tsvector('english', coalesce(r.ingredients, '')), 'B')", true
+		case models.SearchFieldDirections:
+			return "setweight(to_tsvector('english', coalesce(r.directions, '')), 'C')", true
+		case models.SearchFieldStorageInstructions:
+			return "setweight(to_tsvector('english', coalesce(r.storage_instructions, '')), 'D')", true
+		case models.SearchFieldNutrition:
+			return "setweight(to_tsvector('english', coalesce(r.nutrition_info, '')), 'D')", true
+		default:
+			return "", false
 		}
-		fieldStr += fmt.Sprintf("to_tsvector('english', r.%s) @@ websearch_to_wildcard_tsquery('english', ?)", field)
-		fieldArgs = append(fieldArgs, query)
+	})
+	if len(tsvectors) == 1 {
+		return tsvectors[0]
+	}
+	return "(" + strings.Join(tsvectors, " || ") + ")"
+}
+
+func (postgresDriverAdapter) GetSearchFilter(filterFields []models.SearchField, query string) (joinClause string, whereClause string, args []any) {
+	fields := normalizeSearchFields(filterFields)
+	if len(fields) == 0 || strings.TrimSpace(query) == "" {
+		return "", "", make([]any, 0)
 	}
 
-	return fieldStr, fieldArgs
+	vector := getPostgresSearchVector(fields)
+	// If a subset of fields is searched and the query has no negative terms,
+	// pre-filter using the full field vector so PostgreSQL can utilize the
+	// GIN expression index (recipe_full_text_combined_idx) before checking the subset.
+	if len(fields) < len(supportedSearchFields) && !strings.Contains(query, "-") {
+		fullVector := getPostgresSearchVector(supportedSearchFields[:])
+		stmt := fmt.Sprintf("%s @@ websearch_to_wildcard_tsquery('english', ?) AND %s @@ websearch_to_wildcard_tsquery('english', ?)", fullVector, vector)
+		return "", stmt, []any{query, query}
+	}
+
+	stmt := fmt.Sprintf("%s @@ websearch_to_wildcard_tsquery('english', ?)", vector)
+	return "", stmt, []any{query}
+}
+
+// GetRelevanceSearchOrder returns the PostgreSQL-specific ts_rank ORDER BY clause when sorting by relevance.
+func (postgresDriverAdapter) GetRelevanceSearchOrder(filterFields []models.SearchField, query string, sortDir models.SortDir) (string, []any) {
+	fields := normalizeSearchFields(filterFields)
+	if len(fields) == 0 || strings.TrimSpace(query) == "" {
+		return fmt.Sprintf("ORDER BY r.modified_at %s", lo.Ternary(sortDir == models.Asc, "ASC", "DESC")), nil
+	}
+
+	vector := getPostgresSearchVector(fields)
+	rankOrder := lo.Ternary(sortDir == models.Asc, "ASC", "DESC")
+	stmt := fmt.Sprintf("ORDER BY ts_rank(%s, websearch_to_wildcard_tsquery('english', ?)) %s, r.modified_at DESC", vector, rankOrder)
+	return stmt, []any{query}
 }
 
 func (postgresDriverAdapter) PostExport(_ context.Context, _ sqlx.ExecerContext, backup *models.BackupData) error {

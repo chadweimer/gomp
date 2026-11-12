@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { ContextRoot, provide } from '@lit/context';
 import { api } from '../../helpers/api';
 import { showModal } from '../../helpers/modals';
-import { AccessLevel, AppConfiguration, AppInfo, RecipeCompact, SearchFilter, User } from '../../helpers/schema.gen';
+import { AccessLevel, AppConfiguration, AppInfo, RecipeCompact, SearchFilter, SortBy, SortDir, User } from '../../helpers/schema.gen';
 import { isAuthorized, isNullOrEmpty, redirect, sendActivatedCallback } from '../../helpers/utils';
 import { getDefaultSearchFilter, getDefaultSearchSettings, SearchSettings } from '../../models';
 import { StorageController } from '../../helpers/storage-controller';
@@ -596,10 +596,23 @@ export class AppRoot extends LitElement {
 
     if (e.key === 'Enter') {
       const searchBar = e.target as HTMLIonInputElement;
-      this.searchCtx.setFilter({
-        ...this.searchCtx.filter,
-        query: searchBar.value?.toString() ?? ''
-      });
+      const query = searchBar.value?.toString() ?? '';
+      if (this.isDefaultSearch() && query !== '') {
+        // If the user has entered a value and not yet customized the search,
+        // set sortBy to Relevance and sortDir to Desc
+        this.searchCtx.setFilter({
+          ...this.searchCtx.filter,
+          query: query,
+          sortBy: SortBy.Relevance,
+          sortDir: SortDir.Desc
+        });
+      } else {
+        // Otherwise, keep their existing sort settings
+        this.searchCtx.setFilter({
+          ...this.searchCtx.filter,
+          query: query
+        });
+      }
       await redirect('/recipes');
     }
   }
