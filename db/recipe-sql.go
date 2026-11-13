@@ -159,6 +159,28 @@ func (d *sqlRecipeDriver) patchImpl(ctx context.Context, id int64, patch *models
 	return nil
 }
 
+func (*sqlRecipeDriver) setRatingImpl(ctx context.Context, id int64, rating float32, db *sqlx.Tx) error {
+	count := -1
+	err := sqlx.GetContext(ctx, db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
+
+	if errors.Is(err, sql.ErrNoRows) || count == 0 {
+		_, err = db.ExecContext(ctx,
+			"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
+		if err != nil {
+			return fmt.Errorf("creating recipe rating: %w", err)
+		}
+	} else if err == nil {
+		_, err = db.ExecContext(ctx,
+			"UPDATE recipe_rating SET rating = $1 WHERE recipe_id = $2", rating, id)
+	}
+
+	if err != nil {
+		return fmt.Errorf("updating recipe rating: %w", err)
+	}
+
+	return nil
+}
+
 func (d *sqlRecipeDriver) Delete(ctx context.Context, id int64) error {
 	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
 		return d.deleteImpl(ctx, id, db)
@@ -252,28 +274,6 @@ func (d *sqlRecipeDriver) BulkDelete(ctx context.Context, ids []int64) error {
 
 		return nil
 	})
-}
-
-func (*sqlRecipeDriver) setRatingImpl(ctx context.Context, id int64, rating float32, db *sqlx.Tx) error {
-	count := -1
-	err := sqlx.GetContext(ctx, db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)
-
-	if errors.Is(err, sql.ErrNoRows) || count == 0 {
-		_, err = db.ExecContext(ctx,
-			"INSERT INTO recipe_rating (recipe_id, rating) VALUES ($1, $2)", id, rating)
-		if err != nil {
-			return fmt.Errorf("creating recipe rating: %w", err)
-		}
-	} else if err == nil {
-		_, err = db.ExecContext(ctx,
-			"UPDATE recipe_rating SET rating = $1 WHERE recipe_id = $2", rating, id)
-	}
-
-	if err != nil {
-		return fmt.Errorf("updating recipe rating: %w", err)
-	}
-
-	return nil
 }
 
 func (d *sqlRecipeDriver) Find(ctx context.Context, filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error) {
