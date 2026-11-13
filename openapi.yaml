@@ -360,6 +360,50 @@ paths:
       security:
         - Cookie: [editor]
       x-codegen-request-body-name: recipe
+    patch:
+      tags: [recipes]
+      summary: Bulk patch recipes
+      description: partially modify multiple recipes in bulk
+      operationId: bulkPatchRecipes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: './models.yaml#/components/schemas/recipeBulkPatch'
+        required: true
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+      security:
+        - Cookie: [editor]
+      x-codegen-request-body-name: recipeBulkPatch
+    delete:
+      tags: [recipes]
+      summary: Bulk delete recipes
+      description: delete multiple recipes in bulk
+      operationId: bulkDeleteRecipes
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+            minItems: 1
+            maxItems: 100
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+      security:
+        - Cookie: [editor]
   /recipes/{recipeId}:
     parameters:
       - name: recipeId

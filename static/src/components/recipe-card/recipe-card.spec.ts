@@ -189,4 +189,66 @@ describe('recipe-card', () => {
     expect(moreBadge?.textContent?.trim()).toBe('+1');
     expect(moreBadge?.getAttribute('title')).toBe('tag2');
   });
+
+  it('renders selection checkbox and removes href in select mode', async () => {
+    const recipe: RecipeCompact = {
+      id: 10,
+      name: 'Selectable Recipe',
+      state: RecipeState.Active,
+      mainImageName: '',
+      rating: 3,
+      tags: [],
+    };
+
+    const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe} ?isSelectMode=${true} ?isSelected=${true}></recipe-card>`);
+    const card = el.renderRoot.querySelector('ion-card');
+    expect(card?.getAttribute('href')).toBeNull();
+    expect(card?.classList.contains('selected')).toBe(true);
+
+    const checkbox = el.renderRoot.querySelector('ion-checkbox');
+    expect(checkbox).not.toBeNull();
+    expect(checkbox?.checked).toBe(true);
+  });
+
+  it('emits card-toggle-select on card click when in select mode', async () => {
+    const recipe: RecipeCompact = {
+      id: 10,
+      name: 'Selectable Recipe',
+      state: RecipeState.Active,
+      mainImageName: '',
+      rating: 3,
+      tags: [],
+    };
+
+    const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe} ?isSelectMode=${true}></recipe-card>`);
+    const listener = vi.fn();
+    el.addEventListener('card-toggle-select', listener);
+
+    const card = el.renderRoot.querySelector('ion-card')!;
+    card.click();
+
+    expect(listener).toHaveBeenCalledOnce();
+    expect(listener.mock.calls[0][0].detail).toEqual({ recipeId: 10 });
+  });
+
+  it('emits card-context-select on contextmenu event', async () => {
+    const recipe: RecipeCompact = {
+      id: 10,
+      name: 'Selectable Recipe',
+      state: RecipeState.Active,
+      mainImageName: '',
+      rating: 3,
+      tags: [],
+    };
+
+    const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
+    const listener = vi.fn();
+    el.addEventListener('card-context-select', listener);
+
+    const card = el.renderRoot.querySelector('ion-card')!;
+    card.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+
+    expect(listener).toHaveBeenCalledOnce();
+    expect(listener.mock.calls[0][0].detail).toEqual({ recipeId: 10 });
+  });
 });

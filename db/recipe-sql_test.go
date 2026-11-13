@@ -13,6 +13,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
+	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
 
@@ -458,6 +459,160 @@ func Test_Recipe_Delete(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_Recipe_BulkPatch(t *testing.T) {
+	t.Run("nil patch returns nil", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		err := sut.Recipes().BulkPatch(t.Context(), nil)
+		if err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
+
+	t.Run("empty IDs returns nil", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		err := sut.Recipes().BulkPatch(t.Context(), &models.RecipeBulkPatch{Ids: []int64{}})
+		if err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
+
+	t.Run("patch state successfully", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		dbmock.ExpectBegin()
+		dbmock.ExpectExec("UPDATE recipe SET current_state = \\? WHERE id IN \\(\\?, \\?\\)").
+			WithArgs(models.Archived, int64(1), int64(2)).
+			WillReturnResult(driver.RowsAffected(2))
+		dbmock.ExpectCommit()
+
+		patch := &models.RecipeBulkPatch{
+			Ids:   []int64{1, 2},
+			State: lo.ToPtr(models.Archived),
+		}
+		err := sut.Recipes().BulkPatch(t.Context(), patch)
+		if err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
+
+	t.Run("patch remove tags and add tags successfully", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		dbmock.ExpectBegin()
+		dbmock.ExpectExec("DELETE FROM recipe_tag WHERE recipe_id IN \\(\\?, \\?\\) AND tag IN \\(\\?\\)").
+			WithArgs(int64(1), int64(2), "slow").
+			WillReturnResult(driver.RowsAffected(1))
+		dbmock.ExpectExec("INSERT INTO recipe_tag \\(recipe_id, tag\\) SELECT r\\.id, \\? FROM recipe r WHERE r\\.id IN \\(\\?, \\?\\) AND NOT EXISTS \\(SELECT 1 FROM recipe_tag t WHERE t\\.recipe_id = r\\.id AND t\\.tag = \\?\\)").
+			WithArgs("quick", int64(1), int64(2), "quick").
+			WillReturnResult(driver.RowsAffected(2))
+		dbmock.ExpectCommit()
+
+		patch := &models.RecipeBulkPatch{
+			Ids:        []int64{1, 2},
+			RemoveTags: lo.ToPtr([]string{"slow"}),
+			AddTags:    lo.ToPtr([]string{"quick"}),
+		}
+		err := sut.Recipes().BulkPatch(t.Context(), patch)
+		if err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
+
+	t.Run("patch db error rolls back", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		dbmock.ExpectBegin()
+		dbmock.ExpectExec("UPDATE recipe SET current_state = \\? WHERE id IN \\(\\?\\)").
+			WithArgs(models.Archived, int64(1)).
+			WillReturnError(sql.ErrConnDone)
+		dbmock.ExpectRollback()
+
+		patch := &models.RecipeBulkPatch{
+			Ids:   []int64{1},
+			State: lo.ToPtr(models.Archived),
+		}
+		err := sut.Recipes().BulkPatch(t.Context(), patch)
+		if !errors.Is(err, sql.ErrConnDone) {
+			t.Errorf("expected ErrConnDone, got %v", err)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
+}
+
+func Test_Recipe_BulkDelete(t *testing.T) {
+	t.Run("empty IDs returns nil", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		err := sut.Recipes().BulkDelete(t.Context(), []int64{})
+		if err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
+
+	t.Run("delete IDs successfully", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		dbmock.ExpectBegin()
+		dbmock.ExpectExec("DELETE FROM recipe WHERE id IN \\(\\?, \\?\\)").
+			WithArgs(int64(1), int64(2)).
+			WillReturnResult(driver.RowsAffected(2))
+		dbmock.ExpectCommit()
+
+		err := sut.Recipes().BulkDelete(t.Context(), []int64{1, 2})
+		if err != nil {
+			t.Errorf("expected nil error, got %v", err)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
+
+	t.Run("delete db error rolls back", func(t *testing.T) {
+		sut, dbmock := getMockDb(t, nil)
+		defer sut.Close()
+
+		dbmock.ExpectBegin()
+		dbmock.ExpectExec("DELETE FROM recipe WHERE id IN \\(\\?\\)").
+			WithArgs(int64(1)).
+			WillReturnError(sql.ErrConnDone)
+		dbmock.ExpectRollback()
+
+		err := sut.Recipes().BulkDelete(t.Context(), []int64{1})
+		if !errors.Is(err, sql.ErrConnDone) {
+			t.Errorf("expected ErrConnDone, got %v", err)
+		}
+		if err := dbmock.ExpectationsWereMet(); err != nil {
+			t.Errorf("unfulfilled expectations: %s", err)
+		}
+	})
 }
 
 func Test_getSearchFilterStmt(t *testing.T) {

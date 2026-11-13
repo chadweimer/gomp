@@ -210,6 +210,29 @@ components:
           maximum: 5
         mainImageName:
           type: string
+    recipeBulkPatch:
+      description: Bulk partial recipe update used for PATCH /recipes.
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+            format: int64
+          minItems: 1
+          maxItems: 100
+        state:
+          $ref: '#/components/schemas/recipeState'
+        addTags:
+          type: array
+          items:
+            type: string
+        removeTags:
+          type: array
+          items:
+            type: string
     recipeCompact:
       description: Compact recipe representation used when returning lists.
       example:
