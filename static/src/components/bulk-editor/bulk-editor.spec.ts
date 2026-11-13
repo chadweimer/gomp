@@ -33,7 +33,7 @@ describe('bulk-editor', () => {
 
   it('dismisses modal on cancel', async () => {
     const { modal, el } = await createEditor(3);
-    const cancelBtn = el.renderRoot.querySelector('ion-button[color="danger"]');
+    const cancelBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="danger"]');
     cancelBtn?.click();
     expect(modal.dismiss).toHaveBeenCalledWith(undefined, 'cancel');
   });
@@ -50,7 +50,7 @@ describe('bulk-editor', () => {
     tagsInputs[1].dispatchEvent(new CustomEvent('valueChanged', { detail: ['junk'] }));
     await el.updateComplete;
 
-    const saveBtn = el.renderRoot.querySelector('ion-button[color="primary"]');
+    const saveBtn = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button[color="primary"]');
     saveBtn?.click();
 
     expect(modal.dismiss).toHaveBeenCalledWith(
