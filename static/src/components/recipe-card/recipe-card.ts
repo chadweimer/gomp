@@ -126,38 +126,6 @@ export class RecipeCard extends LitElement {
   private readonly tagWidths: Map<string, number> = new Map();
   private touchTimer?: ReturnType<typeof setTimeout>;
 
-  private handleContextMenu(e: MouseEvent) {
-    if (this.recipe?.id == null) return;
-    e.preventDefault();
-    emit(this, 'card-context-select', { recipeId: this.recipe.id });
-  }
-
-  private handleTouchStart() {
-    if (this.isSelectMode || this.recipe?.id == null) return;
-    this.touchTimer = setTimeout(() => {
-      if (this.recipe?.id != null) {
-        emit(this, 'card-context-select', { recipeId: this.recipe.id });
-      }
-    }, 500);
-  }
-
-  private handleTouchEnd() {
-    if (this.touchTimer != null) {
-      clearTimeout(this.touchTimer);
-      this.touchTimer = undefined;
-    }
-  }
-
-  private handleCardClick(e: MouseEvent) {
-    if (this.isSelectMode) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (this.recipe?.id != null) {
-        emit(this, 'card-toggle-select', { recipeId: this.recipe.id });
-      }
-    }
-  }
-
   firstUpdated() {
     if (typeof ResizeObserver !== 'undefined' && this.tagsContainer != null) {
       this.resizeObserver = new ResizeObserver(() => {
@@ -194,12 +162,12 @@ export class RecipeCard extends LitElement {
       <ion-card
         class=${classMap({ card: true, selected: this.isSelected })}
         href=${ifDefined(this.isSelectMode || this.recipe?.id == null ? undefined : `/recipes/${this.recipe?.id}`)}
-        @click=${(e: MouseEvent) => this.handleCardClick(e)}
-        @contextmenu=${(e: MouseEvent) => this.handleContextMenu(e)}
-        @touchstart=${() => this.handleTouchStart()}
-        @touchend=${() => this.handleTouchEnd()}
-        @touchcancel=${() => this.handleTouchEnd()}
-        @touchmove=${() => this.handleTouchEnd()}
+        @click=${(e: MouseEvent) => this.onCardClick(e)}
+        @contextmenu=${(e: MouseEvent) => this.onContextMenu(e)}
+        @touchstart=${() => this.onTouchStart()}
+        @touchend=${() => this.onTouchEnd()}
+        @touchcancel=${() => this.onTouchEnd()}
+        @touchmove=${() => this.onTouchEnd()}
       >
         <div class="image-container">
           ${this.isSelectMode ? html`
@@ -207,12 +175,7 @@ export class RecipeCard extends LitElement {
               class="select-checkbox"
               .checked=${this.isSelected}
               @click=${(e: MouseEvent) => e.stopPropagation()}
-              @ionChange=${(e: CustomEvent) => {
-                e.stopPropagation();
-                if (this.recipe?.id != null) {
-                  emit(this, 'card-toggle-select', { recipeId: this.recipe.id });
-                }
-              }}
+              @ionChange=${(e: CustomEvent) => this.onSelectModeChange(e)}
             ></ion-checkbox>
           ` : nothing}
           <img
@@ -221,40 +184,34 @@ export class RecipeCard extends LitElement {
             alt=""
             src=${ifDefined(getRecipeThumbnailUrl(this.recipe?.id, this.recipe?.mainImageName))}
           />
-          ${tags.length > 0
-        ? html`
-                <div class="tags">
-                  ${visibleTags.map(
-          (tag) => html`
-                      <ion-badge
-                        class=${classMap({ 'tag-badge': true, 'translucent': true, 'truncate-single': tags.length === 1 || (visibleTags.length === 1 && hiddenTags.length > 0), })}
-                        color="light"
-                        title=${tag}
-                        data-tag=${tag}
-                      >
-                        ${tag}
-                      </ion-badge>
-                    `
-        )}
-                  ${hiddenTags.length > 0
-            ? html`
-                        <ion-badge
-                          class="more-badge translucent"
-                          color="light"
-                          title=${hiddenTags.join(', ')}
-                        >
-                          +${hiddenTags.length}
-                        </ion-badge>
-                      `
-            : nothing}
-                  <ion-badge
-                    class="probe-badge translucent"
-                    color="light"
-                    aria-hidden="true"
-                  ></ion-badge>
-                </div>
-              `
-        : nothing}
+          ${tags.length > 0 ? html`
+            <div class="tags">
+              ${visibleTags.map((tag) => html`
+                <ion-badge
+                  class=${classMap({ 'tag-badge': true, 'translucent': true, 'truncate-single': tags.length === 1 || (visibleTags.length === 1 && hiddenTags.length > 0), })}
+                  color="light"
+                  title=${tag}
+                  data-tag=${tag}
+                >
+                  ${tag}
+                </ion-badge>
+              `)}
+              ${hiddenTags.length > 0 ? html`
+                <ion-badge
+                  class="more-badge translucent"
+                  color="light"
+                  title=${hiddenTags.join(', ')}
+                >
+                  +${hiddenTags.length}
+                </ion-badge>
+              ` : nothing}
+              <ion-badge
+                class="probe-badge translucent"
+                color="light"
+                aria-hidden="true"
+              ></ion-badge>
+            </div>
+          ` : nothing}
         </div>
         <ion-card-header class="header">
           <ion-card-title class="single-line title" title=${ifDefined(this.recipe?.name)}>
@@ -269,6 +226,45 @@ export class RecipeCard extends LitElement {
         : nothing}
       </ion-card>
     `;
+  }
+
+  private onSelectModeChange(e: CustomEvent) {
+    e.stopPropagation();
+    if (this.recipe?.id != null) {
+      emit(this, 'card-toggle-select', { recipeId: this.recipe.id });
+    }
+  }
+
+  private onContextMenu(e: MouseEvent) {
+    if (this.recipe?.id == null) return;
+    e.preventDefault();
+    emit(this, 'card-context-select', { recipeId: this.recipe.id });
+  }
+
+  private onTouchStart() {
+    if (this.isSelectMode || this.recipe?.id == null) return;
+    this.touchTimer = setTimeout(() => {
+      if (this.recipe?.id != null) {
+        emit(this, 'card-context-select', { recipeId: this.recipe.id });
+      }
+    }, 500);
+  }
+
+  private onTouchEnd() {
+    if (this.touchTimer != null) {
+      clearTimeout(this.touchTimer);
+      this.touchTimer = undefined;
+    }
+  }
+
+  private onCardClick(e: MouseEvent) {
+    if (this.isSelectMode) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (this.recipe?.id != null) {
+        emit(this, 'card-toggle-select', { recipeId: this.recipe.id });
+      }
+    }
   }
 
   private getBadgeWidth(hiddenCount: number): number {
