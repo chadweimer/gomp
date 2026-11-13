@@ -1,6 +1,6 @@
 import { fixture, html } from '@open-wc/testing';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { loadingController, modalController, toastController } from '@ionic/core';
+import { alertController, loadingController, modalController, toastController } from '@ionic/core';
 import { fetchMocker } from '../../../../vitest.setup';
 import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir } from '../../../helpers/schema.gen';
 import { SearchViewMode, SwipeDirection } from '../../../models';
@@ -73,11 +73,18 @@ describe('page-search', () => {
     tags: ['breakfast', 'sweet'],
   };
 
-  function mockModal(data: unknown = null): HTMLIonModalElement {
+  function mockModal(data: unknown = null, role = 'save'): HTMLIonModalElement {
     return {
       present: vi.fn().mockResolvedValue(undefined),
-      onDidDismiss: vi.fn().mockResolvedValue({ data }),
+      onDidDismiss: vi.fn().mockResolvedValue({ data, role }),
     } as unknown as HTMLIonModalElement;
+  }
+
+  function mockAlert(role = 'destructive'): HTMLIonAlertElement {
+    return {
+      present: vi.fn().mockResolvedValue(undefined),
+      onDidDismiss: vi.fn().mockResolvedValue({ role }),
+    } as unknown as HTMLIonAlertElement;
   }
 
 
@@ -141,7 +148,7 @@ describe('page-search', () => {
 
       // Displays the toolbar
       const buttons = root.renderRoot.querySelectorAll('ion-header ion-button');
-      expect(buttons).toHaveLength(5);
+      expect(buttons).toHaveLength(7);
 
       // Displays the pager
       const pager = root.renderRoot.querySelector('page-navigator');
@@ -838,6 +845,196 @@ describe('page-search', () => {
       await new Promise((resolve) => setTimeout(resolve, 20));
 
       expect(mockSearchCtx.scrollPosition).toBeUndefined();
+    });
+  });
+
+  describe('Suite 5: Bulk Selection & Actions', () => {
+    it('enters select mode on Select button click and displays bulk toolbar', async () => {
+      const root = await createSearchPage();
+      await root.updateComplete;
+
+      const selectBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('#select-mode-button');
+      expect(selectBtn).not.toBeNull();
+
+      selectBtn!.click();
+      await root.updateComplete;
+
+      expect(root.isSelectMode).toBe(true);
+      expect(root.renderRoot.querySelector('ion-title')?.textContent).toContain('0 selected');
+
+      // Click close button to exit select mode
+      const closeBtn = root.renderRoot.querySelector<HTMLIonButtonElement>('ion-header ion-toolbar ion-buttons ion-button');
+      closeBtn!.click();
+      await root.updateComplete;
+
+      expect(root.isSelectMode).toBe(false);
+      expect(root.selectedIds.size).toBe(0);
+    });
+
+    it('enters select mode when recipe card emits card-context-select', async () => {
+      const root = await createSearchPage();
+      await root.updateComplete;
+
+      const card = root.renderRoot.querySelector('recipe-card');
+      expect(card).not.toBeNull();
+
+      card!.dispatchEvent(new CustomEvent('card-context-select', { detail: { recipeId: 1 }, bubbles: true }));
+      await root.updateComplete;
+
+      expect(root.isSelectMode).toBe(true);
+      expect(root.selectedIds.has(1)).toBe(true);
+      expect(root.renderRoot.querySelector('ion-title')?.textContent).toContain('1 selected');
+    });
+
+    it('toggles selection on card-toggle-select and toggleSelectAll', async () => {
+      const root = await createSearchPage();
+      root.enterSelectMode();
+      await root.updateComplete;
+
+      // Toggle item 1
+      root.toggleSelect(1);
+      await root.updateComplete;
+      expect(root.selectedIds.has(1)).toBe(true);
+
+      // Toggle item 1 off
+      root.toggleSelect(1);
+      await root.updateComplete;
+      expect(root.selectedIds.has(1)).toBe(false);
+
+      // Select all
+      root.toggleSelectAll();
+      await root.updateComplete;
+      expect(root.selectedIds.size).toBe(mockRecipes.length);
+
+      // Deselect all
+      root.toggleSelectAll();
+      await root.updateComplete;
+      expect(root.selectedIds.size).toBe(0);
+    });
+
+    it('executes bulk edit (state and tags) via PATCH /recipes', async () => {
+      vi.spyOn(modalController, 'create').mockResolvedValue(
+        mockModal({
+          state: RecipeState.Archived,
+          addTags: ['quick', 'easy'],
+          removeTags: ['slow'],
+        }, 'save')
+      );
+      vi.spyOn(loadingController, 'create').mockResolvedValue(mockLoading());
+      vi.spyOn(toastController, 'create').mockResolvedValue(mockToast());
+
+      let patchBody: unknown = null;
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.endsWith('/recipes') && req.method === 'PATCH') {
+          return req.json().then((b) => {
+            patchBody = b;
+            return { status: 200, body: '' };
+          });
+        }
+        return { status: 200, body: JSON.stringify({}) };
+      });
+
+      const root = await createSearchPage();
+      root.enterSelectMode(1);
+      root.toggleSelect(3);
+      await root.updateComplete;
+
+      const editBtn = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button'))
+        .find((b) => b.textContent?.includes('Edit'));
+      expect(editBtn).not.toBeNull();
+
+      editBtn!.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(patchBody).toEqual({
+        ids: [1, 3],
+        state: 'archived',
+        addTags: ['quick', 'easy'],
+        removeTags: ['slow'],
+      });
+      expect(root.isSelectMode).toBe(false);
+    });
+
+    it('does nothing when edit modal is cancelled', async () => {
+      vi.spyOn(modalController, 'create').mockResolvedValue(mockModal(undefined, 'cancel'));
+
+      let patchCalled = false;
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.url.endsWith('/recipes') && req.method === 'PATCH') {
+          patchCalled = true;
+          return { status: 200, body: '' };
+        }
+        return { status: 200, body: JSON.stringify({}) };
+      });
+
+      const root = await createSearchPage();
+      root.enterSelectMode(1);
+      await root.updateComplete;
+
+      const editBtn = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button'))
+        .find((b) => b.textContent?.includes('Edit'));
+      editBtn!.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(patchCalled).toBe(false);
+      expect(root.isSelectMode).toBe(true);
+    });
+
+    it('executes bulk delete after confirmation alert via DELETE /recipes', async () => {
+      vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
+      vi.spyOn(loadingController, 'create').mockResolvedValue(mockLoading());
+      vi.spyOn(toastController, 'create').mockResolvedValue(mockToast());
+
+      let deleteUrl = '';
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.method === 'DELETE' && req.url.includes('/recipes')) {
+          deleteUrl = req.url;
+          return { status: 200, body: '' };
+        }
+        return { status: 200, body: JSON.stringify({}) };
+      });
+
+      const root = await createSearchPage();
+      root.enterSelectMode(1);
+      root.toggleSelect(2);
+      await root.updateComplete;
+
+      const deleteBtn = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button'))
+        .find((b) => b.textContent?.includes('Delete'));
+      expect(deleteBtn).not.toBeNull();
+
+      deleteBtn!.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(deleteUrl).toContain('/recipes?');
+      expect(deleteUrl).toContain('ids=1');
+      expect(deleteUrl).toContain('ids=2');
+      expect(root.isSelectMode).toBe(false);
+    });
+
+    it('cancels bulk delete when alert is dismissed with cancel role', async () => {
+      vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
+
+      let deleteCalled = false;
+      fetchMocker.mockResponse((req: Request) => {
+        if (req.method === 'DELETE' && req.url.includes('/recipes')) {
+          deleteCalled = true;
+          return { status: 204, body: '' };
+        }
+        return { status: 200, body: JSON.stringify({}) };
+      });
+
+      const root = await createSearchPage();
+      root.enterSelectMode(1);
+      await root.updateComplete;
+
+      const deleteBtn = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button'))
+        .find((b) => b.textContent?.includes('Delete'));
+      deleteBtn!.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(deleteCalled).toBe(false);
+      expect(root.isSelectMode).toBe(true);
     });
   });
 });

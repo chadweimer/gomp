@@ -173,6 +173,87 @@ func (*sqlRecipeDriver) deleteImpl(ctx context.Context, id int64, db sqlx.Execer
 	return nil
 }
 
+func (d *sqlRecipeDriver) BulkPatch(ctx context.Context, patch *models.RecipeBulkPatch) error {
+	if patch == nil || len(patch.Ids) == 0 {
+		return nil
+	}
+
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
+		return d.bulkPatchImpl(ctx, patch, db)
+	})
+}
+
+func (d *sqlRecipeDriver) bulkPatchImpl(ctx context.Context, patch *models.RecipeBulkPatch, db *sqlx.Tx) error {
+	uniqueIDs := lo.Uniq(patch.Ids)
+	if len(uniqueIDs) == 0 {
+		return nil
+	}
+
+	if patch.State != nil {
+		query, args, err := sqlx.In("UPDATE recipe SET current_state = ? WHERE id IN (?)", *patch.State, uniqueIDs)
+		if err != nil {
+			return fmt.Errorf("building bulk state update query: %w", err)
+		}
+		if _, err := db.ExecContext(ctx, d.Db.Rebind(query), args...); err != nil {
+			return fmt.Errorf("bulk updating recipe state: %w", err)
+		}
+	}
+
+	if patch.RemoveTags != nil && len(*patch.RemoveTags) > 0 {
+		removeTags := lo.Uniq(lo.Compact(*patch.RemoveTags))
+		if len(removeTags) > 0 {
+			query, args, err := sqlx.In("DELETE FROM recipe_tag WHERE recipe_id IN (?) AND tag IN (?)", uniqueIDs, removeTags)
+			if err != nil {
+				return fmt.Errorf("building bulk tag delete query: %w", err)
+			}
+			if _, err := db.ExecContext(ctx, d.Db.Rebind(query), args...); err != nil {
+				return fmt.Errorf("bulk deleting tags from recipes: %w", err)
+			}
+		}
+	}
+
+	if patch.AddTags != nil && len(*patch.AddTags) > 0 {
+		addTags := lo.Uniq(lo.Compact(*patch.AddTags))
+		for _, tag := range addTags {
+			query, args, err := sqlx.In(
+				"INSERT INTO recipe_tag (recipe_id, tag) SELECT r.id, ? FROM recipe r WHERE r.id IN (?) AND NOT EXISTS (SELECT 1 FROM recipe_tag t WHERE t.recipe_id = r.id AND t.tag = ?)",
+				tag, uniqueIDs, tag,
+			)
+			if err != nil {
+				return fmt.Errorf("building bulk tag insert query: %w", err)
+			}
+			if _, err := db.ExecContext(ctx, d.Db.Rebind(query), args...); err != nil {
+				return fmt.Errorf("bulk inserting tag %q: %w", tag, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (d *sqlRecipeDriver) BulkDelete(ctx context.Context, ids []int64) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	uniqueIDs := lo.Uniq(ids)
+	if len(uniqueIDs) == 0 {
+		return nil
+	}
+
+	return tx(ctx, d.Db, func(db *sqlx.Tx) error {
+		query, args, err := sqlx.In("DELETE FROM recipe WHERE id IN (?)", uniqueIDs)
+		if err != nil {
+			return fmt.Errorf("building bulk delete query: %w", err)
+		}
+		if _, err := db.ExecContext(ctx, d.Db.Rebind(query), args...); err != nil {
+			return fmt.Errorf("bulk deleting recipes: %w", err)
+		}
+
+		return nil
+	})
+}
+
 func (*sqlRecipeDriver) setRatingImpl(ctx context.Context, id int64, rating float32, db *sqlx.Tx) error {
 	count := -1
 	err := sqlx.GetContext(ctx, db, &count, "SELECT count(*) FROM recipe_rating WHERE recipe_id = $1", id)

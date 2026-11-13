@@ -188,6 +188,16 @@ type RecipeDriver interface {
 	// any attachments that we associated with the deleted recipe.
 	Delete(ctx context.Context, id int64) error
 
+	// BulkPatch updates the specified fields on multiple recipes in the database
+	// using a dedicated transaction that is committed if there are no errors.
+	// Only existing recipes will be modified; non-existent IDs are ignored.
+	BulkPatch(ctx context.Context, patch *models.RecipeBulkPatch) error
+
+	// BulkDelete removes the specified recipes from the database using a dedicated transaction
+	// that is committed if there are no errors.
+	// Only existing recipes will be deleted; non-existent IDs are ignored.
+	BulkDelete(ctx context.Context, ids []int64) error
+
 	// Find retrieves all recipes matching the specified search filter and within the range specified.
 	Find(ctx context.Context, filter *models.SearchFilter, page int64, count int64) (*[]models.RecipeCompact, int64, error)
 }
