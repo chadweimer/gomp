@@ -86,7 +86,6 @@ export class RecipeCard extends LitElement {
         left: var(--ion-padding, 8px);
         z-index: 2;
         --size: 24px;
-        --checkbox-background: rgba(255, 255, 255, 0.9);
       }
 
       .content {
@@ -173,6 +172,7 @@ export class RecipeCard extends LitElement {
           ${this.isSelectMode ? html`
             <ion-checkbox
               class="select-checkbox"
+              color="secondary"
               .checked=${this.isSelected}
               @click=${(e: MouseEvent) => e.stopPropagation()}
               @ionChange=${(e: CustomEvent) => this.onSelectModeChange(e)}
