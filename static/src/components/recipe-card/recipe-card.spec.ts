@@ -126,7 +126,7 @@ describe('recipe-card', () => {
     await el.updateComplete;
 
     const visibleBadges = el.renderRoot.querySelectorAll('.tags ion-badge.tag-badge');
-    expect(visibleBadges?.length).toBe(1);
+    expect(visibleBadges).toHaveLength(1);
 
     const moreBadge = el.renderRoot.querySelector('.tags .more-badge');
     expect(moreBadge).not.toBeNull();

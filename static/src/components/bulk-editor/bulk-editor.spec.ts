@@ -44,7 +44,7 @@ describe('bulk-editor', () => {
     select?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: RecipeState.Archived } }));
 
     const tagsInputs = el.renderRoot.querySelectorAll('tags-input');
-    expect(tagsInputs.length).toBe(2);
+    expect(tagsInputs).toHaveLength(2);
 
     tagsInputs[0].dispatchEvent(new CustomEvent('valueChanged', { detail: ['healthy', 'dinner'] }));
     tagsInputs[1].dispatchEvent(new CustomEvent('valueChanged', { detail: ['junk'] }));
