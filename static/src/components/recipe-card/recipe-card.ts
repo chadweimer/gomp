@@ -77,7 +77,7 @@ export class RecipeCard extends LitElement {
       }
 
       .card.selected {
-        outline: 3px solid var(--ion-color-secondary);
+        outline: 4px solid var(--ion-color-secondary);
       }
 
       .select-checkbox {

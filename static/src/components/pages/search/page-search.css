@@ -1,4 +1,7 @@
-:host {
+page-search {
   display: block;
 }
 
+page-search .recipe-item.selected {
+  border-inline-end: 4px solid var(--ion-color-secondary);
+}

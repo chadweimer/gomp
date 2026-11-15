@@ -1,6 +1,7 @@
 import { Gesture, ScrollBaseCustomEvent } from '@ionic/core';
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { consume } from '@lit/context';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { AccessLevel, Recipe, RecipeCompact, RecipeState, SortBy, SortDir, UserSettings } from '../../../helpers/schema.gen';
@@ -17,12 +18,12 @@ import {
 } from '../../../helpers/utils';
 import { SearchViewMode, SwipeDirection } from '../../../models';
 import { searchContext, SearchContextValue, userContext, UserContextValue } from '../../../context';
+import { BulkEditResult } from '../../bulk-editor/bulk-editor';
 
 import '../../recipe-card/recipe-card';
 import '../../page-navigator/page-navigator';
 import '../../recipe-editor/recipe-editor';
 import '../../bulk-editor/bulk-editor';
-import { BulkEditResult } from '../../bulk-editor/bulk-editor';
 import '../../app-icon/app-icon';
 import './page-search.css';
 
@@ -89,40 +90,27 @@ export class PageSearch extends LitElement {
           class="zoom"
           ?isSelectMode=${this.isSelectMode}
           ?isSelected=${recipe.id != null && this.selectedIds.has(recipe.id)}
-          @card-context-select=${() => recipe.id != null && this.onCardContextSelect(recipe.id)}
-          @card-toggle-select=${() => recipe.id != null && this.toggleSelect(recipe.id)}
+          @card-context-select=${(e: CustomEvent) => this.onCardContextSelect(e, recipe.id)}
+          @card-toggle-select=${() => this.toggleSelect(recipe.id)}
         ></recipe-card>
       </ion-col>
     `;
     const renderRecipeItem = (recipe: RecipeCompact) => html`
       <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
         <ion-item
-          class="recipe-item"
+          class=${classMap({ 'recipe-item': true, 'ignore-focus': true, 'selected': recipe.id != null && this.selectedIds.has(recipe.id) })}
           href=${ifDefined(this.isSelectMode || recipe.id == null ? undefined : `/recipes/${recipe.id}`)}
           title=${ifDefined(recipe.name)}
-          @contextmenu=${(e: MouseEvent) => {
-        if (recipe.id == null) return;
-        e.preventDefault();
-        this.onCardContextSelect(recipe.id);
-      }}
-          @click=${this.isSelectMode && recipe.id != null ? (e: Event) => {
-        e.preventDefault();
-        if (recipe.id != null) {
-          this.toggleSelect(recipe.id);
-        }
-      } : nothing}
+          @contextmenu=${(e: MouseEvent) => this.onCardContextSelect(e, recipe.id)}
+          @click=${this.isSelectMode && recipe.id != null ? (e: Event) => { e.preventDefault(); this.toggleSelect(recipe.id); } : nothing}
         >
           ${this.isSelectMode && recipe.id != null ? html`
             <ion-checkbox
               slot="start"
+              color="secondary"
               .checked=${this.selectedIds.has(recipe.id)}
               @click=${(e: Event) => e.stopPropagation()}
-              @ionChange=${(e: CustomEvent) => {
-          e.stopPropagation();
-          if (recipe.id != null) {
-            this.toggleSelect(recipe.id);
-          }
-        }}
+              @ionChange=${(e: CustomEvent) => { e.stopPropagation(); this.toggleSelect(recipe.id); }}
             ></ion-checkbox>
           ` : nothing}
           <ion-thumbnail slot="start" class="preview">
@@ -455,12 +443,14 @@ export class PageSearch extends LitElement {
     this.selectedIds = new Set();
   }
 
-  toggleSelect(id: number) {
+  toggleSelect(recipeId: number | null | undefined) {
+    if (recipeId == null) return;
+
     const next = new Set(this.selectedIds);
-    if (next.has(id)) {
-      next.delete(id);
+    if (next.has(recipeId)) {
+      next.delete(recipeId);
     } else {
-      next.add(id);
+      next.add(recipeId);
     }
     this.selectedIds = next;
   }
@@ -483,10 +473,11 @@ export class PageSearch extends LitElement {
     }
   }
 
-  private onCardContextSelect(recipeId: number) {
-    if (!isAuthorized(this.userCtx?.user, AccessLevel.Editor)) {
+  private onCardContextSelect(e: Event, recipeId: number | null | undefined) {
+    if (!isAuthorized(this.userCtx?.user, AccessLevel.Editor) || recipeId == null) {
       return;
     }
+    e.preventDefault();
     this.enterSelectMode(recipeId);
   }
 

@@ -229,7 +229,7 @@ li>p {
   margin-bottom: 0;
 }
 
-ion-item:has(:focus-within)>ion-label {
+ion-item:not(.ignore-focus):has(:focus-within)>ion-label {
   --color: var(--ion-color-primary) !important;
   color: var(--ion-color-primary) !important;
 }
