@@ -13,7 +13,6 @@ import (
 	dbmock "github.com/chadweimer/gomp/mocks/db"
 	fileaccessmock "github.com/chadweimer/gomp/mocks/fileaccess"
 	"github.com/chadweimer/gomp/models"
-	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
 
@@ -464,9 +463,9 @@ func Test_BulkPatchRecipes(t *testing.T) {
 			name: "Success with valid IDs, state, and tags",
 			body: &BulkPatchRecipesJSONRequestBody{
 				Ids:        []int64{1, 2},
-				State:      lo.ToPtr(models.Archived),
-				AddTags:    lo.ToPtr([]string{"quick"}),
-				RemoveTags: lo.ToPtr([]string{"slow"}),
+				State:      new(models.Archived),
+				AddTags:    new([]string{"quick"}),
+				RemoveTags: new([]string{"slow"}),
 			},
 			dbError:          nil,
 			expectedError:    nil,
@@ -498,7 +497,7 @@ func Test_BulkPatchRecipes(t *testing.T) {
 			name: "Database error",
 			body: &BulkPatchRecipesJSONRequestBody{
 				Ids:   []int64{1},
-				State: lo.ToPtr(models.Active),
+				State: new(models.Active),
 			},
 			dbError:          sql.ErrConnDone,
 			expectedError:    sql.ErrConnDone,

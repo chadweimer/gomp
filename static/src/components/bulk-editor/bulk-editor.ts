@@ -61,7 +61,7 @@ export class BulkEditor extends LitElement {
         </ion-toolbar>
       </ion-header>
 
-      <ion-content class="ion-padding">
+      <ion-content>
         <ion-list lines="full">
           <ion-item lines="full">
             <ion-select

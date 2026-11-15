@@ -13,7 +13,6 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/chadweimer/gomp/models"
-	"github.com/samber/lo"
 	"go.uber.org/mock/gomock"
 )
 
@@ -500,7 +499,7 @@ func Test_Recipe_BulkPatch(t *testing.T) {
 
 		patch := &models.RecipeBulkPatch{
 			Ids:   []int64{1, 2},
-			State: lo.ToPtr(models.Archived),
+			State: new(models.Archived),
 		}
 		err := sut.Recipes().BulkPatch(t.Context(), patch)
 		if err != nil {
@@ -526,8 +525,8 @@ func Test_Recipe_BulkPatch(t *testing.T) {
 
 		patch := &models.RecipeBulkPatch{
 			Ids:        []int64{1, 2},
-			RemoveTags: lo.ToPtr([]string{"slow"}),
-			AddTags:    lo.ToPtr([]string{"quick"}),
+			RemoveTags: new([]string{"slow"}),
+			AddTags:    new([]string{"quick"}),
 		}
 		err := sut.Recipes().BulkPatch(t.Context(), patch)
 		if err != nil {
@@ -550,7 +549,7 @@ func Test_Recipe_BulkPatch(t *testing.T) {
 
 		patch := &models.RecipeBulkPatch{
 			Ids:   []int64{1},
-			State: lo.ToPtr(models.Archived),
+			State: new(models.Archived),
 		}
 		err := sut.Recipes().BulkPatch(t.Context(), patch)
 		if !errors.Is(err, sql.ErrConnDone) {
