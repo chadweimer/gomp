@@ -396,7 +396,7 @@ paths:
               type: integer
               format: int64
             minItems: 1
-            maxItems: 100
+            maxItems: 120
       responses:
         '204':
           description: No Content

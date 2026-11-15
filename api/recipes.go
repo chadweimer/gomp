@@ -9,6 +9,8 @@ import (
 	"github.com/chadweimer/gomp/models"
 )
 
+const maxBulkRecipes = 120
+
 func (h apiHandler) Find(ctx context.Context, request FindRequestObject) (FindResponseObject, error) {
 	params := request.Params
 	query := ""
@@ -170,7 +172,7 @@ func (h apiHandler) DeleteRecipe(ctx context.Context, request DeleteRecipeReques
 func (h apiHandler) BulkPatchRecipes(ctx context.Context, request BulkPatchRecipesRequestObject) (BulkPatchRecipesResponseObject, error) {
 	logger := infra.GetLoggerFromContext(ctx)
 
-	if request.Body == nil || len(request.Body.Ids) == 0 || len(request.Body.Ids) > 100 {
+	if request.Body == nil || len(request.Body.Ids) == 0 || len(request.Body.Ids) > maxBulkRecipes {
 		return BulkPatchRecipes400Response{}, nil
 	}
 
@@ -186,7 +188,7 @@ func (h apiHandler) BulkDeleteRecipes(ctx context.Context, request BulkDeleteRec
 	logger := infra.GetLoggerFromContext(ctx)
 
 	ids := request.Params.Ids
-	if len(ids) == 0 || len(ids) > 100 {
+	if len(ids) == 0 || len(ids) > maxBulkRecipes {
 		return BulkDeleteRecipes400Response{}, nil
 	}
 

@@ -34,7 +34,6 @@ This repository relies on a Dev Container for all development toolchains (Go, No
 - **Database Access**: Always access data via `db.Driver` interfaces; never couple API handlers to concrete DB drivers.
 - **API Handlers**: Implement generated strict handler methods returning generated response types.
 - **Targeted Edits**: Prefer minimal, targeted changes. Maintain existing package boundaries and avoid reformatting unrelated code.
-- **RESTful Resource Routing**: All API paths must consist strictly of NOUNs identifying resources or collections (e.g., `/recipes`, `/recipes/{recipeId}`, `/tags`). HTTP verbs (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`) dictate the actions. Never use verbs or action-based names in route paths (e.g., avoid `/recipes/delete-bulk`, `/recipes/{id}/archive`, or `/do-action`).
 - **Nullish Checks**: When checking if a value is defined (i.e. not `null` or `undefined`), always use `if (foo != null)` or `if (foo == null)` instead of falsy checks like `if (foo)` or `if (!foo)`. This prevents subtle bugs when values can be `0`, `""`, or `false`.
 
 ## Common Commands (Run via Dev Container)

@@ -222,7 +222,7 @@ components:
             type: integer
             format: int64
           minItems: 1
-          maxItems: 100
+          maxItems: 120
         state:
           $ref: '#/components/schemas/recipeState'
         addTags:

@@ -486,9 +486,9 @@ func Test_BulkPatchRecipes(t *testing.T) {
 			expectedResponse: BulkPatchRecipes400Response{},
 		},
 		{
-			name: "Too many IDs (> 100)",
+			name: fmt.Sprintf("Too many IDs (> %d)", maxBulkRecipes),
 			body: &BulkPatchRecipesJSONRequestBody{
-				Ids: make([]int64, 101),
+				Ids: make([]int64, maxBulkRecipes+1),
 			},
 			expectedError:    nil,
 			expectedResponse: BulkPatchRecipes400Response{},
@@ -511,7 +511,7 @@ func Test_BulkPatchRecipes(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
-			if test.body != nil && len(test.body.Ids) > 0 && len(test.body.Ids) <= 100 {
+			if test.body != nil && len(test.body.Ids) > 0 && len(test.body.Ids) <= maxBulkRecipes {
 				recipesDriver.EXPECT().BulkPatch(t.Context(), test.body).Return(test.dbError)
 			}
 
@@ -570,8 +570,8 @@ func Test_BulkDeleteRecipes(t *testing.T) {
 			expectedResponse: BulkDeleteRecipes400Response{},
 		},
 		{
-			name:             "Too many IDs (> 100)",
-			ids:              make([]int64, 101),
+			name:             fmt.Sprintf("Too many IDs (> %d)", maxBulkRecipes),
+			ids:              make([]int64, maxBulkRecipes+1),
 			expectedError:    nil,
 			expectedResponse: BulkDeleteRecipes400Response{},
 		},
@@ -590,7 +590,7 @@ func Test_BulkDeleteRecipes(t *testing.T) {
 			defer ctrl.Finish()
 
 			api, recipesDriver, uplDriver := getMockRecipesAPI(ctrl)
-			if len(test.ids) > 0 && len(test.ids) <= 100 {
+			if len(test.ids) > 0 && len(test.ids) <= maxBulkRecipes {
 				recipesDriver.EXPECT().BulkDelete(t.Context(), test.ids).Return(test.dbError)
 				if test.dbError == nil {
 					for range test.ids {
