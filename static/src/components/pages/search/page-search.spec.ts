@@ -337,28 +337,22 @@ describe('page-search', () => {
   });
 
   describe('Suite 2: Access Control & Create Recipe FAB', () => {
-    it('hides create recipe FAB for unauthenticated or Viewer users', async () => {
-      mockUserCtx.user = undefined;
-      const rootNoUser = await createSearchPage();
-      await rootNoUser.updateComplete;
-      expect(rootNoUser.querySelector('ion-fab')).toBeNull();
+    it.each([
+      { role: 'unauthenticated', user: undefined, description: 'hides', visible: false },
+      { role: 'Viewer', user: { id: 1, username: 'viewer', accessLevel: AccessLevel.Viewer }, description: 'hides', visible: false },
+      { role: 'Editor', user: { id: 2, username: 'editor', accessLevel: AccessLevel.Editor }, description: 'shows', visible: true },
+      { role: 'Admin', user: { id: 3, username: 'admin', accessLevel: AccessLevel.Admin }, description: 'shows', visible: true },
+    ])('$description create recipe FAB for $role users', async ({ user, visible }) => {
+      mockUserCtx.user = user;
+      const root = await createSearchPage();
+      await root.updateComplete;
 
-      mockUserCtx.user = { id: 1, username: 'viewer', accessLevel: AccessLevel.Viewer };
-      const rootViewer = await createSearchPage();
-      await rootViewer.updateComplete;
-      expect(rootViewer.querySelector('ion-fab')).toBeNull();
-    });
-
-    it('shows create recipe FAB for Editor and Admin users', async () => {
-      mockUserCtx.user = { id: 2, username: 'editor', accessLevel: AccessLevel.Editor };
-      const rootEditor = await createSearchPage();
-      await rootEditor.updateComplete;
-      expect(rootEditor.querySelector('ion-fab')).not.toBeNull();
-
-      mockUserCtx.user = { id: 3, username: 'admin', accessLevel: AccessLevel.Admin };
-      const rootAdmin = await createSearchPage();
-      await rootAdmin.updateComplete;
-      expect(rootAdmin.querySelector('ion-fab')).not.toBeNull();
+      const fab = root.querySelector('ion-fab');
+      if (visible) {
+        expect(fab).not.toBeNull();
+      } else {
+        expect(fab).toBeNull();
+      }
     });
 
     it('creates new recipe without image and redirects to recipe page', async () => {
@@ -581,34 +575,17 @@ describe('page-search', () => {
   });
 
   describe('Suite 3: Filter, Sort & Pagination Controls', () => {
-    it('formats recipe states button text correctly for each combination', async () => {
-      // 1. Both Active and Archived -> 'All'
-      mockSearchCtx.filter = { ...mockSearchCtx.filter, states: [RecipeState.Active, RecipeState.Archived] };
-      const rootAll = await createSearchPage();
-      await rootAll.updateComplete;
-      const btnAll = rootAll.querySelectorAll('ion-header ion-button')[0];
-      expect(btnAll?.textContent?.trim()).toBe('All');
-
-      // 2. Active only -> 'Active'
-      mockSearchCtx.filter = { ...mockSearchCtx.filter, states: [RecipeState.Active] };
-      const rootActive = await createSearchPage();
-      await rootActive.updateComplete;
-      const btnActive = rootActive.querySelectorAll('ion-header ion-button')[0];
-      expect(btnActive?.textContent?.trim()).toBe('Active');
-
-      // 3. Archived only -> 'Archived'
-      mockSearchCtx.filter = { ...mockSearchCtx.filter, states: [RecipeState.Archived] };
-      const rootArchived = await createSearchPage();
-      await rootArchived.updateComplete;
-      const btnArchived = rootArchived.querySelectorAll('ion-header ion-button')[0];
-      expect(btnArchived?.textContent?.trim()).toBe('Archived');
-
-      // 4. Neither -> 'All'
-      mockSearchCtx.filter = { ...mockSearchCtx.filter, states: [] };
-      const rootEmpty = await createSearchPage();
-      await rootEmpty.updateComplete;
-      const btnEmpty = rootEmpty.querySelectorAll('ion-header ion-button')[0];
-      expect(btnEmpty?.textContent?.trim()).toBe('All');
+    it.each([
+      { statesDescription: 'Both Active and Archived', states: [RecipeState.Active, RecipeState.Archived], expectedText: 'All' },
+      { statesDescription: 'Active only', states: [RecipeState.Active], expectedText: 'Active' },
+      { statesDescription: 'Archived only', states: [RecipeState.Archived], expectedText: 'Archived' },
+      { statesDescription: 'Neither', states: [], expectedText: 'All' },
+    ])('formats recipe states button text correctly for $statesDescription', async ({ states, expectedText }) => {
+      mockSearchCtx.filter = { ...mockSearchCtx.filter, states };
+      const root = await createSearchPage();
+      await root.updateComplete;
+      const btn = root.querySelectorAll('ion-header ion-button')[0];
+      expect(btn?.textContent?.trim()).toBe(expectedText);
     });
 
     it('renders states filter popover and updates state on item click', async () => {

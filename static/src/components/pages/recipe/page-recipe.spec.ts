@@ -1290,49 +1290,34 @@ describe('page-recipe', () => {
       expect(buttonTexts).not.toContain('Archive');
     });
 
-    it('handles clicking each popover menu item', async () => {
+    it.each([
+      { action: 'Print', expected: { print: true } },
+      { action: 'Delete', expected: { alertHeader: 'Delete Recipe?' } },
+      { action: 'Archive', expected: { alertHeader: 'Archive Recipe?' } },
+      { action: 'Add Link', expected: { modalComponent: 'recipe-link-editor' } },
+      { action: 'Upload Picture', expected: { modalComponent: 'file-upload-browser' } },
+      { action: 'Add Note', expected: { modalComponent: 'note-editor' } },
+      { action: 'Edit', expected: { modalComponent: 'recipe-editor' } },
+    ])('handles clicking popover menu item "$action"', async ({ action, expected }) => {
       mockUserCtx.user = { id: 1, username: 'editor', accessLevel: AccessLevel.Editor };
 
-      const actions = ['Print', 'Delete', 'Archive', 'Add Link', 'Upload Picture', 'Add Note', 'Edit'] as const;
+      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
+      const createModalSpy = vi.spyOn(modalController, 'create').mockResolvedValue(mockModal(null));
+      const printSpy = vi.spyOn(window, 'print').mockImplementation(() => { });
 
-      for (const action of actions) {
-        const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('cancel'));
-        const createModalSpy = vi.spyOn(modalController, 'create').mockResolvedValue(mockModal(null));
-        const printSpy = vi.spyOn(window, 'print').mockImplementation(() => { });
+      const root = await createRecipePage(1);
 
-        const root = await createRecipePage(1);
+      const menuItem = getPopoverMenuItem(root, action);
+      expect(menuItem).not.toBeUndefined();
+      menuItem?.click();
+      await root.updateComplete;
 
-        const menuItem = getPopoverMenuItem(root, action);
-        expect(menuItem).not.toBeUndefined();
-        menuItem?.click();
-        await root.updateComplete;
-
-        switch (action) {
-          case 'Print':
-            expect(printSpy).toHaveBeenCalled();
-            break;
-          case 'Delete':
-            expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Delete Recipe?' }));
-            break;
-          case 'Archive':
-            expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Archive Recipe?' }));
-            break;
-          case 'Add Link':
-            expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: 'recipe-link-editor' }));
-            break;
-          case 'Upload Picture':
-            expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: 'file-upload-browser' }));
-            break;
-          case 'Add Note':
-            expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: 'note-editor' }));
-            break;
-          case 'Edit':
-            expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: 'recipe-editor' }));
-            break;
-        }
-
-        vi.restoreAllMocks();
-        setupDefaultFetchMock();
+      if (expected.print) {
+        expect(printSpy).toHaveBeenCalled();
+      } else if (expected.alertHeader) {
+        expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: expected.alertHeader }));
+      } else if (expected.modalComponent) {
+        expect(createModalSpy).toHaveBeenCalledWith(expect.objectContaining({ component: expected.modalComponent }));
       }
     });
 

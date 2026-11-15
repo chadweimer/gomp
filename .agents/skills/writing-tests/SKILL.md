@@ -50,6 +50,26 @@ Use this guide for component tests under `static/src/components/**/*.spec.ts`.
   - Clean up any manually mounted DOM elements (e.g., mock router) in `afterEach`.
 - Always use specific matchers (e.g., `toHaveLength`, `toBeNull`, `toBeDefined`, `toContain`, etc) instead of generic assertions like `expect(x).toBe(y)`.
 
+### Parameterized Tests (`it.each`)
+- **Avoid duplicate test cases**: When testing multiple similar inputs, event types, or branches with identical test setup and assertion logic (e.g., `'touchend'`, `'touchcancel'`, `'touchmove'`), always parameterize the test with `it.each` rather than writing duplicate `it(...)` blocks. SonarQube flags repetitive test blocks that only differ by parameters/events and requires them to be parameterized:
+  ```ts
+  it.each(['touchend', 'touchcancel', 'touchmove'])(
+    'cancels long-press when %s occurs before 500ms',
+    async (eventName) => {
+      // test logic using eventName
+    }
+  );
+  ```
+  For multi-parameter cases, pass arrays of objects or tuples:
+  ```ts
+  it.each([
+    { input: 'val1', expected: true },
+    { input: 'val2', expected: false },
+  ])('evaluates $input to $expected', async ({ input, expected }) => {
+    // test logic
+  });
+  ```
+
 ### Mocking HTTP Requests (`fetchMocker`)
 - Import `fetchMocker` from relative path to `vitest.setup.ts`.
 - Mock responses matching `req.url` (regex) and `req.method`:
@@ -131,6 +151,7 @@ Use this guide for component tests under `static/src/components/**/*.spec.ts`.
 - Avoid `as any` or `@typescript-eslint/no-unsafe-*` violations.
 - Avoid passing unbound object methods into `expect()`.
 - Cast overlay messages when asserting strings: `expect(alertOptions.message as string).toContain('...');` to satisfy `@typescript-eslint/no-base-to-string`.
+- Parameterize repetitive tests with `it.each` to satisfy SonarQube's rule against duplicate test cases.
 
 ## For All Types
 
