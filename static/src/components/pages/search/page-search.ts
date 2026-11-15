@@ -98,7 +98,7 @@ export class PageSearch extends LitElement {
     const renderRecipeItem = (recipe: RecipeCompact) => html`
       <ion-col size="12" size-md="6" size-lg="4" size-xl="3">
         <ion-item
-          class=${classMap({ 'recipe-item': true, 'ignore-focus': true, 'selected': recipe.id != null && this.selectedIds.has(recipe.id) })}
+          class=${classMap({ 'recipe-item': true, 'ignore-focus': true, 'selection-mode': this.isSelectMode, 'selected': recipe.id != null && this.selectedIds.has(recipe.id) })}
           href=${ifDefined(this.isSelectMode || recipe.id == null ? undefined : `/recipes/${recipe.id}`)}
           title=${ifDefined(recipe.name)}
           @contextmenu=${(e: MouseEvent) => this.onCardContextSelect(e, recipe.id)}

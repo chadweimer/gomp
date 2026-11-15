@@ -71,12 +71,16 @@ export class RecipeCard extends LitElement {
         left: -9999px;
       }
 
-      .card {
+      ion-card {
         margin: var(--ion-margin, 8px);
         transition: outline 0.15s ease-in-out;
       }
 
-      .card.selected {
+      ion-card.selection-mode:not(.selected) {
+        opacity: 0.7;
+      }
+
+      ion-card.selected {
         outline: 4px solid var(--ion-color-secondary);
       }
 
@@ -159,7 +163,7 @@ export class RecipeCard extends LitElement {
 
     return html`
       <ion-card
-        class=${classMap({ card: true, selected: this.isSelected })}
+        class=${classMap({ 'selection-mode': this.isSelectMode, 'selected': this.isSelected })}
         href=${ifDefined(this.isSelectMode || this.recipe?.id == null ? undefined : `/recipes/${this.recipe?.id}`)}
         @click=${(e: MouseEvent) => this.onCardClick(e)}
         @contextmenu=${(e: MouseEvent) => this.onContextMenu(e)}

@@ -5,3 +5,7 @@ page-search {
 page-search .recipe-item.selected {
   border-inline-end: 4px solid var(--ion-color-secondary);
 }
+
+page-search .recipe-item.selection-mode:not(.selected) {
+  opacity: 0.7;
+}
