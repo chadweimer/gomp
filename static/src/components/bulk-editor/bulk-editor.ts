@@ -63,7 +63,7 @@ export class BulkEditor extends LitElement {
 
       <ion-content>
         <ion-list lines="full">
-          <ion-item lines="full">
+          <ion-item>
             <ion-select
               label="State"
               label-placement="stacked"
