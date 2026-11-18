@@ -116,6 +116,8 @@ describe('page-login', () => {
       expect(requests[0].url).toContain('/auth');
 
       expect(mockUserCtx.user).toEqual(mockUser);
+      expect(usernameInput?.value).toBe('');
+      expect(passwordInput?.value).toBe('');
       expect(routerEl.push).toHaveBeenCalledWith('/');
     });
 
@@ -242,6 +244,8 @@ describe('page-login', () => {
 
       expect(el.renderRoot.querySelector('ion-text[color="danger"]')?.textContent?.trim()).toBeFalsy();
       expect(mockUserCtx.user).toEqual(mockUser);
+      expect(usernameInput?.value).toBe('');
+      expect(passwordInput?.value).toBe('');
       expect(routerEl.push).toHaveBeenCalledWith('/');
     });
   });

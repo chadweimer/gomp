@@ -68,11 +68,11 @@ export class BulkEditor extends LitElement {
               label="State"
               label-placement="stacked"
               interface="popover"
-              .value=${this.state}
+              .value=${this.state ?? ''}
               placeholder="No change"
-              @ionChange=${(e: SelectCustomEvent<RecipeState | undefined>) => (this.state = e.detail.value)}
+              @ionChange=${(e: SelectCustomEvent<RecipeState | '' | undefined>) => (this.state = e.detail.value != null && e.detail.value !== '' ? e.detail.value : undefined)}
             >
-              <ion-select-option .value=${undefined}>No change</ion-select-option>
+              <ion-select-option value="">No change</ion-select-option>
               <ion-select-option .value=${RecipeState.Active}>Active</ion-select-option>
               <ion-select-option .value=${RecipeState.Archived}>Archived</ion-select-option>
             </ion-select>
