@@ -971,6 +971,58 @@ describe('page-search', () => {
       expect(root.isSelectMode).toBe(false);
     });
 
+    it('populates recipeTags in bulk editor with unique union of tags from selected recipes', async () => {
+      mockSearchCtx.results = [
+        {
+          id: 1,
+          name: 'Pancakes',
+          state: RecipeState.Active,
+          rating: 4.5,
+          mainImageName: 'pancakes.jpg',
+          tags: ['breakfast', 'sweet'],
+        },
+        {
+          id: 2,
+          name: 'Bacon',
+          state: RecipeState.Active,
+          rating: 4.0,
+          mainImageName: '',
+          tags: ['breakfast', 'savory'],
+        },
+        {
+          id: 3,
+          name: 'Salad',
+          state: RecipeState.Active,
+          rating: 3.5,
+          mainImageName: '',
+          tags: ['lunch'],
+        },
+      ];
+
+      const modalCreateSpy = vi.spyOn(modalController, 'create').mockResolvedValue(mockModal(undefined, 'cancel'));
+
+      const root = await createSearchPage();
+      root.enterSelectMode(1);
+      root.toggleSelect(2);
+      await root.updateComplete;
+
+      const editBtn = Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-header ion-button'))
+        .find((b) => b.textContent?.includes('Edit'));
+      expect(editBtn).not.toBeNull();
+
+      editBtn!.click();
+      await new Promise((resolve) => setTimeout(resolve, 20));
+
+      expect(modalCreateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          component: 'bulk-editor',
+        })
+      );
+      const callArgs = modalCreateSpy.mock.calls[0]?.[0] as { componentProps?: { count?: number; recipeTags?: string[] } } | undefined;
+      expect(callArgs?.componentProps?.count).toBe(2);
+      expect(callArgs?.componentProps?.recipeTags).toEqual(['breakfast', 'savory', 'sweet']);
+    });
+
     it('does nothing when edit modal is cancelled', async () => {
       vi.spyOn(modalController, 'create').mockResolvedValue(mockModal(undefined, 'cancel'));
 

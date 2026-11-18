@@ -40,6 +40,7 @@ export class PageSearch extends LitElement {
   @state() isSelectMode: boolean = false;
   @state() selectedIds: Set<number> = new Set();
   @state() private currentUserSettings: UserSettings | null = null;
+  private selectedRecipes: Map<number, RecipeCompact> = new Map();
 
   @query('ion-content') private readonly content?: HTMLIonContentElement;
   private gesture: Gesture | null = null;
@@ -438,11 +439,19 @@ export class PageSearch extends LitElement {
   enterSelectMode(initialId?: number) {
     this.isSelectMode = true;
     this.selectedIds = new Set(initialId != null ? [initialId] : []);
+    this.selectedRecipes.clear();
+    if (initialId != null) {
+      const recipe = this.searchCtx?.results?.find(r => r.id === initialId);
+      if (recipe != null) {
+        this.selectedRecipes.set(initialId, recipe);
+      }
+    }
   }
 
   exitSelectMode() {
     this.isSelectMode = false;
     this.selectedIds = new Set();
+    this.selectedRecipes.clear();
   }
 
   toggleSelect(recipeId: number | null | undefined) {
@@ -451,8 +460,13 @@ export class PageSearch extends LitElement {
     const next = new Set(this.selectedIds);
     if (next.has(recipeId)) {
       next.delete(recipeId);
+      this.selectedRecipes.delete(recipeId);
     } else {
       next.add(recipeId);
+      const recipe = this.searchCtx?.results?.find(r => r.id === recipeId);
+      if (recipe != null) {
+        this.selectedRecipes.set(recipeId, recipe);
+      }
     }
     this.selectedIds = next;
   }
@@ -460,19 +474,19 @@ export class PageSearch extends LitElement {
   toggleSelectAll() {
     const currentRecipes = (this.searchCtx?.results ?? []).filter((r): r is RecipeCompact & { id: number } => r.id != null);
     const allSelected = currentRecipes.length > 0 && currentRecipes.every(r => this.selectedIds.has(r.id));
+    const next = new Set(this.selectedIds);
     if (allSelected) {
-      const next = new Set(this.selectedIds);
       for (const r of currentRecipes) {
         next.delete(r.id);
+        this.selectedRecipes.delete(r.id);
       }
-      this.selectedIds = next;
     } else {
-      const next = new Set(this.selectedIds);
       for (const r of currentRecipes) {
         next.add(r.id);
+        this.selectedRecipes.set(r.id, r);
       }
-      this.selectedIds = next;
     }
+    this.selectedIds = next;
   }
 
   private onCardContextSelect(e: Event, recipeId: number | null | undefined) {
@@ -481,6 +495,19 @@ export class PageSearch extends LitElement {
     }
     e.preventDefault();
     this.enterSelectMode(recipeId);
+  }
+
+  private getSelectedRecipeTags(): string[] {
+    const tags = new Set<string>();
+    for (const id of this.selectedIds) {
+      const recipe = this.selectedRecipes.get(id) ?? this.searchCtx?.results?.find(r => r.id === id);
+      if (recipe?.tags != null) {
+        for (const tag of recipe.tags) {
+          tags.add(tag);
+        }
+      }
+    }
+    return Array.from(tags).sort((a, b) => a.localeCompare(b));
   }
 
   private async onBulkEdit() {
@@ -492,6 +519,7 @@ export class PageSearch extends LitElement {
       componentProps: {
         count: this.selectedIds.size,
         favoriteTags: this.currentUserSettings?.favoriteTags ?? [],
+        recipeTags: this.getSelectedRecipeTags(),
       },
     });
 

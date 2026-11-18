@@ -25,6 +25,7 @@ export class BulkEditor extends LitElement {
 
   @property({ type: Number }) count: number = 0;
   @property({ type: Array }) favoriteTags: string[] = [];
+  @property({ type: Array }) recipeTags: string[] = [];
 
   @state() private state?: RecipeState;
   @state() private addTags: string[] = [];
@@ -93,7 +94,7 @@ export class BulkEditor extends LitElement {
             <ion-label position="stacked">Tags to Remove</ion-label>
             <tags-input
               .value=${this.removeTags}
-              .suggestions=${this.favoriteTags}
+              .suggestions=${this.recipeTags}
               @valueChanged=${(e: CustomEvent<string[]>) => (this.removeTags = e.detail)}
             >
               <ion-input enterkeyhint="enter"></ion-input>

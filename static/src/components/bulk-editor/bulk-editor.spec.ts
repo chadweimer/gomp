@@ -20,10 +20,10 @@ describe('bulk-editor', () => {
     return modal.canDismiss;
   }
 
-  async function createEditor(count = 5) {
+  async function createEditor(count = 5, favoriteTags = ['quick', 'dinner'], recipeTags = ['chicken', 'baked']) {
     const modal = await fixture<HTMLIonModalElement>(html`
       <ion-modal>
-        <bulk-editor .count=${count} .favoriteTags=${['quick', 'dinner']}></bulk-editor>
+        <bulk-editor .count=${count} .favoriteTags=${favoriteTags} .recipeTags=${recipeTags}></bulk-editor>
       </ion-modal>
     `);
     modal.dismiss = vi.fn().mockResolvedValue(true);
@@ -48,6 +48,15 @@ describe('bulk-editor', () => {
     expect(select).not.toBeNull();
     const options = select?.querySelectorAll('ion-select-option');
     expect(options).toHaveLength(3);
+  });
+
+  it('populates tag suggestions with favoriteTags for add and recipeTags for remove', async () => {
+    const { el } = await createEditor(3, ['fav1', 'fav2'], ['rec1', 'rec2']);
+    const tagsInputs = el.renderRoot.querySelectorAll('tags-input');
+    expect(tagsInputs).toHaveLength(2);
+
+    expect(tagsInputs[0].suggestions).toEqual(['fav1', 'fav2']);
+    expect(tagsInputs[1].suggestions).toEqual(['rec1', 'rec2']);
   });
 
   it('dismisses modal on cancel', async () => {
