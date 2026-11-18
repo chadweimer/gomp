@@ -848,6 +848,45 @@ describe('page-search', () => {
       expect(root.selectedIds.size).toBe(0);
     });
 
+    it('remounts popover menus and preserves interactions after entering and exiting select mode', async () => {
+      mockSearchCtx.filter = { ...mockSearchCtx.filter, states: [RecipeState.Active] };
+
+      const root = await createSearchPage();
+      await root.updateComplete;
+
+      expect(root.renderRoot.querySelector('ion-popover[trigger="states-menu"]')).not.toBeNull();
+      expect(root.renderRoot.querySelector('ion-popover[trigger="sort-menu"]')).not.toBeNull();
+      expect(root.renderRoot.querySelector('ion-popover[trigger="results-per-page-menu"]')).not.toBeNull();
+
+      root.enterSelectMode();
+      await root.updateComplete;
+
+      expect(root.isSelectMode).toBe(true);
+      expect(root.renderRoot.querySelector('ion-popover[trigger="states-menu"]')).toBeNull();
+      expect(root.renderRoot.querySelector('ion-popover[trigger="sort-menu"]')).toBeNull();
+      expect(root.renderRoot.querySelector('ion-popover[trigger="results-per-page-menu"]')).toBeNull();
+
+      root.exitSelectMode();
+      await root.updateComplete;
+
+      expect(root.isSelectMode).toBe(false);
+      expect(root.renderRoot.querySelector('#states-menu')).not.toBeNull();
+      expect(root.renderRoot.querySelector('#sort-menu')).not.toBeNull();
+      expect(root.renderRoot.querySelector('#results-per-page-menu')).not.toBeNull();
+
+      const statesPopover = root.renderRoot.querySelector<HTMLIonPopoverElement>('ion-popover[trigger="states-menu"]');
+      expect(statesPopover).not.toBeNull();
+      expect(root.renderRoot.querySelector('ion-popover[trigger="sort-menu"]')).not.toBeNull();
+      expect(root.renderRoot.querySelector('ion-popover[trigger="results-per-page-menu"]')).not.toBeNull();
+
+      const items = statesPopover?.querySelectorAll<HTMLIonItemElement>('ion-item');
+      expect(items).toHaveLength(3);
+      items?.[1].click();
+      await root.updateComplete;
+
+      expect(mockSearchCtx.filter.states).toEqual([RecipeState.Archived]);
+    });
+
     it('enters select mode when recipe card emits card-context-select', async () => {
       const root = await createSearchPage();
       await root.updateComplete;

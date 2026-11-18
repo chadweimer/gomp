@@ -254,61 +254,63 @@ export class PageSearch extends LitElement {
           ></page-navigator>
         </ion-toolbar>
       </ion-footer>
-      <ion-popover trigger="states-menu" dismiss-on-select>
-        <ion-list lines="none">
-          <ion-item
-            button
-            color=${ifDefined(states.length === 1 && states.includes(RecipeState.Active) ? 'secondary' : undefined)}
-            @click=${() => this.setRecipeStates([RecipeState.Active])}
-          >
-            <app-icon slot="start" name="select_check_box"></app-icon>
-            Active
-          </ion-item>
-          <ion-item
-            button
-            color=${ifDefined(states.length === 1 && states.includes(RecipeState.Archived) ? 'secondary' : undefined)}
-            @click=${() => this.setRecipeStates([RecipeState.Archived])}
-          >
-            <app-icon slot="start" name="archive"></app-icon>
-            Archived
-          </ion-item>
-          <ion-item
-            button
-            color=${ifDefined(states.length === 0 || (states.includes(RecipeState.Active) && states.includes(RecipeState.Archived)) ? 'secondary' : undefined)}
-            @click=${() => this.setRecipeStates([RecipeState.Active, RecipeState.Archived])}
-          >
-            <app-icon slot="start" name="done_all"></app-icon>
-            All
-          </ion-item>
-        </ion-list>
-      </ion-popover>
-      <ion-popover trigger="sort-menu" dismiss-on-select>
-        <ion-list lines="none">
-        ${Object.keys(SortBy).map((item) => html`
-          <ion-item
-            button
-            color=${ifDefined(sortBy === SortBy[item as keyof typeof SortBy] ? 'secondary' : undefined)}
-            @click=${() => this.setSortBy(SortBy[item as keyof typeof SortBy])}
-          >
-            <app-icon slot="start" name=${this.getSortByIcon(SortBy[item as keyof typeof SortBy])}></app-icon>
-            ${insertSpacesBetweenWords(item)}
-          </ion-item>
-        `)}
-        </ion-list>
-      </ion-popover>
-      <ion-popover trigger="results-per-page-menu" dismiss-on-select>
-        <ion-list lines="none">
-          ${DEFAULT_RESULTS_PER_PAGE_OPTIONS.map(item => html`
+      ${!this.isSelectMode ? html`
+        <ion-popover trigger="states-menu" dismiss-on-select>
+          <ion-list lines="none">
             <ion-item
               button
-              color=${ifDefined(resultsPerPage === item ? 'secondary' : undefined)}
-              @click=${() => this.searchCtx?.setResultsPerPage(item)}
+              color=${ifDefined(states.length === 1 && states.includes(RecipeState.Active) ? 'secondary' : undefined)}
+              @click=${() => this.setRecipeStates([RecipeState.Active])}
             >
-              ${item}
+              <app-icon slot="start" name="select_check_box"></app-icon>
+              Active
+            </ion-item>
+            <ion-item
+              button
+              color=${ifDefined(states.length === 1 && states.includes(RecipeState.Archived) ? 'secondary' : undefined)}
+              @click=${() => this.setRecipeStates([RecipeState.Archived])}
+            >
+              <app-icon slot="start" name="archive"></app-icon>
+              Archived
+            </ion-item>
+            <ion-item
+              button
+              color=${ifDefined(states.length === 0 || (states.includes(RecipeState.Active) && states.includes(RecipeState.Archived)) ? 'secondary' : undefined)}
+              @click=${() => this.setRecipeStates([RecipeState.Active, RecipeState.Archived])}
+            >
+              <app-icon slot="start" name="done_all"></app-icon>
+              All
+            </ion-item>
+          </ion-list>
+        </ion-popover>
+        <ion-popover trigger="sort-menu" dismiss-on-select>
+          <ion-list lines="none">
+          ${Object.keys(SortBy).map((item) => html`
+            <ion-item
+              button
+              color=${ifDefined(sortBy === SortBy[item as keyof typeof SortBy] ? 'secondary' : undefined)}
+              @click=${() => this.setSortBy(SortBy[item as keyof typeof SortBy])}
+            >
+              <app-icon slot="start" name=${this.getSortByIcon(SortBy[item as keyof typeof SortBy])}></app-icon>
+              ${insertSpacesBetweenWords(item)}
             </ion-item>
           `)}
-        </ion-list>
-    </ion-popover>
+          </ion-list>
+        </ion-popover>
+        <ion-popover trigger="results-per-page-menu" dismiss-on-select>
+          <ion-list lines="none">
+            ${DEFAULT_RESULTS_PER_PAGE_OPTIONS.map(item => html`
+              <ion-item
+                button
+                color=${ifDefined(resultsPerPage === item ? 'secondary' : undefined)}
+                @click=${() => this.searchCtx?.setResultsPerPage(item)}
+              >
+                ${item}
+              </ion-item>
+            `)}
+          </ion-list>
+        </ion-popover>
+      ` : nothing}
     `;
   }
 
