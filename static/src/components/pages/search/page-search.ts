@@ -40,7 +40,7 @@ export class PageSearch extends LitElement {
   @state() isSelectMode: boolean = false;
   @state() selectedIds: Set<number> = new Set();
   @state() private currentUserSettings: UserSettings | null = null;
-  private selectedRecipes: Map<number, RecipeCompact> = new Map();
+  private readonly selectedRecipes: Map<number, RecipeCompact> = new Map();
 
   @query('ion-content') private readonly content?: HTMLIonContentElement;
   private gesture: Gesture | null = null;
