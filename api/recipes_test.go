@@ -375,6 +375,7 @@ func Test_DeleteRecipe(t *testing.T) {
 		name             string
 		recipeID         int64
 		dbError          error
+		uplError         error
 		expectedError    error
 		expectedResponse DeleteRecipeResponseObject
 	}
@@ -385,6 +386,14 @@ func Test_DeleteRecipe(t *testing.T) {
 			name:             "Recipe exists",
 			recipeID:         1,
 			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: DeleteRecipe204Response{},
+		},
+		{
+			name:             "Recipe exists with upload delete error (best effort)",
+			recipeID:         1,
+			dbError:          nil,
+			uplError:         errors.New("disk failure"),
 			expectedError:    nil,
 			expectedResponse: DeleteRecipe204Response{},
 		},
@@ -413,7 +422,7 @@ func Test_DeleteRecipe(t *testing.T) {
 				recipesDriver.EXPECT().Delete(t.Context(), gomock.Any()).Return(test.dbError)
 			} else {
 				recipesDriver.EXPECT().Delete(t.Context(), test.recipeID).Return(nil)
-				uplDriver.EXPECT().DeleteAll(gomock.Any()).Return(nil)
+				uplDriver.EXPECT().DeleteAll(gomock.Any()).Return(test.uplError)
 			}
 
 			// Act
@@ -430,6 +439,180 @@ func Test_DeleteRecipe(t *testing.T) {
 					}
 				case DeleteRecipe404Response:
 					if _, ok := resp.(DeleteRecipe404Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Errorf("unexpected response type %T", resp)
+				}
+			}
+		})
+	}
+}
+
+func Test_BulkPatchRecipes(t *testing.T) {
+	type testArgs struct {
+		name             string
+		body             *BulkPatchRecipesJSONRequestBody
+		dbError          error
+		expectedError    error
+		expectedResponse BulkPatchRecipesResponseObject
+	}
+
+	tests := []testArgs{
+		{
+			name: "Success with valid IDs, state, and tags",
+			body: &BulkPatchRecipesJSONRequestBody{
+				Ids:        []int64{1, 2},
+				State:      new(models.Archived),
+				AddTags:    new([]string{"quick"}),
+				RemoveTags: new([]string{"slow"}),
+			},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: BulkPatchRecipes204Response{},
+		},
+		{
+			name:             "Nil body",
+			body:             nil,
+			expectedError:    nil,
+			expectedResponse: BulkPatchRecipes400Response{},
+		},
+		{
+			name: "Empty IDs list",
+			body: &BulkPatchRecipesJSONRequestBody{
+				Ids: []int64{},
+			},
+			expectedError:    nil,
+			expectedResponse: BulkPatchRecipes400Response{},
+		},
+		{
+			name: fmt.Sprintf("Too many IDs (> %d)", maxBulkRecipes),
+			body: &BulkPatchRecipesJSONRequestBody{
+				Ids: make([]int64, maxBulkRecipes+1),
+			},
+			expectedError:    nil,
+			expectedResponse: BulkPatchRecipes400Response{},
+		},
+		{
+			name: "Database error",
+			body: &BulkPatchRecipesJSONRequestBody{
+				Ids:   []int64{1},
+				State: new(models.Active),
+			},
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			api, recipesDriver, _ := getMockRecipesAPI(ctrl)
+			if test.body != nil && len(test.body.Ids) > 0 && len(test.body.Ids) <= maxBulkRecipes {
+				recipesDriver.EXPECT().BulkPatch(t.Context(), test.body).Return(test.dbError)
+			}
+
+			resp, err := api.BulkPatchRecipes(t.Context(), BulkPatchRecipesRequestObject{Body: test.body})
+
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error '%v'", test.expectedError, err)
+			} else if err == nil {
+				switch test.expectedResponse.(type) {
+				case BulkPatchRecipes204Response:
+					if _, ok := resp.(BulkPatchRecipes204Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case BulkPatchRecipes400Response:
+					if _, ok := resp.(BulkPatchRecipes400Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				default:
+					t.Errorf("unexpected response type %T", resp)
+				}
+			}
+		})
+	}
+}
+
+func Test_BulkDeleteRecipes(t *testing.T) {
+	type testArgs struct {
+		name             string
+		ids              []int64
+		dbError          error
+		uplError         error
+		expectedError    error
+		expectedResponse BulkDeleteRecipesResponseObject
+	}
+
+	tests := []testArgs{
+		{
+			name:             "Success with valid IDs",
+			ids:              []int64{1, 2},
+			dbError:          nil,
+			expectedError:    nil,
+			expectedResponse: BulkDeleteRecipes204Response{},
+		},
+		{
+			name:             "Success with file upload error (best-effort)",
+			ids:              []int64{1},
+			dbError:          nil,
+			uplError:         errors.New("disk failed"),
+			expectedError:    nil,
+			expectedResponse: BulkDeleteRecipes204Response{},
+		},
+		{
+			name:             "Empty IDs",
+			ids:              []int64{},
+			expectedError:    nil,
+			expectedResponse: BulkDeleteRecipes400Response{},
+		},
+		{
+			name:             fmt.Sprintf("Too many IDs (> %d)", maxBulkRecipes),
+			ids:              make([]int64, maxBulkRecipes+1),
+			expectedError:    nil,
+			expectedResponse: BulkDeleteRecipes400Response{},
+		},
+		{
+			name:             "Database error",
+			ids:              []int64{1, 2},
+			dbError:          sql.ErrConnDone,
+			expectedError:    sql.ErrConnDone,
+			expectedResponse: nil,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			api, recipesDriver, uplDriver := getMockRecipesAPI(ctrl)
+			if len(test.ids) > 0 && len(test.ids) <= maxBulkRecipes {
+				recipesDriver.EXPECT().BulkDelete(t.Context(), test.ids).Return(test.dbError)
+				if test.dbError == nil {
+					for range test.ids {
+						uplDriver.EXPECT().DeleteAll(gomock.Any()).Return(test.uplError)
+					}
+				}
+			}
+
+			resp, err := api.BulkDeleteRecipes(t.Context(), BulkDeleteRecipesRequestObject{
+				Params: BulkDeleteRecipesParams{Ids: test.ids},
+			})
+
+			if !errors.Is(err, test.expectedError) {
+				t.Errorf("expected error: %v, received error '%v'", test.expectedError, err)
+			} else if err == nil {
+				switch test.expectedResponse.(type) {
+				case BulkDeleteRecipes204Response:
+					if _, ok := resp.(BulkDeleteRecipes204Response); !ok {
+						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
+					}
+				case BulkDeleteRecipes400Response:
+					if _, ok := resp.(BulkDeleteRecipes400Response); !ok {
 						t.Fatalf("expected %T, got %T", test.expectedResponse, resp)
 					}
 				default:

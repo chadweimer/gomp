@@ -279,68 +279,6 @@ describe('page-settings-searches', () => {
       expect(body.name).toBe('New Healthy Search');
       expect(body.query).toBe('healthy');
     });
-
-    it('does not create filter when modal is dismissed without data', async () => {
-      const modal = mockModal(null);
-      vi.spyOn(modalController, 'create').mockResolvedValue(modal);
-
-      const requests: Request[] = [];
-      fetchMocker.mockResponse((req: Request) => {
-        requests.push(req);
-        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-          return Promise.resolve(JSON.stringify(mockFilterResult));
-        }
-        return Promise.resolve('{}');
-      });
-
-      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
-      await new Promise(r => setTimeout(r, 10));
-      await root.updateComplete;
-
-      const fabButton = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
-      fabButton?.click();
-      await new Promise(r => setTimeout(r, 10));
-      await root.updateComplete;
-
-      const postRequests = requests.filter(r => r.method === 'POST');
-      expect(postRequests).toHaveLength(0);
-    });
-
-    it('displays toast error when creating filter fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => { });
-      const toast = mockToast();
-      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
-
-      const modal = mockModal({
-        name: 'Fail Search',
-        searchFilter: { query: 'fail' },
-      });
-      vi.spyOn(modalController, 'create').mockResolvedValue(modal);
-
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-          return Promise.resolve(JSON.stringify(mockFilterResult));
-        }
-        if (req.url.match(/\/users\/current\/filters$/) && req.method === 'POST') {
-          return Promise.resolve({ status: 500, body: 'Server error' });
-        }
-        return Promise.resolve('{}');
-      });
-
-      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
-      await new Promise(r => setTimeout(r, 10));
-      await root.updateComplete;
-
-      const fabButton = root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button');
-      fabButton?.click();
-      await new Promise(r => setTimeout(r, 10));
-      await root.updateComplete;
-
-      expect(createToastSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Failed to create search filter.' })
-      );
-      expect(toast.present).toHaveBeenCalled();
-    });
   });
 
   describe('Edit Filter', () => {
@@ -422,74 +360,6 @@ describe('page-settings-searches', () => {
 
       expect(createModalSpy).not.toHaveBeenCalled();
     });
-
-    it('does not save when edit modal is dismissed without data', async () => {
-      const modal = mockModal(null);
-      vi.spyOn(modalController, 'create').mockResolvedValue(modal);
-
-      const requests: Request[] = [];
-      fetchMocker.mockResponse((req: Request) => {
-        requests.push(req);
-        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-          return Promise.resolve(JSON.stringify(mockFilterResult));
-        }
-        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
-          return Promise.resolve(JSON.stringify(mockFilter1));
-        }
-        return Promise.resolve('{}');
-      });
-
-      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
-      await new Promise(r => setTimeout(r, 10));
-      await root.updateComplete;
-
-      const editBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
-      editBtn?.click();
-      await new Promise(r => setTimeout(r, 10));
-      await root.updateComplete;
-
-      const putRequests = requests.filter(r => r.method === 'PUT');
-      expect(putRequests).toHaveLength(0);
-    });
-
-    it('displays toast error when updating filter fails', async () => {
-      vi.spyOn(console, 'error').mockImplementation(() => { });
-      const toast = mockToast();
-      const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
-
-      const modal = mockModal({
-        name: 'Fail Search',
-        searchFilter: { query: 'fail' },
-      });
-      vi.spyOn(modalController, 'create').mockResolvedValue(modal);
-
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
-          return Promise.resolve(JSON.stringify(mockFilterResult));
-        }
-        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
-          return Promise.resolve(JSON.stringify(mockFilter1));
-        }
-        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'PUT') {
-          return Promise.resolve({ status: 500, body: 'Server error' });
-        }
-        return Promise.resolve('{}');
-      });
-
-      const root = await fixture<PageSettingsSearches>(html`<page-settings-searches></page-settings-searches>`);
-      await new Promise(r => setTimeout(r, 10));
-      await root.updateComplete;
-
-      const editBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
-      editBtn?.click();
-      await new Promise(r => setTimeout(r, 10));
-      await root.updateComplete;
-
-      expect(createToastSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Failed to save search filter.' })
-      );
-      expect(toast.present).toHaveBeenCalled();
-    });
   });
 
   describe('Delete Filter', () => {
@@ -529,16 +399,56 @@ describe('page-settings-searches', () => {
       const deleteReq = requests.find(r => r.url.match(/\/users\/current\/filters\/1$/) && r.method === 'DELETE');
       expect(deleteReq).toBeDefined();
     });
+  });
 
-    it('does not delete filter when alert is cancelled', async () => {
-      const alert = mockAlert('cancel');
-      vi.spyOn(alertController, 'create').mockResolvedValue(alert);
+  describe('Dismissals and Cancellations', () => {
+    it.each([
+      {
+        operation: 'create filter when modal is dismissed without data',
+        setup: () => {
+          const modal = mockModal(null);
+          vi.spyOn(modalController, 'create').mockResolvedValue(modal);
+        },
+        trigger: (root: PageSettingsSearches) => {
+          root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button')?.click();
+        },
+        method: 'POST',
+      },
+      {
+        operation: 'save when edit modal is dismissed without data',
+        setup: () => {
+          const modal = mockModal(null);
+          vi.spyOn(modalController, 'create').mockResolvedValue(modal);
+        },
+        trigger: (root: PageSettingsSearches) => {
+          const editBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
+          editBtn?.click();
+        },
+        method: 'PUT',
+      },
+      {
+        operation: 'delete filter when alert is cancelled',
+        setup: () => {
+          const alert = mockAlert('cancel');
+          vi.spyOn(alertController, 'create').mockResolvedValue(alert);
+        },
+        trigger: (root: PageSettingsSearches) => {
+          const deleteBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
+          deleteBtn?.click();
+        },
+        method: 'DELETE',
+      },
+    ])('does not $operation', async ({ setup, trigger, method }) => {
+      setup();
 
       const requests: Request[] = [];
       fetchMocker.mockResponse((req: Request) => {
         requests.push(req);
         if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
           return Promise.resolve(JSON.stringify(mockFilterResult));
+        }
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilter1));
         }
         return Promise.resolve('{}');
       });
@@ -547,27 +457,75 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const deleteBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
-      deleteBtn?.click();
+      trigger(root);
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const deleteRequests = requests.filter(r => r.method === 'DELETE');
-      expect(deleteRequests).toHaveLength(0);
+      const matchingRequests = requests.filter(r => r.method === method);
+      expect(matchingRequests).toHaveLength(0);
     });
+  });
 
-    it('displays toast error when deleting filter fails', async () => {
+  describe('Action Failures', () => {
+    it.each([
+      {
+        operation: 'creating filter fails',
+        setup: () => {
+          const modal = mockModal({
+            name: 'Fail Search',
+            searchFilter: { query: 'fail' },
+          });
+          vi.spyOn(modalController, 'create').mockResolvedValue(modal);
+        },
+        trigger: (root: PageSettingsSearches) => {
+          root.renderRoot.querySelector<HTMLIonFabButtonElement>('ion-fab-button')?.click();
+        },
+        failMatch: (req: Request) => req.url.match(/\/users\/current\/filters$/) && req.method === 'POST',
+        message: 'Failed to create search filter.',
+      },
+      {
+        operation: 'updating filter fails',
+        setup: () => {
+          const modal = mockModal({
+            name: 'Fail Search',
+            searchFilter: { query: 'fail' },
+          });
+          vi.spyOn(modalController, 'create').mockResolvedValue(modal);
+        },
+        trigger: (root: PageSettingsSearches) => {
+          const editBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button')[1];
+          editBtn?.click();
+        },
+        failMatch: (req: Request) => req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'PUT',
+        message: 'Failed to save search filter.',
+      },
+      {
+        operation: 'deleting filter fails',
+        setup: () => {
+          const alert = mockAlert('destructive');
+          vi.spyOn(alertController, 'create').mockResolvedValue(alert);
+        },
+        trigger: (root: PageSettingsSearches) => {
+          const deleteBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
+          deleteBtn?.click();
+        },
+        failMatch: (req: Request) => req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'DELETE',
+        message: 'Failed to delete search filter.',
+      },
+    ])('displays toast error when $operation', async ({ setup, trigger, failMatch, message }) => {
       vi.spyOn(console, 'error').mockImplementation(() => { });
       const toast = mockToast();
       const createToastSpy = vi.spyOn(toastController, 'create').mockResolvedValue(toast);
-      const alert = mockAlert('destructive');
-      vi.spyOn(alertController, 'create').mockResolvedValue(alert);
+      setup();
 
       fetchMocker.mockResponse((req: Request) => {
         if (req.url.match(/\/users\/current\/filters(\?.*)?$/) && req.method === 'GET') {
           return Promise.resolve(JSON.stringify(mockFilterResult));
         }
-        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'DELETE') {
+        if (req.url.match(/\/users\/current\/filters\/1$/) && req.method === 'GET') {
+          return Promise.resolve(JSON.stringify(mockFilter1));
+        }
+        if (failMatch(req)) {
           return Promise.resolve({ status: 500, body: 'Server error' });
         }
         return Promise.resolve('{}');
@@ -577,13 +535,12 @@ describe('page-settings-searches', () => {
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
-      const deleteBtn = root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-card ion-button[color="danger"]')[0];
-      deleteBtn?.click();
+      trigger(root);
       await new Promise(r => setTimeout(r, 10));
       await root.updateComplete;
 
       expect(createToastSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Failed to delete search filter.' })
+        expect.objectContaining({ message })
       );
       expect(toast.present).toHaveBeenCalled();
     });

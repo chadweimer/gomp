@@ -246,53 +246,42 @@ describe('app-root', () => {
   });
 
   describe('route guards', () => {
-    it('redirects to /login when unauthenticated user attempts to enter guarded routes', async () => {
-      setCurrentUser(undefined);
+    it.each([
+      {
+        scenario: 'unauthenticated user accessing guarded route',
+        user: undefined,
+        routeUrl: '/',
+        expected: { redirect: '/login' },
+      },
+      {
+        scenario: 'authenticated user accessing guarded route',
+        user: { id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer },
+        routeUrl: '/',
+        expected: true,
+      },
+      {
+        scenario: 'non-admin user accessing admin route',
+        user: { id: 1, username: 'viewer', accessLevel: AccessLevel.Viewer },
+        routeUrl: '/admin',
+        expected: { redirect: '/' },
+      },
+      {
+        scenario: 'admin user accessing admin route',
+        user: { id: 2, username: 'admin', accessLevel: AccessLevel.Admin },
+        routeUrl: '/admin',
+        expected: true,
+      },
+    ])('evaluates beforeEnter guard correctly for $scenario', async ({ user, routeUrl, expected }) => {
+      setCurrentUser(user);
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
 
-      const homeRoute = el.renderRoot.querySelector<HTMLIonRouteElement>('ion-route[url="/"]');
-      expect(homeRoute).not.toBeNull();
-      expect(typeof homeRoute?.beforeEnter).toBe('function');
+      const route = el.renderRoot.querySelector<HTMLIonRouteElement>(`ion-route[url="${routeUrl}"]`);
+      expect(route).not.toBeNull();
+      expect(typeof route?.beforeEnter).toBe('function');
 
-      const result = homeRoute?.beforeEnter?.();
-      expect(result).toEqual({ redirect: '/login' });
-    });
-
-    it('allows access to guarded routes when user is authenticated', async () => {
-      setCurrentUser({ id: 1, username: 'testuser', accessLevel: AccessLevel.Viewer });
-      const el = await fixture<AppRoot>(html`<app-root></app-root>`);
-      await el.updateComplete;
-
-      const homeRoute = el.renderRoot.querySelector<HTMLIonRouteElement>('ion-route[url="/"]');
-      expect(homeRoute).not.toBeNull();
-
-      const result = homeRoute?.beforeEnter?.();
-      expect(result).toBe(true);
-    });
-
-    it('redirects non-admin users attempting to enter admin routes', async () => {
-      setCurrentUser({ id: 1, username: 'viewer', accessLevel: AccessLevel.Viewer });
-      const el = await fixture<AppRoot>(html`<app-root></app-root>`);
-      await el.updateComplete;
-
-      const adminRoute = el.renderRoot.querySelector<HTMLIonRouteElement>('ion-route[url="/admin"]');
-      expect(adminRoute).not.toBeNull();
-
-      const result = adminRoute?.beforeEnter?.();
-      expect(result).toEqual({ redirect: '/' });
-    });
-
-    it('allows admin users to enter admin routes', async () => {
-      setCurrentUser({ id: 2, username: 'admin', accessLevel: AccessLevel.Admin });
-      const el = await fixture<AppRoot>(html`<app-root></app-root>`);
-      await el.updateComplete;
-
-      const adminRoute = el.renderRoot.querySelector<HTMLIonRouteElement>('ion-route[url="/admin"]');
-      expect(adminRoute).not.toBeNull();
-
-      const result = adminRoute?.beforeEnter?.();
-      expect(result).toBe(true);
+      const result = route?.beforeEnter?.();
+      expect(result).toEqual(expected);
     });
   });
 
@@ -634,12 +623,16 @@ describe('app-root', () => {
       expect(recipesItem?.classList).not.toContain('active');
     });
 
-    it('updates pageTitle to "Recipes" on "/recipes" and highlights matching toolbar buttons and side menu item', async () => {
+    it.each([
+      { route: '/recipes', description: 'exact route "/recipes"' },
+      { route: '/recipes/123', description: 'dynamic route "/recipes/123"' },
+      { route: '/recipes/456/', description: 'dynamic route with trailing slash "/recipes/456/"' },
+    ])('updates pageTitle to "Recipes" and highlights matching buttons for $description', async ({ route }) => {
       const el = await fixture<AppRoot>(html`<app-root></app-root>`);
       await el.updateComplete;
       const router = setupRouterOutlet(el);
 
-      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes', from: '/' } }));
+      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: route, from: '/' } }));
       await el.updateComplete;
 
       const titleText = el.renderRoot.querySelector('ion-title ion-text');
@@ -671,40 +664,6 @@ describe('app-root', () => {
       expect(homeItem?.getAttribute('color')).toBeNull();
       expect(homeItem?.hasAttribute('detail')).toBe(false);
       expect(homeItem?.classList).not.toContain('active');
-    });
-
-    it('updates pageTitle to "Recipes" on dynamic routes like "/recipes/123" and highlights matching toolbar buttons and side menu item', async () => {
-      const el = await fixture<AppRoot>(html`<app-root></app-root>`);
-      await el.updateComplete;
-      const router = setupRouterOutlet(el);
-
-      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes/123', from: '/' } }));
-      await el.updateComplete;
-
-      const titleText = el.renderRoot.querySelector('ion-title ion-text');
-      expect(titleText).not.toBeNull();
-      expect(titleText?.textContent?.trim()).toBe('| Recipes');
-
-      // Toolbar: both desktop and mobile Recipes buttons are active/solid
-      const recipesButtons = el.renderRoot.querySelectorAll('#toolbar-menu ion-button[href="/recipes"]');
-      expect(recipesButtons).toHaveLength(2);
-      recipesButtons.forEach((btn) => {
-        expect(btn.getAttribute('fill')).toBe('solid');
-        expect(btn.classList).toContain('active');
-      });
-
-      // Side menu: Recipes is active, Home is inactive
-      const recipesItem = el.renderRoot.querySelector('ion-menu ion-item[href="/recipes"]');
-      expect(recipesItem?.getAttribute('color')).toBe('secondary');
-      expect(recipesItem?.hasAttribute('detail')).toBe(true);
-      expect(recipesItem?.classList).toContain('active');
-
-      // Also verify with trailing slash
-      router?.dispatchEvent(new CustomEvent('ionRouteDidChange', { detail: { to: '/recipes/456/', from: '/recipes/123' } }));
-      await el.updateComplete;
-
-      expect(el.renderRoot.querySelector('ion-title ion-text')?.textContent?.trim()).toBe('| Recipes');
-      expect(recipesItem?.classList).toContain('active');
     });
 
     it('matches parent and child link on child routes like "/settings/preferences"', async () => {

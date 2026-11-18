@@ -410,67 +410,55 @@ describe('search-filter-editor', () => {
       expect(root.searchFilter.tags).toEqual(['asian', 'spicy']);
     });
 
-    it('updates sortBy on ionChange', async () => {
+    it.each([
+      {
+        field: 'sortBy',
+        label: 'Sort By',
+        value: SortBy.Rating,
+        expected: SortBy.Rating,
+      },
+      {
+        field: 'sortDir',
+        label: 'Sort Order',
+        value: SortDir.Desc,
+        expected: SortDir.Desc,
+      },
+      {
+        field: 'states',
+        label: 'States',
+        value: [RecipeState.Archived],
+        expected: [RecipeState.Archived],
+      },
+      {
+        field: 'fields',
+        label: 'Fields to Search',
+        value: [SearchField.Directions],
+        expected: [SearchField.Directions],
+      },
+    ])('updates $field on ionChange', async ({ label, value, field, expected }) => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
-      const sortBySelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Sort By"]');
-      sortBySelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: SortBy.Rating } }));
+      const select = root.renderRoot.querySelector<HTMLIonSelectElement>(`ion-select[label="${label}"]`);
+      select?.dispatchEvent(new CustomEvent('ionChange', { detail: { value } }));
       await root.updateComplete;
 
-      expect(root.searchFilter.sortBy).toBe(SortBy.Rating);
+      expect(root.searchFilter[field as keyof SearchFilter]).toEqual(expected);
     });
 
-    it('updates sortDir on ionChange', async () => {
-      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
-      await root.updateComplete;
-
-      const sortDirSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Sort Order"]');
-      sortDirSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: SortDir.Desc } }));
-      await root.updateComplete;
-
-      expect(root.searchFilter.sortDir).toBe(SortDir.Desc);
-    });
-
-    it('updates withPictures on ionChange for Yes, No, and Any', async () => {
+    it.each([
+      { labelValue: 'Yes', value: YesNoAny.Yes, expected: true },
+      { labelValue: 'No', value: YesNoAny.No, expected: false },
+      { labelValue: 'Any', value: YesNoAny.Any, expected: null },
+    ])('updates withPictures on ionChange for $labelValue', async ({ value, expected }) => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       await root.updateComplete;
 
       const picturesSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Pictures"]');
-
-      picturesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: YesNoAny.Yes } }));
-      await root.updateComplete;
-      expect(root.searchFilter.withPictures).toBe(true);
-
-      picturesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: YesNoAny.No } }));
-      await root.updateComplete;
-      expect(root.searchFilter.withPictures).toBe(false);
-
-      picturesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: YesNoAny.Any } }));
-      await root.updateComplete;
-      expect(root.searchFilter.withPictures).toBeNull();
-    });
-
-    it('updates states on ionChange', async () => {
-      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+      picturesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value } }));
       await root.updateComplete;
 
-      const statesSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="States"]');
-      statesSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: [RecipeState.Archived] } }));
-      await root.updateComplete;
-
-      expect(root.searchFilter.states).toEqual([RecipeState.Archived]);
-    });
-
-    it('updates fields on ionChange', async () => {
-      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
-      await root.updateComplete;
-
-      const fieldsSelect = root.renderRoot.querySelector<HTMLIonSelectElement>('ion-select[label="Fields to Search"]');
-      fieldsSelect?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: [SearchField.Directions] } }));
-      await root.updateComplete;
-
-      expect(root.searchFilter.fields).toEqual([SearchField.Directions]);
+      expect(root.searchFilter.withPictures).toBe(expected);
     });
   });
 
@@ -577,17 +565,30 @@ describe('search-filter-editor', () => {
       expect(canDismiss).toBe(true);
     });
 
-    it('detects dirty state when name input value changed and confirms discard', async () => {
-      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
+    it.each([
+      {
+        inputName: 'name',
+        showName: true,
+        selector: 'ion-input[label="Name"]',
+        value: 'Unsaved Name',
+      },
+      {
+        inputName: 'query',
+        showName: false,
+        selector: 'ion-input[label="Search Terms"]',
+        value: 'Unsaved Query',
+      },
+    ])('detects dirty state when $inputName input value changed and confirms discard', async ({ showName, selector, value }) => {
+      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor .showName=${showName}></search-filter-editor>`);
       modalEl.appendChild(root);
       await root.updateComplete;
       syncInputValues(root);
 
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
 
-      const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
-      if (queryInput) {
-        queryInput.value = 'Unsaved Query';
+      const input = root.renderRoot.querySelector<HTMLIonInputElement>(selector);
+      if (input) {
+        input.value = value;
       }
 
       const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
@@ -612,7 +613,14 @@ describe('search-filter-editor', () => {
       expect(canDismiss).toBe(false);
     });
 
-    it('detects dirty state when query input value changed', async () => {
+    it.each([
+      { prop: 'sortBy', update: { sortBy: SortBy.Rating } },
+      { prop: 'sortDir', update: { sortDir: SortDir.Desc } },
+      { prop: 'withPictures', update: { withPictures: true } },
+      { prop: 'states', update: { states: [RecipeState.Archived] } },
+      { prop: 'fields', update: { fields: [SearchField.Directions] } },
+      { prop: 'tags', update: { tags: ['newTag'] } },
+    ])('detects dirty state when $prop changes', async ({ update }) => {
       const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
       modalEl.appendChild(root);
       await root.updateComplete;
@@ -620,49 +628,9 @@ describe('search-filter-editor', () => {
 
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
 
-      const queryInput = root.renderRoot.querySelector<HTMLIonInputElement>('ion-input[label="Search Terms"]');
-      if (queryInput) {
-        queryInput.value = 'Unsaved Query';
-      }
-
-      const canDismiss = await callCanDismiss(modalEl, undefined, 'cancel');
-      expect(canDismiss).toBe(true);
+      root.searchFilter = { ...root.searchFilter, ...update };
+      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
       expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: 'Discard Changes?' }));
-    });
-
-    it('detects dirty state when filter properties change', async () => {
-      const root = await fixture<SearchFilterEditor>(html`<search-filter-editor></search-filter-editor>`);
-      modalEl.appendChild(root);
-      await root.updateComplete;
-      syncInputValues(root);
-
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(mockAlert('destructive'));
-
-      // sortBy
-      root.searchFilter = { ...root.searchFilter, sortBy: SortBy.Rating };
-      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
-
-      // sortDir
-      root.searchFilter = { ...root.searchFilter, sortDir: SortDir.Desc };
-      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
-
-      // withPictures
-      root.searchFilter = { ...root.searchFilter, withPictures: true };
-      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
-
-      // states
-      root.searchFilter = { ...root.searchFilter, states: [RecipeState.Archived] };
-      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
-
-      // fields
-      root.searchFilter = { ...root.searchFilter, fields: [SearchField.Directions] };
-      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
-
-      // tags
-      root.searchFilter = { ...root.searchFilter, tags: ['newTag'] };
-      expect(await callCanDismiss(modalEl, undefined, 'cancel')).toBe(true);
-
-      expect(createAlertSpy).toHaveBeenCalledTimes(6);
     });
 
     it('treats reordered tags as equal and clean', async () => {

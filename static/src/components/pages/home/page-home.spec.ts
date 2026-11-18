@@ -254,46 +254,24 @@ describe('page-home', () => {
   });
 
   describe('Suite 2: Access Control (RBAC)', () => {
-    it('hides new recipe FAB button for unauthenticated users', async () => {
-      mockUserCtx.user = undefined;
+    it.each([
+      { description: 'hides new recipe FAB button for unauthenticated users', user: undefined, visible: false },
+      { description: 'hides new recipe FAB button for viewers', user: { id: 2, username: 'viewer', accessLevel: AccessLevel.Viewer }, visible: false },
+      { description: 'shows new recipe FAB button for editors', user: { id: 3, username: 'editor', accessLevel: AccessLevel.Editor }, visible: true },
+      { description: 'shows new recipe FAB button for admins', user: { id: 4, username: 'admin', accessLevel: AccessLevel.Admin }, visible: true },
+    ])('$description', async ({ user, visible }) => {
+      mockUserCtx.user = user;
       const el = await createPageHome();
       await el.activatedCallback();
-      await new Promise(resolve => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       const fab = el.renderRoot.querySelector('ion-fab');
-      expect(fab).toBeNull();
-    });
-
-    it('hides new recipe FAB button for viewers', async () => {
-      mockUserCtx.user = { id: 2, username: 'viewer', accessLevel: AccessLevel.Viewer };
-      const el = await createPageHome();
-      await el.activatedCallback();
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      const fab = el.renderRoot.querySelector('ion-fab');
-      expect(fab).toBeNull();
-    });
-
-    it('shows new recipe FAB button for editors', async () => {
-      mockUserCtx.user = { id: 3, username: 'editor', accessLevel: AccessLevel.Editor };
-      const el = await createPageHome();
-      await el.activatedCallback();
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      const fab = el.renderRoot.querySelector('ion-fab');
-      expect(fab).not.toBeNull();
-      const fabBtn = fab?.querySelector('ion-fab-button');
-      expect(fabBtn).not.toBeNull();
-    });
-
-    it('shows new recipe FAB button for admins', async () => {
-      mockUserCtx.user = { id: 4, username: 'admin', accessLevel: AccessLevel.Admin };
-      const el = await createPageHome();
-      await el.activatedCallback();
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      const fab = el.renderRoot.querySelector('ion-fab');
-      expect(fab).not.toBeNull();
+      if (visible) {
+        expect(fab).not.toBeNull();
+        expect(fab?.querySelector('ion-fab-button')).not.toBeNull();
+      } else {
+        expect(fab).toBeNull();
+      }
     });
   });
 

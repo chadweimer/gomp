@@ -9,6 +9,8 @@ import (
 	"github.com/chadweimer/gomp/models"
 )
 
+const maxBulkRecipes = 120
+
 func (h apiHandler) Find(ctx context.Context, request FindRequestObject) (FindResponseObject, error) {
 	params := request.Params
 	query := ""
@@ -157,10 +159,52 @@ func (h apiHandler) DeleteRecipe(ctx context.Context, request DeleteRecipeReques
 		return nil, err
 	}
 
-	// Delete all the uploaded image files associated with the recipe also
+	// Delete all the uploaded image files associated with the recipe also (best-effort)
 	if err := h.upl.DeleteAll(request.RecipeID); err != nil {
-		return nil, err
+		logger.ErrorContext(ctx, "Failed to delete uploaded files for recipe",
+			"error", err,
+			"recipe-id", request.RecipeID)
 	}
 
 	return DeleteRecipe204Response{}, nil
+}
+
+func (h apiHandler) BulkPatchRecipes(ctx context.Context, request BulkPatchRecipesRequestObject) (BulkPatchRecipesResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
+	if request.Body == nil || len(request.Body.Ids) == 0 || len(request.Body.Ids) > maxBulkRecipes {
+		return BulkPatchRecipes400Response{}, nil
+	}
+
+	if err := h.db.Recipes().BulkPatch(ctx, request.Body); err != nil {
+		logger.ErrorContext(ctx, "Failed to bulk patch recipes", "error", err)
+		return nil, err
+	}
+
+	return BulkPatchRecipes204Response{}, nil
+}
+
+func (h apiHandler) BulkDeleteRecipes(ctx context.Context, request BulkDeleteRecipesRequestObject) (BulkDeleteRecipesResponseObject, error) {
+	logger := infra.GetLoggerFromContext(ctx)
+
+	ids := request.Params.Ids
+	if len(ids) == 0 || len(ids) > maxBulkRecipes {
+		return BulkDeleteRecipes400Response{}, nil
+	}
+
+	if err := h.db.Recipes().BulkDelete(ctx, ids); err != nil {
+		logger.ErrorContext(ctx, "Failed to bulk delete recipes", "error", err)
+		return nil, err
+	}
+
+	// Delete all uploaded image files associated with the deleted recipes (best-effort)
+	for _, id := range ids {
+		if err := h.upl.DeleteAll(id); err != nil {
+			logger.ErrorContext(ctx, "Failed to delete uploaded files for recipe",
+				"error", err,
+				"recipe-id", id)
+		}
+	}
+
+	return BulkDeleteRecipes204Response{}, nil
 }

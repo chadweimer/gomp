@@ -8,6 +8,7 @@ description: Guide for adding new API endpoints in GOMP. Use this when asked to 
 Use this checklist when adding a new API endpoint to GOMP.
 
 ## 1) Define API Contract
+- Ensure all route paths consist strictly of NOUNs identifying resources or collections (e.g., `/recipes`, `/tags`); HTTP verbs dictate actions. Never use verbs or action-based names in route paths (e.g., avoid `/recipes/delete-bulk`, `/recipes/{id}/archive`, or `/do-action`).
 - Add or update the path, operation, request body, responses, and security in `openapi.yaml`.
 - Add or update shared schema definitions in `models.yaml` if the endpoint needs new types.
 - Add clear `summary` and `description` values to improve generated docs and agent comprehension.

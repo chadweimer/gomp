@@ -75,7 +75,22 @@ describe('page-login', () => {
   });
 
   describe('login flow', () => {
-    it('successfully logs in with rememberMe false', async () => {
+    it.each([
+      {
+        description: 'clicking login button',
+        trigger: (el: PageLogin) => el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button')?.click(),
+      },
+      {
+        description: 'pressing Enter on username input',
+        trigger: (el: PageLogin) =>
+          el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })),
+      },
+      {
+        description: 'pressing Enter on password input',
+        trigger: (el: PageLogin) =>
+          el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' })),
+      },
+    ])('successfully logs in when $description', async ({ trigger }) => {
       fetchMocker.mockResponse((req: Request) => {
         if (req.url.match(/\/auth$/) && req.method === 'POST') {
           return {
@@ -89,12 +104,11 @@ describe('page-login', () => {
       const el = await fixture<PageLogin>(html`<page-login .userCtx=${mockUserCtx}></page-login>`);
       const usernameInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
       const passwordInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
-      const loginButton = el.renderRoot.querySelector<HTMLIonButtonElement>('ion-button');
 
       if (usernameInput) usernameInput.value = 'test@example.com';
       if (passwordInput) passwordInput.value = 'password123';
 
-      loginButton?.click();
+      trigger(el);
       await new Promise(resolve => setTimeout(resolve, 50));
 
       const requests = fetchMocker.requests();
@@ -135,56 +149,6 @@ describe('page-login', () => {
 
       expect(requestBody?.rememberMe).toBe(true);
       expect(mockUserCtx.user).toEqual(mockUser);
-    });
-
-    it('successfully logs in when pressing Enter on username input', async () => {
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/auth$/) && req.method === 'POST') {
-          return {
-            status: 200,
-            body: JSON.stringify(mockUser),
-          };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const el = await fixture<PageLogin>(html`<page-login .userCtx=${mockUserCtx}></page-login>`);
-      const usernameInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
-      const passwordInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
-
-      if (usernameInput) usernameInput.value = 'test@example.com';
-      if (passwordInput) passwordInput.value = 'password123';
-
-      usernameInput?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      expect(mockUserCtx.user).toEqual(mockUser);
-      expect(routerEl.push).toHaveBeenCalledWith('/');
-    });
-
-    it('successfully logs in when pressing Enter on password input', async () => {
-      fetchMocker.mockResponse((req: Request) => {
-        if (req.url.match(/\/auth$/) && req.method === 'POST') {
-          return {
-            status: 200,
-            body: JSON.stringify(mockUser),
-          };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const el = await fixture<PageLogin>(html`<page-login .userCtx=${mockUserCtx}></page-login>`);
-      const usernameInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="email"]');
-      const passwordInput = el.renderRoot.querySelector<HTMLIonInputElement>('ion-input[type="password"]');
-
-      if (usernameInput) usernameInput.value = 'test@example.com';
-      if (passwordInput) passwordInput.value = 'password123';
-
-      passwordInput?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-      await new Promise(resolve => setTimeout(resolve, 50));
-
-      expect(mockUserCtx.user).toEqual(mockUser);
-      expect(routerEl.push).toHaveBeenCalledWith('/');
     });
 
     it('does not trigger login on other keys', async () => {
@@ -280,6 +244,8 @@ describe('page-login', () => {
 
       expect(el.renderRoot.querySelector('ion-text[color="danger"]')?.textContent?.trim()).toBeFalsy();
       expect(mockUserCtx.user).toEqual(mockUser);
+      expect(usernameInput?.value).toBe('');
+      expect(passwordInput?.value).toBe('');
       expect(routerEl.push).toHaveBeenCalledWith('/');
     });
   });

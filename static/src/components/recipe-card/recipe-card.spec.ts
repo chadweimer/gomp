@@ -1,5 +1,5 @@
 import { fixture, html } from '@open-wc/testing';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { RecipeCompact, RecipeState } from '../../helpers/schema.gen';
 import './recipe-card';
 import { RecipeCard } from './recipe-card';
@@ -126,7 +126,7 @@ describe('recipe-card', () => {
     await el.updateComplete;
 
     const visibleBadges = el.renderRoot.querySelectorAll('.tags ion-badge.tag-badge');
-    expect(visibleBadges?.length).toBe(1);
+    expect(visibleBadges).toHaveLength(1);
 
     const moreBadge = el.renderRoot.querySelector('.tags .more-badge');
     expect(moreBadge).not.toBeNull();
@@ -188,5 +188,162 @@ describe('recipe-card', () => {
     expect(moreBadge).not.toBeNull();
     expect(moreBadge?.textContent?.trim()).toBe('+1');
     expect(moreBadge?.getAttribute('title')).toBe('tag2');
+  });
+
+  it('renders selection checkbox and removes href in select mode', async () => {
+    const recipe: RecipeCompact = {
+      id: 10,
+      name: 'Selectable Recipe',
+      state: RecipeState.Active,
+      mainImageName: '',
+      rating: 3,
+      tags: [],
+    };
+
+    const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe} ?isSelectMode=${true} ?isSelected=${true}></recipe-card>`);
+    const card = el.renderRoot.querySelector('ion-card');
+    expect(card?.getAttribute('href')).toBeNull();
+    expect(card?.classList.contains('selected')).toBe(true);
+
+    const checkbox = el.renderRoot.querySelector('ion-checkbox');
+    expect(checkbox).not.toBeNull();
+    expect(checkbox?.checked).toBe(true);
+  });
+
+  it('emits card-toggle-select on card click when in select mode', async () => {
+    const recipe: RecipeCompact = {
+      id: 10,
+      name: 'Selectable Recipe',
+      state: RecipeState.Active,
+      mainImageName: '',
+      rating: 3,
+      tags: [],
+    };
+
+    const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe} ?isSelectMode=${true}></recipe-card>`);
+    const listener = vi.fn();
+    el.addEventListener('card-toggle-select', listener);
+
+    const card = el.renderRoot.querySelector('ion-card')!;
+    card.click();
+
+    expect(listener).toHaveBeenCalledOnce();
+    expect(listener.mock.calls[0][0].detail).toEqual({ recipeId: 10 });
+  });
+
+  it('emits card-context-select on contextmenu event', async () => {
+    const recipe: RecipeCompact = {
+      id: 10,
+      name: 'Selectable Recipe',
+      state: RecipeState.Active,
+      mainImageName: '',
+      rating: 3,
+      tags: [],
+    };
+
+    const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
+    const listener = vi.fn();
+    el.addEventListener('card-context-select', listener);
+
+    const card = el.renderRoot.querySelector('ion-card')!;
+    card.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+
+    expect(listener).toHaveBeenCalledOnce();
+    expect(listener.mock.calls[0][0].detail).toEqual({ recipeId: 10 });
+  });
+
+  describe('Touch events (long-press)', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('emits card-context-select on long-press (touchstart > 500ms)', async () => {
+      const recipe: RecipeCompact = {
+        id: 10,
+        name: 'Selectable Recipe',
+        state: RecipeState.Active,
+        mainImageName: '',
+        rating: 3,
+        tags: [],
+      };
+
+      const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
+      const listener = vi.fn();
+      el.addEventListener('card-context-select', listener);
+
+      vi.useFakeTimers();
+      const card = el.renderRoot.querySelector('ion-card')!;
+      card.dispatchEvent(new Event('touchstart'));
+
+      expect(listener).not.toHaveBeenCalled();
+
+      vi.advanceTimersByTime(500);
+
+      expect(listener).toHaveBeenCalledOnce();
+      expect(listener.mock.calls[0][0].detail).toEqual({ recipeId: 10 });
+    });
+
+    it.each(['touchend', 'touchcancel', 'touchmove'])(
+      'cancels long-press when %s occurs before 500ms',
+      async (eventName) => {
+        const recipe: RecipeCompact = {
+          id: 10,
+          name: 'Selectable Recipe',
+          state: RecipeState.Active,
+          mainImageName: '',
+          rating: 3,
+          tags: [],
+        };
+
+        const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe}></recipe-card>`);
+        const listener = vi.fn();
+        el.addEventListener('card-context-select', listener);
+
+        vi.useFakeTimers();
+        const card = el.renderRoot.querySelector('ion-card')!;
+        card.dispatchEvent(new Event('touchstart'));
+        vi.advanceTimersByTime(200);
+
+        card.dispatchEvent(new Event(eventName));
+        vi.advanceTimersByTime(500);
+
+        expect(listener).not.toHaveBeenCalled();
+      }
+    );
+
+    it('does not start touch timer on touchstart when in select mode', async () => {
+      const recipe: RecipeCompact = {
+        id: 10,
+        name: 'Selectable Recipe',
+        state: RecipeState.Active,
+        mainImageName: '',
+        rating: 3,
+        tags: [],
+      };
+
+      const el = await fixture<RecipeCard>(html`<recipe-card .recipe=${recipe} ?isSelectMode=${true}></recipe-card>`);
+      const listener = vi.fn();
+      el.addEventListener('card-context-select', listener);
+
+      vi.useFakeTimers();
+      const card = el.renderRoot.querySelector('ion-card')!;
+      card.dispatchEvent(new Event('touchstart'));
+      vi.advanceTimersByTime(500);
+
+      expect(listener).not.toHaveBeenCalled();
+    });
+
+    it('does not start touch timer on touchstart when recipe ID is missing', async () => {
+      const el = await fixture<RecipeCard>(html`<recipe-card></recipe-card>`);
+      const listener = vi.fn();
+      el.addEventListener('card-context-select', listener);
+
+      vi.useFakeTimers();
+      const card = el.renderRoot.querySelector('ion-card')!;
+      card.dispatchEvent(new Event('touchstart'));
+      vi.advanceTimersByTime(500);
+
+      expect(listener).not.toHaveBeenCalled();
+    });
   });
 });

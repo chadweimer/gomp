@@ -258,7 +258,22 @@ describe('page-admin-maintenance', () => {
   });
 
   describe('Delete Backup', () => {
-    it('deletes backup when confirmed in alert dialog', async () => {
+    it.each([
+      {
+        triggerName: 'confirmed in alert dialog',
+        trigger: (root: PageAdminMaintenance) => {
+          const deleteOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
+          deleteOption?.click();
+        },
+      },
+      {
+        triggerName: 'start options are swiped',
+        trigger: (root: PageAdminMaintenance) => {
+          const startOptions = root.renderRoot.querySelector<HTMLIonItemOptionsElement>('ion-item-options[side="start"]');
+          startOptions?.dispatchEvent(new CustomEvent('ionSwipe'));
+        },
+      },
+    ])('deletes backup when $triggerName', async ({ trigger }) => {
       const alert = mockAlert('destructive');
       const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
       const loading = mockLoading();
@@ -280,46 +295,7 @@ describe('page-admin-maintenance', () => {
       await root.activatedCallback();
       await root.updateComplete;
 
-      const deleteOption = root.renderRoot.querySelector<HTMLIonItemOptionElement>('ion-item-option[color="danger"]');
-      deleteOption?.click();
-      await new Promise((r) => setTimeout(r, 20));
-      await root.updateComplete;
-
-      expect(createAlertSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ header: 'Delete Backup?' })
-      );
-      expect(createLoadingSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ message: 'Deleting backup...' })
-      );
-
-      const deleteReq = requests.find((r) => r.url.match(/\/backups\/backup-2026-09-01\.zip$/) && r.method === 'DELETE');
-      expect(deleteReq).toBeDefined();
-    });
-
-    it('deletes backup when start options are swiped', async () => {
-      const alert = mockAlert('destructive');
-      const createAlertSpy = vi.spyOn(alertController, 'create').mockResolvedValue(alert);
-      const loading = mockLoading();
-      const createLoadingSpy = vi.spyOn(loadingController, 'create').mockResolvedValue(loading);
-
-      const requests: Request[] = [];
-      fetchMocker.mockResponse((req: Request) => {
-        requests.push(req);
-        if (req.url.match(/\/backups$/) && req.method === 'GET') {
-          return { status: 200, body: JSON.stringify(mockBackups) };
-        }
-        if (req.url.match(/\/backups\/backup-2026-09-01\.zip$/) && req.method === 'DELETE') {
-          return { status: 200, body: '' };
-        }
-        return { status: 404, body: '' };
-      });
-
-      const root = await fixture<PageAdminMaintenance>(html`<page-admin-maintenance></page-admin-maintenance>`);
-      await root.activatedCallback();
-      await root.updateComplete;
-
-      const startOptions = root.renderRoot.querySelector<HTMLIonItemOptionsElement>('ion-item-options[side="start"]');
-      startOptions?.dispatchEvent(new CustomEvent('ionSwipe'));
+      trigger(root);
       await new Promise((r) => setTimeout(r, 20));
       await root.updateComplete;
 
