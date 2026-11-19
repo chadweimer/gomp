@@ -51,8 +51,12 @@ describe('page-recipe', () => {
       ?? Array.from(root.renderRoot.querySelectorAll<HTMLIonButtonElement>('ion-footer ion-buttons[slot="primary"] ion-button')).pop();
   }
 
+  function getPopover(root: ReactiveElement): HTMLIonPopoverElement | null {
+    return root.renderRoot.querySelector<HTMLIonPopoverElement>('ion-popover[trigger="recipe-menu"]');
+  }
+
   function getPopoverMenuItems(root: ReactiveElement): HTMLIonItemElement[] {
-    const popover = root.renderRoot.querySelector('ion-popover[trigger="recipe-menu"]');
+    const popover = getPopover(root);
     return Array.from(popover?.querySelectorAll<HTMLIonItemElement>('ion-item') ?? []);
   }
 
@@ -1307,12 +1311,18 @@ describe('page-recipe', () => {
 
       const root = await createRecipePage(1);
 
+      const popover = getPopover(root);
+      if (popover != null) {
+        popover.onDidDismiss = vi.fn().mockResolvedValue({ role: undefined });
+      }
+
       const menuItem = getPopoverMenuItem(root, action);
       expect(menuItem).not.toBeUndefined();
       menuItem?.click();
       await root.updateComplete;
 
       if (expected.print) {
+        expect(popover?.onDidDismiss).toHaveBeenCalled();
         expect(printSpy).toHaveBeenCalled();
       } else if (expected.alertHeader) {
         expect(createAlertSpy).toHaveBeenCalledWith(expect.objectContaining({ header: expected.alertHeader }));
