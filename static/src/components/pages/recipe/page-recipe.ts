@@ -84,46 +84,42 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
               </h4>
               <ion-grid class="no-pad">
                 <ion-row class="ion-justify-content-evenly">
-                  ${this.images?.map(
-      (image) => html`
-                      <ion-col size="4">
-                        <ion-card class="image">
-                          <a href=${ifDefined(getRecipeImageUrl(this.recipeId, image))} target="_blank" rel="noopener noreferrer">
-                            <ion-thumbnail class="upload zoom">
-                              <img
-                                loading="lazy"
-                                alt=${image}
-                                class="thumb"
-                                src=${ifDefined(getRecipeThumbnailUrl(this.recipeId, image))}
-                              />
-                            </ion-thumbnail>
-                          </a>
-                          ${isAuthorized(this.userCtx?.user, AccessLevel.Editor)
-          ? html`
-                                <ion-button
-                                  size="small"
-                                  fill="clear"
-                                  color=${this.recipe?.mainImageName === image ? 'tertiary' : 'medium'}
-                                  @click=${() => this.onSetMainImageClicked(image)}
-                                  title="Set as main image"
-                                >
-                                  <app-icon slot="icon-only" name="favorite" size="small" ?fill=${this.recipe?.mainImageName === image}></app-icon>
-                                </ion-button>
-                                <ion-button
-                                  size="small"
-                                  fill="clear"
-                                  color="danger"
-                                  @click=${() => this.onDeleteImageClicked(image)}
-                                  title="Delete image"
-                                >
-                                  <app-icon slot="icon-only" name="delete" size="small"></app-icon>
-                                </ion-button>
-                              `
-          : nothing}
-                        </ion-card>
-                      </ion-col>
-                    `
-    )}
+                  ${this.images?.map((image) => html`
+                    <ion-col size="4">
+                      <ion-card class="image">
+                        <a href=${ifDefined(getRecipeImageUrl(this.recipeId, image))} target="_blank" rel="noopener noreferrer">
+                          <ion-thumbnail class="upload zoom">
+                            <img
+                              loading="lazy"
+                              alt=${image}
+                              class="thumb"
+                              src=${ifDefined(getRecipeThumbnailUrl(this.recipeId, image))}
+                            />
+                          </ion-thumbnail>
+                        </a>
+                        ${isAuthorized(this.userCtx?.user, AccessLevel.Editor) ? html`
+                          <ion-button
+                            size="small"
+                            fill="clear"
+                            color=${this.recipe?.mainImageName === image ? 'tertiary' : 'medium'}
+                            @click=${() => this.onSetMainImageClicked(image)}
+                            title="Set as main image"
+                          >
+                            <app-icon slot="icon-only" name="favorite" size="small" ?fill=${this.recipe?.mainImageName === image}></app-icon>
+                          </ion-button>
+                          <ion-button
+                            size="small"
+                            fill="clear"
+                            color="danger"
+                            @click=${() => this.onDeleteImageClicked(image)}
+                            title="Delete image"
+                          >
+                            <app-icon slot="icon-only" name="delete" size="small"></app-icon>
+                          </ion-button>
+                        ` : nothing}
+                      </ion-card>
+                    </ion-col>
+                  `)}
                 </ion-row>
               </ion-grid>
             </ion-col>
@@ -132,20 +128,18 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
                 <ion-text color="primary">Notes</ion-text>
               </h4>
               <ion-grid>
-                ${this.notes?.map(
-      (note) => html`
-                    <ion-row>
-                      <ion-col>
-                        <note-card
-                          .note=${note}
-                          ?readonly=${!isAuthorized(this.userCtx?.user, AccessLevel.Editor)}
-                          @editClicked=${(e: CustomEvent<Note>) => void this.onEditNoteClicked(e.detail)}
-                          @deleteClicked=${(e: CustomEvent<Note>) => void this.onDeleteNoteClicked(e.detail)}
-                        ></note-card>
-                      </ion-col>
-                    </ion-row>
-                  `
-    )}
+                ${this.notes?.map((note) => html`
+                  <ion-row>
+                    <ion-col>
+                      <note-card
+                        .note=${note}
+                        ?readonly=${!isAuthorized(this.userCtx?.user, AccessLevel.Editor)}
+                        @editClicked=${(e: CustomEvent<Note>) => void this.onEditNoteClicked(e.detail)}
+                        @deleteClicked=${(e: CustomEvent<Note>) => void this.onDeleteNoteClicked(e.detail)}
+                      ></note-card>
+                    </ion-col>
+                  </ion-row>
+                `)}
               </ion-grid>
             </ion-col>
           </ion-row>
@@ -159,34 +153,32 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
             </ion-button>
           </ion-buttons>
           <ion-buttons slot="primary">
-            ${isAuthorized(this.userCtx?.user, AccessLevel.Editor)
-        ? html`
-                  <ion-button @click=${() => this.onEditClicked()}>
-                    <app-icon slot="start" name="edit_square"></app-icon>
-                    Edit
-                  </ion-button>
-                  <ion-button @click=${() => this.onAddNoteClicked()}>
-                    <app-icon slot="start" name="notes"></app-icon>
-                    Add Note
-                  </ion-button>
-                  <ion-button class="ion-display-none ion-display-sm-flex" @click=${() => this.onUploadImageClicked()}>
-                    <app-icon slot="start" name="photo_camera"></app-icon>
-                    Upload Picture
-                  </ion-button>
-                  <ion-button class="ion-display-none ion-display-md-flex" @click=${() => this.onAddLinkClicked()}>
-                    <app-icon slot="start" name="link"></app-icon>
-                    Add Link
-                  </ion-button>
-                  <ion-button class="ion-display-none ion-display-lg-flex" @click=${() => this.onArchiveClicked()}>
-                    <app-icon slot="start" name=${this.recipe?.state === RecipeState.Archived ? 'unarchive' : 'archive'}></app-icon>
-                    ${this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive'}
-                  </ion-button>
-                  <ion-button class="ion-display-none ion-display-lg-flex" @click=${() => this.onDeleteClicked()}>
-                    <app-icon slot="start" name="delete"></app-icon>
-                    Delete
-                  </ion-button>
-                `
-        : nothing}
+            ${isAuthorized(this.userCtx?.user, AccessLevel.Editor) ? html`
+              <ion-button @click=${() => this.onEditClicked()}>
+                <app-icon slot="start" name="edit_square"></app-icon>
+                Edit
+              </ion-button>
+              <ion-button @click=${() => this.onAddNoteClicked()}>
+                <app-icon slot="start" name="notes"></app-icon>
+                Add Note
+              </ion-button>
+              <ion-button class="ion-display-none ion-display-sm-flex" @click=${() => this.onUploadImageClicked()}>
+                <app-icon slot="start" name="photo_camera"></app-icon>
+                Upload Picture
+              </ion-button>
+              <ion-button class="ion-display-none ion-display-md-flex" @click=${() => this.onAddLinkClicked()}>
+                <app-icon slot="start" name="link"></app-icon>
+                Add Link
+              </ion-button>
+              <ion-button class="ion-display-none ion-display-lg-flex" @click=${() => this.onArchiveClicked()}>
+                <app-icon slot="start" name=${this.recipe?.state === RecipeState.Archived ? 'unarchive' : 'archive'}></app-icon>
+                ${this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive'}
+              </ion-button>
+              <ion-button class="ion-display-none ion-display-lg-flex" @click=${() => this.onDeleteClicked()}>
+                <app-icon slot="start" name="delete"></app-icon>
+                Delete
+              </ion-button>
+            ` : nothing}
             <ion-button class="ion-display-none ion-display-md-flex" @click=${() => this.onPrintClicked()}>
               <app-icon slot="start" name="print"></app-icon>
               Print
@@ -200,38 +192,36 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
 
       <ion-popover trigger="recipe-menu" dismiss-on-select>
         <ion-list lines="none">
-          <ion-item button @click=${() => this.onPrintClicked()}>
+          <ion-item button @click=${(e: Event) => this.onPrintClicked(e)}>
             <app-icon slot="start" name="print"></app-icon>
             Print
           </ion-item>
-            ${isAuthorized(this.userCtx?.user, AccessLevel.Editor)
-        ? html`
-          <ion-item button @click=${() => this.onDeleteClicked()}>
-            <app-icon slot="start" name="delete"></app-icon>
-            Delete
-          </ion-item>
-          <ion-item button @click=${() => this.onArchiveClicked()}>
-            <app-icon slot="start" name=${this.recipe?.state === RecipeState.Archived ? 'unarchive' : 'archive'}></app-icon>
-            ${this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive'}
-          </ion-item>
-          <ion-item button @click=${() => this.onAddLinkClicked()}>
-            <app-icon slot="start" name="link"></app-icon>
-            Add Link
-          </ion-item>
-          <ion-item button @click=${() => this.onUploadImageClicked()}>
-            <app-icon slot="start" name="photo_camera"></app-icon>
-            Upload Picture
-          </ion-item>
-          <ion-item button @click=${() => this.onAddNoteClicked()}>
-            <app-icon slot="start" name="notes"></app-icon>
-            Add Note
-          </ion-item>
-          <ion-item button @click=${() => this.onEditClicked()}>
-            <app-icon slot="start" name="edit_square"></app-icon>
-            Edit
-          </ion-item>
-        `
-        : nothing}
+            ${isAuthorized(this.userCtx?.user, AccessLevel.Editor) ? html`
+              <ion-item button @click=${() => this.onDeleteClicked()}>
+                <app-icon slot="start" name="delete"></app-icon>
+                Delete
+              </ion-item>
+              <ion-item button @click=${() => this.onArchiveClicked()}>
+                <app-icon slot="start" name=${this.recipe?.state === RecipeState.Archived ? 'unarchive' : 'archive'}></app-icon>
+                ${this.recipe?.state === RecipeState.Archived ? 'Unarchive' : 'Archive'}
+              </ion-item>
+              <ion-item button @click=${() => this.onAddLinkClicked()}>
+                <app-icon slot="start" name="link"></app-icon>
+                Add Link
+              </ion-item>
+              <ion-item button @click=${() => this.onUploadImageClicked()}>
+                <app-icon slot="start" name="photo_camera"></app-icon>
+                Upload Picture
+              </ion-item>
+              <ion-item button @click=${() => this.onAddNoteClicked()}>
+                <app-icon slot="start" name="notes"></app-icon>
+                Add Note
+              </ion-item>
+              <ion-item button @click=${() => this.onEditClicked()}>
+                <app-icon slot="start" name="edit_square"></app-icon>
+                Edit
+              </ion-item>
+            ` : nothing}
         </ion-list>
       </ion-popover>
     `;
@@ -659,7 +649,14 @@ export class PageRecipe extends LitElement implements ComponentWithActivatedCall
     }
   }
 
-  private onPrintClicked() {
+  private async onPrintClicked(e?: Event) {
+    // Make sure the menu is closed before printing,
+    // so that it's not part of the printed page
+    if (e != null && e.target instanceof HTMLElement) {
+      const popover = e.target.closest('ion-popover');
+      await popover?.onDidDismiss();
+    }
+
     window.print();
   }
 
